@@ -1,12 +1,54 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+
+import { useState } from "react";
+import Dashboard from "@/components/Dashboard";
+import Teams from "@/components/Teams";
+import Navigation from "@/components/Navigation";
 
 const Index = () => {
+  const [activeTab, setActiveTab] = useState("dashboard");
+
+  const renderContent = () => {
+    switch (activeTab) {
+      case "dashboard":
+        return <Dashboard />;
+      case "teams":
+        return <Teams />;
+      case "fixtures":
+        return (
+          <div className="min-h-screen gradient-bg flex items-center justify-center pb-20">
+            <div className="text-center text-white">
+              <h2 className="text-2xl font-bold mb-4">Fixtures</h2>
+              <p className="text-white/80">Coming soon...</p>
+            </div>
+          </div>
+        );
+      case "news":
+        return (
+          <div className="min-h-screen gradient-bg flex items-center justify-center pb-20">
+            <div className="text-center text-white">
+              <h2 className="text-2xl font-bold mb-4">News</h2>
+              <p className="text-white/80">Coming soon...</p>
+            </div>
+          </div>
+        );
+      case "notifications":
+        return (
+          <div className="min-h-screen gradient-bg flex items-center justify-center pb-20">
+            <div className="text-center text-white">
+              <h2 className="text-2xl font-bold mb-4">More</h2>
+              <p className="text-white/80">Coming soon...</p>
+            </div>
+          </div>
+        );
+      default:
+        return <Dashboard />;
+    }
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-gray-600">Start building your amazing project here!</p>
-      </div>
+    <div className="min-h-screen">
+      {renderContent()}
+      <Navigation activeTab={activeTab} onTabChange={setActiveTab} />
     </div>
   );
 };
