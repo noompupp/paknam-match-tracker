@@ -1,10 +1,10 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Minus, Clock, Play, Square, RotateCcw, Timer, UserPlus, UserMinus } from "lucide-react";
 
 interface PlayerTime {
@@ -14,6 +14,27 @@ interface PlayerTime {
   totalTime: number;
   isPlaying: boolean;
   startTime: number | null;
+}
+
+interface Player {
+  name: string;
+  number: number;
+  position: string;
+  role: string;
+  goals: number;
+  assists: number;
+}
+
+interface Team {
+  id: number;
+  name: string;
+  logo: string;
+  founded: string;
+  players: number;
+  captain: string;
+  position: number;
+  points: number;
+  squad?: Player[];
 }
 
 const RefereeTools = () => {
@@ -26,7 +47,7 @@ const RefereeTools = () => {
   const [selectedTeam, setSelectedTeam] = useState("home");
   const [events, setEvents] = useState<Array<{id: number, type: string, description: string, time: number}>>([]);
   const [trackedPlayers, setTrackedPlayers] = useState<PlayerTime[]>([]);
-  const [newPlayerName, setNewPlayerName] = useState("");
+  const [selectedPlayer, setSelectedPlayer] = useState("");
   const [newPlayerTeam, setNewPlayerTeam] = useState("home");
 
   // Sample match data
@@ -35,6 +56,76 @@ const RefereeTools = () => {
     awayTeam: "Paknam FC",
     date: "Dec 20, 2024",
     time: "15:00"
+  };
+
+  // Teams and players data
+  const teams: Team[] = [
+    {
+      id: 1,
+      name: "Bangkok FC",
+      logo: "🔴",
+      founded: "2018",
+      players: 16,
+      captain: "Somchai Srisai",
+      position: 1,
+      points: 25,
+      squad: [
+        { name: "Somchai Srisai", number: 10, position: "Forward", role: "Captain", goals: 8, assists: 4 },
+        { name: "Preecha Jai", number: 7, position: "Midfielder", role: "S-Class", goals: 5, assists: 6 },
+        { name: "Sutin Krai", number: 9, position: "Forward", role: "S-Class", goals: 7, assists: 2 },
+        { name: "Wanchai Dee", number: 4, position: "Defender", role: "Regular", goals: 0, assists: 3 },
+        { name: "Niran Mai", number: 23, position: "Midfielder", role: "Regular", goals: 1, assists: 5 },
+      ]
+    },
+    {
+      id: 2,
+      name: "Paknam FC",
+      logo: "🟣",
+      founded: "2019",
+      players: 17,
+      captain: "Niran Prakob",
+      position: 2,
+      points: 23,
+      squad: [
+        { name: "Niran Prakob", number: 10, position: "Forward", role: "Captain", goals: 10, assists: 5 },
+        { name: "Manit Klang", number: 7, position: "Midfielder", role: "S-Class", goals: 6, assists: 8 },
+        { name: "Sombat Dee", number: 9, position: "Forward", role: "S-Class", goals: 5, assists: 3 },
+        { name: "Chai Yen", number: 4, position: "Defender", role: "Regular", goals: 1, assists: 2 },
+        { name: "Wit Sam", number: 23, position: "Midfielder", role: "Regular", goals: 2, assists: 4 },
+      ]
+    }
+  ];
+
+  // Get all players from both teams
+  const getAllPlayers = () => {
+    const homeTeam = teams.find(team => team.name === currentMatch.homeTeam);
+    const awayTeam = teams.find(team => team.name === currentMatch.awayTeam);
+    
+    const allPlayers: Array<{name: string, team: string, number: number, position: string}> = [];
+    
+    if (homeTeam?.squad) {
+      homeTeam.squad.forEach(player => {
+        allPlayers.push({
+          name: player.name,
+          team: homeTeam.name,
+          number: player.number,
+          position: player.position
+        });
+      });
+    }
+    
+    if (awayTeam?.squad) {
+      awayTeam.squad.forEach(player => {
+        allPlayers.push({
+          name: player.name,
+          team: awayTeam.name,
+          number: player.number,
+          position: player.position
+        });
+      });
+    }
+    
+    return allPlayers;
   };
 
   // Update player times when match timer is running
@@ -129,24 +220,29 @@ const RefereeTools = () => {
   };
 
   const addPlayerToTracker = () => {
-    if (!newPlayerName.trim()) return;
+    if (!selectedPlayer) return;
+    
+    const allPlayers = getAllPlayers();
+    const playerData = allPlayers.find(p => `${p.name}-${p.team}` === selectedPlayer);
+    
+    if (!playerData) return;
     
     const newPlayer: PlayerTime = {
       id: Date.now(),
-      name: newPlayerName,
-      team: newPlayerTeam === 'home' ? currentMatch.homeTeam : currentMatch.awayTeam,
+      name: playerData.name,
+      team: playerData.team,
       totalTime: 0,
       isPlaying: false,
       startTime: null
     };
     
     setTrackedPlayers(prev => [...prev, newPlayer]);
-    setNewPlayerName("");
+    setSelectedPlayer("");
     
     const newEvent = {
       id: Date.now(),
       type: 'player_added',
-      description: `${newPlayerName} added to time tracker (${newPlayer.team})`,
+      description: `${playerData.name} added to time tracker (${playerData.team})`,
       time: matchTime
     };
     setEvents(prev => [...prev, newEvent]);
@@ -368,41 +464,29 @@ const RefereeTools = () => {
             {/* Add Player Section */}
             <div className="space-y-3 p-4 bg-muted/20 rounded-lg">
               <h4 className="font-semibold text-sm">Add Player to Track</h4>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div>
-                  <Label htmlFor="newPlayer">Player Name</Label>
-                  <Input
-                    id="newPlayer"
-                    value={newPlayerName}
-                    onChange={(e) => setNewPlayerName(e.target.value)}
-                    placeholder="Enter player name"
-                  />
-                </div>
-                <div>
-                  <Label>Team</Label>
-                  <div className="flex gap-1 mt-1">
-                    <Button
-                      size="sm"
-                      variant={newPlayerTeam === 'home' ? 'default' : 'outline'}
-                      onClick={() => setNewPlayerTeam('home')}
-                      className="flex-1 text-xs"
-                    >
-                      {currentMatch.homeTeam}
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant={newPlayerTeam === 'away' ? 'default' : 'outline'}
-                      onClick={() => setNewPlayerTeam('away')}
-                      className="flex-1 text-xs"
-                    >
-                      {currentMatch.awayTeam}
-                    </Button>
-                  </div>
+                  <Label htmlFor="playerSelect">Select Player</Label>
+                  <Select value={selectedPlayer} onValueChange={setSelectedPlayer}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Choose a player" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {getAllPlayers().map((player) => (
+                        <SelectItem 
+                          key={`${player.name}-${player.team}`} 
+                          value={`${player.name}-${player.team}`}
+                        >
+                          #{player.number} {player.name} ({player.team}) - {player.position}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="flex items-end">
                   <Button
                     onClick={addPlayerToTracker}
-                    disabled={!newPlayerName.trim()}
+                    disabled={!selectedPlayer}
                     className="w-full"
                   >
                     <UserPlus className="h-4 w-4 mr-2" />
