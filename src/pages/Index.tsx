@@ -2,6 +2,7 @@
 import { useState } from "react";
 import Dashboard from "@/components/Dashboard";
 import Teams from "@/components/Teams";
+import RefereeTools from "@/components/RefereeTools";
 import Navigation from "@/components/Navigation";
 
 const Index = () => {
@@ -23,14 +24,7 @@ const Index = () => {
           </div>
         );
       case "referee":
-        return (
-          <div className="min-h-screen gradient-bg flex items-center justify-center pb-20">
-            <div className="text-center text-white">
-              <h2 className="text-2xl font-bold mb-4">Referee Tools</h2>
-              <p className="text-white/80">Coming soon...</p>
-            </div>
-          </div>
-        );
+        return <RefereeTools />;
       case "notifications":
         return (
           <div className="min-h-screen gradient-bg flex items-center justify-center pb-20">
