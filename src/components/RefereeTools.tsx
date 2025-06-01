@@ -1,11 +1,20 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Plus, Minus, Clock, Play, Square, RotateCcw } from "lucide-react";
+import { Plus, Minus, Clock, Play, Square, RotateCcw, Timer, UserPlus, UserMinus } from "lucide-react";
+
+interface PlayerTime {
+  id: number;
+  name: string;
+  team: string;
+  totalTime: number;
+  isPlaying: boolean;
+  startTime: number | null;
+}
 
 const RefereeTools = () => {
   const [homeScore, setHomeScore] = useState(0);
@@ -16,6 +25,9 @@ const RefereeTools = () => {
   const [playerName, setPlayerName] = useState("");
   const [selectedTeam, setSelectedTeam] = useState("home");
   const [events, setEvents] = useState<Array<{id: number, type: string, description: string, time: number}>>([]);
+  const [trackedPlayers, setTrackedPlayers] = useState<PlayerTime[]>([]);
+  const [newPlayerName, setNewPlayerName] = useState("");
+  const [newPlayerTeam, setNewPlayerTeam] = useState("home");
 
   // Sample match data
   const currentMatch = {
@@ -24,6 +36,24 @@ const RefereeTools = () => {
     date: "Dec 20, 2024",
     time: "15:00"
   };
+
+  // Update player times when match timer is running
+  useEffect(() => {
+    if (isRunning) {
+      const interval = setInterval(() => {
+        setTrackedPlayers(prev => prev.map(player => {
+          if (player.isPlaying && player.startTime !== null) {
+            return {
+              ...player,
+              totalTime: player.totalTime + 1
+            };
+          }
+          return player;
+        }));
+      }, 1000);
+      return () => clearInterval(interval);
+    }
+  }, [isRunning]);
 
   const addGoal = (team: 'home' | 'away') => {
     if (team === 'home') {
@@ -94,7 +124,71 @@ const RefereeTools = () => {
     setIsRunning(false);
     setCards([]);
     setEvents([]);
+    setTrackedPlayers([]);
     clearInterval((window as any).matchInterval);
+  };
+
+  const addPlayerToTracker = () => {
+    if (!newPlayerName.trim()) return;
+    
+    const newPlayer: PlayerTime = {
+      id: Date.now(),
+      name: newPlayerName,
+      team: newPlayerTeam === 'home' ? currentMatch.homeTeam : currentMatch.awayTeam,
+      totalTime: 0,
+      isPlaying: false,
+      startTime: null
+    };
+    
+    setTrackedPlayers(prev => [...prev, newPlayer]);
+    setNewPlayerName("");
+    
+    const newEvent = {
+      id: Date.now(),
+      type: 'player_added',
+      description: `${newPlayerName} added to time tracker (${newPlayer.team})`,
+      time: matchTime
+    };
+    setEvents(prev => [...prev, newEvent]);
+  };
+
+  const removePlayerFromTracker = (playerId: number) => {
+    const player = trackedPlayers.find(p => p.id === playerId);
+    if (player) {
+      setTrackedPlayers(prev => prev.filter(p => p.id !== playerId));
+      
+      const newEvent = {
+        id: Date.now(),
+        type: 'player_removed',
+        description: `${player.name} removed from time tracker`,
+        time: matchTime
+      };
+      setEvents(prev => [...prev, newEvent]);
+    }
+  };
+
+  const togglePlayerTime = (playerId: number) => {
+    setTrackedPlayers(prev => prev.map(player => {
+      if (player.id === playerId) {
+        const newIsPlaying = !player.isPlaying;
+        const updatedPlayer = {
+          ...player,
+          isPlaying: newIsPlaying,
+          startTime: newIsPlaying ? matchTime : null
+        };
+        
+        const newEvent = {
+          id: Date.now(),
+          type: newIsPlaying ? 'player_on' : 'player_off',
+          description: `${player.name} ${newIsPlaying ? 'entered' : 'left'} the field`,
+          time: matchTime
+        };
+        setEvents(prev => [...prev, newEvent]);
+        
+        return updatedPlayer;
+      }
+      return player;
+    }));
   };
 
   const formatTime = (seconds: number) => {
@@ -262,6 +356,110 @@ const RefereeTools = () => {
           </Card>
         </div>
 
+        {/* Player Time Tracker */}
+        <Card className="card-shadow-lg">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Timer className="h-5 w-5" />
+              Player Time Tracker
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* Add Player Section */}
+            <div className="space-y-3 p-4 bg-muted/20 rounded-lg">
+              <h4 className="font-semibold text-sm">Add Player to Track</h4>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div>
+                  <Label htmlFor="newPlayer">Player Name</Label>
+                  <Input
+                    id="newPlayer"
+                    value={newPlayerName}
+                    onChange={(e) => setNewPlayerName(e.target.value)}
+                    placeholder="Enter player name"
+                  />
+                </div>
+                <div>
+                  <Label>Team</Label>
+                  <div className="flex gap-1 mt-1">
+                    <Button
+                      size="sm"
+                      variant={newPlayerTeam === 'home' ? 'default' : 'outline'}
+                      onClick={() => setNewPlayerTeam('home')}
+                      className="flex-1 text-xs"
+                    >
+                      {currentMatch.homeTeam}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant={newPlayerTeam === 'away' ? 'default' : 'outline'}
+                      onClick={() => setNewPlayerTeam('away')}
+                      className="flex-1 text-xs"
+                    >
+                      {currentMatch.awayTeam}
+                    </Button>
+                  </div>
+                </div>
+                <div className="flex items-end">
+                  <Button
+                    onClick={addPlayerToTracker}
+                    disabled={!newPlayerName.trim()}
+                    className="w-full"
+                  >
+                    <UserPlus className="h-4 w-4 mr-2" />
+                    Add Player
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            {/* Tracked Players */}
+            {trackedPlayers.length === 0 ? (
+              <p className="text-muted-foreground text-center py-4">No players being tracked</p>
+            ) : (
+              <div className="space-y-3">
+                <h4 className="font-semibold text-sm">Tracked Players</h4>
+                {trackedPlayers.map((player) => (
+                  <div key={player.id} className="flex items-center justify-between p-3 bg-muted/20 rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <div>
+                        <span className="font-medium">{player.name}</span>
+                        <p className="text-sm text-muted-foreground">{player.team}</p>
+                      </div>
+                      <Badge variant={player.isPlaying ? "default" : "secondary"}>
+                        {player.isPlaying ? "ON FIELD" : "OFF FIELD"}
+                      </Badge>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="text-right">
+                        <div className="font-mono text-lg font-bold">
+                          {formatTime(player.totalTime)}
+                        </div>
+                        <p className="text-xs text-muted-foreground">playing time</p>
+                      </div>
+                      <div className="flex gap-1">
+                        <Button
+                          size="sm"
+                          variant={player.isPlaying ? "destructive" : "default"}
+                          onClick={() => togglePlayerTime(player.id)}
+                        >
+                          {player.isPlaying ? "Sub Out" : "Sub In"}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => removePlayerFromTracker(player.id)}
+                        >
+                          <UserMinus className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
         {/* Match Events */}
         <Card className="card-shadow-lg">
           <CardHeader>
@@ -281,8 +479,13 @@ const RefereeTools = () => {
                       </Badge>
                       <span className="font-medium">{event.description}</span>
                     </div>
-                    <Badge variant={event.type === 'goal' ? 'default' : 'secondary'}>
-                      {event.type}
+                    <Badge variant={
+                      event.type === 'goal' ? 'default' : 
+                      event.type === 'card' ? 'destructive' :
+                      event.type.includes('player') ? 'secondary' :
+                      'outline'
+                    }>
+                      {event.type.replace('_', ' ')}
                     </Badge>
                   </div>
                 ))}
