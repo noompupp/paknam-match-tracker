@@ -22,11 +22,11 @@ const Index = () => {
             </div>
           </div>
         );
-      case "news":
+      case "referee":
         return (
           <div className="min-h-screen gradient-bg flex items-center justify-center pb-20">
             <div className="text-center text-white">
-              <h2 className="text-2xl font-bold mb-4">News</h2>
+              <h2 className="text-2xl font-bold mb-4">Referee Tools</h2>
               <p className="text-white/80">Coming soon...</p>
             </div>
           </div>

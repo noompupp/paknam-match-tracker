@@ -1,5 +1,6 @@
+
 import { Button } from "@/components/ui/button";
-import { Home, Calendar, Bell, BarChart3, Newspaper } from "lucide-react";
+import { Home, Calendar, Bell, BarChart3, Whistle } from "lucide-react";
 
 interface NavigationProps {
   activeTab: string;
@@ -11,7 +12,7 @@ const Navigation = ({ activeTab, onTabChange }: NavigationProps) => {
     { id: "dashboard", label: "Latest", icon: Home },
     { id: "teams", label: "Teams", icon: BarChart3 },
     { id: "fixtures", label: "Fixtures", icon: Calendar },
-    { id: "news", label: "News", icon: Newspaper },
+    { id: "referee", label: "Referee Tools", icon: Whistle },
     { id: "notifications", label: "More", icon: Bell },
   ];
 
