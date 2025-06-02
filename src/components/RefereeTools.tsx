@@ -10,6 +10,7 @@ import ScoreManagement from "./referee/ScoreManagement";
 import CardManagement from "./referee/CardManagement";
 import PlayerTimeTracker from "./referee/PlayerTimeTracker";
 import MatchEvents from "./referee/MatchEvents";
+import { PlayerTime } from "@/types/database";
 
 interface MatchEvent {
   id: number;
@@ -24,15 +25,6 @@ interface CardData {
   team: string;
   type: 'yellow' | 'red';
   time: number;
-}
-
-interface PlayerTime {
-  id: number;
-  name: string;
-  team: string;
-  isPlaying: boolean;
-  totalTime: number;
-  lastStartTime?: number;
 }
 
 const RefereeTools = () => {
@@ -183,9 +175,9 @@ const RefereeTools = () => {
       id: player.id,
       name: player.name,
       team: player.team,
-      isPlaying: true,
       totalTime: 0,
-      lastStartTime: matchTime
+      isPlaying: true,
+      startTime: matchTime
     };
 
     setTrackedPlayers(prev => [...prev, newPlayerTime]);
@@ -212,7 +204,7 @@ const RefereeTools = () => {
         return {
           ...player,
           isPlaying: newIsPlaying,
-          lastStartTime: newIsPlaying ? matchTime : undefined
+          startTime: newIsPlaying ? matchTime : null
         };
       }
       return player;
