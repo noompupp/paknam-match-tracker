@@ -1,37 +1,35 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowRight, ChevronRight } from "lucide-react";
+import { useTeams } from "@/hooks/useTeams";
+import { useTopScorers } from "@/hooks/useMembers";
+import { useRecentFixtures, useUpcomingFixtures } from "@/hooks/useFixtures";
 
 const Dashboard = () => {
-  const standings = [
-    { pos: 1, team: "Bangkok FC", played: 10, won: 8, drawn: 1, lost: 1, gf: 25, ga: 8, gd: 17, pts: 25 },
-    { pos: 2, team: "Paknam FC", played: 10, won: 7, drawn: 2, lost: 1, gf: 22, ga: 10, gd: 12, pts: 23 },
-    { pos: 3, team: "Thonburi United", played: 10, won: 6, drawn: 1, lost: 3, gf: 18, ga: 15, gd: 3, pts: 19 },
-    { pos: 4, team: "Samut Prakan", played: 10, won: 4, drawn: 3, lost: 3, gf: 16, ga: 14, gd: 2, pts: 15 },
-    { pos: 5, team: "Nonthaburi FC", played: 10, won: 2, drawn: 2, lost: 6, gf: 12, ga: 20, gd: -8, pts: 8 },
-    { pos: 6, team: "Pathum Thani", played: 10, won: 1, drawn: 1, lost: 8, gf: 8, ga: 24, gd: -16, pts: 4 },
-  ];
+  const { data: teams, isLoading: teamsLoading, error: teamsError } = useTeams();
+  const { data: topScorers, isLoading: scorersLoading } = useTopScorers();
+  const { data: recentFixtures, isLoading: recentLoading } = useRecentFixtures();
+  const { data: upcomingFixtures, isLoading: upcomingLoading } = useUpcomingFixtures();
 
-  const topScorers = [
-    { name: "Somchai Srisai", team: "Bangkok FC", goals: 12 },
-    { name: "Niran Prakob", team: "Paknam FC", goals: 10 },
-    { name: "Wichai Thong", team: "Thonburi United", goals: 8 },
-    { name: "Preecha Chai", team: "Samut Prakan", goals: 7 },
-    { name: "Manit Klang", team: "Paknam FC", goals: 6 },
-  ];
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric'
+    });
+  };
 
-  const recentResults = [
-    { date: "Dec 15", homeTeam: "Paknam FC", homeScore: 3, awayScore: 1, awayTeam: "Nonthaburi FC" },
-    { date: "Dec 12", homeTeam: "Bangkok FC", homeScore: 2, awayScore: 0, awayTeam: "Pathum Thani" },
-    { date: "Dec 10", homeTeam: "Thonburi United", homeScore: 1, awayScore: 2, awayTeam: "Samut Prakan" },
-  ];
-
-  const upcomingFixtures = [
-    { date: "Dec 20", homeTeam: "Paknam FC", awayTeam: "Bangkok FC", time: "15:00" },
-    { date: "Dec 22", homeTeam: "Samut Prakan", awayTeam: "Thonburi United", time: "16:00" },
-    { date: "Dec 24", homeTeam: "Nonthaburi FC", awayTeam: "Pathum Thani", time: "14:00" },
-  ];
+  if (teamsError) {
+    return (
+      <div className="min-h-screen gradient-bg flex items-center justify-center">
+        <div className="text-center text-white">
+          <h2 className="text-2xl font-bold mb-4">Error Loading Data</h2>
+          <p className="text-white/80">Please check your connection and try again.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen gradient-bg">
@@ -68,18 +66,35 @@ const Dashboard = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {standings.map((team) => (
-                    <tr key={team.pos} className="border-b hover:bg-muted/30 transition-colors">
-                      <td className="p-3 font-bold">{team.pos}</td>
-                      <td className="p-3 font-semibold">{team.team}</td>
-                      <td className="p-3 text-center">{team.played}</td>
-                      <td className="p-3 text-center">{team.won}</td>
-                      <td className="p-3 text-center">{team.drawn}</td>
-                      <td className="p-3 text-center">{team.lost}</td>
-                      <td className="p-3 text-center font-semibold">{team.gd > 0 ? `+${team.gd}` : team.gd}</td>
-                      <td className="p-3 text-center font-bold text-primary">{team.pts}</td>
-                    </tr>
-                  ))}
+                  {teamsLoading ? (
+                    Array.from({ length: 6 }).map((_, index) => (
+                      <tr key={index} className="border-b">
+                        <td className="p-3"><Skeleton className="h-4 w-6" /></td>
+                        <td className="p-3"><Skeleton className="h-4 w-24" /></td>
+                        <td className="p-3 text-center"><Skeleton className="h-4 w-6 mx-auto" /></td>
+                        <td className="p-3 text-center"><Skeleton className="h-4 w-6 mx-auto" /></td>
+                        <td className="p-3 text-center"><Skeleton className="h-4 w-6 mx-auto" /></td>
+                        <td className="p-3 text-center"><Skeleton className="h-4 w-6 mx-auto" /></td>
+                        <td className="p-3 text-center"><Skeleton className="h-4 w-8 mx-auto" /></td>
+                        <td className="p-3 text-center"><Skeleton className="h-4 w-8 mx-auto" /></td>
+                      </tr>
+                    ))
+                  ) : (
+                    teams?.map((team) => (
+                      <tr key={team.id} className="border-b hover:bg-muted/30 transition-colors">
+                        <td className="p-3 font-bold">{team.position}</td>
+                        <td className="p-3 font-semibold">{team.name}</td>
+                        <td className="p-3 text-center">{team.played}</td>
+                        <td className="p-3 text-center">{team.won}</td>
+                        <td className="p-3 text-center">{team.drawn}</td>
+                        <td className="p-3 text-center">{team.lost}</td>
+                        <td className="p-3 text-center font-semibold">
+                          {team.goal_difference > 0 ? `+${team.goal_difference}` : team.goal_difference}
+                        </td>
+                        <td className="p-3 text-center font-bold text-primary">{team.points}</td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
@@ -94,20 +109,35 @@ const Dashboard = () => {
               <ArrowRight className="h-5 w-5 text-muted-foreground" />
             </CardHeader>
             <CardContent className="space-y-4">
-              {topScorers.map((scorer, index) => (
-                <div key={index} className="flex items-center justify-between p-3 rounded-lg hover:bg-muted/30 transition-colors">
-                  <div className="flex items-center space-x-3">
-                    <Badge variant="outline" className="w-8 h-8 rounded-full flex items-center justify-center">
-                      {index + 1}
-                    </Badge>
-                    <div>
-                      <p className="font-semibold">{scorer.name}</p>
-                      <p className="text-sm text-muted-foreground">{scorer.team}</p>
+              {scorersLoading ? (
+                Array.from({ length: 5 }).map((_, index) => (
+                  <div key={index} className="flex items-center justify-between p-3 rounded-lg">
+                    <div className="flex items-center space-x-3">
+                      <Skeleton className="w-8 h-8 rounded-full" />
+                      <div className="space-y-1">
+                        <Skeleton className="h-4 w-24" />
+                        <Skeleton className="h-3 w-16" />
+                      </div>
                     </div>
+                    <Skeleton className="h-6 w-8" />
                   </div>
-                  <Badge className="bg-primary text-primary-foreground">{scorer.goals}</Badge>
-                </div>
-              ))}
+                ))
+              ) : (
+                topScorers.map((scorer, index) => (
+                  <div key={index} className="flex items-center justify-between p-3 rounded-lg hover:bg-muted/30 transition-colors">
+                    <div className="flex items-center space-x-3">
+                      <Badge variant="outline" className="w-8 h-8 rounded-full flex items-center justify-center">
+                        {index + 1}
+                      </Badge>
+                      <div>
+                        <p className="font-semibold">{scorer.name}</p>
+                        <p className="text-sm text-muted-foreground">{scorer.team}</p>
+                      </div>
+                    </div>
+                    <Badge className="bg-primary text-primary-foreground">{scorer.goals}</Badge>
+                  </div>
+                ))
+              )}
             </CardContent>
           </Card>
 
@@ -118,20 +148,35 @@ const Dashboard = () => {
               <ArrowRight className="h-5 w-5 text-muted-foreground" />
             </CardHeader>
             <CardContent className="space-y-4">
-              {recentResults.map((match, index) => (
-                <div key={index} className="p-4 rounded-lg bg-muted/20 hover:bg-muted/40 transition-colors">
-                  <div className="text-xs text-muted-foreground mb-2">{match.date}</div>
-                  <div className="flex items-center justify-between">
-                    <span className="font-semibold text-sm">{match.homeTeam}</span>
-                    <div className="flex items-center space-x-2">
-                      <Badge variant="outline" className="px-3 py-1">
-                        {match.homeScore} - {match.awayScore}
-                      </Badge>
+              {recentLoading ? (
+                Array.from({ length: 3 }).map((_, index) => (
+                  <div key={index} className="p-4 rounded-lg bg-muted/20">
+                    <Skeleton className="h-3 w-16 mb-2" />
+                    <div className="flex items-center justify-between">
+                      <Skeleton className="h-4 w-20" />
+                      <Skeleton className="h-6 w-12" />
+                      <Skeleton className="h-4 w-20" />
                     </div>
-                    <span className="font-semibold text-sm">{match.awayTeam}</span>
                   </div>
-                </div>
-              ))}
+                ))
+              ) : (
+                recentFixtures?.map((fixture) => (
+                  <div key={fixture.id} className="p-4 rounded-lg bg-muted/20 hover:bg-muted/40 transition-colors">
+                    <div className="text-xs text-muted-foreground mb-2">
+                      {formatDate(fixture.match_date)}
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="font-semibold text-sm">{fixture.home_team?.name}</span>
+                      <div className="flex items-center space-x-2">
+                        <Badge variant="outline" className="px-3 py-1">
+                          {fixture.home_score} - {fixture.away_score}
+                        </Badge>
+                      </div>
+                      <span className="font-semibold text-sm">{fixture.away_team?.name}</span>
+                    </div>
+                  </div>
+                ))
+              )}
             </CardContent>
           </Card>
         </div>
@@ -143,19 +188,37 @@ const Dashboard = () => {
             <ArrowRight className="h-5 w-5 text-muted-foreground" />
           </CardHeader>
           <CardContent className="space-y-4">
-            {upcomingFixtures.map((fixture, index) => (
-              <div key={index} className="p-4 rounded-lg bg-muted/20 hover:bg-muted/40 transition-colors">
-                <div className="flex items-center justify-between">
-                  <div className="text-sm text-muted-foreground">{fixture.date} • {fixture.time}</div>
-                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
+            {upcomingLoading ? (
+              Array.from({ length: 3 }).map((_, index) => (
+                <div key={index} className="p-4 rounded-lg bg-muted/20">
+                  <div className="flex items-center justify-between mb-2">
+                    <Skeleton className="h-3 w-24" />
+                    <Skeleton className="h-4 w-4" />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <Skeleton className="h-4 w-20" />
+                    <Skeleton className="h-3 w-6" />
+                    <Skeleton className="h-4 w-20" />
+                  </div>
                 </div>
-                <div className="flex items-center justify-between mt-2">
-                  <span className="font-semibold">{fixture.homeTeam}</span>
-                  <span className="text-muted-foreground text-sm">vs</span>
-                  <span className="font-semibold">{fixture.awayTeam}</span>
+              ))
+            ) : (
+              upcomingFixtures?.map((fixture) => (
+                <div key={fixture.id} className="p-4 rounded-lg bg-muted/20 hover:bg-muted/40 transition-colors">
+                  <div className="flex items-center justify-between">
+                    <div className="text-sm text-muted-foreground">
+                      {formatDate(fixture.match_date)} • {fixture.match_time}
+                    </div>
+                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                  </div>
+                  <div className="flex items-center justify-between mt-2">
+                    <span className="font-semibold">{fixture.home_team?.name}</span>
+                    <span className="text-muted-foreground text-sm">vs</span>
+                    <span className="font-semibold">{fixture.away_team?.name}</span>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))
+            )}
           </CardContent>
         </Card>
       </div>
