@@ -1,10 +1,9 @@
 
-import { useState, useEffect } from "react";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Card, CardContent } from "@/components/ui/card";
-import { useFixtures, useUpdateFixtureScore } from "@/hooks/useFixtures";
+import { useState, useEffect, useRef } from "react";
+import { useFixtures } from "@/hooks/useFixtures";
 import { useMembers } from "@/hooks/useMembers";
-import { PlayerTime } from "@/types/database";
+import { useUpdateFixtureScore } from "@/hooks/useFixtures";
+import { useToast } from "@/hooks/use-toast";
 import MatchSelection from "./referee/MatchSelection";
 import MatchTimer from "./referee/MatchTimer";
 import ScoreManagement from "./referee/ScoreManagement";
@@ -12,245 +11,75 @@ import CardManagement from "./referee/CardManagement";
 import PlayerTimeTracker from "./referee/PlayerTimeTracker";
 import MatchEvents from "./referee/MatchEvents";
 
+interface MatchEvent {
+  id: number;
+  type: string;
+  description: string;
+  time: number;
+}
+
+interface CardData {
+  id: number;
+  player: string;
+  team: string;
+  type: 'yellow' | 'red';
+  time: number;
+}
+
+interface PlayerTime {
+  id: number;
+  name: string;
+  team: string;
+  isPlaying: boolean;
+  totalTime: number;
+  lastStartTime?: number;
+}
+
 const RefereeTools = () => {
+  const { data: fixtures, isLoading: fixturesLoading } = useFixtures();
+  const { data: members } = useMembers();
+  const updateFixtureScore = useUpdateFixtureScore();
+  const { toast } = useToast();
+
+  const [selectedFixture, setSelectedFixture] = useState("");
   const [homeScore, setHomeScore] = useState(0);
   const [awayScore, setAwayScore] = useState(0);
   const [matchTime, setMatchTime] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
-  const [cards, setCards] = useState<Array<{id: number, player: string, team: string, type: 'yellow' | 'red', time: number}>>([]);
+  const [events, setEvents] = useState<MatchEvent[]>([]);
   const [playerName, setPlayerName] = useState("");
   const [selectedTeam, setSelectedTeam] = useState("home");
-  const [events, setEvents] = useState<Array<{id: number, type: string, description: string, time: number}>>([]);
+  const [cards, setCards] = useState<CardData[]>([]);
   const [trackedPlayers, setTrackedPlayers] = useState<PlayerTime[]>([]);
   const [selectedPlayer, setSelectedPlayer] = useState("");
-  const [selectedFixture, setSelectedFixture] = useState("");
 
-  // Get upcoming fixtures and all members
-  const { data: fixtures, isLoading: fixturesLoading } = useFixtures();
-  const { data: members, isLoading: membersLoading } = useMembers();
-  const updateFixtureScore = useUpdateFixtureScore();
+  const intervalRef = useRef<NodeJS.Timeout>();
 
-  const selectedFixtureData = fixtures?.find(f => f.id.toString() === selectedFixture);
-
-  // Get all players from both teams
-  const getAllPlayers = () => {
-    if (!selectedFixtureData || !members) return [];
-    
-    const homeTeamMembers = members.filter(m => m.team_id === selectedFixtureData.home_team_id);
-    const awayTeamMembers = members.filter(m => m.team_id === selectedFixtureData.away_team_id);
-    
-    const allPlayers: Array<{name: string, team: string, number: number, position: string, id: number}> = [];
-    
-    homeTeamMembers.forEach(player => {
-      allPlayers.push({
-        id: player.id,
-        name: player.name,
-        team: selectedFixtureData.home_team?.name || 'Home Team',
-        number: player.number,
-        position: player.position
-      });
-    });
-    
-    awayTeamMembers.forEach(player => {
-      allPlayers.push({
-        id: player.id,
-        name: player.name,
-        team: selectedFixtureData.away_team?.name || 'Away Team',
-        number: player.number,
-        position: player.position
-      });
-    });
-    
-    return allPlayers;
-  };
-
-  // Update player times when match timer is running
   useEffect(() => {
     if (isRunning) {
-      const interval = setInterval(() => {
+      intervalRef.current = setInterval(() => {
+        setMatchTime(prev => prev + 1);
+        
+        // Update tracked players' time
         setTrackedPlayers(prev => prev.map(player => {
-          if (player.isPlaying && player.startTime !== null) {
-            return {
-              ...player,
-              totalTime: player.totalTime + 1
-            };
+          if (player.isPlaying) {
+            return { ...player, totalTime: player.totalTime + 1 };
           }
           return player;
         }));
       }, 1000);
-      return () => clearInterval(interval);
-    }
-  }, [isRunning]);
-
-  const addGoal = (team: 'home' | 'away') => {
-    if (team === 'home') {
-      setHomeScore(prev => prev + 1);
     } else {
-      setAwayScore(prev => prev + 1);
-    }
-    
-    const teamName = team === 'home' 
-      ? selectedFixtureData?.home_team?.name || 'Home Team'
-      : selectedFixtureData?.away_team?.name || 'Away Team';
-    
-    const newEvent = {
-      id: Date.now(),
-      type: 'goal',
-      description: `Goal scored by ${teamName}`,
-      time: matchTime
-    };
-    setEvents(prev => [...prev, newEvent]);
-  };
-
-  const removeGoal = (team: 'home' | 'away') => {
-    if (team === 'home' && homeScore > 0) {
-      setHomeScore(prev => prev - 1);
-    } else if (team === 'away' && awayScore > 0) {
-      setAwayScore(prev => prev - 1);
-    }
-  };
-
-  const addCard = (type: 'yellow' | 'red') => {
-    if (!playerName.trim() || !selectedFixtureData) return;
-    
-    const teamName = selectedTeam === 'home' 
-      ? selectedFixtureData.home_team?.name || 'Home Team'
-      : selectedFixtureData.away_team?.name || 'Away Team';
-    
-    const newCard = {
-      id: Date.now(),
-      player: playerName,
-      team: teamName,
-      type,
-      time: matchTime
-    };
-    
-    setCards(prev => [...prev, newCard]);
-    
-    const newEvent = {
-      id: Date.now(),
-      type: 'card',
-      description: `${type === 'yellow' ? 'Yellow' : 'Red'} card for ${playerName} (${teamName})`,
-      time: matchTime
-    };
-    setEvents(prev => [...prev, newEvent]);
-    
-    setPlayerName("");
-  };
-
-  const toggleTimer = () => {
-    setIsRunning(!isRunning);
-    if (!isRunning) {
-      const interval = setInterval(() => {
-        setMatchTime(prev => prev + 1);
-      }, 1000);
-      
-      (window as any).matchInterval = interval;
-    } else {
-      clearInterval((window as any).matchInterval);
-    }
-  };
-
-  const resetMatch = () => {
-    setHomeScore(0);
-    setAwayScore(0);
-    setMatchTime(0);
-    setIsRunning(false);
-    setCards([]);
-    setEvents([]);
-    setTrackedPlayers([]);
-    clearInterval((window as any).matchInterval);
-  };
-
-  const saveMatch = async () => {
-    if (!selectedFixtureData) return;
-    
-    try {
-      await updateFixtureScore.mutateAsync({
-        id: selectedFixtureData.id,
-        homeScore,
-        awayScore
-      });
-      
-      const newEvent = {
-        id: Date.now(),
-        type: 'match_saved',
-        description: `Match result saved: ${homeScore}-${awayScore}`,
-        time: matchTime
-      };
-      setEvents(prev => [...prev, newEvent]);
-    } catch (error) {
-      console.error('Error saving match:', error);
-    }
-  };
-
-  const addPlayerToTracker = () => {
-    if (!selectedPlayer) return;
-    
-    const allPlayers = getAllPlayers();
-    const playerData = allPlayers.find(p => p.id.toString() === selectedPlayer);
-    
-    if (!playerData) return;
-    
-    const newPlayer: PlayerTime = {
-      id: Date.now(),
-      name: playerData.name,
-      team: playerData.team,
-      totalTime: 0,
-      isPlaying: false,
-      startTime: null
-    };
-    
-    setTrackedPlayers(prev => [...prev, newPlayer]);
-    setSelectedPlayer("");
-    
-    const newEvent = {
-      id: Date.now(),
-      type: 'player_added',
-      description: `${playerData.name} added to time tracker (${playerData.team})`,
-      time: matchTime
-    };
-    setEvents(prev => [...prev, newEvent]);
-  };
-
-  const removePlayerFromTracker = (playerId: number) => {
-    const player = trackedPlayers.find(p => p.id === playerId);
-    if (player) {
-      setTrackedPlayers(prev => prev.filter(p => p.id !== playerId));
-      
-      const newEvent = {
-        id: Date.now(),
-        type: 'player_removed',
-        description: `${player.name} removed from time tracker`,
-        time: matchTime
-      };
-      setEvents(prev => [...prev, newEvent]);
-    }
-  };
-
-  const togglePlayerTime = (playerId: number) => {
-    setTrackedPlayers(prev => prev.map(player => {
-      if (player.id === playerId) {
-        const newIsPlaying = !player.isPlaying;
-        const updatedPlayer = {
-          ...player,
-          isPlaying: newIsPlaying,
-          startTime: newIsPlaying ? matchTime : null
-        };
-        
-        const newEvent = {
-          id: Date.now(),
-          type: newIsPlaying ? 'player_on' : 'player_off',
-          description: `${player.name} ${newIsPlaying ? 'entered' : 'left'} the field`,
-          time: matchTime
-        };
-        setEvents(prev => [...prev, newEvent]);
-        
-        return updatedPlayer;
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
       }
-      return player;
-    }));
-  };
+    }
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, [isRunning]);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -258,49 +87,172 @@ const RefereeTools = () => {
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  if (fixturesLoading || membersLoading) {
+  const addEvent = (type: string, description: string) => {
+    const newEvent: MatchEvent = {
+      id: Date.now(),
+      type,
+      description,
+      time: matchTime
+    };
+    setEvents(prev => [...prev, newEvent]);
+  };
+
+  const handleAddGoal = (team: 'home' | 'away') => {
+    if (team === 'home') {
+      setHomeScore(prev => prev + 1);
+      addEvent('goal', `Goal for ${selectedFixtureData?.home_team?.name}`);
+    } else {
+      setAwayScore(prev => prev + 1);
+      addEvent('goal', `Goal for ${selectedFixtureData?.away_team?.name}`);
+    }
+  };
+
+  const handleRemoveGoal = (team: 'home' | 'away') => {
+    if (team === 'home' && homeScore > 0) {
+      setHomeScore(prev => prev - 1);
+    } else if (team === 'away' && awayScore > 0) {
+      setAwayScore(prev => prev - 1);
+    }
+  };
+
+  const handleToggleTimer = () => {
+    setIsRunning(!isRunning);
+    addEvent('timer', isRunning ? 'Match paused' : 'Match started');
+  };
+
+  const handleResetMatch = () => {
+    setMatchTime(0);
+    setHomeScore(0);
+    setAwayScore(0);
+    setIsRunning(false);
+    setEvents([]);
+    setCards([]);
+    setTrackedPlayers([]);
+  };
+
+  const handleSaveMatch = async () => {
+    if (!selectedFixture) return;
+    
+    try {
+      await updateFixtureScore.mutateAsync({
+        id: parseInt(selectedFixture),
+        homeScore,
+        awayScore
+      });
+      
+      toast({
+        title: "Match Saved",
+        description: "Match result has been saved successfully.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to save match result.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleAddCard = (type: 'yellow' | 'red') => {
+    if (!playerName.trim()) return;
+
+    const teamName = selectedTeam === 'home' 
+      ? selectedFixtureData?.home_team?.name 
+      : selectedFixtureData?.away_team?.name;
+
+    const newCard: CardData = {
+      id: Date.now(),
+      player: playerName,
+      team: teamName || '',
+      type,
+      time: matchTime
+    };
+
+    setCards(prev => [...prev, newCard]);
+    addEvent('card', `${type.charAt(0).toUpperCase() + type.slice(1)} card for ${playerName} (${teamName})`);
+    setPlayerName("");
+  };
+
+  const handleAddPlayer = () => {
+    if (!selectedPlayer) return;
+
+    const player = allPlayers.find(p => p.id === parseInt(selectedPlayer));
+    if (!player) return;
+
+    const newPlayerTime: PlayerTime = {
+      id: player.id,
+      name: player.name,
+      team: player.team,
+      isPlaying: true,
+      totalTime: 0,
+      lastStartTime: matchTime
+    };
+
+    setTrackedPlayers(prev => [...prev, newPlayerTime]);
+    addEvent('player_on', `${player.name} entered the field`);
+    setSelectedPlayer("");
+  };
+
+  const handleRemovePlayer = (playerId: number) => {
+    const player = trackedPlayers.find(p => p.id === playerId);
+    if (player) {
+      addEvent('player_removed', `${player.name} removed from tracking`);
+    }
+    setTrackedPlayers(prev => prev.filter(p => p.id !== playerId));
+  };
+
+  const handleTogglePlayerTime = (playerId: number) => {
+    setTrackedPlayers(prev => prev.map(player => {
+      if (player.id === playerId) {
+        const newIsPlaying = !player.isPlaying;
+        addEvent(
+          newIsPlaying ? 'player_on' : 'player_off',
+          `${player.name} ${newIsPlaying ? 'entered' : 'left'} the field`
+        );
+        return {
+          ...player,
+          isPlaying: newIsPlaying,
+          lastStartTime: newIsPlaying ? matchTime : undefined
+        };
+      }
+      return player;
+    }));
+  };
+
+  if (fixturesLoading) {
     return (
-      <div className="min-h-screen gradient-bg pb-20">
-        <div className="bg-white/10 backdrop-blur-sm border-b border-white/20">
-          <div className="max-w-7xl mx-auto px-4 py-6">
-            <div className="text-center">
-              <h1 className="text-3xl font-bold text-white mb-2">Referee Tools</h1>
-              <p className="text-white/80">Match Management System</p>
-            </div>
-          </div>
-        </div>
-        <div className="max-w-7xl mx-auto px-4 py-8">
-          <Card className="card-shadow-lg">
-            <CardContent className="p-6">
-              <div className="space-y-4">
-                <Skeleton className="h-8 w-48 mx-auto" />
-                <Skeleton className="h-24 w-full" />
-                <div className="grid md:grid-cols-2 gap-6">
-                  <Skeleton className="h-64 w-full" />
-                  <Skeleton className="h-64 w-full" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+      <div className="min-h-screen gradient-bg flex items-center justify-center pb-20">
+        <div className="text-center text-white">
+          <h2 className="text-2xl font-bold mb-4">Loading...</h2>
         </div>
       </div>
     );
   }
 
+  const selectedFixtureData = fixtures?.find(f => f.id.toString() === selectedFixture);
+  
+  // Get all players from both teams of the selected fixture
+  const allPlayers = members?.filter(member => 
+    selectedFixtureData && (
+      member.team_id === selectedFixtureData.home_team_id || 
+      member.team_id === selectedFixtureData.away_team_id
+    )
+  ).map(member => ({
+    id: member.id,
+    name: member.name,
+    team: member.team?.name || '',
+    number: member.number,
+    position: member.position
+  })) || [];
+
   return (
     <div className="min-h-screen gradient-bg pb-20">
-      {/* Header */}
-      <div className="bg-white/10 backdrop-blur-sm border-b border-white/20">
-        <div className="max-w-7xl mx-auto px-4 py-6">
-          <div className="text-center">
-            <h1 className="text-3xl font-bold text-white mb-2">Referee Tools</h1>
-            <p className="text-white/80">Match Management System</p>
-          </div>
+      <div className="container mx-auto px-4 py-6 space-y-6">
+        <div className="text-center text-white mb-6">
+          <h1 className="text-3xl font-bold">Referee Tools</h1>
+          <p className="text-white/80 mt-2">Manage matches, track time, and record events</p>
         </div>
-      </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">
-        {/* Fixture Selection */}
         <MatchSelection
           fixtures={fixtures || []}
           selectedFixture={selectedFixture}
@@ -309,7 +261,6 @@ const RefereeTools = () => {
 
         {selectedFixtureData && (
           <>
-            {/* Current Match */}
             <MatchTimer
               selectedFixtureData={selectedFixtureData}
               homeScore={homeScore}
@@ -319,47 +270,41 @@ const RefereeTools = () => {
               formatTime={formatTime}
             />
 
-            <div className="grid md:grid-cols-2 gap-6">
-              {/* Score Management */}
-              <ScoreManagement
-                selectedFixtureData={selectedFixtureData}
-                homeScore={homeScore}
-                awayScore={awayScore}
-                isRunning={isRunning}
-                isPending={updateFixtureScore.isPending}
-                onAddGoal={addGoal}
-                onRemoveGoal={removeGoal}
-                onToggleTimer={toggleTimer}
-                onResetMatch={resetMatch}
-                onSaveMatch={saveMatch}
-              />
+            <ScoreManagement
+              selectedFixtureData={selectedFixtureData}
+              homeScore={homeScore}
+              awayScore={awayScore}
+              isRunning={isRunning}
+              isPending={updateFixtureScore.isPending}
+              onAddGoal={handleAddGoal}
+              onRemoveGoal={handleRemoveGoal}
+              onToggleTimer={handleToggleTimer}
+              onResetMatch={handleResetMatch}
+              onSaveMatch={handleSaveMatch}
+            />
 
-              {/* Card Management */}
-              <CardManagement
-                selectedFixtureData={selectedFixtureData}
-                playerName={playerName}
-                selectedTeam={selectedTeam}
-                cards={cards}
-                onPlayerNameChange={setPlayerName}
-                onTeamChange={setSelectedTeam}
-                onAddCard={addCard}
-                formatTime={formatTime}
-              />
-            </div>
-
-            {/* Player Time Tracker */}
-            <PlayerTimeTracker
-              trackedPlayers={trackedPlayers}
-              selectedPlayer={selectedPlayer}
-              allPlayers={getAllPlayers()}
-              onPlayerSelect={setSelectedPlayer}
-              onAddPlayer={addPlayerToTracker}
-              onRemovePlayer={removePlayerFromTracker}
-              onTogglePlayerTime={togglePlayerTime}
+            <CardManagement
+              selectedFixtureData={selectedFixtureData}
+              playerName={playerName}
+              selectedTeam={selectedTeam}
+              cards={cards}
+              onPlayerNameChange={setPlayerName}
+              onTeamChange={setSelectedTeam}
+              onAddCard={handleAddCard}
               formatTime={formatTime}
             />
 
-            {/* Match Events */}
+            <PlayerTimeTracker
+              trackedPlayers={trackedPlayers}
+              selectedPlayer={selectedPlayer}
+              allPlayers={allPlayers}
+              onPlayerSelect={setSelectedPlayer}
+              onAddPlayer={handleAddPlayer}
+              onRemovePlayer={handleRemovePlayer}
+              onTogglePlayerTime={handleTogglePlayerTime}
+              formatTime={formatTime}
+            />
+
             <MatchEvents
               events={events}
               formatTime={formatTime}
