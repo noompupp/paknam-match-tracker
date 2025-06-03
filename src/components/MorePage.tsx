@@ -8,14 +8,14 @@ import { useDebugData, useDebugNormalization } from "@/hooks/useDebug";
 import { useTeams } from "@/hooks/useTeams";
 import { useMembers } from "@/hooks/useMembers";
 import { useFixtures } from "@/hooks/useFixtures";
-import { usePlayerStatsSync } from "@/hooks/usePlayerStatsSync";
 import { Bug, RefreshCw, TestTube, Settings, Database, Users } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import DebugPanel from "./DebugPanel";
+import StatsSync from "./StatsSync";
 
 const MorePage = () => {
   const { toast } = useToast();
-  const [activeSection, setActiveSection] = useState("debug");
+  const [activeSection, setActiveSection] = useState("stats");
   
   // Debug data hooks
   const { data: debugData, isLoading: debugLoading, refetch: refetchDebug } = useDebugData();
@@ -23,17 +23,6 @@ const MorePage = () => {
   const { data: teams, isLoading: teamsLoading } = useTeams();
   const { data: members, isLoading: membersLoading } = useMembers();
   const { data: fixtures, isLoading: fixturesLoading } = useFixtures();
-  
-  // Stats sync functionality
-  const { syncStats, validateStats, isSyncing, isValidating, lastSyncResult } = usePlayerStatsSync();
-
-  const handleSyncStats = () => {
-    syncStats();
-  };
-
-  const handleValidateStats = () => {
-    validateStats();
-  };
 
   const handleSystemTest = () => {
     toast({
@@ -65,24 +54,90 @@ const MorePage = () => {
       <div className="container mx-auto px-4 py-6">
         <div className="text-center text-white mb-6">
           <h1 className="text-3xl font-bold">More</h1>
-          <p className="text-white/80 mt-2">Debug tools, testing, and system management</p>
+          <p className="text-white/80 mt-2">System management, statistics, and debug tools</p>
         </div>
 
         <Tabs value={activeSection} onValueChange={setActiveSection} className="space-y-6">
           <TabsList className="grid w-full grid-cols-3 bg-white/10 backdrop-blur-sm">
+            <TabsTrigger value="stats" className="flex items-center gap-2 data-[state=active]:bg-white/20">
+              <Database className="h-4 w-4" />
+              Stats Sync
+            </TabsTrigger>
             <TabsTrigger value="debug" className="flex items-center gap-2 data-[state=active]:bg-white/20">
               <Bug className="h-4 w-4" />
               Debug Panel
-            </TabsTrigger>
-            <TabsTrigger value="testing" className="flex items-center gap-2 data-[state=active]:bg-white/20">
-              <TestTube className="h-4 w-4" />
-              System Testing
             </TabsTrigger>
             <TabsTrigger value="settings" className="flex items-center gap-2 data-[state=active]:bg-white/20">
               <Settings className="h-4 w-4" />
               Settings
             </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="stats" className="space-y-6">
+            <StatsSync />
+            
+            <Card className="bg-white/95 backdrop-blur-sm">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <TestTube className="h-5 w-5" />
+                  System Testing & Validation
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* System Health Check */}
+                <div>
+                  <h3 className="font-semibold mb-3">System Health Check</h3>
+                  <Button 
+                    onClick={handleSystemTest}
+                    className="flex items-center gap-2"
+                    size="lg"
+                  >
+                    <TestTube className="h-4 w-4" />
+                    Run Comprehensive Test
+                  </Button>
+                </div>
+
+                {/* Data Integrity Status */}
+                <div>
+                  <h3 className="font-semibold mb-3">Data Integrity Status</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <Card>
+                      <CardContent className="p-4 text-center">
+                        <Users className="h-8 w-8 mx-auto mb-2 text-blue-500" />
+                        <h4 className="font-medium">Teams</h4>
+                        <p className="text-sm text-gray-600">{teams?.length || 0} active teams</p>
+                        <Badge variant={teams?.length ? "default" : "destructive"}>
+                          {teams?.length ? "Healthy" : "Issues"}
+                        </Badge>
+                      </CardContent>
+                    </Card>
+                    
+                    <Card>
+                      <CardContent className="p-4 text-center">
+                        <Users className="h-8 w-8 mx-auto mb-2 text-green-500" />
+                        <h4 className="font-medium">Members</h4>
+                        <p className="text-sm text-gray-600">{members?.length || 0} total members</p>
+                        <Badge variant={members?.length ? "default" : "destructive"}>
+                          {members?.length ? "Healthy" : "Issues"}
+                        </Badge>
+                      </CardContent>
+                    </Card>
+                    
+                    <Card>
+                      <CardContent className="p-4 text-center">
+                        <Database className="h-8 w-8 mx-auto mb-2 text-purple-500" />
+                        <h4 className="font-medium">Fixtures</h4>
+                        <p className="text-sm text-gray-600">{fixtures?.length || 0} total fixtures</p>
+                        <Badge variant={fixtures?.length ? "default" : "destructive"}>
+                          {fixtures?.length ? "Healthy" : "Issues"}
+                        </Badge>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
           <TabsContent value="debug" className="space-y-6">
             {/* Embedded Debug Panel */}
@@ -174,111 +229,6 @@ const MorePage = () => {
                     </pre>
                   </div>
                 )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="testing" className="space-y-6">
-            <Card className="bg-white/95 backdrop-blur-sm">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <TestTube className="h-5 w-5" />
-                  System Testing & Validation
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {/* Player Stats Sync */}
-                <div>
-                  <h3 className="font-semibold mb-3">Player Statistics Management</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <Button 
-                      onClick={handleSyncStats}
-                      disabled={isSyncing}
-                      className="flex items-center gap-2"
-                    >
-                      <Database className="h-4 w-4" />
-                      {isSyncing ? "Syncing..." : "Sync Player Stats"}
-                    </Button>
-                    
-                    <Button 
-                      onClick={handleValidateStats}
-                      disabled={isValidating}
-                      variant="outline"
-                      className="flex items-center gap-2"
-                    >
-                      <TestTube className="h-4 w-4" />
-                      {isValidating ? "Validating..." : "Validate Stats"}
-                    </Button>
-                  </div>
-                  
-                  {lastSyncResult && (
-                    <div className="mt-4 p-4 bg-blue-50 rounded-lg">
-                      <h4 className="font-medium text-blue-900">Last Sync Result:</h4>
-                      <p className="text-sm text-blue-800">
-                        Players Updated: {lastSyncResult.playersUpdated} | 
-                        Goals Added: {lastSyncResult.goalsAdded} | 
-                        Assists Added: {lastSyncResult.assistsAdded}
-                      </p>
-                      {lastSyncResult.errors.length > 0 && (
-                        <p className="text-sm text-red-600 mt-1">
-                          Errors: {lastSyncResult.errors.length}
-                        </p>
-                      )}
-                    </div>
-                  )}
-                </div>
-
-                {/* System Health Check */}
-                <div>
-                  <h3 className="font-semibold mb-3">System Health Check</h3>
-                  <Button 
-                    onClick={handleSystemTest}
-                    className="flex items-center gap-2"
-                    size="lg"
-                  >
-                    <TestTube className="h-4 w-4" />
-                    Run Comprehensive Test
-                  </Button>
-                </div>
-
-                {/* Data Integrity Status */}
-                <div>
-                  <h3 className="font-semibold mb-3">Data Integrity Status</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <Card>
-                      <CardContent className="p-4 text-center">
-                        <Users className="h-8 w-8 mx-auto mb-2 text-blue-500" />
-                        <h4 className="font-medium">Teams</h4>
-                        <p className="text-sm text-gray-600">{teams?.length || 0} active teams</p>
-                        <Badge variant={teams?.length ? "default" : "destructive"}>
-                          {teams?.length ? "Healthy" : "Issues"}
-                        </Badge>
-                      </CardContent>
-                    </Card>
-                    
-                    <Card>
-                      <CardContent className="p-4 text-center">
-                        <Users className="h-8 w-8 mx-auto mb-2 text-green-500" />
-                        <h4 className="font-medium">Members</h4>
-                        <p className="text-sm text-gray-600">{members?.length || 0} total members</p>
-                        <Badge variant={members?.length ? "default" : "destructive"}>
-                          {members?.length ? "Healthy" : "Issues"}
-                        </Badge>
-                      </CardContent>
-                    </Card>
-                    
-                    <Card>
-                      <CardContent className="p-4 text-center">
-                        <Database className="h-8 w-8 mx-auto mb-2 text-purple-500" />
-                        <h4 className="font-medium">Fixtures</h4>
-                        <p className="text-sm text-gray-600">{fixtures?.length || 0} total fixtures</p>
-                        <Badge variant={fixtures?.length ? "default" : "destructive"}>
-                          {fixtures?.length ? "Healthy" : "Issues"}
-                        </Badge>
-                      </CardContent>
-                    </Card>
-                  </div>
-                </div>
               </CardContent>
             </Card>
           </TabsContent>

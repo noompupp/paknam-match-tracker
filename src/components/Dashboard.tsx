@@ -3,7 +3,6 @@ import { useTeams } from "@/hooks/useTeams";
 import { useTopScorers } from "@/hooks/useMembers";
 import { useTopAssists } from "@/hooks/useTopAssists";
 import { useRecentFixtures, useUpcomingFixtures } from "@/hooks/useFixtures";
-import DebugPanel from "./DebugPanel";
 import DashboardHeader from "./dashboard/DashboardHeader";
 import LeagueTable from "./dashboard/LeagueTable";
 import TopScorersCard from "./dashboard/TopScorersCard";
@@ -44,8 +43,6 @@ const Dashboard = () => {
 
         <UpcomingFixturesCard upcomingFixtures={upcomingFixtures} isLoading={upcomingLoading} />
       </div>
-
-      <DebugPanel />
     </div>
   );
 };
