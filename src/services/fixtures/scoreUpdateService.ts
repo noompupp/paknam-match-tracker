@@ -3,7 +3,7 @@ import { Fixture } from '@/types/database';
 import { fetchFixtureWithTeams, updateFixtureInDatabase, createFixtureResult } from './fixtureDataService';
 import { updateTeamStats } from './teamStatsService';
 import { calculateAndUpdatePositions } from './positionCalculationService';
-import { createGoalEvents } from './matchEventsCreationService';
+import { createGoalEventsWithDuplicateCheck } from './matchEventsCreationService';
 
 export const updateFixtureScore = async (id: number, homeScore: number, awayScore: number): Promise<Fixture> => {
   console.log('🔍 ScoreUpdateService: Starting fixture score update:', { id, homeScore, awayScore });
@@ -50,9 +50,9 @@ export const updateFixtureScore = async (id: number, homeScore: number, awayScor
     console.log('🏆 ScoreUpdateService: Updating league table positions...');
     await calculateAndUpdatePositions();
 
-    // Create goal events for the score change
-    console.log('⚽ ScoreUpdateService: Creating goal events...');
-    await createGoalEvents(
+    // Create goal events for the score change with duplicate prevention
+    console.log('⚽ ScoreUpdateService: Creating goal events with duplicate prevention...');
+    await createGoalEventsWithDuplicateCheck(
       id,
       { id: homeTeam.id, name: homeTeam.name },
       { id: awayTeam.id, name: awayTeam.name },
@@ -65,7 +65,7 @@ export const updateFixtureScore = async (id: number, homeScore: number, awayScor
     // Return simplified fixture object
     const result = createFixtureResult(updatedFixture, homeTeam, awayTeam);
     
-    console.log('✅ ScoreUpdateService: Successfully completed fixture score update with all integrations');
+    console.log('✅ ScoreUpdateService: Successfully completed fixture score update with duplicate prevention');
     return result;
 
   } catch (error) {
