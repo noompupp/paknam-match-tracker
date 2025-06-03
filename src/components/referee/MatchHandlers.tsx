@@ -131,7 +131,7 @@ export const useMatchHandlers = ({
         awayTeam: selectedFixtureData?.away_team?.name
       });
 
-      // Update fixture score with enhanced error handling
+      // Update fixture score with proper error handling
       console.log('📊 RefereeTools: Updating fixture score...');
       const updatedFixture = await updateFixtureScore.mutateAsync({
         id: parseInt(selectedFixture),
@@ -212,14 +212,14 @@ export const useMatchHandlers = ({
         variant: "destructive",
       });
 
-      // Add error event to local events
+      // Add error event to local events with more details
       addEvent('error', `Match save failed (Attempt ${currentAttempt}): ${errorMessage}`, matchTime);
       
-      // Show detailed error for debugging
+      // Show additional guidance for debugging
       if (currentAttempt >= 3) {
         toast({
           title: "Multiple Save Failures",
-          description: "Match saving has failed multiple times. Please check the console for detailed error information and contact support if the issue persists.",
+          description: "Match saving has failed multiple times. Check console for detailed error information. Ensure teams exist in database and try again.",
           variant: "destructive",
         });
       }

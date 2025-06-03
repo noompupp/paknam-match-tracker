@@ -28,50 +28,62 @@ export const updateFixtureScore = async (id: number, homeScore: number, awayScor
 
     console.log('📊 FixturesUpdates: Current fixture data:', currentFixture);
 
-    // Simplified team lookup - try each team ID systematically
+    // Get teams using the consistent team ID approach
     let homeTeam: SimpleTeam | null = null;
     let awayTeam: SimpleTeam | null = null;
 
-    // Get potential team IDs
-    const homeTeamId = currentFixture.team1 || currentFixture.home_team_id;
-    const awayTeamId = currentFixture.team2 || currentFixture.away_team_id;
+    // Use the standardized team1/team2 fields after our migration
+    const homeTeamId = currentFixture.team1;
+    const awayTeamId = currentFixture.team2;
 
     console.log('🔍 FixturesUpdates: Team IDs found:', { homeTeamId, awayTeamId });
 
     // Find home team
     if (homeTeamId) {
-      const { data: team } = await supabase
+      const { data: team, error: homeTeamError } = await supabase
         .from('teams')
         .select('id, name, played, points')
         .eq('__id__', homeTeamId)
         .maybeSingle();
       
+      if (homeTeamError) {
+        console.error('❌ FixturesUpdates: Error fetching home team:', homeTeamError);
+        throw new Error(`Failed to fetch home team: ${homeTeamError.message}`);
+      }
+      
       if (team) {
         homeTeam = team;
         console.log('✅ FixturesUpdates: Found home team:', team.name);
+      } else {
+        console.error('❌ FixturesUpdates: Home team not found for ID:', homeTeamId);
+        throw new Error(`Home team not found for ID: ${homeTeamId}`);
       }
+    } else {
+      throw new Error('Home team ID is missing from fixture');
     }
 
     // Find away team
     if (awayTeamId) {
-      const { data: team } = await supabase
+      const { data: team, error: awayTeamError } = await supabase
         .from('teams')
         .select('id, name, played, points')
         .eq('__id__', awayTeamId)
         .maybeSingle();
       
+      if (awayTeamError) {
+        console.error('❌ FixturesUpdates: Error fetching away team:', awayTeamError);
+        throw new Error(`Failed to fetch away team: ${awayTeamError.message}`);
+      }
+      
       if (team) {
         awayTeam = team;
         console.log('✅ FixturesUpdates: Found away team:', team.name);
+      } else {
+        console.error('❌ FixturesUpdates: Away team not found for ID:', awayTeamId);
+        throw new Error(`Away team not found for ID: ${awayTeamId}`);
       }
-    }
-
-    if (!homeTeam || !awayTeam) {
-      console.warn('⚠️ FixturesUpdates: Could not find one or both teams:', { 
-        homeTeamFound: !!homeTeam,
-        awayTeamFound: !!awayTeam, 
-        fixture: currentFixture 
-      });
+    } else {
+      throw new Error('Away team ID is missing from fixture');
     }
 
     // Check if this is an update to an already completed match
@@ -99,17 +111,15 @@ export const updateFixtureScore = async (id: number, homeScore: number, awayScor
 
     if (fixtureError) {
       console.error('❌ FixturesUpdates: Error updating fixture:', fixtureError);
-      throw fixtureError;
+      throw new Error(`Failed to update fixture: ${fixtureError.message}`);
     }
 
     console.log('✅ FixturesUpdates: Fixture updated successfully:', updatedFixture);
 
-    // Only update team stats if we have both teams and this is the first time 
-    // the match is being completed or if we're changing the result
-    if (homeTeam && awayTeam && 
-        (!isMatchAlreadyCompleted || 
+    // Update team stats if this is the first time the match is being completed or if we're changing the result
+    if (!isMatchAlreadyCompleted || 
         currentFixture.home_score !== homeScore || 
-        currentFixture.away_score !== awayScore)) {
+        currentFixture.away_score !== awayScore) {
       
       // If match was already completed, we need to reverse the previous stats first
       if (isMatchAlreadyCompleted) {
@@ -134,10 +144,15 @@ export const updateFixtureScore = async (id: number, homeScore: number, awayScor
         reversedHomeStats.points = (homeTeam.points || 0) - 
           (prevIsHomeWin ? 3 : prevIsDraw ? 1 : 0);
 
-        await supabase
+        const { error: homeReverseError } = await supabase
           .from('teams')
           .update(reversedHomeStats)
           .eq('id', homeTeam.id);
+
+        if (homeReverseError) {
+          console.error('❌ FixturesUpdates: Error reversing home team stats:', homeReverseError);
+          throw new Error(`Failed to reverse home team stats: ${homeReverseError.message}`);
+        }
 
         // Reverse previous away team stats
         const reversedAwayStats = calculateTeamStatsUpdate(
@@ -152,10 +167,15 @@ export const updateFixtureScore = async (id: number, homeScore: number, awayScor
         reversedAwayStats.points = (awayTeam.points || 0) - 
           (prevIsAwayWin ? 3 : prevIsDraw ? 1 : 0);
 
-        await supabase
+        const { error: awayReverseError } = await supabase
           .from('teams')
           .update(reversedAwayStats)
           .eq('id', awayTeam.id);
+
+        if (awayReverseError) {
+          console.error('❌ FixturesUpdates: Error reversing away team stats:', awayReverseError);
+          throw new Error(`Failed to reverse away team stats: ${awayReverseError.message}`);
+        }
       }
 
       // Now apply the new stats
@@ -180,7 +200,7 @@ export const updateFixtureScore = async (id: number, homeScore: number, awayScor
 
       if (homeStatsError) {
         console.error('❌ FixturesUpdates: Error updating home team stats:', homeStatsError);
-        throw homeStatsError;
+        throw new Error(`Failed to update home team stats: ${homeStatsError.message}`);
       }
 
       // Update away team stats
@@ -202,12 +222,12 @@ export const updateFixtureScore = async (id: number, homeScore: number, awayScor
 
       if (awayStatsError) {
         console.error('❌ FixturesUpdates: Error updating away team stats:', awayStatsError);
-        throw awayStatsError;
+        throw new Error(`Failed to update away team stats: ${awayStatsError.message}`);
       }
 
       console.log('✅ FixturesUpdates: Team stats updated successfully');
     } else {
-      console.log('ℹ️ FixturesUpdates: No team stats update needed - team not found or match result unchanged');
+      console.log('ℹ️ FixturesUpdates: No team stats update needed - match result unchanged');
     }
 
     // Return simplified fixture object to avoid deep type instantiation
@@ -265,6 +285,6 @@ export const updateFixtureScore = async (id: number, homeScore: number, awayScor
 
   } catch (error) {
     console.error('❌ FixturesUpdates: Critical error in updateScore:', error);
-    throw error;
+    throw error; // Re-throw the error so it can be handled by the calling code
   }
 };

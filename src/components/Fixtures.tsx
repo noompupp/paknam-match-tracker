@@ -42,11 +42,17 @@ const Fixtures = () => {
     });
   };
 
-  // Create a combined date-time for proper sorting
+  // Create a combined date-time for proper sorting with fallback for missing times
   const getFixtureDateTime = (fixture: any) => {
     const dateStr = fixture.match_date;
-    const timeStr = fixture.match_time || '00:00:00';
-    return new Date(`${dateStr}T${timeStr}`);
+    const timeStr = fixture.match_time || '18:00:00'; // Default time fallback
+    
+    try {
+      return new Date(`${dateStr}T${timeStr}`);
+    } catch {
+      // Fallback if date parsing fails
+      return new Date(dateStr + 'T18:00:00');
+    }
   };
 
   const FixtureCard = ({ fixture, showScore = false }: { fixture: any, showScore?: boolean }) => (
@@ -104,7 +110,7 @@ const Fixtures = () => {
           </div>
 
           {/* Venue */}
-          {fixture.venue && (
+          {fixture.venue && fixture.venue !== 'TBD' && (
             <div className="flex items-center gap-2 justify-center text-sm text-muted-foreground">
               <MapPin className="h-3 w-3" />
               <span>{fixture.venue}</span>
@@ -143,26 +149,32 @@ const Fixtures = () => {
     </Card>
   );
 
-  // Sort all fixtures with proper date-time handling
+  // Sort all fixtures with proper date-time handling and validation
   const sortedAllFixtures = allFixtures?.slice().sort((a, b) => {
-    const dateTimeA = getFixtureDateTime(a);
-    const dateTimeB = getFixtureDateTime(b);
-    
-    // For completed fixtures, show most recent first
-    if (a.status === 'completed' && b.status === 'completed') {
-      return dateTimeB.getTime() - dateTimeA.getTime();
-    }
-    
-    // For scheduled/upcoming fixtures, show earliest first
-    if (a.status !== 'completed' && b.status !== 'completed') {
+    try {
+      const dateTimeA = getFixtureDateTime(a);
+      const dateTimeB = getFixtureDateTime(b);
+      
+      // For completed fixtures, show most recent first
+      if (a.status === 'completed' && b.status === 'completed') {
+        return dateTimeB.getTime() - dateTimeA.getTime();
+      }
+      
+      // For scheduled/upcoming fixtures, show earliest first
+      if (a.status !== 'completed' && b.status !== 'completed') {
+        return dateTimeA.getTime() - dateTimeB.getTime();
+      }
+      
+      // Mixed status: completed fixtures first, then upcoming
+      if (a.status === 'completed') return -1;
+      if (b.status === 'completed') return 1;
+      
       return dateTimeA.getTime() - dateTimeB.getTime();
+    } catch (error) {
+      console.warn('Error sorting fixtures:', error, { fixtureA: a, fixtureB: b });
+      // Fallback: sort by ID if date parsing fails
+      return (a.id || 0) - (b.id || 0);
     }
-    
-    // Mixed status: completed fixtures first, then upcoming
-    if (a.status === 'completed') return -1;
-    if (b.status === 'completed') return 1;
-    
-    return dateTimeA.getTime() - dateTimeB.getTime();
   });
 
   return (
