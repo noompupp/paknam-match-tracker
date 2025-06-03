@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useFixtures } from "@/hooks/useFixtures";
 import { useMembers } from "@/hooks/useMembers";
@@ -10,8 +11,6 @@ import { useCardManagementDropdown } from "@/hooks/useCardManagementDropdown";
 import { usePlayerTracking } from "@/hooks/usePlayerTracking";
 import { useGoalManagement } from "@/hooks/useGoalManagement";
 import { useLocalMatchEvents } from "@/hooks/useMatchEvents";
-import { useMatchHandlers } from "./MatchHandlers";
-import { usePlayerManagement } from "./PlayerManagement";
 import MatchSelection from "./MatchSelection";
 import MatchTimer from "./MatchTimer";
 import ScoreManagement from "./ScoreManagement";
@@ -109,69 +108,119 @@ const RefereeToolsContainer = () => {
     position: member.position || 'Player'
   })) || [];
 
-  // Use match handlers
-  const { handleAddGoal, handleToggleTimer, handleResetMatch, handleSaveMatch } = useMatchHandlers({
-    selectedFixture,
-    selectedFixtureData,
-    homeScore,
-    awayScore,
-    matchTime,
-    isRunning,
-    saveAttempts,
-    setSaveAttempts,
-    updateFixtureScore,
-    createMatchEvent,
-    updatePlayerStats,
-    goals,
-    addGoal,
-    toggleTimer,
-    resetTimer,
-    resetScore,
-    resetEvents,
-    resetCards,
-    resetTracking,
-    resetGoals,
-    addEvent,
-    formatTime
-  });
+  // Match handlers
+  const handleAddGoal = (team: 'home' | 'away') => {
+    addGoal(team);
+    const goalText = team === 'home' 
+      ? `Goal for ${selectedFixtureData?.home_team?.name}`
+      : `Goal for ${selectedFixtureData?.away_team?.name}`;
+    addEvent('Goal', goalText, matchTime);
+  };
 
-  // Use player management
-  const { 
-    playersForCards, 
-    playersForTracking, 
-    handleAssignGoal, 
-    handleAddCard, 
-    handleAddPlayer, 
-    handleRemovePlayer, 
-    handleTogglePlayerTime 
-  } = usePlayerManagement({
-    members: members || [],
-    selectedFixtureData,
-    allPlayers,
-    selectedGoalPlayer,
-    selectedGoalType,
-    selectedPlayer,
-    selectedTeam,
-    selectedCardType,
-    selectedTimePlayer,
-    cards,
-    goals,
-    matchTime,
-    setSelectedGoalPlayer,
-    setSelectedGoalType,
-    setSelectedPlayer,
-    setSelectedTeam,
-    setSelectedCardType,
-    setSelectedTimePlayer,
-    assignGoal,
-    addCard,
-    addPlayer,
-    removePlayer,
-    togglePlayerTime,
-    addEvent,
-    checkForSecondYellow,
-    formatTime
-  });
+  const handleToggleTimer = () => {
+    toggleTimer();
+    const action = isRunning ? 'paused' : 'started';
+    addEvent('Timer', `Match timer ${action} at ${formatTime(matchTime)}`, matchTime);
+  };
+
+  const handleResetMatch = () => {
+    resetTimer();
+    resetScore();
+    resetEvents();
+    resetCards();
+    resetTracking();
+    resetGoals();
+    addEvent('Reset', 'Match reset', 0);
+  };
+
+  const handleSaveMatch = async () => {
+    if (!selectedFixtureData) return;
+    
+    setSaveAttempts(prev => prev + 1);
+    
+    try {
+      await updateFixtureScore.mutateAsync({
+        id: selectedFixtureData.id,
+        homeScore,
+        awayScore
+      });
+      
+      addEvent('Save', `Match saved with score ${homeScore}-${awayScore}`, matchTime);
+      toast({
+        title: "Match Saved",
+        description: `Score updated: ${homeScore}-${awayScore}`,
+      });
+    } catch (error) {
+      console.error('Failed to save match:', error);
+      toast({
+        title: "Save Failed",
+        description: "Failed to save match. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  // Player management handlers
+  const handleAssignGoal = async (player: ComponentPlayer) => {
+    if (!selectedFixtureData) return;
+    
+    try {
+      const newGoal = await assignGoal(player, matchTime, selectedFixtureData.id, player.team === selectedFixtureData.home_team?.name ? selectedFixtureData.home_team_id : selectedFixtureData.away_team_id);
+      if (newGoal) {
+        addEvent('Goal Assignment', `${selectedGoalType} assigned to ${player.name}`, matchTime);
+        toast({
+          title: "Goal Assigned",
+          description: `${selectedGoalType} assigned to ${player.name}`,
+        });
+      }
+    } catch (error) {
+      console.error('Failed to assign goal:', error);
+      toast({
+        title: "Assignment Failed",
+        description: "Failed to assign goal. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleAddCard = (playerName: string, team: string, cardType: "yellow" | "red", time: number) => {
+    const player = allPlayers.find(p => p.name === playerName);
+    if (!player) return;
+
+    const cardResult = addCard(player, team, matchTime, cardType);
+    addEvent('Card', `${cardType} card for ${playerName} (${team})`, matchTime);
+    
+    if (cardResult.isSecondYellow) {
+      addEvent('Red Card', `Second yellow card - automatic red for ${playerName}`, matchTime);
+      toast({
+        title: "Second Yellow Card",
+        description: `${playerName} receives automatic red card for second yellow`,
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleAddPlayer = (player: ComponentPlayer) => {
+    addPlayer(player, matchTime);
+    addEvent('Player Added', `${player.name} started tracking`, matchTime);
+  };
+
+  const handleRemovePlayer = (playerId: number) => {
+    const player = playersForTimeTracker.find(p => p.id === playerId);
+    if (player) {
+      removePlayer(playerId, matchTime);
+      addEvent('Player Removed', `${player.name} stopped tracking`, matchTime);
+    }
+  };
+
+  const handleTogglePlayerTime = (playerId: number) => {
+    const player = playersForTimeTracker.find(p => p.id === playerId);
+    if (player) {
+      const result = togglePlayerTime(playerId, matchTime);
+      const action = result ? 'started' : 'stopped';
+      addEvent('Player Time', `${player.name} ${action} playing`, matchTime);
+    }
+  };
 
   // Export match summary function
   const handleExportSummary = () => {
@@ -279,7 +328,7 @@ const RefereeToolsContainer = () => {
 
             <CardManagementDropdown
               selectedFixtureData={selectedFixtureData}
-              allPlayers={playersForCards}
+              allPlayers={allPlayers}
               selectedPlayer={selectedPlayer}
               selectedTeam={selectedTeam}
               selectedCardType={selectedCardType}
@@ -314,7 +363,7 @@ const RefereeToolsContainer = () => {
               goals={goals}
               cards={cards}
               trackedPlayers={trackedPlayers}
-              allPlayers={allPlayers} // Add this prop
+              allPlayers={allPlayers}
               onExportSummary={handleExportSummary}
               formatTime={formatTime}
             />
