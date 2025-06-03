@@ -69,6 +69,20 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "fixtures_away_team_id_fkey"
+            columns: ["away_team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["__id__"]
+          },
+          {
+            foreignKeyName: "fixtures_home_team_id_fkey"
+            columns: ["home_team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["__id__"]
+          },
+          {
             foreignKeyName: "fixtures_team1_fkey"
             columns: ["team1"]
             isOneToOne: false

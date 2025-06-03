@@ -92,7 +92,7 @@ export const membersApi = {
       .from('members')
       .select(`
         *,
-        team:teams!inner(*)
+        team:teams!members_team_id_fkey(*)
       `)
       .order('name', { ascending: true });
     
@@ -138,7 +138,7 @@ export const membersApi = {
       .from('members')
       .select(`
         *,
-        team:teams!inner(*)
+        team:teams!members_team_id_fkey(*)
       `)
       .eq('team_id', teamId.toString())
       .order('name', { ascending: true });
