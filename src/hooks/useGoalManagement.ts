@@ -1,5 +1,6 @@
 
 import { useState } from "react";
+import { assignGoalToPlayer } from "@/services/fixtures/goalAssignmentService";
 
 interface GoalData {
   playerId: number;
@@ -14,7 +15,7 @@ export const useGoalManagement = () => {
   const [selectedGoalPlayer, setSelectedGoalPlayer] = useState("");
   const [selectedGoalType, setSelectedGoalType] = useState<'goal' | 'assist'>('goal');
 
-  const assignGoal = (player: any, matchTime: number) => {
+  const assignGoal = async (player: any, matchTime: number, fixtureId?: number, teamId?: number) => {
     if (!player) return null;
 
     const newGoal: GoalData = {
@@ -27,6 +28,25 @@ export const useGoalManagement = () => {
 
     setGoals(prev => [...prev, newGoal]);
     setSelectedGoalPlayer("");
+
+    // If we have fixtureId and teamId, also save to database
+    if (fixtureId && teamId) {
+      try {
+        await assignGoalToPlayer({
+          fixtureId,
+          playerId: player.id,
+          playerName: player.name,
+          teamId,
+          eventTime: matchTime,
+          type: selectedGoalType
+        });
+        console.log('✅ useGoalManagement: Goal assigned to database successfully');
+      } catch (error) {
+        console.error('❌ useGoalManagement: Failed to assign goal to database:', error);
+        // Don't throw error here as the local goal assignment was successful
+      }
+    }
+
     return newGoal;
   };
 

@@ -1,16 +1,8 @@
+
 import { useToast } from "@/hooks/use-toast";
+import { getNumericTeamId } from "@/utils/teamIdMapping";
 
-// Define consistent Player interface for this component - using number for consistency
-interface ComponentPlayer {
-  id: number;
-  name: string;
-  team: string;
-  number?: number; // Changed from string to number for consistency
-  position?: string;
-}
-
-// Player interface for player tracking (needs number as number)
-interface PlayerTrackingPlayer {
+interface Player {
   id: number;
   name: string;
   team: string;
@@ -21,7 +13,7 @@ interface PlayerTrackingPlayer {
 interface PlayerManagementProps {
   members: any[];
   selectedFixtureData: any;
-  allPlayers: ComponentPlayer[];
+  allPlayers: Player[];
   selectedGoalPlayer: string;
   selectedGoalType: 'goal' | 'assist';
   selectedPlayer: string;
@@ -31,19 +23,19 @@ interface PlayerManagementProps {
   cards: any[];
   goals: any[];
   matchTime: number;
-  setSelectedGoalPlayer: (player: string) => void;
-  setSelectedGoalType: (type: 'goal' | 'assist') => void;
-  setSelectedPlayer: (player: string) => void;
-  setSelectedTeam: (team: string) => void;
-  setSelectedCardType: (type: 'yellow' | 'red') => void;
-  setSelectedTimePlayer: (player: string) => void;
-  assignGoal: (player: any, time: number) => any;
-  addCard: (player: any, team: string, time: number, type: 'yellow' | 'red') => any;
-  addPlayer: (player: any, time: number) => any;
-  removePlayer: (playerId: number) => any;
-  togglePlayerTime: (playerId: number, time: number) => any;
+  setSelectedGoalPlayer: (value: string) => void;
+  setSelectedGoalType: (value: 'goal' | 'assist') => void;
+  setSelectedPlayer: (value: string) => void;
+  setSelectedTeam: (value: string) => void;
+  setSelectedCardType: (value: 'yellow' | 'red') => void;
+  setSelectedTimePlayer: (value: string) => void;
+  assignGoal: (player: any, matchTime: number) => any;
+  addCard: (player: string, team: string, type: string, time: number) => void;
+  addPlayer: (player: any) => void;
+  removePlayer: (playerId: number) => void;
+  togglePlayerTime: (playerId: number) => void;
   addEvent: (type: string, description: string, time: number) => void;
-  checkForSecondYellow: (playerName: string, teamName: string) => boolean;
+  checkForSecondYellow: (playerName: string) => boolean;
   formatTime: (seconds: number) => string;
 }
 
@@ -77,115 +69,169 @@ export const usePlayerManagement = ({
 }: PlayerManagementProps) => {
   const { toast } = useToast();
 
-  // Create Player objects for card management that match the expected interface - already using number
-  const playersForCards = members?.filter(member => 
-    selectedFixtureData && (
-      member.team_id === selectedFixtureData.home_team_id || 
-      member.team_id === selectedFixtureData.away_team_id
-    )
-  ).map(member => ({
-    id: member.id,
-    name: member.name,
-    team: member.team?.name || '',
-    number: typeof member.number === 'number' ? member.number : parseInt(String(member.number || '0')), // Ensure number type
-    position: member.position
-  })) || [];
+  // Filter players for cards based on selected team
+  const playersForCards = allPlayers.filter(player => {
+    if (!selectedTeam) return false;
+    return player.team === selectedTeam;
+  });
 
-  // Create PlayerTrackingPlayer objects for player tracking (requires number as number)
-  const playersForTracking: PlayerTrackingPlayer[] = members?.filter(member => 
-    selectedFixtureData && (
-      member.team_id === selectedFixtureData.home_team_id || 
-      member.team_id === selectedFixtureData.away_team_id
-    )
-  ).map(member => ({
-    id: member.id,
-    name: member.name,
-    team: member.team?.name || '',
-    number: typeof member.number === 'number' ? member.number : parseInt(String(member.number || '0')), // Properly handle type conversion
-    position: member.position || 'Player'
-  })) || [];
+  // All players available for time tracking
+  const playersForTracking = allPlayers;
 
-  const handleAssignGoal = () => {
-    if (!selectedGoalPlayer) return;
-
-    const player = allPlayers.find(p => p.id === parseInt(selectedGoalPlayer));
-    if (!player) return;
-
-    const goal = assignGoal(player, matchTime);
-    if (goal) {
-      addEvent(selectedGoalType, `${selectedGoalType === 'goal' ? 'Goal' : 'Assist'} by ${player.name} (${player.team})`, matchTime);
-      
+  const handleAssignGoal = async () => {
+    if (!selectedGoalPlayer) {
       toast({
-        title: `${selectedGoalType === 'goal' ? 'Goal' : 'Assist'} Assigned!`,
-        description: `${selectedGoalType === 'goal' ? 'Goal' : 'Assist'} assigned to ${player.name} at ${formatTime(matchTime)}.`,
+        title: "Error",
+        description: "Please select a player first.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const player = allPlayers.find(p => p.id.toString() === selectedGoalPlayer);
+    if (!player) {
+      toast({
+        title: "Error",
+        description: "Selected player not found.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      console.log('⚽ PlayerManagement: Assigning goal/assist:', {
+        player: player.name,
+        team: player.team,
+        type: selectedGoalType,
+        time: matchTime
+      });
+
+      // Get the numeric team ID for the player's team
+      let teamId: number;
+      if (selectedFixtureData?.home_team?.name === player.team) {
+        teamId = selectedFixtureData.home_team_id;
+      } else if (selectedFixtureData?.away_team?.name === player.team) {
+        teamId = selectedFixtureData.away_team_id;
+      } else {
+        throw new Error(`Cannot find team ID for player's team: ${player.team}`);
+      }
+
+      // Use the assignGoal function which should call goalAssignmentService
+      const goalData = assignGoal(player, matchTime);
+      
+      if (goalData) {
+        // Add event to local events
+        addEvent(
+          selectedGoalType,
+          `${selectedGoalType === 'goal' ? 'Goal' : 'Assist'} assigned to ${player.name} (${player.team})`,
+          matchTime
+        );
+
+        toast({
+          title: `${selectedGoalType === 'goal' ? 'Goal' : 'Assist'} Assigned!`,
+          description: `${selectedGoalType === 'goal' ? 'Goal' : 'Assist'} assigned to ${player.name} at ${formatTime(matchTime)}`,
+        });
+
+        console.log('✅ PlayerManagement: Goal/assist assigned successfully');
+      }
+    } catch (error) {
+      console.error('❌ PlayerManagement: Error assigning goal/assist:', error);
+      toast({
+        title: "Assignment Failed",
+        description: error instanceof Error ? error.message : "Failed to assign goal/assist",
+        variant: "destructive",
       });
     }
   };
 
   const handleAddCard = () => {
-    if (!selectedPlayer || !selectedFixtureData) return;
+    if (!selectedPlayer || !selectedTeam) {
+      toast({
+        title: "Error",
+        description: "Please select both a player and team.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     const player = playersForCards.find(p => p.id.toString() === selectedPlayer);
-    if (!player) return;
-
-    const teamName = selectedTeam === 'home' 
-      ? selectedFixtureData.home_team?.name || 'Home'
-      : selectedFixtureData.away_team?.name || 'Away';
+    if (!player) {
+      toast({
+        title: "Error",
+        description: "Selected player not found in the selected team.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     // Check for second yellow card
-    const isSecondYellow = selectedCardType === 'yellow' && checkForSecondYellow(player.name, teamName);
+    if (selectedCardType === 'yellow' && checkForSecondYellow(player.name)) {
+      toast({
+        title: "Warning",
+        description: `${player.name} already has a yellow card. This will result in a red card.`,
+      });
+    }
+
+    addCard(player.name, selectedTeam, selectedCardType, matchTime);
+    addEvent('card', `${selectedCardType} card for ${player.name} (${selectedTeam})`, matchTime);
     
-    const card = addCard(player, teamName, matchTime, selectedCardType);
-    if (card) {
-      addEvent(selectedCardType === 'yellow' ? 'yellow_card' : 'red_card', `${selectedCardType} card for ${player.name} (${teamName})`, matchTime);
-      
-      let toastTitle = `${selectedCardType === 'yellow' ? 'Yellow' : 'Red'} Card Issued!`;
-      let toastDescription = `${selectedCardType === 'yellow' ? 'Yellow' : 'Red'} card issued to ${player.name} at ${formatTime(matchTime)}.`;
-      
-      if (isSecondYellow) {
-        toastTitle = "Second Yellow Card!";
-        toastDescription += " Player should receive an automatic red card.";
-        toast({
-          title: "Warning",
-          description: `${player.name} now has 2 yellow cards and should be sent off.`,
-          variant: "destructive"
-        });
-      }
+    // Reset selections
+    setSelectedPlayer("");
+    
+    toast({
+      title: "Card Added",
+      description: `${selectedCardType} card given to ${player.name} at ${formatTime(matchTime)}`,
+    });
+  };
+
+  const handleAddPlayer = () => {
+    if (!selectedTimePlayer) {
+      toast({
+        title: "Error",
+        description: "Please select a player to track.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const player = playersForTracking.find(p => p.id.toString() === selectedTimePlayer);
+    if (!player) {
+      toast({
+        title: "Error",
+        description: "Selected player not found.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    addPlayer(player);
+    addEvent('player_added', `Started tracking time for ${player.name} (${player.team})`, matchTime);
+    setSelectedTimePlayer("");
+    
+    toast({
+      title: "Player Added",
+      description: `Now tracking playing time for ${player.name}`,
+    });
+  };
+
+  const handleRemovePlayer = (playerId: number) => {
+    const player = playersForTracking.find(p => p.id === playerId);
+    if (player) {
+      removePlayer(playerId);
+      addEvent('player_removed', `Stopped tracking time for ${player.name}`, matchTime);
       
       toast({
-        title: toastTitle,
-        description: toastDescription,
+        title: "Player Removed",
+        description: `Stopped tracking ${player.name}`,
       });
     }
   };
 
-  const handleAddPlayer = () => {
-    if (!selectedTimePlayer) return;
-
-    const player = playersForTracking.find(p => p.id === parseInt(selectedTimePlayer));
-    if (player) {
-      const playerTime = addPlayer(player, matchTime);
-      if (playerTime) {
-        addEvent('player_on', `${player.name} entered the field`, matchTime);
-      }
-    }
-  };
-
-  const handleRemovePlayer = (playerId: number) => {
-    const player = removePlayer(playerId);
-    if (player) {
-      addEvent('player_removed', `${player.name} removed from tracking`, matchTime);
-    }
-  };
-
   const handleTogglePlayerTime = (playerId: number) => {
-    const player = togglePlayerTime(playerId, matchTime);
+    const player = playersForTracking.find(p => p.id === playerId);
     if (player) {
-      addEvent(
-        player.isPlaying ? 'player_on' : 'player_off',
-        `${player.name} ${player.isPlaying ? 'entered' : 'left'} the field`,
-        matchTime
-      );
+      togglePlayerTime(playerId);
+      // The addEvent will be handled by the toggle function itself
     }
   };
 

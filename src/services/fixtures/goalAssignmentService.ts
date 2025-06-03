@@ -6,7 +6,7 @@ interface GoalAssignment {
   fixtureId: number;
   playerId: number;
   playerName: string;
-  teamId: number;
+  teamId: number; // Now expecting numeric team ID
   eventTime: number;
   type: 'goal' | 'assist';
 }
@@ -24,7 +24,7 @@ export const assignGoalToPlayer = async (assignment: GoalAssignment): Promise<vo
       .eq('fixture_id', fixtureId)
       .eq('event_type', type)
       .eq('player_name', 'Unknown Player')
-      .eq('team_id', teamId)
+      .eq('team_id', teamId) // Using numeric team ID
       .limit(1);
 
     if (fetchError) {
@@ -59,7 +59,7 @@ export const assignGoalToPlayer = async (assignment: GoalAssignment): Promise<vo
           fixture_id: fixtureId,
           event_type: type,
           player_name: playerName,
-          team_id: teamId,
+          team_id: teamId, // Using numeric team ID
           event_time: eventTime,
           description: `${type === 'goal' ? 'Goal' : 'Assist'} by ${playerName}`
         }]);

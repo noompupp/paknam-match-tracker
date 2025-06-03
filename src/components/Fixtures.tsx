@@ -1,16 +1,20 @@
-
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Calendar, Clock, MapPin, Trophy } from "lucide-react";
+import { Calendar, Clock, MapPin, Trophy, Eye } from "lucide-react";
 import { useFixtures, useUpcomingFixtures, useRecentFixtures } from "@/hooks/useFixtures";
 import TeamLogo from "./teams/TeamLogo";
 import TournamentLogo from "./TournamentLogo";
+import MatchSummaryDialog from "./fixtures/MatchSummaryDialog";
 
 const Fixtures = () => {
   const { data: allFixtures, isLoading: allLoading, error } = useFixtures();
   const { data: upcomingFixtures, isLoading: upcomingLoading } = useUpcomingFixtures();
   const { data: recentFixtures, isLoading: recentLoading } = useRecentFixtures();
+  
+  const [selectedFixture, setSelectedFixture] = useState<any>(null);
+  const [showSummary, setShowSummary] = useState(false);
 
   if (error) {
     return (
@@ -74,8 +78,20 @@ const Fixtures = () => {
     }
   };
 
+  const handleFixtureClick = (fixture: any) => {
+    if (fixture.status === 'completed') {
+      setSelectedFixture(fixture);
+      setShowSummary(true);
+    }
+  };
+
   const FixtureCard = ({ fixture, showScore = false }: { fixture: any, showScore?: boolean }) => (
-    <Card className="card-shadow-lg hover:card-shadow-lg hover:scale-105 transition-all duration-300">
+    <Card 
+      className={`card-shadow-lg hover:card-shadow-lg hover:scale-105 transition-all duration-300 ${
+        fixture.status === 'completed' ? 'cursor-pointer' : ''
+      }`}
+      onClick={() => handleFixtureClick(fixture)}
+    >
       <CardContent className="p-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
@@ -84,9 +100,14 @@ const Fixtures = () => {
               {formatDate(fixture.match_date)}
             </span>
           </div>
-          <Badge variant={fixture.status === 'completed' ? 'default' : 'outline'}>
-            {fixture.status}
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Badge variant={fixture.status === 'completed' ? 'default' : 'outline'}>
+              {fixture.status}
+            </Badge>
+            {fixture.status === 'completed' && (
+              <Eye className="h-4 w-4 text-muted-foreground" />
+            )}
+          </div>
         </div>
 
         <div className="space-y-4">
@@ -133,6 +154,13 @@ const Fixtures = () => {
             <div className="flex items-center gap-2 justify-center text-sm text-muted-foreground">
               <MapPin className="h-3 w-3" />
               <span>{fixture.venue}</span>
+            </div>
+          )}
+
+          {/* Click hint for completed matches */}
+          {fixture.status === 'completed' && (
+            <div className="text-center text-xs text-muted-foreground">
+              Click to view match summary
             </div>
           )}
         </div>
@@ -197,108 +225,120 @@ const Fixtures = () => {
   });
 
   return (
-    <div className="min-h-screen gradient-bg pb-20">
-      {/* Header */}
-      <div className="bg-white/10 backdrop-blur-sm border-b border-white/20">
-        <div className="max-w-7xl mx-auto px-4 py-6">
-          <div className="text-center">
-            <div className="flex items-center justify-center gap-3 mb-3">
-              <TournamentLogo />
-              <h1 className="text-3xl font-bold text-white">Fixtures</h1>
+    <>
+      <div className="min-h-screen gradient-bg pb-20">
+        {/* Header */}
+        <div className="bg-white/10 backdrop-blur-sm border-b border-white/20">
+          <div className="max-w-7xl mx-auto px-4 py-6">
+            <div className="text-center">
+              <div className="flex items-center justify-center gap-3 mb-3">
+                <TournamentLogo />
+                <h1 className="text-3xl font-bold text-white">Fixtures</h1>
+              </div>
+              <p className="text-white/80">Match schedule and results</p>
             </div>
-            <p className="text-white/80">Match schedule and results</p>
+          </div>
+        </div>
+
+        <div className="max-w-7xl mx-auto px-4 py-8 space-y-8">
+          {/* Upcoming Fixtures */}
+          <div>
+            <div className="flex items-center gap-2 mb-6">
+              <Trophy className="h-6 w-6 text-white" />
+              <h2 className="text-2xl font-bold text-white">Upcoming Matches</h2>
+            </div>
+            
+            <div className="grid gap-4">
+              {upcomingLoading ? (
+                Array.from({ length: 3 }).map((_, index) => (
+                  <LoadingCard key={index} />
+                ))
+              ) : upcomingFixtures && upcomingFixtures.length > 0 ? (
+                upcomingFixtures.map((fixture) => (
+                  <FixtureCard key={fixture.id} fixture={fixture} />
+                ))
+              ) : (
+                <Card className="card-shadow-lg">
+                  <CardContent className="p-8 text-center text-muted-foreground">
+                    <Calendar className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <p>No upcoming fixtures scheduled</p>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          </div>
+
+          {/* Recent Results */}
+          <div>
+            <div className="flex items-center gap-2 mb-6">
+              <Trophy className="h-6 w-6 text-white" />
+              <h2 className="text-2xl font-bold text-white">Recent Results</h2>
+            </div>
+            
+            <div className="grid gap-4">
+              {recentLoading ? (
+                Array.from({ length: 3 }).map((_, index) => (
+                  <LoadingCard key={index} />
+                ))
+              ) : recentFixtures && recentFixtures.length > 0 ? (
+                recentFixtures.map((fixture) => (
+                  <FixtureCard key={fixture.id} fixture={fixture} showScore />
+                ))
+              ) : (
+                <Card className="card-shadow-lg">
+                  <CardContent className="p-8 text-center text-muted-foreground">
+                    <Trophy className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <p>No recent results available</p>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          </div>
+
+          {/* All Fixtures */}
+          <div>
+            <div className="flex items-center gap-2 mb-6">
+              <Calendar className="h-6 w-6 text-white" />
+              <h2 className="text-2xl font-bold text-white">All Fixtures</h2>
+            </div>
+            
+            <div className="grid gap-4">
+              {allLoading ? (
+                Array.from({ length: 6 }).map((_, index) => (
+                  <LoadingCard key={index} />
+                ))
+              ) : sortedAllFixtures && sortedAllFixtures.length > 0 ? (
+                sortedAllFixtures.map((fixture) => (
+                  <FixtureCard 
+                    key={fixture.id} 
+                    fixture={fixture} 
+                    showScore={fixture.status === 'completed'} 
+                  />
+                ))
+              ) : (
+                <Card className="card-shadow-lg">
+                  <CardContent className="p-8 text-center text-muted-foreground">
+                    <Calendar className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <p>No fixtures found</p>
+                    <p className="text-sm">Fixtures will appear here once they are added to the database.</p>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-8 space-y-8">
-        {/* Upcoming Fixtures */}
-        <div>
-          <div className="flex items-center gap-2 mb-6">
-            <Trophy className="h-6 w-6 text-white" />
-            <h2 className="text-2xl font-bold text-white">Upcoming Matches</h2>
-          </div>
-          
-          <div className="grid gap-4">
-            {upcomingLoading ? (
-              Array.from({ length: 3 }).map((_, index) => (
-                <LoadingCard key={index} />
-              ))
-            ) : upcomingFixtures && upcomingFixtures.length > 0 ? (
-              upcomingFixtures.map((fixture) => (
-                <FixtureCard key={fixture.id} fixture={fixture} />
-              ))
-            ) : (
-              <Card className="card-shadow-lg">
-                <CardContent className="p-8 text-center text-muted-foreground">
-                  <Calendar className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>No upcoming fixtures scheduled</p>
-                </CardContent>
-              </Card>
-            )}
-          </div>
-        </div>
-
-        {/* Recent Results */}
-        <div>
-          <div className="flex items-center gap-2 mb-6">
-            <Trophy className="h-6 w-6 text-white" />
-            <h2 className="text-2xl font-bold text-white">Recent Results</h2>
-          </div>
-          
-          <div className="grid gap-4">
-            {recentLoading ? (
-              Array.from({ length: 3 }).map((_, index) => (
-                <LoadingCard key={index} />
-              ))
-            ) : recentFixtures && recentFixtures.length > 0 ? (
-              recentFixtures.map((fixture) => (
-                <FixtureCard key={fixture.id} fixture={fixture} showScore />
-              ))
-            ) : (
-              <Card className="card-shadow-lg">
-                <CardContent className="p-8 text-center text-muted-foreground">
-                  <Trophy className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>No recent results available</p>
-                </CardContent>
-              </Card>
-            )}
-          </div>
-        </div>
-
-        {/* All Fixtures */}
-        <div>
-          <div className="flex items-center gap-2 mb-6">
-            <Calendar className="h-6 w-6 text-white" />
-            <h2 className="text-2xl font-bold text-white">All Fixtures</h2>
-          </div>
-          
-          <div className="grid gap-4">
-            {allLoading ? (
-              Array.from({ length: 6 }).map((_, index) => (
-                <LoadingCard key={index} />
-              ))
-            ) : sortedAllFixtures && sortedAllFixtures.length > 0 ? (
-              sortedAllFixtures.map((fixture) => (
-                <FixtureCard 
-                  key={fixture.id} 
-                  fixture={fixture} 
-                  showScore={fixture.status === 'completed'} 
-                />
-              ))
-            ) : (
-              <Card className="card-shadow-lg">
-                <CardContent className="p-8 text-center text-muted-foreground">
-                  <Calendar className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>No fixtures found</p>
-                  <p className="text-sm">Fixtures will appear here once they are added to the database.</p>
-                </CardContent>
-              </Card>
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
+      {/* Match Summary Dialog */}
+      <MatchSummaryDialog 
+        fixture={selectedFixture}
+        isOpen={showSummary}
+        onClose={() => {
+          setShowSummary(false);
+          setSelectedFixture(null);
+        }}
+      />
+    </>
   );
 };
 

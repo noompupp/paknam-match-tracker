@@ -1,5 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
+import { getNumericTeamId } from '@/utils/teamIdMapping';
 
 interface MatchEventData {
   fixture_id: number;
@@ -55,26 +56,26 @@ export const createGoalEvents = async (
     const newHomeGoals = homeScore - currentHomeScore;
     const newAwayGoals = awayScore - currentAwayScore;
 
-    // Create events for new home goals
+    // Create events for new home goals using numeric team ID
     for (let i = 0; i < newHomeGoals; i++) {
       events.push({
         fixture_id: fixtureId,
         event_type: 'goal',
-        player_name: 'Unknown Player', // Default - can be updated later
-        team_id: homeTeam.id,
-        event_time: 0, // Default - can be updated later
+        player_name: 'Unknown Player',
+        team_id: homeTeam.id, // Now using numeric ID directly
+        event_time: 0,
         description: `Goal for ${homeTeam.name} - needs player assignment`
       });
     }
 
-    // Create events for new away goals
+    // Create events for new away goals using numeric team ID
     for (let i = 0; i < newAwayGoals; i++) {
       events.push({
         fixture_id: fixtureId,
         event_type: 'goal',
-        player_name: 'Unknown Player', // Default - can be updated later
-        team_id: awayTeam.id,
-        event_time: 0, // Default - can be updated later
+        player_name: 'Unknown Player',
+        team_id: awayTeam.id, // Now using numeric ID directly
+        event_time: 0,
         description: `Goal for ${awayTeam.name} - needs player assignment`
       });
     }
