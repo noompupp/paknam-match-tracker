@@ -5,7 +5,7 @@ interface Player {
   id: number;
   name: string;
   team: string;
-  number?: string;
+  number?: string; // Changed from number to string to match database
   position?: string;
 }
 

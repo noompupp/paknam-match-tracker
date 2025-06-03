@@ -3,6 +3,13 @@ import { supabase } from '@/integrations/supabase/client';
 import { Fixture } from '@/types/database';
 import { calculateTeamStatsUpdate } from './statsCalculator';
 
+interface SimpleTeam {
+  id: number;
+  name: string;
+  played: number;
+  points: number;
+}
+
 export const updateFixtureScore = async (id: number, homeScore: number, awayScore: number): Promise<Fixture> => {
   console.log('🔍 FixturesUpdates: Updating fixture score with enhanced team lookup:', { id, homeScore, awayScore });
   
@@ -22,8 +29,8 @@ export const updateFixtureScore = async (id: number, homeScore: number, awayScor
     console.log('📊 FixturesUpdates: Current fixture data:', currentFixture);
 
     // Enhanced team lookup - try multiple approaches to find teams
-    let homeTeam: any = null;
-    let awayTeam: any = null;
+    let homeTeam: SimpleTeam | null = null;
+    let awayTeam: SimpleTeam | null = null;
 
     // Try to get teams using different ID fields
     const teamFields = ['__id__', 'id'];
@@ -37,7 +44,7 @@ export const updateFixtureScore = async (id: number, homeScore: number, awayScor
       for (const field of teamFields) {
         const { data: team, error } = await supabase
           .from('teams')
-          .select('*')
+          .select('id, name, played, points')
           .eq(field, teamId)
           .maybeSingle();
 
@@ -55,7 +62,7 @@ export const updateFixtureScore = async (id: number, homeScore: number, awayScor
       for (const field of teamFields) {
         const { data: team, error } = await supabase
           .from('teams')
-          .select('*')
+          .select('id, name, played, points')
           .eq(field, teamId)
           .maybeSingle();
 
@@ -213,12 +220,12 @@ export const updateFixtureScore = async (id: number, homeScore: number, awayScor
     }
 
     // Return simplified fixture object to avoid deep type instantiation
-    return {
+    const result: Fixture = {
       id: updatedFixture.id || 0,
       home_team_id: homeTeam?.id || 0,
       away_team_id: awayTeam?.id || 0,
-      home_team: homeTeam,
-      away_team: awayTeam,
+      home_team: homeTeam ? { ...homeTeam, logo: '⚽', founded: '2020', captain: '', won: 0, drawn: 0, lost: 0, goals_for: 0, goals_against: 0, goal_difference: 0, created_at: '', updated_at: '' } : undefined,
+      away_team: awayTeam ? { ...awayTeam, logo: '⚽', founded: '2020', captain: '', won: 0, drawn: 0, lost: 0, goals_for: 0, goals_against: 0, goal_difference: 0, created_at: '', updated_at: '' } : undefined,
       match_date: updatedFixture.match_date || updatedFixture.date?.toString() || '',
       match_time: updatedFixture.match_time?.toString() || updatedFixture.time?.toString() || '',
       home_score: updatedFixture.home_score,
@@ -227,7 +234,9 @@ export const updateFixtureScore = async (id: number, homeScore: number, awayScor
       venue: updatedFixture.venue,
       created_at: updatedFixture.created_at || new Date().toISOString(),
       updated_at: updatedFixture.updated_at || new Date().toISOString()
-    } as Fixture;
+    };
+
+    return result;
 
   } catch (error) {
     console.error('❌ FixturesUpdates: Critical error in updateScore:', error);
