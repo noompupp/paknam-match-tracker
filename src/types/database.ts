@@ -3,6 +3,7 @@ export interface Team {
   id: number;
   name: string;
   logo: string;
+  logoURL?: string;
   founded: string;
   captain: string;
   position: number;
@@ -14,7 +15,7 @@ export interface Team {
   goals_for: number;
   goals_against: number;
   goal_difference: number;
-  color: string;
+  color?: string;
   created_at: string;
   updated_at: string;
 }

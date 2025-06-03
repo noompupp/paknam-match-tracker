@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { Team } from '@/types/database';
 
@@ -29,7 +30,9 @@ export const teamsApi = {
         name: team.name,
         numericId: team.id,
         textId: team.__id__,
-        normalizedTextId: normalizeId(team.__id__)
+        normalizedTextId: normalizeId(team.__id__),
+        logoURL: team.logoURL,
+        color: team.color
       })) || []
     });
     
@@ -44,13 +47,16 @@ export const teamsApi = {
         name: team.name,
         rawNumericId: team.id,
         rawTextId: team.__id__,
-        normalizedTextId: normalizeId(team.__id__)
+        normalizedTextId: normalizeId(team.__id__),
+        logoURL: team.logoURL,
+        color: team.color
       });
       
       const transformed = {
         id: team.id || 0,
         name: team.name || '',
         logo: team.logo || '⚽',
+        logoURL: team.logoURL || undefined,
         founded: team.founded || '2020',
         captain: team.captain || '',
         position: team.position || 1,
@@ -62,6 +68,7 @@ export const teamsApi = {
         goals_for: team.goals_for || 0,
         goals_against: team.goals_against || 0,
         goal_difference: team.goal_difference || 0,
+        color: team.color || undefined,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       } as Team;
@@ -98,6 +105,7 @@ export const teamsApi = {
       id: data.id || 0,
       name: data.name || '',
       logo: data.logo || '⚽',
+      logoURL: data.logoURL || undefined,
       founded: data.founded || '2020',
       captain: data.captain || '',
       position: data.position || 1,
@@ -109,6 +117,7 @@ export const teamsApi = {
       goals_for: data.goals_for || 0,
       goals_against: data.goals_against || 0,
       goal_difference: data.goal_difference || 0,
+      color: data.color || undefined,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     } as Team;
@@ -135,6 +144,7 @@ export const teamsApi = {
       id: data.id || 0,
       name: data.name || '',
       logo: data.logo || '⚽',
+      logoURL: data.logoURL || undefined,
       founded: data.founded || '2020',
       captain: data.captain || '',
       position: data.position || 1,
@@ -146,6 +156,7 @@ export const teamsApi = {
       goals_for: data.goals_for || 0,
       goals_against: data.goals_against || 0,
       goal_difference: data.goal_difference || 0,
+      color: data.color || undefined,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     } as Team;
