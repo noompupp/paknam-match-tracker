@@ -15,7 +15,7 @@ interface UseRefereeHandlersProps {
   selectedGoalType: 'goal' | 'assist';
   selectedTimePlayer: string;
   saveAttempts: number;
-  setSaveAttempts: (attempts: number) => void;
+  setSaveAttempts: (value: number | ((prev: number) => number)) => void;
   updateFixtureScore: any;
   createMatchEvent: any;
   updatePlayerStats: any;
