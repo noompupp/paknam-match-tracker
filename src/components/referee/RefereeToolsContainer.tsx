@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useFixtures } from "@/hooks/useFixtures";
 import { useMembers } from "@/hooks/useMembers";
@@ -103,6 +102,24 @@ const RefereeToolsContainer = () => {
       toast({
         title: `${selectedGoalType === 'goal' ? 'Goal' : 'Assist'} Assigned!`,
         description: `${selectedGoalType === 'goal' ? 'Goal' : 'Assist'} assigned to ${player.name} at ${formatTime(matchTime)}.`,
+      });
+    }
+  };
+
+  const handleAddCard = (type: 'yellow' | 'red') => {
+    if (!selectedFixtureData) return;
+
+    const teamName = selectedTeam === 'home' 
+      ? selectedFixtureData.home_team?.name || 'Home'
+      : selectedFixtureData.away_team?.name || 'Away';
+
+    const card = addCard(type, teamName, matchTime);
+    if (card) {
+      addEvent(type === 'yellow' ? 'yellow_card' : 'red_card', `${type} card for ${card.player} (${card.team})`, matchTime);
+      
+      toast({
+        title: `${type === 'yellow' ? 'Yellow' : 'Red'} Card Issued!`,
+        description: `${type === 'yellow' ? 'Yellow' : 'Red'} card issued to ${card.player} at ${formatTime(matchTime)}.`,
       });
     }
   };

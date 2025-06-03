@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { Fixture } from '@/types/database';
 
@@ -401,9 +400,9 @@ export const fixturesApi = {
               currentFixture.home_team,
               -prevHomeScore,  // Subtract previous goals
               -prevAwayScore,  // Subtract previous goals against
-              -prevIsHomeWin ? 1 : 0,  // Subtract previous wins
-              -prevIsDraw ? 1 : 0,     // Subtract previous draws
-              -prevIsAwayWin ? 1 : 0   // Subtract previous losses
+              false,  // No wins to add when reversing
+              false,  // No draws to add when reversing  
+              false   // No losses to add when reversing
             );
             reversedHomeStats.played = (currentFixture.home_team.played || 1) - 1;
             reversedHomeStats.points = (currentFixture.home_team.points || 0) - 
@@ -421,9 +420,9 @@ export const fixturesApi = {
               currentFixture.away_team,
               -prevAwayScore,  // Subtract previous goals
               -prevHomeScore,  // Subtract previous goals against
-              -prevIsAwayWin ? 1 : 0,  // Subtract previous wins
-              -prevIsDraw ? 1 : 0,     // Subtract previous draws
-              -prevIsHomeWin ? 1 : 0   // Subtract previous losses
+              false,  // No wins to add when reversing
+              false,  // No draws to add when reversing
+              false   // No losses to add when reversing
             );
             reversedAwayStats.played = (currentFixture.away_team.played || 1) - 1;
             reversedAwayStats.points = (currentFixture.away_team.points || 0) - 
