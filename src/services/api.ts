@@ -15,9 +15,11 @@ export const teamsApi = {
       throw error;
     }
     
+    console.log('Raw teams data from database:', data);
+    
     // Transform the data to match the expected interface
     return data?.map(team => ({
-      id: team.id || 0,
+      id: team.id || 0, // Use the auto-increment id field
       name: team.name || '',
       logo: team.logo || '⚽',
       founded: team.founded || '2020',
@@ -118,10 +120,12 @@ export const membersApi = {
       throw error;
     }
     
+    console.log('Raw members data from database:', data);
+    
     return data?.map(member => ({
       id: member.id || 0,
       name: member.name || '',
-      number: parseInt(member.number) || 0,
+      number: parseInt(member.number || '0') || 0,
       position: member.position || 'Player',
       role: member.role || 'Player',
       goals: member.goals || 0,
@@ -151,13 +155,25 @@ export const membersApi = {
   },
 
   getByTeam: async (teamId: number) => {
+    // First get the team's __id__ using the numeric id
+    const { data: teamData } = await supabase
+      .from('teams')
+      .select('__id__')
+      .eq('id', teamId)
+      .single();
+    
+    if (!teamData) {
+      console.log('No team found for id:', teamId);
+      return [];
+    }
+    
     const { data, error } = await supabase
       .from('members')
       .select(`
         *,
         team:teams!members_team_id_fkey(*)
       `)
-      .eq('team_id', teamId.toString())
+      .eq('team_id', teamData.__id__)
       .order('name', { ascending: true });
     
     if (error) {
@@ -165,15 +181,17 @@ export const membersApi = {
       throw error;
     }
     
+    console.log('Raw team members data from database:', data);
+    
     return data?.map(member => ({
       id: member.id || 0,
       name: member.name || '',
-      number: parseInt(member.number) || 0,
+      number: parseInt(member.number || '0') || 0,
       position: member.position || 'Player',
       role: member.role || 'Player',
       goals: member.goals || 0,
       assists: member.assists || 0,
-      team_id: teamId,
+      team_id: teamId, // Use the numeric team ID
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
       team: member.team ? {
@@ -213,7 +231,7 @@ export const membersApi = {
     return {
       id: data.id || 0,
       name: data.name || '',
-      number: parseInt(data.number) || 0,
+      number: parseInt(data.number || '0') || 0,
       position: data.position || 'Player',
       role: data.role || 'Player',
       goals: data.goals || 0,
@@ -241,6 +259,8 @@ export const fixturesApi = {
       console.error('Error fetching fixtures:', error);
       throw error;
     }
+    
+    console.log('Raw fixtures data from database:', data);
     
     return data?.map(fixture => ({
       id: fixture.id || 0,
@@ -310,6 +330,8 @@ export const fixturesApi = {
       throw error;
     }
     
+    console.log('Raw upcoming fixtures data from database:', data);
+    
     return data?.map(fixture => ({
       id: fixture.id || 0,
       home_team_id: fixture.home_team_id ? parseInt(fixture.home_team_id) : 0,
@@ -377,6 +399,8 @@ export const fixturesApi = {
       console.error('Error fetching recent fixtures:', error);
       throw error;
     }
+    
+    console.log('Raw recent fixtures data from database:', data);
     
     return data?.map(fixture => ({
       id: fixture.id || 0,
