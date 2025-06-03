@@ -1,6 +1,7 @@
 
 /**
  * Utility functions for consistent time formatting across the application
+ * Updated for 7-a-side football format (50 minutes total, 2 x 25-minute halves)
  */
 
 export const formatMatchTime = (seconds: number): string => {
@@ -38,7 +39,86 @@ export const secondsToMinutes = (seconds: number): number => {
   return Math.floor(seconds / 60);
 };
 
-// Calculate overtime based on match duration
-export const calculateOvertime = (matchSeconds: number, standardDuration: number = 90 * 60): number => {
-  return Math.max(0, matchSeconds - standardDuration);
+// 7-a-side specific constants
+export const SEVEN_A_SIDE_CONSTANTS = {
+  STANDARD_MATCH_DURATION: 50 * 60, // 50 minutes total
+  HALF_DURATION: 25 * 60, // 25 minutes per half
+  MAX_OVERTIME: 5 * 60, // 5 minutes maximum overtime
+  ROLE_LIMITS: {
+    CAPTAIN: { maxPerHalf: null, minTotal: 0 }, // No limits
+    S_CLASS: { maxPerHalf: 20 * 60, minTotal: 0 }, // Max 20 minutes per half
+    STARTER: { maxPerHalf: null, minTotal: 10 * 60 } // Min 10 minutes total
+  }
+};
+
+// Calculate overtime based on 7-a-side match duration
+export const calculateOvertime = (matchSeconds: number): number => {
+  return Math.max(0, matchSeconds - SEVEN_A_SIDE_CONSTANTS.STANDARD_MATCH_DURATION);
+};
+
+// Check if match is in second half
+export const isSecondHalf = (matchSeconds: number): boolean => {
+  return matchSeconds > SEVEN_A_SIDE_CONSTANTS.HALF_DURATION;
+};
+
+// Get current half time
+export const getCurrentHalfTime = (matchSeconds: number): number => {
+  if (isSecondHalf(matchSeconds)) {
+    return matchSeconds - SEVEN_A_SIDE_CONSTANTS.HALF_DURATION;
+  }
+  return matchSeconds;
+};
+
+// Get role-based time constraints
+export const getRoleTimeConstraints = (role: 'Captain' | 'S-class' | 'Starter') => {
+  const roleKey = role.toUpperCase().replace('-', '_') as keyof typeof SEVEN_A_SIDE_CONSTANTS.ROLE_LIMITS;
+  return SEVEN_A_SIDE_CONSTANTS.ROLE_LIMITS[roleKey] || SEVEN_A_SIDE_CONSTANTS.ROLE_LIMITS.STARTER;
+};
+
+// Validate playtime against role constraints
+export const validatePlaytime = (
+  totalTime: number, 
+  firstHalfTime: number, 
+  secondHalfTime: number, 
+  role: 'Captain' | 'S-class' | 'Starter'
+): {
+  isValid: boolean;
+  violations: string[];
+  warnings: string[];
+} => {
+  const constraints = getRoleTimeConstraints(role);
+  const violations: string[] = [];
+  const warnings: string[] = [];
+
+  // Check per-half limits for S-class players
+  if (role === 'S-class' && constraints.maxPerHalf) {
+    if (firstHalfTime > constraints.maxPerHalf) {
+      violations.push(`Exceeded ${constraints.maxPerHalf / 60} minute limit in first half`);
+    }
+    if (secondHalfTime > constraints.maxPerHalf) {
+      violations.push(`Exceeded ${constraints.maxPerHalf / 60} minute limit in second half`);
+    }
+    
+    // Warnings at 80% of limit
+    const warningThreshold = constraints.maxPerHalf * 0.8;
+    if (firstHalfTime > warningThreshold && firstHalfTime <= constraints.maxPerHalf) {
+      warnings.push(`Approaching first half limit (${Math.floor(firstHalfTime / 60)}/${constraints.maxPerHalf / 60} minutes)`);
+    }
+    if (secondHalfTime > warningThreshold && secondHalfTime <= constraints.maxPerHalf) {
+      warnings.push(`Approaching second half limit (${Math.floor(secondHalfTime / 60)}/${constraints.maxPerHalf / 60} minutes)`);
+    }
+  }
+
+  // Check minimum total time for Starter players
+  if (role === 'Starter' && constraints.minTotal) {
+    if (totalTime < constraints.minTotal) {
+      violations.push(`Must play at least ${constraints.minTotal / 60} minutes total`);
+    }
+  }
+
+  return {
+    isValid: violations.length === 0,
+    violations,
+    warnings
+  };
 };

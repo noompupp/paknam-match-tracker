@@ -4,8 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Timer, UserPlus, UserMinus } from "lucide-react";
+import { Timer, UserPlus, UserMinus, AlertTriangle, Clock } from "lucide-react";
 import { PlayerTime, Member } from "@/types/database";
+import { SEVEN_A_SIDE_CONSTANTS, isSecondHalf, getCurrentHalfTime } from "@/utils/timeUtils";
 
 interface PlayerTimeTrackerProps {
   trackedPlayers: PlayerTime[];
@@ -16,6 +17,7 @@ interface PlayerTimeTrackerProps {
   onRemovePlayer: (playerId: number) => void;
   onTogglePlayerTime: (playerId: number) => void;
   formatTime: (seconds: number) => string;
+  matchTime?: number;
 }
 
 const PlayerTimeTracker = ({
@@ -26,43 +28,119 @@ const PlayerTimeTracker = ({
   onAddPlayer,
   onRemovePlayer,
   onTogglePlayerTime,
-  formatTime
+  formatTime,
+  matchTime = 0
 }: PlayerTimeTrackerProps) => {
-  // Role-based time constraints
-  const getRoleConstraints = (position: string) => {
-    const constraints = {
-      'Goalkeeper': { maxTime: 90 * 60, warning: 80 * 60 }, // 90 min max, warn at 80
-      'Defender': { maxTime: 90 * 60, warning: 75 * 60 },   // 90 min max, warn at 75
-      'Midfielder': { maxTime: 85 * 60, warning: 70 * 60 }, // 85 min max, warn at 70
-      'Forward': { maxTime: 80 * 60, warning: 65 * 60 },    // 80 min max, warn at 65
-    };
-    return constraints[position as keyof typeof constraints] || constraints['Midfielder'];
-  };
-
-  const getTimeStatus = (player: PlayerTime, position: string) => {
-    const constraints = getRoleConstraints(position);
-    if (player.totalTime >= constraints.maxTime) return 'exceeded';
-    if (player.totalTime >= constraints.warning) return 'warning';
-    return 'normal';
-  };
-
-  const getTimeStatusColor = (status: string) => {
-    switch (status) {
-      case 'exceeded': return 'text-red-500';
-      case 'warning': return 'text-yellow-500';
-      default: return 'text-green-500';
+  // 7-a-side role-based constraints
+  const getRoleConstraints = (role: string) => {
+    switch (role) {
+      case 'Captain':
+        return { 
+          maxPerHalf: null, 
+          minTotal: 0, 
+          description: 'No time limits',
+          color: 'text-blue-600'
+        };
+      case 'S-class':
+        return { 
+          maxPerHalf: 20 * 60, 
+          minTotal: 0, 
+          description: 'Max 20 min/half',
+          color: 'text-orange-600'
+        };
+      case 'Starter':
+        return { 
+          maxPerHalf: null, 
+          minTotal: 10 * 60, 
+          description: 'Min 10 min total',
+          color: 'text-green-600'
+        };
+      default:
+        return { 
+          maxPerHalf: null, 
+          minTotal: 0, 
+          description: 'Standard rules',
+          color: 'text-gray-600'
+        };
     }
   };
+
+  const getTimeStatus = (player: PlayerTime, role: string) => {
+    const constraints = getRoleConstraints(role);
+    const currentHalf = isSecondHalf(matchTime) ? 2 : 1;
+    const currentHalfTime = getCurrentHalfTime(matchTime);
+    
+    // For S-class players, check per-half limits
+    if (role === 'S-class' && constraints.maxPerHalf) {
+      const remaining = constraints.maxPerHalf - currentHalfTime;
+      if (remaining <= 0) return { status: 'exceeded', message: 'Half-time limit exceeded!' };
+      if (remaining <= 3 * 60) return { status: 'critical', message: `${Math.floor(remaining / 60)}min left this half` };
+      if (remaining <= 5 * 60) return { status: 'warning', message: `${Math.floor(remaining / 60)}min left this half` };
+    }
+    
+    // For Starter players, check minimum total time
+    if (role === 'Starter' && constraints.minTotal) {
+      const remaining = SEVEN_A_SIDE_CONSTANTS.STANDARD_MATCH_DURATION - matchTime;
+      const needed = constraints.minTotal - player.totalTime;
+      if (needed > remaining && remaining < 10 * 60) {
+        return { status: 'insufficient', message: `Need ${Math.ceil(needed / 60)}min more` };
+      }
+    }
+    
+    return { status: 'normal', message: 'On track' };
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'exceeded': return 'text-red-500 bg-red-50 border-red-200';
+      case 'critical': return 'text-red-600 bg-red-50 border-red-200';
+      case 'warning': return 'text-yellow-600 bg-yellow-50 border-yellow-200';
+      case 'insufficient': return 'text-orange-600 bg-orange-50 border-orange-200';
+      default: return 'text-green-600 bg-green-50 border-green-200';
+    }
+  };
+
+  const currentHalf = isSecondHalf(matchTime) ? 2 : 1;
+  const halfProgress = getCurrentHalfTime(matchTime);
+  const halfProgressPercent = Math.min((halfProgress / SEVEN_A_SIDE_CONSTANTS.HALF_DURATION) * 100, 100);
 
   return (
     <Card className="card-shadow-lg">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Timer className="h-5 w-5" />
-          Player Time Tracker
+          Player Time Tracker (7-a-Side)
         </CardTitle>
+        <div className="flex items-center gap-4 text-sm text-muted-foreground">
+          <div className="flex items-center gap-2">
+            <Clock className="h-4 w-4" />
+            <span>Half {currentHalf} - {formatTime(halfProgress)}</span>
+          </div>
+          <div className="flex-1 bg-gray-200 rounded-full h-2">
+            <div 
+              className="bg-blue-500 h-2 rounded-full transition-all duration-300"
+              style={{ width: `${halfProgressPercent}%` }}
+            />
+          </div>
+        </div>
       </CardHeader>
       <CardContent className="space-y-4">
+        {/* Rules Summary */}
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+          <h4 className="font-semibold text-blue-800 mb-2">7-a-Side Rules</h4>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-sm">
+            <div className="text-blue-700">
+              <strong>Captain:</strong> No limits
+            </div>
+            <div className="text-orange-700">
+              <strong>S-class:</strong> Max 20min/half
+            </div>
+            <div className="text-green-700">
+              <strong>Starter:</strong> Min 10min total
+            </div>
+          </div>
+        </div>
+
         {/* Add Player Section */}
         <div className="space-y-3 p-4 bg-muted/20 rounded-lg">
           <h4 className="font-semibold text-sm">Add Player to Track</h4>
@@ -74,15 +152,23 @@ const PlayerTimeTracker = ({
                   <SelectValue placeholder="Choose a player" />
                 </SelectTrigger>
                 <SelectContent className="bg-popover border border-border shadow-lg max-h-60 z-50">
-                  {allPlayers.map((player) => (
-                    <SelectItem 
-                      key={player.id} 
-                      value={player.id.toString()}
-                      className="hover:bg-accent focus:bg-accent cursor-pointer"
-                    >
-                      #{player.number} {player.name} ({player.team}) - {player.position}
-                    </SelectItem>
-                  ))}
+                  {allPlayers.map((player) => {
+                    const constraints = getRoleConstraints(player.position);
+                    return (
+                      <SelectItem 
+                        key={player.id} 
+                        value={player.id.toString()}
+                        className="hover:bg-accent focus:bg-accent cursor-pointer"
+                      >
+                        <div className="flex items-center justify-between w-full">
+                          <span>#{player.number} {player.name} ({player.team})</span>
+                          <Badge variant="outline" className={`ml-2 ${constraints.color}`}>
+                            {player.position}
+                          </Badge>
+                        </div>
+                      </SelectItem>
+                    );
+                  })}
                 </SelectContent>
               </Select>
             </div>
@@ -107,53 +193,69 @@ const PlayerTimeTracker = ({
             <h4 className="font-semibold text-sm">Tracked Players</h4>
             {trackedPlayers.map((player) => {
               const playerInfo = allPlayers.find(p => p.id === player.id);
-              const position = playerInfo?.position || 'Midfielder';
-              const timeStatus = getTimeStatus(player, position);
-              const constraints = getRoleConstraints(position);
+              const role = playerInfo?.position || 'Starter';
+              const constraints = getRoleConstraints(role);
+              const timeStatus = getTimeStatus(player, role);
               
               return (
-                <div key={player.id} className="flex items-center justify-between p-3 bg-muted/20 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <div>
-                      <span className="font-medium">{player.name}</span>
-                      <p className="text-sm text-muted-foreground">{player.team} - {position}</p>
-                    </div>
-                    <Badge variant={player.isPlaying ? "default" : "secondary"}>
-                      {player.isPlaying ? "ON FIELD" : "OFF FIELD"}
-                    </Badge>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="text-right">
-                      <div className={`font-mono text-lg font-bold ${getTimeStatusColor(timeStatus)}`}>
-                        {formatTime(player.totalTime)}
+                <div key={player.id} className={`p-3 rounded-lg border ${getStatusColor(timeStatus.status)}`}>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium">{player.name}</span>
+                          <Badge variant="outline" className={constraints.color}>
+                            {role}
+                          </Badge>
+                        </div>
+                        <p className="text-sm text-muted-foreground">{player.team}</p>
+                        <p className="text-xs text-muted-foreground">{constraints.description}</p>
                       </div>
-                      <p className="text-xs text-muted-foreground">
-                        Max: {formatTime(constraints.maxTime)}
-                      </p>
-                      {timeStatus === 'exceeded' && (
-                        <p className="text-xs text-red-500 font-medium">Time exceeded!</p>
-                      )}
-                      {timeStatus === 'warning' && (
-                        <p className="text-xs text-yellow-500 font-medium">Approaching limit</p>
-                      )}
+                      <Badge variant={player.isPlaying ? "default" : "secondary"}>
+                        {player.isPlaying ? "ON FIELD" : "OFF FIELD"}
+                      </Badge>
                     </div>
-                    <div className="flex gap-1">
-                      <Button
-                        size="sm"
-                        variant={player.isPlaying ? "destructive" : "default"}
-                        onClick={() => onTogglePlayerTime(player.id)}
-                      >
-                        {player.isPlaying ? "Sub Out" : "Sub In"}
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => onRemovePlayer(player.id)}
-                      >
-                        <UserMinus className="h-4 w-4" />
-                      </Button>
+                    <div className="flex items-center gap-3">
+                      <div className="text-right">
+                        <div className="font-mono text-lg font-bold">
+                          {formatTime(player.totalTime)}
+                        </div>
+                        <p className="text-xs">{timeStatus.message}</p>
+                        {role === 'S-class' && constraints.maxPerHalf && (
+                          <p className="text-xs text-muted-foreground">
+                            Half limit: {formatTime(constraints.maxPerHalf)}
+                          </p>
+                        )}
+                        {role === 'Starter' && constraints.minTotal && (
+                          <p className="text-xs text-muted-foreground">
+                            Min total: {formatTime(constraints.minTotal)}
+                          </p>
+                        )}
+                      </div>
+                      <div className="flex gap-1">
+                        <Button
+                          size="sm"
+                          variant={player.isPlaying ? "destructive" : "default"}
+                          onClick={() => onTogglePlayerTime(player.id)}
+                        >
+                          {player.isPlaying ? "Sub Out" : "Sub In"}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => onRemovePlayer(player.id)}
+                        >
+                          <UserMinus className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
                   </div>
+                  {timeStatus.status === 'exceeded' && (
+                    <div className="mt-2 flex items-center gap-2 text-red-600">
+                      <AlertTriangle className="h-4 w-4" />
+                      <span className="text-sm font-medium">Time limit exceeded - must substitute!</span>
+                    </div>
+                  )}
                 </div>
               );
             })}

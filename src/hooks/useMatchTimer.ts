@@ -1,5 +1,6 @@
 
 import { useState, useEffect, useRef } from "react";
+import { formatMatchTime, formatTimeForDashboard } from "@/utils/timeUtils";
 
 export const useMatchTimer = () => {
   const [matchTime, setMatchTime] = useState(0);
@@ -33,18 +34,9 @@ export const useMatchTimer = () => {
     setIsRunning(false);
   };
 
-  // Enhanced time formatting for consistency across the app
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  };
-
-  // Additional formatting for dashboard display (showing minutes only for completed matches)
-  const formatTimeForDashboard = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    return `${mins}'`;
-  };
+  // Use centralized formatting functions
+  const formatTime = (seconds: number) => formatMatchTime(seconds);
+  const formatTimeForDashboard = (seconds: number) => formatTimeForDashboard(seconds);
 
   return {
     matchTime,

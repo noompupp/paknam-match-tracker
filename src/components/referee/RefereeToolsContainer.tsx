@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useFixtures } from "@/hooks/useFixtures";
 import { useMembers } from "@/hooks/useMembers";
@@ -54,7 +53,7 @@ const RefereeToolsContainer = () => {
     removePlayer, 
     togglePlayerTime, 
     resetTracking,
-    getPlayersNeedingSubstitution 
+    getPlayersNeedingAttention 
   } = usePlayerTracking(isRunning);
   const { goals, selectedGoalPlayer, selectedGoalType, setSelectedGoalPlayer, setSelectedGoalType, assignGoal, resetGoals } = useGoalManagement();
   const { events, addEvent, resetEvents } = useLocalMatchEvents();
@@ -329,8 +328,8 @@ const RefereeToolsContainer = () => {
     }
   };
 
-  // Check for players needing substitution
-  const playersNeedingSub = getPlayersNeedingSubstitution(allPlayers);
+  // Check for players needing attention (updated for 7-a-side rules)
+  const playersNeedingAttention = getPlayersNeedingAttention(allPlayers, matchTime);
 
   if (fixturesLoading) {
     return (
@@ -346,17 +345,17 @@ const RefereeToolsContainer = () => {
     <div className="min-h-screen gradient-bg pb-20">
       <div className="container mx-auto px-4 py-6 space-y-6">
         <div className="text-center text-white mb-6">
-          <h1 className="text-3xl font-bold">Referee Tools</h1>
-          <p className="text-white/80 mt-2">Manage matches, track time, and record events</p>
+          <h1 className="text-3xl font-bold">Referee Tools - 7-a-Side</h1>
+          <p className="text-white/80 mt-2">Manage 50-minute matches with role-based playtime rules</p>
           {saveAttempts > 0 && (
             <p className="text-yellow-300 text-sm mt-1">
               Save attempts: {saveAttempts} {saveAttempts >= 3 && "(Multiple failures detected)"}
             </p>
           )}
-          {playersNeedingSub.length > 0 && (
+          {playersNeedingAttention.length > 0 && (
             <div className="bg-orange-500/20 border border-orange-400 rounded-lg p-3 mt-2">
               <p className="text-orange-100 text-sm">
-                ⚠️ {playersNeedingSub.length} player(s) need substitution due to time limits
+                ⚠️ {playersNeedingAttention.length} player(s) need attention due to 7-a-side time rules
               </p>
             </div>
           )}
@@ -424,6 +423,7 @@ const RefereeToolsContainer = () => {
               onRemovePlayer={handleRemovePlayer}
               onTogglePlayerTime={handleTogglePlayerTime}
               formatTime={formatTime}
+              matchTime={matchTime}
             />
 
             <MatchEvents
