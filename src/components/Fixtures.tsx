@@ -68,7 +68,7 @@ const Fixtures = () => {
           <div className="flex items-center gap-2">
             <Calendar className="h-4 w-4 text-muted-foreground" />
             <span className="text-sm text-muted-foreground">
-              {formatDate(fixture.match_date || fixture.date)}
+              {formatDate(fixture.match_date)}
             </span>
           </div>
           <Badge variant={fixture.status === 'completed' ? 'default' : 'outline'}>
@@ -102,7 +102,7 @@ const Fixtures = () => {
                 <div className="text-center">
                   <div className="flex items-center gap-1 text-sm">
                     <Clock className="h-3 w-3" />
-                    {formatTime(fixture.match_time || fixture.time)}
+                    {formatTime(fixture.match_time)}
                   </div>
                   <p className="text-xs text-muted-foreground">Kick off</p>
                 </div>
@@ -163,8 +163,8 @@ const Fixtures = () => {
 
   // Sort all fixtures chronologically (most recent first for completed, earliest first for scheduled)
   const sortedAllFixtures = allFixtures?.slice().sort((a, b) => {
-    const dateA = new Date(a.match_date || a.date || '');
-    const dateB = new Date(b.match_date || b.date || '');
+    const dateA = new Date(a.match_date || '');
+    const dateB = new Date(b.match_date || '');
     
     // For completed fixtures, show most recent first
     if (a.status === 'completed' && b.status === 'completed') {
