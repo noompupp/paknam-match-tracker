@@ -3,7 +3,7 @@ import React, { createContext, useContext, useState } from 'react';
 
 interface DebugContextType {
   showDebug: boolean;
-  setShowDebug: (show: boolean) => void;
+  setShowDebug: React.Dispatch<React.SetStateAction<boolean>>;
   toggleDebug: () => void;
 }
 
