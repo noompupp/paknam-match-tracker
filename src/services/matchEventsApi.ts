@@ -20,7 +20,8 @@ export const matchEventsApi = {
       }
 
       console.log('🎯 matchEventsApi.getByFixture: Query successful, events:', data);
-      return data || [];
+      // Type assertion is safe here because database CHECK constraint ensures valid event_type values
+      return (data || []) as MatchEvent[];
     } catch (error) {
       console.error('🎯 matchEventsApi.getByFixture: Failed to fetch match events:', error);
       throw error;
@@ -43,7 +44,8 @@ export const matchEventsApi = {
       }
 
       console.log('🎯 matchEventsApi.create: Event created successfully:', data);
-      return data;
+      // Type assertion is safe here because database CHECK constraint ensures valid event_type values
+      return data as MatchEvent;
     } catch (error) {
       console.error('🎯 matchEventsApi.create: Failed to create match event:', error);
       throw error;
