@@ -33,7 +33,7 @@ export const teamsApi = {
       goal_difference: team.goal_difference || 0,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
-    })) as Team[] || [];
+    } as Team)) || [];
   },
 
   getById: async (id: number) => {
@@ -130,7 +130,7 @@ export const membersApi = {
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       } : undefined
-    })) as Member[] || [];
+    } as Member)) || [];
   },
 
   getByTeam: async (teamId: number) => {
@@ -177,7 +177,7 @@ export const membersApi = {
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       } : undefined
-    })) as Member[] || [];
+    } as Member)) || [];
   },
 
   updateStats: async (id: number, stats: { goals?: number; assists?: number }) => {
@@ -224,7 +224,7 @@ export const fixturesApi = {
       away_score: fixture.away_score,
       status: (fixture.status as 'scheduled' | 'live' | 'completed' | 'postponed') || 'scheduled',
       venue: fixture.venue,
-      created_at: new Date().toISOString(),
+      created_at: fixture.created_at || new Date().toISOString(),
       updated_at: fixture.updated_at || new Date().toISOString(),
       home_team: fixture.home_team ? {
         id: fixture.home_team.id || 0,
@@ -262,7 +262,7 @@ export const fixturesApi = {
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       } : undefined
-    })) as Fixture[] || [];
+    } as Fixture)) || [];
   },
 
   getUpcoming: async () => {
@@ -292,7 +292,7 @@ export const fixturesApi = {
       away_score: fixture.away_score,
       status: (fixture.status as 'scheduled' | 'live' | 'completed' | 'postponed') || 'scheduled',
       venue: fixture.venue,
-      created_at: new Date().toISOString(),
+      created_at: fixture.created_at || new Date().toISOString(),
       updated_at: fixture.updated_at || new Date().toISOString(),
       home_team: fixture.home_team ? {
         id: fixture.home_team.id || 0,
@@ -330,7 +330,7 @@ export const fixturesApi = {
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       } : undefined
-    })) as Fixture[] || [];
+    } as Fixture)) || [];
   },
 
   getRecent: async () => {
@@ -360,7 +360,7 @@ export const fixturesApi = {
       away_score: fixture.away_score,
       status: (fixture.status as 'scheduled' | 'live' | 'completed' | 'postponed') || 'scheduled',
       venue: fixture.venue,
-      created_at: new Date().toISOString(),
+      created_at: fixture.created_at || new Date().toISOString(),
       updated_at: fixture.updated_at || new Date().toISOString(),
       home_team: fixture.home_team ? {
         id: fixture.home_team.id || 0,
@@ -398,7 +398,7 @@ export const fixturesApi = {
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       } : undefined
-    })) as Fixture[] || [];
+    } as Fixture)) || [];
   },
 
   updateScore: async (id: number, homeScore: number, awayScore: number) => {
