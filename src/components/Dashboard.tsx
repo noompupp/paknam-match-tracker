@@ -247,15 +247,17 @@ const Dashboard = () => {
                     </div>
                     <ChevronRight className="h-4 w-4 text-muted-foreground" />
                   </div>
-                  <div className="flex items-center justify-between mt-2">
-                    <div className="flex items-center gap-2">
+                  <div className="grid grid-cols-5 items-center gap-2 mt-2">
+                    <div className="col-span-2 flex items-center gap-2 justify-end">
+                      <span className="font-semibold text-right">{fixture.home_team?.name || 'TBD'}</span>
                       <TeamLogo team={fixture.home_team} size="small" />
-                      <span className="font-semibold">{fixture.home_team?.name || 'TBD'}</span>
                     </div>
-                    <span className="text-muted-foreground text-sm">vs</span>
-                    <div className="flex items-center gap-2">
-                      <span className="font-semibold">{fixture.away_team?.name || 'TBD'}</span>
+                    <div className="col-span-1 flex justify-center">
+                      <span className="text-muted-foreground text-sm font-medium">vs</span>
+                    </div>
+                    <div className="col-span-2 flex items-center gap-2">
                       <TeamLogo team={fixture.away_team} size="small" />
+                      <span className="font-semibold">{fixture.away_team?.name || 'TBD'}</span>
                     </div>
                   </div>
                 </div>

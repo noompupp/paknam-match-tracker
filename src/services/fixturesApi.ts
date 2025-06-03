@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { Fixture } from '@/types/database';
 
@@ -21,6 +22,27 @@ const transformFixture = (fixture: any): Fixture => ({
   updated_at: fixture.updated_at || new Date().toISOString(),
   home_team: fixture.home_team,
   away_team: fixture.away_team
+});
+
+const createTeamObject = (team: any) => ({
+  id: team.id || 0,
+  name: team.name || '',
+  logo: team.logo || '⚽',
+  logoURL: team.logoURL || undefined, // Include logoURL property
+  color: team.color || undefined, // Include color property
+  founded: team.founded || '2020',
+  captain: team.captain || '',
+  position: team.position || 1,
+  points: team.points || 0,
+  played: team.played || 0,
+  won: team.won || 0,
+  drawn: team.drawn || 0,
+  lost: team.lost || 0,
+  goals_for: team.goals_for || 0,
+  goals_against: team.goals_against || 0,
+  goal_difference: team.goal_difference || 0,
+  created_at: new Date().toISOString(),
+  updated_at: new Date().toISOString()
 });
 
 export const fixturesApi = {
@@ -112,42 +134,8 @@ export const fixturesApi = {
 
       return {
         ...fixture,
-        home_team: homeTeam ? {
-          id: homeTeam.id || 0,
-          name: homeTeam.name || '',
-          logo: homeTeam.logo || '⚽',
-          founded: homeTeam.founded || '2020',
-          captain: homeTeam.captain || '',
-          position: homeTeam.position || 1,
-          points: homeTeam.points || 0,
-          played: homeTeam.played || 0,
-          won: homeTeam.won || 0,
-          drawn: homeTeam.drawn || 0,
-          lost: homeTeam.lost || 0,
-          goals_for: homeTeam.goals_for || 0,
-          goals_against: homeTeam.goals_against || 0,
-          goal_difference: homeTeam.goal_difference || 0,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        } : undefined,
-        away_team: awayTeam ? {
-          id: awayTeam.id || 0,
-          name: awayTeam.name || '',
-          logo: awayTeam.logo || '⚽',
-          founded: awayTeam.founded || '2020',
-          captain: awayTeam.captain || '',
-          position: awayTeam.position || 1,
-          points: awayTeam.points || 0,
-          played: awayTeam.played || 0,
-          won: awayTeam.won || 0,
-          drawn: awayTeam.drawn || 0,
-          lost: awayTeam.lost || 0,
-          goals_for: awayTeam.goals_for || 0,
-          goals_against: awayTeam.goals_against || 0,
-          goal_difference: awayTeam.goal_difference || 0,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        } : undefined
+        home_team: homeTeam ? createTeamObject(homeTeam) : undefined,
+        away_team: awayTeam ? createTeamObject(awayTeam) : undefined
       };
     });
 
@@ -212,42 +200,8 @@ export const fixturesApi = {
 
       return {
         ...fixture,
-        home_team: homeTeam ? {
-          id: homeTeam.id || 0,
-          name: homeTeam.name || '',
-          logo: homeTeam.logo || '⚽',
-          founded: homeTeam.founded || '2020',
-          captain: homeTeam.captain || '',
-          position: homeTeam.position || 1,
-          points: homeTeam.points || 0,
-          played: homeTeam.played || 0,
-          won: homeTeam.won || 0,
-          drawn: homeTeam.drawn || 0,
-          lost: homeTeam.lost || 0,
-          goals_for: homeTeam.goals_for || 0,
-          goals_against: homeTeam.goals_against || 0,
-          goal_difference: homeTeam.goal_difference || 0,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        } : undefined,
-        away_team: awayTeam ? {
-          id: awayTeam.id || 0,
-          name: awayTeam.name || '',
-          logo: awayTeam.logo || '⚽',
-          founded: awayTeam.founded || '2020',
-          captain: awayTeam.captain || '',
-          position: awayTeam.position || 1,
-          points: awayTeam.points || 0,
-          played: awayTeam.played || 0,
-          won: awayTeam.won || 0,
-          drawn: awayTeam.drawn || 0,
-          lost: awayTeam.lost || 0,
-          goals_for: awayTeam.goals_for || 0,
-          goals_against: awayTeam.goals_against || 0,
-          goal_difference: awayTeam.goal_difference || 0,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        } : undefined
+        home_team: homeTeam ? createTeamObject(homeTeam) : undefined,
+        away_team: awayTeam ? createTeamObject(awayTeam) : undefined
       };
     });
     
@@ -311,42 +265,8 @@ export const fixturesApi = {
 
       return {
         ...fixture,
-        home_team: homeTeam ? {
-          id: homeTeam.id || 0,
-          name: homeTeam.name || '',
-          logo: homeTeam.logo || '⚽',
-          founded: homeTeam.founded || '2020',
-          captain: homeTeam.captain || '',
-          position: homeTeam.position || 1,
-          points: homeTeam.points || 0,
-          played: homeTeam.played || 0,
-          won: homeTeam.won || 0,
-          drawn: homeTeam.drawn || 0,
-          lost: awayTeam.lost || 0,
-          goals_for: homeTeam.goals_for || 0,
-          goals_against: homeTeam.goals_against || 0,
-          goal_difference: homeTeam.goal_difference || 0,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        } : undefined,
-        away_team: awayTeam ? {
-          id: awayTeam.id || 0,
-          name: awayTeam.name || '',
-          logo: awayTeam.logo || '⚽',
-          founded: awayTeam.founded || '2020',
-          captain: awayTeam.captain || '',
-          position: awayTeam.position || 1,
-          points: awayTeam.points || 0,
-          played: awayTeam.played || 0,
-          won: awayTeam.won || 0,
-          drawn: awayTeam.drawn || 0,
-          lost: awayTeam.lost || 0,
-          goals_for: awayTeam.goals_for || 0,
-          goals_against: awayTeam.goals_against || 0,
-          goal_difference: awayTeam.goal_difference || 0,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        } : undefined
+        home_team: homeTeam ? createTeamObject(homeTeam) : undefined,
+        away_team: awayTeam ? createTeamObject(awayTeam) : undefined
       };
     });
     
