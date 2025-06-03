@@ -33,8 +33,8 @@ const MatchSelection = ({ fixtures, selectedFixture, onFixtureChange }: MatchSel
 
   // Sort fixtures chronologically (earliest scheduled first, then most recent completed)
   const sortedFixtures = fixtures?.slice().sort((a, b) => {
-    const dateA = new Date(a.match_date || a.date || '');
-    const dateB = new Date(b.match_date || b.date || '');
+    const dateA = new Date(a.match_date || '');
+    const dateB = new Date(b.match_date || '');
     
     // Scheduled fixtures first, then completed
     if (a.status !== 'completed' && b.status === 'completed') return -1;
