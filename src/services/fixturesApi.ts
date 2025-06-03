@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { Fixture } from '@/types/database';
 
@@ -28,7 +29,7 @@ const createTeamObject = (team: any) => {
     id: team.id || 0,
     name: team.name || '',
     logo: team.logo || '⚽',
-    logoURL: team.logoURL || undefined, // Ensure logoURL is preserved
+    logoURL: team.logoURL || undefined,
     color: team.color || undefined,
     founded: team.founded || '2020',
     captain: team.captain || '',
@@ -53,6 +54,36 @@ const createTeamObject = (team: any) => {
   });
   
   return teamObj;
+};
+
+// Calculate team stats updates based on match result
+const calculateTeamStatsUpdate = (
+  currentStats: any,
+  goalsFor: number,
+  goalsAgainst: number,
+  isWin: boolean,
+  isDraw: boolean,
+  isLoss: boolean
+) => {
+  const newPlayed = (currentStats.played || 0) + 1;
+  const newWon = (currentStats.won || 0) + (isWin ? 1 : 0);
+  const newDrawn = (currentStats.drawn || 0) + (isDraw ? 1 : 0);
+  const newLost = (currentStats.lost || 0) + (isLoss ? 1 : 0);
+  const newGoalsFor = (currentStats.goals_for || 0) + goalsFor;
+  const newGoalsAgainst = (currentStats.goals_against || 0) + goalsAgainst;
+  const newGoalDifference = newGoalsFor - newGoalsAgainst;
+  const newPoints = (currentStats.points || 0) + (isWin ? 3 : isDraw ? 1 : 0);
+
+  return {
+    played: newPlayed,
+    won: newWon,
+    drawn: newDrawn,
+    lost: newLost,
+    goals_for: newGoalsFor,
+    goals_against: newGoalsAgainst,
+    goal_difference: newGoalDifference,
+    points: newPoints
+  };
 };
 
 export const fixturesApi = {
@@ -297,38 +328,187 @@ export const fixturesApi = {
   },
 
   updateScore: async (id: number, homeScore: number, awayScore: number) => {
-    console.log('🔍 FixturesAPI: Updating fixture score:', { id, homeScore, awayScore });
+    console.log('🔍 FixturesAPI: Updating fixture score with team stats:', { id, homeScore, awayScore });
     
-    const { data, error } = await supabase
-      .from('fixtures')
-      .update({
-        home_score: homeScore,
-        away_score: awayScore,
-        status: 'completed'
-      })
-      .eq('id', id)
-      .select()
-      .single();
-    
-    if (error) {
-      console.error('❌ FixturesAPI: Error updating fixture score:', error);
+    try {
+      // First, get the current fixture to access team information
+      const { data: currentFixture, error: fetchError } = await supabase
+        .from('fixtures')
+        .select(`
+          *,
+          home_team:teams!fixtures_team1_fkey(id, name, played, won, drawn, lost, goals_for, goals_against, goal_difference, points),
+          away_team:teams!fixtures_team2_fkey(id, name, played, won, drawn, lost, goals_for, goals_against, goal_difference, points)
+        `)
+        .eq('id', id)
+        .single();
+
+      if (fetchError) {
+        console.error('❌ FixturesAPI: Error fetching current fixture:', fetchError);
+        throw fetchError;
+      }
+
+      console.log('📊 FixturesAPI: Current fixture data:', currentFixture);
+
+      // Check if this is an update to an already completed match
+      const isMatchAlreadyCompleted = currentFixture.status === 'completed' && 
+        currentFixture.home_score !== null && 
+        currentFixture.away_score !== null;
+
+      // Determine match result
+      const isHomeWin = homeScore > awayScore;
+      const isAwayWin = awayScore > homeScore;
+      const isDraw = homeScore === awayScore;
+
+      // Update fixture first
+      const { data: updatedFixture, error: fixtureError } = await supabase
+        .from('fixtures')
+        .update({
+          home_score: homeScore,
+          away_score: awayScore,
+          status: 'completed',
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (fixtureError) {
+        console.error('❌ FixturesAPI: Error updating fixture:', fixtureError);
+        throw fixtureError;
+      }
+
+      console.log('✅ FixturesAPI: Fixture updated successfully:', updatedFixture);
+
+      // Only update team stats if this is the first time the match is being completed
+      // or if we're changing the result of a completed match
+      if (!isMatchAlreadyCompleted || 
+          currentFixture.home_score !== homeScore || 
+          currentFixture.away_score !== awayScore) {
+        
+        // If match was already completed, we need to reverse the previous stats first
+        if (isMatchAlreadyCompleted) {
+          console.log('🔄 FixturesAPI: Reversing previous match stats...');
+          
+          const prevHomeScore = currentFixture.home_score || 0;
+          const prevAwayScore = currentFixture.away_score || 0;
+          const prevIsHomeWin = prevHomeScore > prevAwayScore;
+          const prevIsAwayWin = prevAwayScore > prevHomeScore;
+          const prevIsDraw = prevHomeScore === prevAwayScore;
+
+          // Reverse previous home team stats
+          if (currentFixture.home_team) {
+            const reversedHomeStats = calculateTeamStatsUpdate(
+              currentFixture.home_team,
+              -prevHomeScore,  // Subtract previous goals
+              -prevAwayScore,  // Subtract previous goals against
+              -prevIsHomeWin ? 1 : 0,  // Subtract previous wins
+              -prevIsDraw ? 1 : 0,     // Subtract previous draws
+              -prevIsAwayWin ? 1 : 0   // Subtract previous losses
+            );
+            reversedHomeStats.played = (currentFixture.home_team.played || 1) - 1;
+            reversedHomeStats.points = (currentFixture.home_team.points || 0) - 
+              (prevIsHomeWin ? 3 : prevIsDraw ? 1 : 0);
+
+            await supabase
+              .from('teams')
+              .update(reversedHomeStats)
+              .eq('id', currentFixture.home_team.id);
+          }
+
+          // Reverse previous away team stats
+          if (currentFixture.away_team) {
+            const reversedAwayStats = calculateTeamStatsUpdate(
+              currentFixture.away_team,
+              -prevAwayScore,  // Subtract previous goals
+              -prevHomeScore,  // Subtract previous goals against
+              -prevIsAwayWin ? 1 : 0,  // Subtract previous wins
+              -prevIsDraw ? 1 : 0,     // Subtract previous draws
+              -prevIsHomeWin ? 1 : 0   // Subtract previous losses
+            );
+            reversedAwayStats.played = (currentFixture.away_team.played || 1) - 1;
+            reversedAwayStats.points = (currentFixture.away_team.points || 0) - 
+              (prevIsAwayWin ? 3 : prevIsDraw ? 1 : 0);
+
+            await supabase
+              .from('teams')
+              .update(reversedAwayStats)
+              .eq('id', currentFixture.away_team.id);
+          }
+        }
+
+        // Now apply the new stats
+        console.log('📊 FixturesAPI: Updating team stats...');
+
+        // Update home team stats
+        if (currentFixture.home_team) {
+          const homeTeamStats = calculateTeamStatsUpdate(
+            currentFixture.home_team,
+            homeScore,
+            awayScore,
+            isHomeWin,
+            isDraw,
+            isAwayWin
+          );
+
+          console.log('🏠 FixturesAPI: Updating home team stats:', homeTeamStats);
+
+          const { error: homeStatsError } = await supabase
+            .from('teams')
+            .update(homeTeamStats)
+            .eq('id', currentFixture.home_team.id);
+
+          if (homeStatsError) {
+            console.error('❌ FixturesAPI: Error updating home team stats:', homeStatsError);
+            throw homeStatsError;
+          }
+        }
+
+        // Update away team stats
+        if (currentFixture.away_team) {
+          const awayTeamStats = calculateTeamStatsUpdate(
+            currentFixture.away_team,
+            awayScore,
+            homeScore,
+            isAwayWin,
+            isDraw,
+            isHomeWin
+          );
+
+          console.log('🏃 FixturesAPI: Updating away team stats:', awayTeamStats);
+
+          const { error: awayStatsError } = await supabase
+            .from('teams')
+            .update(awayTeamStats)
+            .eq('id', currentFixture.away_team.id);
+
+          if (awayStatsError) {
+            console.error('❌ FixturesAPI: Error updating away team stats:', awayStatsError);
+            throw awayStatsError;
+          }
+        }
+
+        console.log('✅ FixturesAPI: Team stats updated successfully');
+      } else {
+        console.log('ℹ️ FixturesAPI: No team stats update needed - match result unchanged');
+      }
+
+      return {
+        id: updatedFixture.id || 0,
+        home_team_id: currentFixture.home_team?.id || 0,
+        away_team_id: currentFixture.away_team?.id || 0,
+        match_date: updatedFixture.match_date || updatedFixture.date?.toString() || '',
+        match_time: updatedFixture.match_time?.toString() || updatedFixture.time?.toString() || '',
+        home_score: updatedFixture.home_score,
+        away_score: updatedFixture.away_score,
+        status: (updatedFixture.status as 'scheduled' | 'live' | 'completed' | 'postponed') || 'completed',
+        venue: updatedFixture.venue,
+        created_at: updatedFixture.created_at || new Date().toISOString(),
+        updated_at: updatedFixture.updated_at || new Date().toISOString()
+      } as Fixture;
+
+    } catch (error) {
+      console.error('❌ FixturesAPI: Critical error in updateScore:', error);
       throw error;
     }
-    
-    console.log('✅ FixturesAPI: Successfully updated fixture:', data);
-    
-    return {
-      id: data.id || 0,
-      home_team_id: 0,
-      away_team_id: 0,
-      match_date: data.match_date || data.date?.toString() || '',
-      match_time: data.match_time?.toString() || data.time?.toString() || '',
-      home_score: data.home_score,
-      away_score: data.away_score,
-      status: (data.status as 'scheduled' | 'live' | 'completed' | 'postponed') || 'scheduled',
-      venue: data.venue,
-      created_at: data.created_at || new Date().toISOString(),
-      updated_at: data.updated_at || new Date().toISOString()
-    } as Fixture;
   }
 };

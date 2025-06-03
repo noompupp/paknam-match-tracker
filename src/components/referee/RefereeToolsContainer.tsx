@@ -28,6 +28,7 @@ const RefereeToolsContainer = () => {
   const { toast } = useToast();
 
   const [selectedFixture, setSelectedFixture] = useState("");
+  const [saveAttempts, setSaveAttempts] = useState(0);
 
   // Custom hooks
   const { matchTime, isRunning, toggleTimer, resetTimer, formatTime } = useMatchTimer();
@@ -81,6 +82,12 @@ const RefereeToolsContainer = () => {
     resetCards();
     resetTracking();
     resetGoals();
+    setSaveAttempts(0);
+    
+    toast({
+      title: "Match Reset",
+      description: "All match data has been reset. You can start fresh.",
+    });
   };
 
   const handleAssignGoal = () => {
@@ -101,29 +108,62 @@ const RefereeToolsContainer = () => {
   };
 
   const handleSaveMatch = async () => {
-    if (!selectedFixture) return;
+    if (!selectedFixture) {
+      toast({
+        title: "Error",
+        description: "No fixture selected. Please select a match first.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    const currentAttempt = saveAttempts + 1;
+    setSaveAttempts(currentAttempt);
     
     try {
-      // Update fixture score
-      await updateFixtureScore.mutateAsync({
+      console.log(`🎯 RefereeTools: Starting match save attempt ${currentAttempt}:`, {
+        fixtureId: selectedFixture,
+        homeScore,
+        awayScore,
+        homeTeam: selectedFixtureData?.home_team?.name,
+        awayTeam: selectedFixtureData?.away_team?.name
+      });
+
+      // Validate the match data before saving
+      if (homeScore < 0 || awayScore < 0) {
+        throw new Error("Scores cannot be negative");
+      }
+
+      if (!selectedFixtureData?.home_team || !selectedFixtureData?.away_team) {
+        throw new Error("Match teams not found. Please refresh and try again.");
+      }
+
+      // Update fixture score with enhanced error handling
+      console.log('📊 RefereeTools: Updating fixture score...');
+      const updatedFixture = await updateFixtureScore.mutateAsync({
         id: parseInt(selectedFixture),
         homeScore,
         awayScore
       });
 
+      console.log('✅ RefereeTools: Fixture score updated successfully:', updatedFixture);
+
       // Create final match event
       if (selectedFixture) {
+        console.log('📝 RefereeTools: Creating final match event...');
         await createMatchEvent.mutateAsync({
           fixture_id: parseInt(selectedFixture),
           event_type: 'other',
-          player_name: '',
+          player_name: 'System',
           team_id: 0,
           event_time: matchTime,
-          description: `Match ended: ${selectedFixtureData?.home_team?.name} ${homeScore} - ${awayScore} ${selectedFixtureData?.away_team?.name}`
+          description: `Match completed: ${selectedFixtureData?.home_team?.name} ${homeScore} - ${awayScore} ${selectedFixtureData?.away_team?.name} (Attempt ${currentAttempt})`
         });
+        console.log('✅ RefereeTools: Final match event created successfully');
       }
 
       // Update player stats for goals and assists
+      console.log('👥 RefereeTools: Updating player statistics...');
       const playerStats = new Map();
       
       goals.forEach(goal => {
@@ -140,51 +180,54 @@ const RefereeToolsContainer = () => {
       });
 
       // Update stats for each player
+      let playerStatsUpdated = 0;
       for (const [playerId, stats] of playerStats) {
         if (stats.goals > 0 || stats.assists > 0) {
-          await updatePlayerStats.mutateAsync({
-            playerId: parseInt(playerId),
-            goals: stats.goals > 0 ? stats.goals : undefined,
-            assists: stats.assists > 0 ? stats.assists : undefined
-          });
+          try {
+            await updatePlayerStats.mutateAsync({
+              playerId: parseInt(playerId),
+              goals: stats.goals > 0 ? stats.goals : undefined,
+              assists: stats.assists > 0 ? stats.assists : undefined
+            });
+            playerStatsUpdated++;
+            console.log(`✅ RefereeTools: Updated stats for player ${playerId}:`, stats);
+          } catch (playerError) {
+            console.error(`❌ RefereeTools: Failed to update player ${playerId} stats:`, playerError);
+            // Continue with other players even if one fails
+          }
         }
       }
+
+      console.log(`✅ RefereeTools: Updated stats for ${playerStatsUpdated} players`);
       
       toast({
-        title: "Match Saved",
-        description: "Match result and all events have been saved successfully.",
+        title: "Match Saved Successfully! 🎉",
+        description: `Match result saved: ${selectedFixtureData?.home_team?.name} ${homeScore} - ${awayScore} ${selectedFixtureData?.away_team?.name}. ${playerStatsUpdated} player stats updated.`,
       });
+
+      // Add success event to local events
+      addEvent('match_saved', `Match successfully saved to database (Attempt ${currentAttempt})`, matchTime);
+
     } catch (error) {
+      console.error(`❌ RefereeTools: Match save attempt ${currentAttempt} failed:`, error);
+      
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      
       toast({
-        title: "Error",
-        description: "Failed to save match result.",
+        title: `Save Failed (Attempt ${currentAttempt})`,
+        description: `Failed to save match result: ${errorMessage}. Please check your connection and try again.`,
         variant: "destructive",
       });
-    }
-  };
 
-  const handleAddCard = (type: 'yellow' | 'red') => {
-    const teamName = selectedTeam === 'home' 
-      ? selectedFixtureData?.home_team?.name 
-      : selectedFixtureData?.away_team?.name;
-
-    const card = addCard(type, teamName || '', matchTime);
-    if (card) {
-      addEvent('card', `${type.charAt(0).toUpperCase() + type.slice(1)} card for ${card.player} (${teamName})`, matchTime);
-
-      // Create match event in database
-      if (selectedFixture) {
-        const teamId = selectedTeam === 'home' 
-          ? selectedFixtureData?.home_team_id 
-          : selectedFixtureData?.away_team_id;
-
-        createMatchEvent.mutate({
-          fixture_id: parseInt(selectedFixture),
-          event_type: type === 'yellow' ? 'yellow_card' : 'red_card',
-          player_name: card.player,
-          team_id: teamId || 0,
-          event_time: matchTime,
-          description: `${type.charAt(0).toUpperCase() + type.slice(1)} card for ${card.player}`
+      // Add error event to local events
+      addEvent('error', `Match save failed (Attempt ${currentAttempt}): ${errorMessage}`, matchTime);
+      
+      // Show detailed error for debugging
+      if (currentAttempt >= 3) {
+        toast({
+          title: "Multiple Save Failures",
+          description: "Match saving has failed multiple times. Please check the console for detailed error information and contact support if the issue persists.",
+          variant: "destructive",
         });
       }
     }
@@ -236,6 +279,11 @@ const RefereeToolsContainer = () => {
         <div className="text-center text-white mb-6">
           <h1 className="text-3xl font-bold">Referee Tools</h1>
           <p className="text-white/80 mt-2">Manage matches, track time, and record events</p>
+          {saveAttempts > 0 && (
+            <p className="text-yellow-300 text-sm mt-1">
+              Save attempts: {saveAttempts} {saveAttempts >= 3 && "(Multiple failures detected)"}
+            </p>
+          )}
         </div>
 
         <MatchSelection
