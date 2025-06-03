@@ -1,13 +1,12 @@
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import ScoreManagement from "../ScoreManagement";
-import MatchTimer from "../MatchTimer";
-import GoalAssignment from "../GoalAssignment";
-import CardManagement from "../CardManagement";
-import PlayerTimeTracker from "../PlayerTimeTracker";
-import MatchEvents from "../MatchEvents";
-import EnhancedMatchSummary from "../EnhancedMatchSummary";
+import RefereeMatchHeader from "./RefereeMatchHeader";
+import ScoreTab from "./tabs/ScoreTab";
+import TimerTab from "./tabs/TimerTab";
+import GoalsTab from "./tabs/GoalsTab";
+import CardsTab from "./tabs/CardsTab";
+import TimeTab from "./tabs/TimeTab";
+import SummaryTab from "./tabs/SummaryTab";
 import { ComponentPlayer, PlayerTimeTrackerPlayer } from "../hooks/useRefereeState";
 
 interface RefereeMatchControlsProps {
@@ -57,7 +56,6 @@ const RefereeMatchControls = ({
   isRunning,
   formatTime,
   allPlayers,
-  playersForTimeTracker,
   goals,
   selectedGoalPlayer,
   selectedGoalType,
@@ -65,16 +63,13 @@ const RefereeMatchControls = ({
   setSelectedGoalType,
   selectedPlayer,
   selectedTeam,
-  selectedCardType,
   setSelectedPlayer,
   setSelectedTeam,
-  setSelectedCardType,
   cards,
   trackedPlayers,
   selectedTimePlayer,
   setSelectedTimePlayer,
   events,
-  updateFixtureScore,
   onAddGoal,
   onRemoveGoal,
   onToggleTimer,
@@ -90,16 +85,7 @@ const RefereeMatchControls = ({
   return (
     <div className="space-y-6">
       {/* Match Header */}
-      <Card className="card-shadow-lg">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl">
-            {selectedFixtureData?.home_team?.name} vs {selectedFixtureData?.away_team?.name}
-          </CardTitle>
-          <p className="text-muted-foreground">
-            Match Date: {selectedFixtureData?.match_date} | Venue: {selectedFixtureData?.venue || 'TBD'}
-          </p>
-        </CardHeader>
-      </Card>
+      <RefereeMatchHeader selectedFixtureData={selectedFixtureData} />
 
       {/* Main Control Tabs */}
       <Tabs defaultValue="score" className="space-y-4">
@@ -113,12 +99,11 @@ const RefereeMatchControls = ({
         </TabsList>
 
         <TabsContent value="score">
-          <ScoreManagement
+          <ScoreTab
             selectedFixtureData={selectedFixtureData}
             homeScore={homeScore}
             awayScore={awayScore}
             isRunning={isRunning}
-            isPending={false}
             onAddGoal={onAddGoal}
             onRemoveGoal={onRemoveGoal}
             onToggleTimer={onToggleTimer}
@@ -128,7 +113,7 @@ const RefereeMatchControls = ({
         </TabsContent>
 
         <TabsContent value="timer">
-          <MatchTimer
+          <TimerTab
             selectedFixtureData={selectedFixtureData}
             homeScore={homeScore}
             awayScore={awayScore}
@@ -141,7 +126,7 @@ const RefereeMatchControls = ({
         </TabsContent>
 
         <TabsContent value="goals">
-          <GoalAssignment
+          <GoalsTab
             allPlayers={allPlayers}
             goals={goals}
             selectedPlayer={selectedGoalPlayer}
@@ -160,7 +145,7 @@ const RefereeMatchControls = ({
         </TabsContent>
 
         <TabsContent value="cards">
-          <CardManagement
+          <CardsTab
             selectedFixtureData={selectedFixtureData}
             playerName={selectedPlayer}
             selectedTeam={selectedTeam}
@@ -175,7 +160,7 @@ const RefereeMatchControls = ({
         </TabsContent>
 
         <TabsContent value="time">
-          <PlayerTimeTracker
+          <TimeTab
             allPlayers={allPlayers}
             trackedPlayers={trackedPlayers}
             selectedPlayer={selectedTimePlayer}
@@ -194,27 +179,19 @@ const RefereeMatchControls = ({
         </TabsContent>
 
         <TabsContent value="summary">
-          <div className="space-y-6">
-            <EnhancedMatchSummary
-              selectedFixtureData={selectedFixtureData}
-              homeScore={homeScore}
-              awayScore={awayScore}
-              matchTime={matchTime}
-              events={events}
-              goals={goals}
-              cards={cards}
-              trackedPlayers={trackedPlayers}
-              allPlayers={allPlayers}
-              onExportSummary={onExportSummary}
-              formatTime={formatTime}
-            />
-            
-            {/* Traditional Match Events */}
-            <MatchEvents
-              events={events}
-              formatTime={formatTime}
-            />
-          </div>
+          <SummaryTab
+            selectedFixtureData={selectedFixtureData}
+            homeScore={homeScore}
+            awayScore={awayScore}
+            matchTime={matchTime}
+            events={events}
+            goals={goals}
+            cards={cards}
+            trackedPlayers={trackedPlayers}
+            allPlayers={allPlayers}
+            onExportSummary={onExportSummary}
+            formatTime={formatTime}
+          />
         </TabsContent>
       </Tabs>
     </div>
