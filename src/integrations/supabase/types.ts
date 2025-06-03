@@ -67,34 +67,53 @@ export type Database = {
           updated_at?: string | null
           venue?: string | null
         }
+        Relationships: []
+      }
+      match_events: {
+        Row: {
+          created_at: string | null
+          description: string
+          event_time: number
+          event_type: string
+          fixture_id: number
+          id: number
+          player_name: string
+          team_id: number
+        }
+        Insert: {
+          created_at?: string | null
+          description: string
+          event_time: number
+          event_type: string
+          fixture_id: number
+          id?: number
+          player_name: string
+          team_id: number
+        }
+        Update: {
+          created_at?: string | null
+          description?: string
+          event_time?: number
+          event_type?: string
+          fixture_id?: number
+          id?: number
+          player_name?: string
+          team_id?: number
+        }
         Relationships: [
           {
-            foreignKeyName: "fixtures_away_team_id_fkey"
-            columns: ["away_team_id"]
+            foreignKeyName: "fk_match_events_fixture"
+            columns: ["fixture_id"]
             isOneToOne: false
-            referencedRelation: "teams"
-            referencedColumns: ["__id__"]
+            referencedRelation: "fixtures"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "fixtures_home_team_id_fkey"
-            columns: ["home_team_id"]
+            foreignKeyName: "fk_match_events_team"
+            columns: ["team_id"]
             isOneToOne: false
             referencedRelation: "teams"
-            referencedColumns: ["__id__"]
-          },
-          {
-            foreignKeyName: "fixtures_team1_fkey"
-            columns: ["team1"]
-            isOneToOne: false
-            referencedRelation: "teams"
-            referencedColumns: ["__id__"]
-          },
-          {
-            foreignKeyName: "fixtures_team2_fkey"
-            columns: ["team2"]
-            isOneToOne: false
-            referencedRelation: "teams"
-            referencedColumns: ["__id__"]
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -135,15 +154,7 @@ export type Database = {
           role?: string | null
           team_id?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "members_team_id_fkey"
-            columns: ["team_id"]
-            isOneToOne: false
-            referencedRelation: "teams"
-            referencedColumns: ["__id__"]
-          },
-        ]
+        Relationships: []
       }
       teams: {
         Row: {
