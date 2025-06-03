@@ -11,6 +11,7 @@ import { useFixtures } from "@/hooks/useFixtures";
 import { usePlayerStatsSync } from "@/hooks/usePlayerStatsSync";
 import { Bug, RefreshCw, TestTube, Settings, Database, Users } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import DebugPanel from "./DebugPanel";
 
 const MorePage = () => {
   const { toast } = useToast();
@@ -84,12 +85,17 @@ const MorePage = () => {
           </TabsList>
 
           <TabsContent value="debug" className="space-y-6">
+            {/* Embedded Debug Panel */}
+            <div className="bg-white/95 backdrop-blur-sm rounded-lg">
+              <DebugPanel />
+            </div>
+
             <Card className="bg-white/95 backdrop-blur-sm">
               <CardHeader>
                 <CardTitle className="flex items-center justify-between">
                   <span className="flex items-center gap-2">
                     <Bug className="h-5 w-5" />
-                    Debug Information
+                    Additional Debug Information
                   </span>
                   <Button 
                     onClick={() => refetchDebug()} 
