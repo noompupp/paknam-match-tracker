@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -6,6 +7,8 @@ import { useTeams } from "@/hooks/useTeams";
 import { useTopScorers } from "@/hooks/useMembers";
 import { useRecentFixtures, useUpcomingFixtures } from "@/hooks/useFixtures";
 import DebugPanel from "./DebugPanel";
+import TournamentLogo from "./TournamentLogo";
+import TeamLogo from "./teams/TeamLogo";
 
 const Dashboard = () => {
   const { data: teams, isLoading: teamsLoading, error: teamsError } = useTeams();
@@ -37,7 +40,10 @@ const Dashboard = () => {
       <div className="bg-white/10 backdrop-blur-sm border-b border-white/20">
         <div className="max-w-7xl mx-auto px-4 py-6">
           <div className="text-center">
-            <h1 className="text-3xl font-bold text-white mb-2">Paknam FC League</h1>
+            <div className="flex items-center justify-center gap-3 mb-3">
+              <TournamentLogo size="large" />
+              <h1 className="text-3xl font-bold text-white">Paknam FC League</h1>
+            </div>
             <p className="text-white/80">Community Football Championship</p>
           </div>
         </div>
@@ -70,7 +76,12 @@ const Dashboard = () => {
                     Array.from({ length: 6 }).map((_, index) => (
                       <tr key={index} className="border-b">
                         <td className="p-3"><Skeleton className="h-4 w-6" /></td>
-                        <td className="p-3"><Skeleton className="h-4 w-24" /></td>
+                        <td className="p-3">
+                          <div className="flex items-center gap-3">
+                            <Skeleton className="w-8 h-8 rounded-full" />
+                            <Skeleton className="h-4 w-24" />
+                          </div>
+                        </td>
                         <td className="p-3 text-center"><Skeleton className="h-4 w-6 mx-auto" /></td>
                         <td className="p-3 text-center"><Skeleton className="h-4 w-6 mx-auto" /></td>
                         <td className="p-3 text-center"><Skeleton className="h-4 w-6 mx-auto" /></td>
@@ -83,7 +94,12 @@ const Dashboard = () => {
                     teams.map((team) => (
                       <tr key={team.id} className="border-b hover:bg-muted/30 transition-colors">
                         <td className="p-3 font-bold">{team.position}</td>
-                        <td className="p-3 font-semibold">{team.name}</td>
+                        <td className="p-3">
+                          <div className="flex items-center gap-3">
+                            <TeamLogo team={team} size="small" showColor />
+                            <span className="font-semibold">{team.name}</span>
+                          </div>
+                        </td>
                         <td className="p-3 text-center">{team.played}</td>
                         <td className="p-3 text-center">{team.won}</td>
                         <td className="p-3 text-center">{team.drawn}</td>
@@ -176,13 +192,19 @@ const Dashboard = () => {
                       {formatDate(fixture.match_date)}
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="font-semibold text-sm">{fixture.home_team?.name || 'TBD'}</span>
+                      <div className="flex items-center gap-2">
+                        <TeamLogo team={fixture.home_team} size="small" />
+                        <span className="font-semibold text-sm">{fixture.home_team?.name || 'TBD'}</span>
+                      </div>
                       <div className="flex items-center space-x-2">
                         <Badge variant="outline" className="px-3 py-1">
                           {fixture.home_score} - {fixture.away_score}
                         </Badge>
                       </div>
-                      <span className="font-semibold text-sm">{fixture.away_team?.name || 'TBD'}</span>
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold text-sm">{fixture.away_team?.name || 'TBD'}</span>
+                        <TeamLogo team={fixture.away_team} size="small" />
+                      </div>
                     </div>
                   </div>
                 ))
@@ -226,9 +248,15 @@ const Dashboard = () => {
                     <ChevronRight className="h-4 w-4 text-muted-foreground" />
                   </div>
                   <div className="flex items-center justify-between mt-2">
-                    <span className="font-semibold">{fixture.home_team?.name || 'TBD'}</span>
+                    <div className="flex items-center gap-2">
+                      <TeamLogo team={fixture.home_team} size="small" />
+                      <span className="font-semibold">{fixture.home_team?.name || 'TBD'}</span>
+                    </div>
                     <span className="text-muted-foreground text-sm">vs</span>
-                    <span className="font-semibold">{fixture.away_team?.name || 'TBD'}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold">{fixture.away_team?.name || 'TBD'}</span>
+                      <TeamLogo team={fixture.away_team} size="small" />
+                    </div>
                   </div>
                 </div>
               ))

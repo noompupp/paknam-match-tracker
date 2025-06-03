@@ -4,6 +4,8 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Calendar, Clock, MapPin, Trophy } from "lucide-react";
 import { useFixtures, useUpcomingFixtures, useRecentFixtures } from "@/hooks/useFixtures";
+import TeamLogo from "./teams/TeamLogo";
+import TournamentLogo from "./TournamentLogo";
 
 const Fixtures = () => {
   const { data: allFixtures, isLoading: allLoading, error } = useFixtures();
@@ -41,26 +43,6 @@ const Fixtures = () => {
     });
   };
 
-  const getTeamLogo = (team: any) => {
-    // Use logoURL first with proper image handling, then fallback to logo emoji
-    if (team?.logoURL) {
-      return (
-        <img 
-          src={team.logoURL} 
-          alt={`${team.name} logo`} 
-          className="w-8 h-8 object-contain rounded border border-gray-200" 
-          onError={(e) => {
-            // Fallback to emoji if image fails to load
-            const target = e.target as HTMLImageElement;
-            target.style.display = 'none';
-            target.nextElementSibling?.classList.remove('hidden');
-          }}
-        />
-      );
-    }
-    return <span className="text-2xl">{team?.logo || '⚽'}</span>;
-  };
-
   const FixtureCard = ({ fixture, showScore = false }: { fixture: any, showScore?: boolean }) => (
     <Card className="card-shadow-lg hover:card-shadow-lg hover:scale-105 transition-all duration-300">
       <CardContent className="p-6">
@@ -80,10 +62,7 @@ const Fixtures = () => {
           {/* Teams */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3 flex-1">
-              <div className="flex items-center">
-                {getTeamLogo(fixture.home_team)}
-                <span className="text-2xl hidden">{fixture.home_team?.logo || '⚽'}</span>
-              </div>
+              <TeamLogo team={fixture.home_team} size="small" />
               <div>
                 <p className="font-semibold">{fixture.home_team?.name || 'TBD'}</p>
                 <p className="text-xs text-muted-foreground">Home</p>
@@ -114,10 +93,7 @@ const Fixtures = () => {
                 <p className="font-semibold">{fixture.away_team?.name || 'TBD'}</p>
                 <p className="text-xs text-muted-foreground">Away</p>
               </div>
-              <div className="flex items-center">
-                {getTeamLogo(fixture.away_team)}
-                <span className="text-2xl hidden">{fixture.away_team?.logo || '⚽'}</span>
-              </div>
+              <TeamLogo team={fixture.away_team} size="small" />
             </div>
           </div>
 
@@ -189,7 +165,10 @@ const Fixtures = () => {
       <div className="bg-white/10 backdrop-blur-sm border-b border-white/20">
         <div className="max-w-7xl mx-auto px-4 py-6">
           <div className="text-center">
-            <h1 className="text-3xl font-bold text-white mb-2">Fixtures</h1>
+            <div className="flex items-center justify-center gap-3 mb-3">
+              <TournamentLogo />
+              <h1 className="text-3xl font-bold text-white">Fixtures</h1>
+            </div>
             <p className="text-white/80">Match schedule and results</p>
           </div>
         </div>

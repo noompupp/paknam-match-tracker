@@ -4,6 +4,7 @@ import { useTeams } from "@/hooks/useTeams";
 import { useTeamMembers } from "@/hooks/useMembers";
 import TeamsGrid from "./teams/TeamsGrid";
 import TeamSquad from "./teams/TeamSquad";
+import TournamentLogo from "./TournamentLogo";
 
 const Teams = () => {
   const { data: teams, isLoading: teamsLoading, error } = useTeams();
@@ -40,7 +41,10 @@ const Teams = () => {
       <div className="bg-white/10 backdrop-blur-sm border-b border-white/20">
         <div className="max-w-7xl mx-auto px-4 py-6">
           <div className="text-center">
-            <h1 className="text-3xl font-bold text-white mb-2">Teams & Players</h1>
+            <div className="flex items-center justify-center gap-3 mb-3">
+              <TournamentLogo />
+              <h1 className="text-3xl font-bold text-white">Teams & Players</h1>
+            </div>
             <p className="text-white/80">Meet our {teams?.length || 0} competing teams</p>
           </div>
         </div>

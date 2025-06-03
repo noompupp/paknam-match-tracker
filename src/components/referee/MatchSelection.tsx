@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Fixture } from "@/types/database";
+import TeamLogo from "../teams/TeamLogo";
 
 interface MatchSelectionProps {
   fixtures: Fixture[];
@@ -11,26 +12,6 @@ interface MatchSelectionProps {
 }
 
 const MatchSelection = ({ fixtures, selectedFixture, onFixtureChange }: MatchSelectionProps) => {
-  const getTeamLogo = (team: any) => {
-    // Use logoURL first with proper image handling, then fallback to logo emoji
-    if (team?.logoURL) {
-      return (
-        <img 
-          src={team.logoURL} 
-          alt={`${team.name} logo`} 
-          className="w-5 h-5 object-contain rounded border border-gray-200" 
-          onError={(e) => {
-            // Fallback to emoji if image fails to load
-            const target = e.target as HTMLImageElement;
-            target.style.display = 'none';
-            target.nextElementSibling?.classList.remove('hidden');
-          }}
-        />
-      );
-    }
-    return <span className="text-lg">{team?.logo || '⚽'}</span>;
-  };
-
   // Sort fixtures chronologically (earliest scheduled first, then most recent completed)
   const sortedFixtures = fixtures?.slice().sort((a, b) => {
     const dateA = new Date(a.match_date || '');
@@ -69,17 +50,11 @@ const MatchSelection = ({ fixtures, selectedFixture, onFixtureChange }: MatchSel
                   className="hover:bg-accent focus:bg-accent cursor-pointer"
                 >
                   <div className="flex items-center gap-2 py-1">
-                    <div className="flex items-center">
-                      {getTeamLogo(fixture.home_team)}
-                      <span className="text-lg hidden">{fixture.home_team?.logo || '⚽'}</span>
-                    </div>
+                    <TeamLogo team={fixture.home_team} size="small" />
                     <span className="font-medium">{fixture.home_team?.name || 'TBD'}</span>
                     <span className="text-muted-foreground">vs</span>
                     <span className="font-medium">{fixture.away_team?.name || 'TBD'}</span>
-                    <div className="flex items-center">
-                      {getTeamLogo(fixture.away_team)}
-                      <span className="text-lg hidden">{fixture.away_team?.logo || '⚽'}</span>
-                    </div>
+                    <TeamLogo team={fixture.away_team} size="small" />
                     <span className="text-xs text-muted-foreground ml-2">
                       ({new Date(fixture.match_date).toLocaleDateString()})
                     </span>
