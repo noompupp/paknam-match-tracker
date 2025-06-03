@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useFixtures } from "@/hooks/useFixtures";
 import { useMembers } from "@/hooks/useMembers";
@@ -88,7 +87,7 @@ const RefereeToolsContainer = () => {
     id: member.id,
     name: member.name,
     team: member.team?.name || '',
-    number: member.number?.toString() || '', // Keep as string for ComponentPlayer
+    number: typeof member.number === 'string' ? member.number : member.number?.toString() || '', // Handle both string and number types
     position: member.position
   })) || [];
 
@@ -102,7 +101,7 @@ const RefereeToolsContainer = () => {
     id: member.id,
     name: member.name,
     team: member.team?.name || '',
-    number: parseInt(member.number || '0'), // Convert to number for PlayerTrackingPlayer
+    number: typeof member.number === 'number' ? member.number : parseInt(String(member.number || '0')), // Properly handle type conversion
     position: member.position || 'Player'
   })) || [];
 

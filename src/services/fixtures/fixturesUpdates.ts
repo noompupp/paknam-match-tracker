@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { Fixture } from '@/types/database';
 import { calculateTeamStatsUpdate } from './statsCalculator';
@@ -224,35 +223,41 @@ export const updateFixtureScore = async (id: number, homeScore: number, awayScor
       id: updatedFixture.id || 0,
       home_team_id: homeTeam?.id || 0,
       away_team_id: awayTeam?.id || 0,
-      home_team: homeTeam ? { 
-        ...homeTeam, 
-        logo: '⚽', 
-        founded: '2020', 
-        captain: '', 
-        position: 1, // Add missing position property
-        won: 0, 
-        drawn: 0, 
-        lost: 0, 
-        goals_for: 0, 
-        goals_against: 0, 
-        goal_difference: 0, 
-        created_at: '', 
-        updated_at: '' 
+      home_team: homeTeam ? {
+        id: homeTeam.id,
+        name: homeTeam.name,
+        logo: '⚽',
+        founded: '2020',
+        captain: '',
+        position: 1,
+        points: homeTeam.points,
+        played: homeTeam.played,
+        won: 0,
+        drawn: 0,
+        lost: 0,
+        goals_for: 0,
+        goals_against: 0,
+        goal_difference: 0,
+        created_at: '',
+        updated_at: ''
       } : undefined,
-      away_team: awayTeam ? { 
-        ...awayTeam, 
-        logo: '⚽', 
-        founded: '2020', 
-        captain: '', 
-        position: 1, // Add missing position property
-        won: 0, 
-        drawn: 0, 
-        lost: 0, 
-        goals_for: 0, 
-        goals_against: 0, 
-        goal_difference: 0, 
-        created_at: '', 
-        updated_at: '' 
+      away_team: awayTeam ? {
+        id: awayTeam.id,
+        name: awayTeam.name,
+        logo: '⚽',
+        founded: '2020',
+        captain: '',
+        position: 1,
+        points: awayTeam.points,
+        played: awayTeam.played,
+        won: 0,
+        drawn: 0,
+        lost: 0,
+        goals_for: 0,
+        goals_against: 0,
+        goal_difference: 0,
+        created_at: '',
+        updated_at: ''
       } : undefined,
       match_date: updatedFixture.match_date || updatedFixture.date?.toString() || '',
       match_time: updatedFixture.match_time?.toString() || updatedFixture.time?.toString() || '',
