@@ -6,11 +6,12 @@ import { joinFixturesWithTeams } from './teamUtils';
 export const getAllFixtures = async () => {
   console.log('🔍 FixturesQueries: Starting getAll request...');
   
-  // First get all fixtures
+  // Get all fixtures with better sorting (completed matches by date desc, scheduled by date asc)
   const { data: fixtures, error: fixturesError } = await supabase
     .from('fixtures')
     .select('*')
-    .order('match_date', { ascending: false });
+    .order('status', { ascending: false }) // completed first
+    .order('match_date', { ascending: false }); // then by date
   
   if (fixturesError) {
     console.error('❌ FixturesQueries: Error fetching fixtures:', fixturesError);
@@ -20,11 +21,11 @@ export const getAllFixtures = async () => {
   console.log('📊 FixturesQueries: Raw fixtures data from database:', {
     count: fixtures?.length || 0,
     sample: fixtures?.[0] || null,
-    teamMappings: fixtures?.map(f => ({
-      id: f.id,
-      team1: f.team1,
-      team2: f.team2
-    })) || []
+    timeVariety: [...new Set(fixtures?.map(f => f.match_time))],
+    statusBreakdown: fixtures?.reduce((acc, f) => {
+      acc[f.status] = (acc[f.status] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>)
   });
 
   if (!fixtures || fixtures.length === 0) {
@@ -60,7 +61,12 @@ export const getAllFixtures = async () => {
     count: fixturesWithTeams.length,
     fixturesWithBothTeams: fixturesWithTeams.filter(f => f.home_team && f.away_team).length,
     fixturesWithoutTeams: fixturesWithTeams.filter(f => !f.home_team || !f.away_team).length,
-    teamsWithLogos: fixturesWithTeams.filter(f => f.home_team?.logoURL || f.away_team?.logoURL).length
+    teamsWithLogos: fixturesWithTeams.filter(f => f.home_team?.logoURL || f.away_team?.logoURL).length,
+    timeDistribution: fixturesWithTeams.reduce((acc, f) => {
+      const time = f.match_time || 'null';
+      acc[time] = (acc[time] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>)
   });
   
   return fixturesWithTeams.map(transformFixture);
@@ -88,7 +94,12 @@ export const getUpcomingFixtures = async () => {
 
   console.log('📊 FixturesQueries: Upcoming fixtures data:', {
     count: fixtures?.length || 0,
-    fixtures: fixtures || []
+    fixtures: fixtures?.map(f => ({
+      id: f.id,
+      date: f.match_date,
+      time: f.match_time,
+      status: f.status
+    })) || []
   });
 
   if (!fixtures || fixtures.length === 0) {
@@ -111,7 +122,8 @@ export const getUpcomingFixtures = async () => {
   
   console.log('✅ FixturesQueries: Successfully processed upcoming fixtures:', {
     count: fixturesWithTeams.length,
-    withBothTeams: fixturesWithTeams.filter(f => f.home_team && f.away_team).length
+    withBothTeams: fixturesWithTeams.filter(f => f.home_team && f.away_team).length,
+    timesFound: fixturesWithTeams.map(f => f.match_time)
   });
   
   return fixturesWithTeams.map(transformFixture);
@@ -125,6 +137,7 @@ export const getRecentFixtures = async () => {
     .select('*')
     .eq('status', 'completed')
     .order('match_date', { ascending: false })
+    .order('match_time', { ascending: false })
     .limit(5);
   
   if (fixturesError) {
@@ -134,7 +147,13 @@ export const getRecentFixtures = async () => {
 
   console.log('📊 FixturesQueries: Recent fixtures data:', {
     count: fixtures?.length || 0,
-    fixtures: fixtures || []
+    fixtures: fixtures?.map(f => ({
+      id: f.id,
+      date: f.match_date,
+      time: f.match_time,
+      homeScore: f.home_score,
+      awayScore: f.away_score
+    })) || []
   });
 
   if (!fixtures || fixtures.length === 0) {
@@ -157,7 +176,8 @@ export const getRecentFixtures = async () => {
   
   console.log('✅ FixturesQueries: Successfully processed recent fixtures:', {
     count: fixturesWithTeams.length,
-    withBothTeams: fixturesWithTeams.filter(f => f.home_team && f.away_team).length
+    withBothTeams: fixturesWithTeams.filter(f => f.home_team && f.away_team).length,
+    resultsFound: fixturesWithTeams.map(f => `${f.home_score}-${f.away_score}`)
   });
   
   return fixturesWithTeams.map(transformFixture);

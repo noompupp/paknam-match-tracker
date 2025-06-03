@@ -7,6 +7,12 @@ interface SimpleTeam {
   name: string;
   played: number;
   points: number;
+  won: number;
+  drawn: number;
+  lost: number;
+  goals_for: number;
+  goals_against: number;
+  goal_difference: number;
 }
 
 export interface FixtureData {
@@ -58,7 +64,7 @@ const fetchTeamById = async (teamId: string, teamType: 'home' | 'away'): Promise
 
   const { data: team, error: teamError } = await supabase
     .from('teams')
-    .select('id, name, played, points')
+    .select('id, name, played, points, won, drawn, lost, goals_for, goals_against, goal_difference')
     .eq('__id__', teamId)
     .maybeSingle();
   
@@ -77,6 +83,8 @@ const fetchTeamById = async (teamId: string, teamType: 'home' | 'away'): Promise
 };
 
 export const updateFixtureInDatabase = async (id: number, homeScore: number, awayScore: number) => {
+  console.log('💾 FixtureDataService: Updating fixture in database:', { id, homeScore, awayScore });
+  
   const { data: updatedFixture, error: fixtureError } = await supabase
     .from('fixtures')
     .update({
@@ -107,17 +115,19 @@ export const createFixtureResult = (updatedFixture: any, homeTeam: SimpleTeam, a
       id: homeTeam.id,
       name: homeTeam.name,
       logo: '⚽',
+      logoURL: '',
       founded: '2020',
       captain: '',
       position: 1,
       points: homeTeam.points,
       played: homeTeam.played,
-      won: 0,
-      drawn: 0,
-      lost: 0,
-      goals_for: 0,
-      goals_against: 0,
-      goal_difference: 0,
+      won: homeTeam.won,
+      drawn: homeTeam.drawn,
+      lost: homeTeam.lost,
+      goals_for: homeTeam.goals_for,
+      goals_against: homeTeam.goals_against,
+      goal_difference: homeTeam.goal_difference,
+      color: '',
       created_at: '',
       updated_at: ''
     } : undefined,
@@ -125,17 +135,19 @@ export const createFixtureResult = (updatedFixture: any, homeTeam: SimpleTeam, a
       id: awayTeam.id,
       name: awayTeam.name,
       logo: '⚽',
+      logoURL: '',
       founded: '2020',
       captain: '',
       position: 1,
       points: awayTeam.points,
       played: awayTeam.played,
-      won: 0,
-      drawn: 0,
-      lost: 0,
-      goals_for: 0,
-      goals_against: 0,
-      goal_difference: 0,
+      won: awayTeam.won,
+      drawn: awayTeam.drawn,
+      lost: awayTeam.lost,
+      goals_for: awayTeam.goals_for,
+      goals_against: awayTeam.goals_against,
+      goal_difference: awayTeam.goal_difference,
+      color: '',
       created_at: '',
       updated_at: ''
     } : undefined,

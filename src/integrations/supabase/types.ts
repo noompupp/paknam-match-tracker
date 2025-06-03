@@ -19,10 +19,10 @@ export type Database = {
           home_score: number | null
           home_team_id: string | null
           id: number
-          match_date: string | null
-          match_time: string | null
+          match_date: string
+          match_time: string
           matchNo: number | null
-          status: string | null
+          status: string
           team1: string | null
           team2: string | null
           time: string | null
@@ -38,10 +38,10 @@ export type Database = {
           home_score?: number | null
           home_team_id?: string | null
           id?: number
-          match_date?: string | null
-          match_time?: string | null
+          match_date: string
+          match_time?: string
           matchNo?: number | null
-          status?: string | null
+          status?: string
           team1?: string | null
           team2?: string | null
           time?: string | null
@@ -57,10 +57,10 @@ export type Database = {
           home_score?: number | null
           home_team_id?: string | null
           id?: number
-          match_date?: string | null
-          match_time?: string | null
+          match_date?: string
+          match_time?: string
           matchNo?: number | null
-          status?: string | null
+          status?: string
           team1?: string | null
           team2?: string | null
           time?: string | null

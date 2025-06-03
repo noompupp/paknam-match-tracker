@@ -131,6 +131,12 @@ export const useMatchHandlers = ({
         awayTeam: selectedFixtureData?.away_team?.name
       });
 
+      // Show loading toast
+      toast({
+        title: "Saving Match...",
+        description: `Updating fixture score and team statistics (Attempt ${currentAttempt})`,
+      });
+
       // Update fixture score with proper error handling
       console.log('📊 RefereeTools: Updating fixture score...');
       const updatedFixture = await updateFixtureScore.mutateAsync({
@@ -195,7 +201,7 @@ export const useMatchHandlers = ({
       
       toast({
         title: "Match Saved Successfully! 🎉",
-        description: `Match result saved: ${selectedFixtureData?.home_team?.name} ${homeScore} - ${awayScore} ${selectedFixtureData?.away_team?.name}. ${playerStatsUpdated} player stats updated.`,
+        description: `Result: ${selectedFixtureData?.home_team?.name} ${homeScore} - ${awayScore} ${selectedFixtureData?.away_team?.name}. Team stats and ${playerStatsUpdated} player stats updated.`,
       });
 
       // Add success event to local events
@@ -204,11 +210,26 @@ export const useMatchHandlers = ({
     } catch (error) {
       console.error(`❌ RefereeTools: Match save attempt ${currentAttempt} failed:`, error);
       
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      let errorMessage = 'Unknown error occurred';
+      
+      if (error instanceof Error) {
+        errorMessage = error.message;
+        
+        // Provide specific guidance based on error type
+        if (error.message.includes('team not found')) {
+          errorMessage = 'One or both teams could not be found. Please check team data.';
+        } else if (error.message.includes('fixture')) {
+          errorMessage = 'Could not update fixture. Please verify the match exists.';
+        } else if (error.message.includes('stats')) {
+          errorMessage = 'Score saved but team stats update failed. Check team statistics.';
+        } else if (error.message.includes('Invalid')) {
+          errorMessage = error.message; // Use the validation error as-is
+        }
+      }
       
       toast({
         title: `Save Failed (Attempt ${currentAttempt})`,
-        description: `Failed to save match result: ${errorMessage}. Please check your connection and try again.`,
+        description: errorMessage,
         variant: "destructive",
       });
 
@@ -219,7 +240,7 @@ export const useMatchHandlers = ({
       if (currentAttempt >= 3) {
         toast({
           title: "Multiple Save Failures",
-          description: "Match saving has failed multiple times. Check console for detailed error information. Ensure teams exist in database and try again.",
+          description: "Match saving has failed multiple times. Please check console logs and verify all data is correct.",
           variant: "destructive",
         });
       }
