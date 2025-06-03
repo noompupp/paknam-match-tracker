@@ -14,6 +14,7 @@ export interface Team {
   goals_for: number;
   goals_against: number;
   goal_difference: number;
+  color: string;
   created_at: string;
   updated_at: string;
 }
@@ -44,6 +45,7 @@ export interface Fixture {
   venue: string | null;
   created_at: string;
   updated_at: string;
+  __id__?: string;
   home_team?: Team;
   away_team?: Team;
 }

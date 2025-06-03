@@ -139,7 +139,7 @@ const Fixtures = () => {
     </Card>
   );
 
-  // Sort fixtures by __id__ field as specified in the plan
+  // Sort fixtures by __id__ field safely
   const sortedAllFixtures = allFixtures?.slice().sort((a, b) => {
     const aId = a.__id__ || a.id?.toString() || '0';
     const bId = b.__id__ || b.id?.toString() || '0';

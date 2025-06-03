@@ -17,5 +17,16 @@ export const matchEventsApi = {
       ...event,
       created_at: new Date().toISOString()
     } as MatchEvent;
+  },
+
+  updatePlayerStats: async (playerId: number, goals?: number, assists?: number) => {
+    // For now, return a mock response
+    console.log('Player stats update not implemented yet:', { playerId, goals, assists });
+    return {
+      success: true,
+      playerId,
+      goals,
+      assists
+    };
   }
 };
