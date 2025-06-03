@@ -15,12 +15,12 @@ const TournamentLogo = ({ size = 'medium', className = '' }: TournamentLogoProps
   useEffect(() => {
     const fetchTournamentLogo = async () => {
       try {
-        // Try to get the tournament logo from storage
-        const { data, error } = await supabase.storage
+        // Get the tournament logo URL from storage
+        const { data } = supabase.storage
           .from('tournament-assets')
           .getPublicUrl('tournament-logo.png');
 
-        if (!error && data?.publicUrl) {
+        if (data?.publicUrl) {
           // Check if the file actually exists by trying to fetch it
           const response = await fetch(data.publicUrl);
           if (response.ok) {
