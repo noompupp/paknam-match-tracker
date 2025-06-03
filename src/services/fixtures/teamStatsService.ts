@@ -45,34 +45,52 @@ export const updateTeamStats = async (
   }
 
   // Calculate stat changes for home team
+  const newHomePlayed = homeTeam.played + (currentFixture.status !== 'completed' ? 1 : 0);
+  const newHomeWon = homeTeam.won + (homeWin ? 1 : 0);
+  const newHomeDrawn = homeTeam.drawn + (draw ? 1 : 0);
+  const newHomeLost = homeTeam.lost + (awayWin ? 1 : 0);
+  const newHomeGoalsFor = homeTeam.goals_for + homeScore - (currentFixture.home_score || 0);
+  const newHomeGoalsAgainst = homeTeam.goals_against + awayScore - (currentFixture.away_score || 0);
+  const newHomeGoalDifference = newHomeGoalsFor - newHomeGoalsAgainst;
+  const newHomePoints = homeTeam.points + (homeWin ? 3 : draw ? 1 : 0) - 
+                       (currentFixture.status === 'completed' ? 
+                         (currentFixture.home_score > currentFixture.away_score ? 3 : 
+                          currentFixture.home_score === currentFixture.away_score ? 1 : 0) : 0);
+
   const homeStatsUpdate = {
-    played: homeTeam.played + (currentFixture.status !== 'completed' ? 1 : 0),
-    won: homeTeam.won + (homeWin ? 1 : 0),
-    drawn: homeTeam.drawn + (draw ? 1 : 0),
-    lost: homeTeam.lost + (awayWin ? 1 : 0),
-    goals_for: homeTeam.goals_for + homeScore - (currentFixture.home_score || 0),
-    goals_against: homeTeam.goals_against + awayScore - (currentFixture.away_score || 0),
+    played: newHomePlayed,
+    won: newHomeWon,
+    drawn: newHomeDrawn,
+    lost: newHomeLost,
+    goals_for: newHomeGoalsFor,
+    goals_against: newHomeGoalsAgainst,
+    goal_difference: newHomeGoalDifference,
+    points: newHomePoints
   };
-  homeStatsUpdate.goal_difference = homeStatsUpdate.goals_for - homeStatsUpdate.goals_against;
-  homeStatsUpdate.points = homeTeam.points + (homeWin ? 3 : draw ? 1 : 0) - 
-                          (currentFixture.status === 'completed' ? 
-                            (currentFixture.home_score > currentFixture.away_score ? 3 : 
-                             currentFixture.home_score === currentFixture.away_score ? 1 : 0) : 0);
 
   // Calculate stat changes for away team
+  const newAwayPlayed = awayTeam.played + (currentFixture.status !== 'completed' ? 1 : 0);
+  const newAwayWon = awayTeam.won + (awayWin ? 1 : 0);
+  const newAwayDrawn = awayTeam.drawn + (draw ? 1 : 0);
+  const newAwayLost = awayTeam.lost + (homeWin ? 1 : 0);
+  const newAwayGoalsFor = awayTeam.goals_for + awayScore - (currentFixture.away_score || 0);
+  const newAwayGoalsAgainst = awayTeam.goals_against + homeScore - (currentFixture.home_score || 0);
+  const newAwayGoalDifference = newAwayGoalsFor - newAwayGoalsAgainst;
+  const newAwayPoints = awayTeam.points + (awayWin ? 3 : draw ? 1 : 0) - 
+                       (currentFixture.status === 'completed' ? 
+                         (currentFixture.away_score > currentFixture.home_score ? 3 : 
+                          currentFixture.away_score === currentFixture.home_score ? 1 : 0) : 0);
+
   const awayStatsUpdate = {
-    played: awayTeam.played + (currentFixture.status !== 'completed' ? 1 : 0),
-    won: awayTeam.won + (awayWin ? 1 : 0),
-    drawn: awayTeam.drawn + (draw ? 1 : 0),
-    lost: awayTeam.lost + (homeWin ? 1 : 0),
-    goals_for: awayTeam.goals_for + awayScore - (currentFixture.away_score || 0),
-    goals_against: awayTeam.goals_against + homeScore - (currentFixture.home_score || 0),
+    played: newAwayPlayed,
+    won: newAwayWon,
+    drawn: newAwayDrawn,
+    lost: newAwayLost,
+    goals_for: newAwayGoalsFor,
+    goals_against: newAwayGoalsAgainst,
+    goal_difference: newAwayGoalDifference,
+    points: newAwayPoints
   };
-  awayStatsUpdate.goal_difference = awayStatsUpdate.goals_for - awayStatsUpdate.goals_against;
-  awayStatsUpdate.points = awayTeam.points + (awayWin ? 3 : draw ? 1 : 0) - 
-                          (currentFixture.status === 'completed' ? 
-                            (currentFixture.away_score > currentFixture.home_score ? 3 : 
-                             currentFixture.away_score === currentFixture.home_score ? 1 : 0) : 0);
 
   // Update home team stats
   console.log('🏠 TeamStatsService: Updating home team stats:', homeStatsUpdate);
