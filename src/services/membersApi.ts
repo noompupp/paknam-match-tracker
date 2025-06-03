@@ -4,6 +4,8 @@ import { Member } from '@/types/database';
 
 export const membersApi = {
   getAll: async () => {
+    console.log('🔍 MembersAPI: Starting getAll request...');
+    
     // Get all members
     const { data: members, error: membersError } = await supabase
       .from('members')
@@ -11,16 +13,20 @@ export const membersApi = {
       .order('name', { ascending: true });
     
     if (membersError) {
-      console.error('Error fetching members:', membersError);
+      console.error('❌ MembersAPI: Error fetching members:', membersError);
       throw membersError;
     }
     
+    console.log('📊 MembersAPI: Raw members data from database:', {
+      count: members?.length || 0,
+      sample: members?.[0] || null,
+      allData: members
+    });
+    
     if (!members || members.length === 0) {
-      console.log('No members found in database');
+      console.warn('⚠️ MembersAPI: No members found in database');
       return [];
     }
-
-    console.log('Raw members data from database:', members);
 
     // Get all teams for manual joining
     const { data: teams, error: teamsError } = await supabase
@@ -28,15 +34,24 @@ export const membersApi = {
       .select('*');
     
     if (teamsError) {
-      console.error('Error fetching teams for members:', teamsError);
+      console.error('❌ MembersAPI: Error fetching teams for members:', teamsError);
       throw teamsError;
     }
 
-    console.log('Teams data for members:', teams);
+    console.log('📊 MembersAPI: Teams data for joining:', {
+      count: teams?.length || 0,
+      sample: teams?.[0] || null
+    });
     
-    return members.map(member => {
+    const transformedMembers = members.map(member => {
       // Find the team using the text team_id
       const team = teams?.find(t => t.__id__ === member.team_id);
+      
+      console.log('🔄 MembersAPI: Transforming member:', {
+        memberName: member.name,
+        memberTeamId: member.team_id,
+        foundTeam: team ? { id: team.id, name: team.name } : null
+      });
       
       return {
         id: member.id || 0,
@@ -46,7 +61,7 @@ export const membersApi = {
         role: member.role || 'Player',
         goals: member.goals || 0,
         assists: member.assists || 0,
-        team_id: team?.id || 0, // Convert to numeric team ID
+        team_id: team?.id || 0,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
         team: team ? {
@@ -69,22 +84,32 @@ export const membersApi = {
         } : undefined
       } as Member;
     });
+
+    console.log('✅ MembersAPI: Successfully transformed members:', {
+      count: transformedMembers.length,
+      firstMember: transformedMembers[0] || null,
+      membersWithTeams: transformedMembers.filter(m => m.team).length
+    });
+    
+    return transformedMembers;
   },
 
   getByTeam: async (teamId: number) => {
+    console.log('🔍 MembersAPI: Getting members by team ID:', teamId);
+    
     // First find the team's text ID using the numeric ID
     const { data: team, error: teamError } = await supabase
       .from('teams')
-      .select('__id__')
+      .select('__id__, name')
       .eq('id', teamId)
       .single();
     
     if (teamError || !team) {
-      console.log('No team found for id:', teamId, teamError);
+      console.warn('⚠️ MembersAPI: No team found for id:', teamId, teamError);
       return [];
     }
 
-    console.log('Found team text ID:', team.__id__, 'for numeric ID:', teamId);
+    console.log('✅ MembersAPI: Found team text ID:', team.__id__, 'for numeric ID:', teamId);
     
     // Get members using the text team ID
     const { data: members, error: membersError } = await supabase
@@ -94,16 +119,20 @@ export const membersApi = {
       .order('name', { ascending: true });
     
     if (membersError) {
-      console.error('Error fetching team members:', membersError);
+      console.error('❌ MembersAPI: Error fetching team members:', membersError);
       throw membersError;
     }
     
+    console.log('📊 MembersAPI: Raw team members data:', {
+      teamName: team.name,
+      count: members?.length || 0,
+      members: members || []
+    });
+    
     if (!members || members.length === 0) {
-      console.log('No members found for team:', teamId);
+      console.warn('⚠️ MembersAPI: No members found for team:', teamId);
       return [];
     }
-
-    console.log('Raw team members data from database:', members);
 
     // Get the full team data for the response
     const { data: fullTeam, error: fullTeamError } = await supabase
@@ -113,11 +142,11 @@ export const membersApi = {
       .single();
     
     if (fullTeamError) {
-      console.error('Error fetching full team data:', fullTeamError);
+      console.error('❌ MembersAPI: Error fetching full team data:', fullTeamError);
       throw fullTeamError;
     }
     
-    return members.map(member => ({
+    const transformedMembers = members.map(member => ({
       id: member.id || 0,
       name: member.name || '',
       number: parseInt(member.number || '0') || 0,
@@ -125,7 +154,7 @@ export const membersApi = {
       role: member.role || 'Player',
       goals: member.goals || 0,
       assists: member.assists || 0,
-      team_id: teamId, // Use the numeric team ID
+      team_id: teamId,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
       team: fullTeam ? {
@@ -147,9 +176,18 @@ export const membersApi = {
         updated_at: new Date().toISOString()
       } : undefined
     } as Member));
+
+    console.log('✅ MembersAPI: Successfully transformed team members:', {
+      count: transformedMembers.length,
+      firstMember: transformedMembers[0] || null
+    });
+    
+    return transformedMembers;
   },
 
   updateStats: async (id: number, stats: { goals?: number; assists?: number }) => {
+    console.log('🔍 MembersAPI: Updating member stats:', { id, stats });
+    
     const { data, error } = await supabase
       .from('members')
       .update(stats)
@@ -158,9 +196,11 @@ export const membersApi = {
       .single();
     
     if (error) {
-      console.error('Error updating member stats:', error);
+      console.error('❌ MembersAPI: Error updating member stats:', error);
       throw error;
     }
+    
+    console.log('✅ MembersAPI: Successfully updated member:', data);
     
     return {
       id: data.id || 0,
@@ -170,7 +210,7 @@ export const membersApi = {
       role: data.role || 'Player',
       goals: data.goals || 0,
       assists: data.assists || 0,
-      team_id: 0, // Will need team lookup if needed
+      team_id: 0,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     } as Member;

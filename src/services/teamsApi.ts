@@ -4,40 +4,68 @@ import { Team } from '@/types/database';
 
 export const teamsApi = {
   getAll: async () => {
+    console.log('🔍 TeamsAPI: Starting getAll request...');
+    
     const { data, error } = await supabase
       .from('teams')
       .select('*')
       .order('position', { ascending: true });
     
     if (error) {
-      console.error('Error fetching teams:', error);
+      console.error('❌ TeamsAPI: Error fetching teams:', error);
       throw error;
     }
     
-    console.log('Raw teams data from database:', data);
+    console.log('📊 TeamsAPI: Raw teams data from database:', {
+      count: data?.length || 0,
+      sample: data?.[0] || null,
+      allData: data
+    });
+    
+    if (!data || data.length === 0) {
+      console.warn('⚠️ TeamsAPI: No teams found in database');
+      return [];
+    }
     
     // Transform the data to match the expected interface
-    return data?.map(team => ({
-      id: team.id || 0, // Use the auto-increment id field
-      name: team.name || '',
-      logo: team.logo || '⚽',
-      founded: team.founded || '2020',
-      captain: team.captain || '',
-      position: team.position || 1,
-      points: team.points || 0,
-      played: team.played || 0,
-      won: team.won || 0,
-      drawn: team.drawn || 0,
-      lost: team.lost || 0,
-      goals_for: team.goals_for || 0,
-      goals_against: team.goals_against || 0,
-      goal_difference: team.goal_difference || 0,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    } as Team)) || [];
+    const transformedTeams = data.map(team => {
+      console.log('🔄 TeamsAPI: Transforming team:', {
+        rawId: team.id,
+        rawTextId: team.__id__,
+        name: team.name
+      });
+      
+      return {
+        id: team.id || 0,
+        name: team.name || '',
+        logo: team.logo || '⚽',
+        founded: team.founded || '2020',
+        captain: team.captain || '',
+        position: team.position || 1,
+        points: team.points || 0,
+        played: team.played || 0,
+        won: team.won || 0,
+        drawn: team.drawn || 0,
+        lost: team.lost || 0,
+        goals_for: team.goals_for || 0,
+        goals_against: team.goals_against || 0,
+        goal_difference: team.goal_difference || 0,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      } as Team;
+    });
+
+    console.log('✅ TeamsAPI: Successfully transformed teams:', {
+      count: transformedTeams.length,
+      firstTeam: transformedTeams[0] || null
+    });
+    
+    return transformedTeams;
   },
 
   getById: async (id: number) => {
+    console.log('🔍 TeamsAPI: Getting team by ID:', id);
+    
     const { data, error } = await supabase
       .from('teams')
       .select('*')
@@ -45,9 +73,11 @@ export const teamsApi = {
       .single();
     
     if (error) {
-      console.error('Error fetching team:', error);
+      console.error('❌ TeamsAPI: Error fetching team by ID:', error);
       throw error;
     }
+    
+    console.log('📊 TeamsAPI: Found team:', data);
     
     return {
       id: data.id || 0,
@@ -70,6 +100,8 @@ export const teamsApi = {
   },
 
   updateStats: async (id: number, stats: Partial<Team>) => {
+    console.log('🔍 TeamsAPI: Updating team stats:', { id, stats });
+    
     const { data, error } = await supabase
       .from('teams')
       .update(stats)
@@ -78,9 +110,11 @@ export const teamsApi = {
       .single();
     
     if (error) {
-      console.error('Error updating team stats:', error);
+      console.error('❌ TeamsAPI: Error updating team stats:', error);
       throw error;
     }
+    
+    console.log('✅ TeamsAPI: Successfully updated team:', data);
     
     return {
       id: data.id || 0,

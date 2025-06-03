@@ -20,6 +20,8 @@ const transformFixture = (fixture: any): Fixture => ({
 
 export const fixturesApi = {
   getAll: async () => {
+    console.log('🔍 FixturesAPI: Starting getAll request...');
+    
     // First get all fixtures
     const { data: fixtures, error: fixturesError } = await supabase
       .from('fixtures')
@@ -27,16 +29,20 @@ export const fixturesApi = {
       .order('match_date', { ascending: false });
     
     if (fixturesError) {
-      console.error('Error fetching fixtures:', fixturesError);
+      console.error('❌ FixturesAPI: Error fetching fixtures:', fixturesError);
       throw fixturesError;
     }
 
+    console.log('📊 FixturesAPI: Raw fixtures data from database:', {
+      count: fixtures?.length || 0,
+      sample: fixtures?.[0] || null,
+      allData: fixtures
+    });
+
     if (!fixtures || fixtures.length === 0) {
-      console.log('No fixtures found in database');
+      console.warn('⚠️ FixturesAPI: No fixtures found in database');
       return [];
     }
-
-    console.log('Raw fixtures data from database:', fixtures);
 
     // Get all teams for manual joining
     const { data: teams, error: teamsError } = await supabase
@@ -44,11 +50,14 @@ export const fixturesApi = {
       .select('*');
     
     if (teamsError) {
-      console.error('Error fetching teams for fixtures:', teamsError);
+      console.error('❌ FixturesAPI: Error fetching teams for fixtures:', teamsError);
       throw teamsError;
     }
 
-    console.log('Teams data for fixtures:', teams);
+    console.log('📊 FixturesAPI: Teams data for joining:', {
+      count: teams?.length || 0,
+      sample: teams?.[0] || null
+    });
 
     // Manually join fixtures with teams
     const fixturesWithTeams = fixtures.map(fixture => {
@@ -57,6 +66,14 @@ export const fixturesApi = {
       // Find away team using team2 field  
       const awayTeam = teams?.find(team => team.__id__ === fixture.team2);
 
+      console.log('🔄 FixturesAPI: Transforming fixture:', {
+        fixtureId: fixture.id,
+        team1: fixture.team1,
+        team2: fixture.team2,
+        foundHomeTeam: homeTeam ? { id: homeTeam.id, name: homeTeam.name } : null,
+        foundAwayTeam: awayTeam ? { id: awayTeam.id, name: awayTeam.name } : null
+      });
+
       return {
         ...fixture,
         home_team: homeTeam ? {
@@ -98,12 +115,18 @@ export const fixturesApi = {
       };
     });
 
-    console.log('Fixtures with teams joined:', fixturesWithTeams);
+    console.log('✅ FixturesAPI: Successfully transformed fixtures:', {
+      count: fixturesWithTeams.length,
+      fixturesWithBothTeams: fixturesWithTeams.filter(f => f.home_team && f.away_team).length,
+      firstFixture: fixturesWithTeams[0] || null
+    });
     
     return fixturesWithTeams.map(transformFixture);
   },
 
   getUpcoming: async () => {
+    console.log('🔍 FixturesAPI: Getting upcoming fixtures...');
+    
     const { data: fixtures, error: fixturesError } = await supabase
       .from('fixtures')
       .select('*')
@@ -112,12 +135,17 @@ export const fixturesApi = {
       .limit(5);
     
     if (fixturesError) {
-      console.error('Error fetching upcoming fixtures:', fixturesError);
+      console.error('❌ FixturesAPI: Error fetching upcoming fixtures:', fixturesError);
       throw fixturesError;
     }
 
+    console.log('📊 FixturesAPI: Upcoming fixtures data:', {
+      count: fixtures?.length || 0,
+      fixtures: fixtures || []
+    });
+
     if (!fixtures || fixtures.length === 0) {
-      console.log('No upcoming fixtures found');
+      console.warn('⚠️ FixturesAPI: No upcoming fixtures found');
       return [];
     }
 
@@ -127,7 +155,7 @@ export const fixturesApi = {
       .select('*');
     
     if (teamsError) {
-      console.error('Error fetching teams for upcoming fixtures:', teamsError);
+      console.error('❌ FixturesAPI: Error fetching teams for upcoming fixtures:', teamsError);
       throw teamsError;
     }
 
@@ -177,10 +205,16 @@ export const fixturesApi = {
       };
     });
     
+    console.log('✅ FixturesAPI: Successfully processed upcoming fixtures:', {
+      count: fixturesWithTeams.length
+    });
+    
     return fixturesWithTeams.map(transformFixture);
   },
 
   getRecent: async () => {
+    console.log('🔍 FixturesAPI: Getting recent fixtures...');
+    
     const { data: fixtures, error: fixturesError } = await supabase
       .from('fixtures')
       .select('*')
@@ -189,12 +223,17 @@ export const fixturesApi = {
       .limit(5);
     
     if (fixturesError) {
-      console.error('Error fetching recent fixtures:', fixturesError);
+      console.error('❌ FixturesAPI: Error fetching recent fixtures:', fixturesError);
       throw fixturesError;
     }
 
+    console.log('📊 FixturesAPI: Recent fixtures data:', {
+      count: fixtures?.length || 0,
+      fixtures: fixtures || []
+    });
+
     if (!fixtures || fixtures.length === 0) {
-      console.log('No recent fixtures found');
+      console.warn('⚠️ FixturesAPI: No recent fixtures found');
       return [];
     }
 
@@ -204,7 +243,7 @@ export const fixturesApi = {
       .select('*');
     
     if (teamsError) {
-      console.error('Error fetching teams for recent fixtures:', teamsError);
+      console.error('❌ FixturesAPI: Error fetching teams for recent fixtures:', teamsError);
       throw teamsError;
     }
 
@@ -225,7 +264,7 @@ export const fixturesApi = {
           points: homeTeam.points || 0,
           played: homeTeam.played || 0,
           won: homeTeam.won || 0,
-          drawn: awayTeam.drawn || 0,
+          drawn: homeTeam.drawn || 0,
           lost: homeTeam.lost || 0,
           goals_for: homeTeam.goals_for || 0,
           goals_against: homeTeam.goals_against || 0,
@@ -254,10 +293,16 @@ export const fixturesApi = {
       };
     });
     
+    console.log('✅ FixturesAPI: Successfully processed recent fixtures:', {
+      count: fixturesWithTeams.length
+    });
+    
     return fixturesWithTeams.map(transformFixture);
   },
 
   updateScore: async (id: number, homeScore: number, awayScore: number) => {
+    console.log('🔍 FixturesAPI: Updating fixture score:', { id, homeScore, awayScore });
+    
     const { data, error } = await supabase
       .from('fixtures')
       .update({
@@ -270,14 +315,16 @@ export const fixturesApi = {
       .single();
     
     if (error) {
-      console.error('Error updating fixture score:', error);
+      console.error('❌ FixturesAPI: Error updating fixture score:', error);
       throw error;
     }
     
+    console.log('✅ FixturesAPI: Successfully updated fixture:', data);
+    
     return {
       id: data.id || 0,
-      home_team_id: 0, // Will be properly set by transform
-      away_team_id: 0, // Will be properly set by transform
+      home_team_id: 0,
+      away_team_id: 0,
       match_date: data.match_date || data.date?.toString() || '',
       match_time: data.match_time?.toString() || data.time?.toString() || '',
       home_score: data.home_score,

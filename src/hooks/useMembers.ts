@@ -5,15 +5,39 @@ import { membersApi } from '@/services/api';
 export const useMembers = () => {
   return useQuery({
     queryKey: ['members'],
-    queryFn: membersApi.getAll,
+    queryFn: async () => {
+      console.log('🎣 useMembers: Starting query...');
+      try {
+        const members = await membersApi.getAll();
+        console.log('🎣 useMembers: Query successful, members:', members);
+        return members;
+      } catch (error) {
+        console.error('🎣 useMembers: Query failed:', error);
+        throw error;
+      }
+    },
     staleTime: 5 * 60 * 1000, // 5 minutes
+    retry: (failureCount, error) => {
+      console.log('🎣 useMembers: Retry attempt:', failureCount, 'Error:', error);
+      return failureCount < 3;
+    }
   });
 };
 
 export const useTeamMembers = (teamId: number) => {
   return useQuery({
     queryKey: ['members', 'team', teamId],
-    queryFn: () => membersApi.getByTeam(teamId),
+    queryFn: async () => {
+      console.log('🎣 useTeamMembers: Starting query for team ID:', teamId);
+      try {
+        const members = await membersApi.getByTeam(teamId);
+        console.log('🎣 useTeamMembers: Query successful, members:', members);
+        return members;
+      } catch (error) {
+        console.error('🎣 useTeamMembers: Query failed:', error);
+        throw error;
+      }
+    },
     enabled: !!teamId,
   });
 };
@@ -42,6 +66,8 @@ export const useTopScorers = () => {
       team: member.team?.name || 'Unknown Team',
       goals: member.goals,
     })) || [];
+
+  console.log('🎣 useTopScorers: Computed top scorers:', topScorers);
 
   return {
     ...query,
