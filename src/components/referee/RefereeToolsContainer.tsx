@@ -20,6 +20,23 @@ import PlayerTimeTracker from "./PlayerTimeTracker";
 import MatchEvents from "./MatchEvents";
 import GoalAssignment from "./GoalAssignment";
 
+// Define consistent Player interface for this component
+interface ComponentPlayer {
+  id: number;
+  name: string;
+  team: string;
+  number?: string;
+  position?: string;
+}
+
+interface PlayerTrackingPlayer {
+  id: number;
+  name: string;
+  team: string;
+  number: number;
+  position: string;
+}
+
 const RefereeToolsContainer = () => {
   const { data: fixtures, isLoading: fixturesLoading } = useFixtures();
   const { data: members } = useMembers();
@@ -61,8 +78,8 @@ const RefereeToolsContainer = () => {
 
   const selectedFixtureData = fixtures?.find(f => f.id.toString() === selectedFixture);
   
-  // Get all players from both teams of the selected fixture - fix number type conversion
-  const allPlayers = members?.filter(member => 
+  // Get all players from both teams of the selected fixture - create ComponentPlayer objects
+  const allPlayers: ComponentPlayer[] = members?.filter(member => 
     selectedFixtureData && (
       member.team_id === selectedFixtureData.home_team_id || 
       member.team_id === selectedFixtureData.away_team_id
@@ -71,8 +88,22 @@ const RefereeToolsContainer = () => {
     id: member.id,
     name: member.name,
     team: member.team?.name || '',
-    number: member.number?.toString() || '', // Convert number to string
+    number: member.number?.toString() || '', // Keep as string for ComponentPlayer
     position: member.position
+  })) || [];
+
+  // Create PlayerTrackingPlayer objects for player tracking (requires number as number)
+  const playersForTracking: PlayerTrackingPlayer[] = members?.filter(member => 
+    selectedFixtureData && (
+      member.team_id === selectedFixtureData.home_team_id || 
+      member.team_id === selectedFixtureData.away_team_id
+    )
+  ).map(member => ({
+    id: member.id,
+    name: member.name,
+    team: member.team?.name || '',
+    number: parseInt(member.number || '0'), // Convert to number for PlayerTrackingPlayer
+    position: member.position || 'Player'
   })) || [];
 
   const handleAddGoal = async (team: 'home' | 'away') => {
@@ -305,7 +336,7 @@ const RefereeToolsContainer = () => {
   const handleAddPlayer = () => {
     if (!selectedTimePlayer) return;
 
-    const player = allPlayers.find(p => p.id === parseInt(selectedTimePlayer));
+    const player = playersForTracking.find(p => p.id === parseInt(selectedTimePlayer));
     if (player) {
       const playerTime = addPlayer(player, matchTime);
       if (playerTime) {
@@ -333,7 +364,7 @@ const RefereeToolsContainer = () => {
   };
 
   // Check for players needing attention (updated for 7-a-side rules)
-  const playersNeedingAttention = getPlayersNeedingAttention(allPlayers, matchTime);
+  const playersNeedingAttention = getPlayersNeedingAttention(playersForTracking, matchTime);
 
   if (fixturesLoading) {
     return (
@@ -424,7 +455,7 @@ const RefereeToolsContainer = () => {
             <PlayerTimeTracker
               trackedPlayers={trackedPlayers}
               selectedPlayer={selectedTimePlayer}
-              allPlayers={allPlayers}
+              allPlayers={playersForTracking}
               onPlayerSelect={setSelectedTimePlayer}
               onAddPlayer={handleAddPlayer}
               onRemovePlayer={handleRemovePlayer}

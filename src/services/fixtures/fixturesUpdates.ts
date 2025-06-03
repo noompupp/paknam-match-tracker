@@ -224,8 +224,36 @@ export const updateFixtureScore = async (id: number, homeScore: number, awayScor
       id: updatedFixture.id || 0,
       home_team_id: homeTeam?.id || 0,
       away_team_id: awayTeam?.id || 0,
-      home_team: homeTeam ? { ...homeTeam, logo: '⚽', founded: '2020', captain: '', won: 0, drawn: 0, lost: 0, goals_for: 0, goals_against: 0, goal_difference: 0, created_at: '', updated_at: '' } : undefined,
-      away_team: awayTeam ? { ...awayTeam, logo: '⚽', founded: '2020', captain: '', won: 0, drawn: 0, lost: 0, goals_for: 0, goals_against: 0, goal_difference: 0, created_at: '', updated_at: '' } : undefined,
+      home_team: homeTeam ? { 
+        ...homeTeam, 
+        logo: '⚽', 
+        founded: '2020', 
+        captain: '', 
+        position: 1, // Add missing position property
+        won: 0, 
+        drawn: 0, 
+        lost: 0, 
+        goals_for: 0, 
+        goals_against: 0, 
+        goal_difference: 0, 
+        created_at: '', 
+        updated_at: '' 
+      } : undefined,
+      away_team: awayTeam ? { 
+        ...awayTeam, 
+        logo: '⚽', 
+        founded: '2020', 
+        captain: '', 
+        position: 1, // Add missing position property
+        won: 0, 
+        drawn: 0, 
+        lost: 0, 
+        goals_for: 0, 
+        goals_against: 0, 
+        goal_difference: 0, 
+        created_at: '', 
+        updated_at: '' 
+      } : undefined,
       match_date: updatedFixture.match_date || updatedFixture.date?.toString() || '',
       match_time: updatedFixture.match_time?.toString() || updatedFixture.time?.toString() || '',
       home_score: updatedFixture.home_score,
