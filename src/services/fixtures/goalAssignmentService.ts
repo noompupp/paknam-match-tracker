@@ -72,14 +72,15 @@ export const assignGoalToPlayer = async (assignment: GoalAssignment): Promise<vo
       console.log('✅ GoalAssignmentService: Created new match event for player assignment');
     }
 
-    // Update player statistics
+    // Update player statistics immediately
+    console.log(`📊 GoalAssignmentService: Updating player stats for ${playerName}...`);
     if (type === 'goal') {
       await incrementPlayerGoals(playerId, 1);
     } else if (type === 'assist') {
       await incrementPlayerAssists(playerId, 1);
     }
 
-    console.log(`✅ GoalAssignmentService: Successfully assigned ${type} to ${playerName}`);
+    console.log(`✅ GoalAssignmentService: Successfully assigned ${type} to ${playerName} and updated stats`);
 
   } catch (error) {
     console.error('❌ GoalAssignmentService: Critical error assigning goal to player:', error);

@@ -19,6 +19,8 @@ import CardManagementDropdown from "./CardManagementDropdown";
 import PlayerTimeTracker from "./PlayerTimeTracker";
 import MatchEvents from "./MatchEvents";
 import GoalAssignment from "./GoalAssignment";
+import MatchSummary from "./MatchSummary";
+import StatsManagement from "./StatsManagement";
 
 // Define consistent Player interface for this component - using number and position as required
 interface ComponentPlayer {
@@ -171,6 +173,35 @@ const RefereeToolsContainer = () => {
     formatTime
   });
 
+  // Export match summary function
+  const handleExportSummary = () => {
+    const summaryData = {
+      fixture: selectedFixtureData,
+      score: `${homeScore}-${awayScore}`,
+      duration: formatTime(matchTime),
+      events,
+      goals,
+      cards,
+      playerTimes: trackedPlayers
+    };
+    
+    // Create downloadable JSON file
+    const dataStr = JSON.stringify(summaryData, null, 2);
+    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+    
+    const exportFileDefaultName = `match-summary-${selectedFixtureData?.home_team?.name}-vs-${selectedFixtureData?.away_team?.name}-${new Date().toISOString().split('T')[0]}.json`;
+    
+    const linkElement = document.createElement('a');
+    linkElement.setAttribute('href', dataUri);
+    linkElement.setAttribute('download', exportFileDefaultName);
+    linkElement.click();
+    
+    toast({
+      title: "Match Summary Exported",
+      description: "Match summary has been downloaded as JSON file.",
+    });
+  };
+
   // Check for players needing attention (updated for 7-a-side rules)
   const playersNeedingAttention = getPlayersNeedingAttention(playersForTimeTracker, matchTime);
 
@@ -270,6 +301,22 @@ const RefereeToolsContainer = () => {
               onTogglePlayerTime={handleTogglePlayerTime}
               formatTime={formatTime}
               matchTime={matchTime}
+            />
+
+            <StatsManagement />
+
+            <MatchSummary
+              selectedFixtureData={selectedFixtureData}
+              homeScore={homeScore}
+              awayScore={awayScore}
+              matchTime={matchTime}
+              events={events}
+              goals={goals}
+              cards={cards}
+              trackedPlayers={trackedPlayers}
+              allPlayers={allPlayers} // Add this prop
+              onExportSummary={handleExportSummary}
+              formatTime={formatTime}
             />
 
             <MatchEvents
