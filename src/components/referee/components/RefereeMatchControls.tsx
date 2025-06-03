@@ -114,15 +114,16 @@ const RefereeMatchControls = ({
 
         <TabsContent value="score">
           <ScoreManagement
-            homeTeam={selectedFixtureData?.home_team?.name || "Home"}
-            awayTeam={selectedFixtureData?.away_team?.name || "Away"}
+            selectedFixtureData={selectedFixtureData}
             homeScore={homeScore}
             awayScore={awayScore}
+            isRunning={isRunning}
+            isPending={false}
             onAddGoal={onAddGoal}
             onRemoveGoal={onRemoveGoal}
+            onToggleTimer={onToggleTimer}
             onResetMatch={onResetMatch}
             onSaveMatch={onSaveMatch}
-            updateFixtureScore={updateFixtureScore}
           />
         </TabsContent>
 
@@ -142,30 +143,34 @@ const RefereeMatchControls = ({
         <TabsContent value="goals">
           <GoalAssignment
             allPlayers={allPlayers}
-            selectedGoalPlayer={selectedGoalPlayer}
-            selectedGoalType={selectedGoalType}
-            setSelectedGoalPlayer={setSelectedGoalPlayer}
-            setSelectedGoalType={setSelectedGoalType}
-            onAssignGoal={onAssignGoal}
             goals={goals}
+            selectedPlayer={selectedGoalPlayer}
+            selectedGoalType={selectedGoalType}
+            matchTime={matchTime}
+            onPlayerSelect={setSelectedGoalPlayer}
+            onGoalTypeChange={setSelectedGoalType}
+            onAssignGoal={() => {
+              const player = allPlayers.find(p => p.id.toString() === selectedGoalPlayer);
+              if (player) {
+                onAssignGoal(player);
+              }
+            }}
             formatTime={formatTime}
           />
         </TabsContent>
 
         <TabsContent value="cards">
           <CardManagement
-            allPlayers={allPlayers}
-            selectedPlayer={selectedPlayer}
-            selectedTeam={selectedTeam}
-            selectedCardType={selectedCardType}
-            setSelectedPlayer={setSelectedPlayer}
-            setSelectedTeam={setSelectedTeam}
-            setSelectedCardType={setSelectedCardType}
-            cards={cards}
-            onAddCard={onAddCard}
-            formatTime={formatTime}
             selectedFixtureData={selectedFixtureData}
-            matchTime={matchTime}
+            playerName={selectedPlayer}
+            selectedTeam={selectedTeam}
+            cards={cards}
+            onPlayerNameChange={setSelectedPlayer}
+            onTeamChange={setSelectedTeam}
+            onAddCard={(type: 'yellow' | 'red') => {
+              onAddCard(selectedPlayer, selectedTeam, type, matchTime);
+            }}
+            formatTime={formatTime}
           />
         </TabsContent>
 
@@ -175,7 +180,12 @@ const RefereeMatchControls = ({
             trackedPlayers={trackedPlayers}
             selectedTimePlayer={selectedTimePlayer}
             setSelectedTimePlayer={setSelectedTimePlayer}
-            onAddPlayer={onAddPlayer}
+            onAddPlayer={() => {
+              const player = allPlayers.find(p => p.id.toString() === selectedTimePlayer);
+              if (player) {
+                onAddPlayer(player);
+              }
+            }}
             onRemovePlayer={onRemovePlayer}
             onTogglePlayerTime={onTogglePlayerTime}
             formatTime={formatTime}
