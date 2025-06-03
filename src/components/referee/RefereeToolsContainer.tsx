@@ -208,7 +208,7 @@ const RefereeToolsContainer = () => {
   const handleRemovePlayer = (playerId: number) => {
     const player = playersForTimeTracker.find(p => p.id === playerId);
     if (player) {
-      removePlayer(playerId, matchTime);
+      removePlayer(playerId); // Fixed: removePlayer expects only playerId
       addEvent('Player Removed', `${player.name} stopped tracking`, matchTime);
     }
   };
@@ -322,7 +322,7 @@ const RefereeToolsContainer = () => {
               matchTime={matchTime}
               onPlayerSelect={setSelectedGoalPlayer}
               onGoalTypeChange={setSelectedGoalType}
-              onAssignGoal={handleAssignGoal}
+              onAssignGoal={() => selectedGoalPlayer && handleAssignGoal(selectedGoalPlayer)}
               formatTime={formatTime}
             />
 
@@ -336,7 +336,7 @@ const RefereeToolsContainer = () => {
               onPlayerSelect={setSelectedPlayer}
               onTeamChange={setSelectedTeam}
               onCardTypeChange={setSelectedCardType}
-              onAddCard={handleAddCard}
+              onAddCard={() => selectedPlayer && selectedTeam && selectedCardType && handleAddCard(selectedPlayer, selectedTeam, selectedCardType, matchTime)}
               formatTime={formatTime}
             />
 
@@ -345,7 +345,7 @@ const RefereeToolsContainer = () => {
               selectedPlayer={selectedTimePlayer}
               allPlayers={playersForTimeTracker}
               onPlayerSelect={setSelectedTimePlayer}
-              onAddPlayer={handleAddPlayer}
+              onAddPlayer={() => selectedTimePlayer && handleAddPlayer(selectedTimePlayer)}
               onRemovePlayer={handleRemovePlayer}
               onTogglePlayerTime={handleTogglePlayerTime}
               formatTime={formatTime}
