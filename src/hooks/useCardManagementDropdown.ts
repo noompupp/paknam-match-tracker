@@ -5,7 +5,7 @@ interface Player {
   id: number;
   name: string;
   team: string;
-  number?: string; // Changed from number to string to match database
+  number?: number; // Changed from string to number to match CardPlayer
   position?: string;
 }
 
@@ -16,7 +16,7 @@ interface CardData {
   type: 'yellow' | 'red';
   time: number;
   reason?: string;
-  playerNumber?: string;
+  playerNumber?: number; // Keep as number since we're converting from number
 }
 
 export const useCardManagementDropdown = () => {
