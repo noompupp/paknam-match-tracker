@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { Fixture } from '@/types/database';
 
@@ -333,11 +334,7 @@ export const fixturesApi = {
       // First, get the current fixture to access team information
       const { data: currentFixture, error: fetchError } = await supabase
         .from('fixtures')
-        .select(`
-          *,
-          home_team:teams!fixtures_team1_fkey(id, name, played, won, drawn, lost, goals_for, goals_against, goal_difference, points),
-          away_team:teams!fixtures_team2_fkey(id, name, played, won, drawn, lost, goals_for, goals_against, goal_difference, points)
-        `)
+        .select('*')
         .eq('id', id)
         .single();
 
@@ -347,6 +344,26 @@ export const fixturesApi = {
       }
 
       console.log('📊 FixturesAPI: Current fixture data:', currentFixture);
+
+      // Get the teams separately to ensure we have proper team objects
+      const { data: homeTeam, error: homeTeamError } = await supabase
+        .from('teams')
+        .select('*')
+        .eq('__id__', currentFixture.team1)
+        .single();
+
+      const { data: awayTeam, error: awayTeamError } = await supabase
+        .from('teams')
+        .select('*')
+        .eq('__id__', currentFixture.team2)
+        .single();
+
+      if (homeTeamError || awayTeamError) {
+        console.error('❌ FixturesAPI: Error fetching team data:', { homeTeamError, awayTeamError });
+        throw homeTeamError || awayTeamError;
+      }
+
+      console.log('📊 FixturesAPI: Team data:', { homeTeam, awayTeam });
 
       // Check if this is an update to an already completed match
       const isMatchAlreadyCompleted = currentFixture.status === 'completed' && 
@@ -395,43 +412,43 @@ export const fixturesApi = {
           const prevIsDraw = prevHomeScore === prevAwayScore;
 
           // Reverse previous home team stats
-          if (currentFixture.home_team) {
+          if (homeTeam) {
             const reversedHomeStats = calculateTeamStatsUpdate(
-              currentFixture.home_team,
+              homeTeam,
               -prevHomeScore,  // Subtract previous goals
               -prevAwayScore,  // Subtract previous goals against
               false,  // No wins to add when reversing
               false,  // No draws to add when reversing  
               false   // No losses to add when reversing
             );
-            reversedHomeStats.played = (currentFixture.home_team.played || 1) - 1;
-            reversedHomeStats.points = (currentFixture.home_team.points || 0) - 
+            reversedHomeStats.played = (homeTeam.played || 1) - 1;
+            reversedHomeStats.points = (homeTeam.points || 0) - 
               (prevIsHomeWin ? 3 : prevIsDraw ? 1 : 0);
 
             await supabase
               .from('teams')
               .update(reversedHomeStats)
-              .eq('id', currentFixture.home_team.id);
+              .eq('id', homeTeam.id);
           }
 
           // Reverse previous away team stats
-          if (currentFixture.away_team) {
+          if (awayTeam) {
             const reversedAwayStats = calculateTeamStatsUpdate(
-              currentFixture.away_team,
+              awayTeam,
               -prevAwayScore,  // Subtract previous goals
               -prevHomeScore,  // Subtract previous goals against
               false,  // No wins to add when reversing
               false,  // No draws to add when reversing
               false   // No losses to add when reversing
             );
-            reversedAwayStats.played = (currentFixture.away_team.played || 1) - 1;
-            reversedAwayStats.points = (currentFixture.away_team.points || 0) - 
+            reversedAwayStats.played = (awayTeam.played || 1) - 1;
+            reversedAwayStats.points = (awayTeam.points || 0) - 
               (prevIsAwayWin ? 3 : prevIsDraw ? 1 : 0);
 
             await supabase
               .from('teams')
               .update(reversedAwayStats)
-              .eq('id', currentFixture.away_team.id);
+              .eq('id', awayTeam.id);
           }
         }
 
@@ -439,9 +456,9 @@ export const fixturesApi = {
         console.log('📊 FixturesAPI: Updating team stats...');
 
         // Update home team stats
-        if (currentFixture.home_team) {
+        if (homeTeam) {
           const homeTeamStats = calculateTeamStatsUpdate(
-            currentFixture.home_team,
+            homeTeam,
             homeScore,
             awayScore,
             isHomeWin,
@@ -454,7 +471,7 @@ export const fixturesApi = {
           const { error: homeStatsError } = await supabase
             .from('teams')
             .update(homeTeamStats)
-            .eq('id', currentFixture.home_team.id);
+            .eq('id', homeTeam.id);
 
           if (homeStatsError) {
             console.error('❌ FixturesAPI: Error updating home team stats:', homeStatsError);
@@ -463,9 +480,9 @@ export const fixturesApi = {
         }
 
         // Update away team stats
-        if (currentFixture.away_team) {
+        if (awayTeam) {
           const awayTeamStats = calculateTeamStatsUpdate(
-            currentFixture.away_team,
+            awayTeam,
             awayScore,
             homeScore,
             isAwayWin,
@@ -478,7 +495,7 @@ export const fixturesApi = {
           const { error: awayStatsError } = await supabase
             .from('teams')
             .update(awayTeamStats)
-            .eq('id', currentFixture.away_team.id);
+            .eq('id', awayTeam.id);
 
           if (awayStatsError) {
             console.error('❌ FixturesAPI: Error updating away team stats:', awayStatsError);
@@ -493,8 +510,8 @@ export const fixturesApi = {
 
       return {
         id: updatedFixture.id || 0,
-        home_team_id: currentFixture.home_team?.id || 0,
-        away_team_id: currentFixture.away_team?.id || 0,
+        home_team_id: homeTeam?.id || 0,
+        away_team_id: awayTeam?.id || 0,
         match_date: updatedFixture.match_date || updatedFixture.date?.toString() || '',
         match_time: updatedFixture.match_time?.toString() || updatedFixture.time?.toString() || '',
         home_score: updatedFixture.home_score,
