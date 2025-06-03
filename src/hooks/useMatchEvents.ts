@@ -1,7 +1,15 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useState } from 'react';
 import { matchEventsApi } from '@/services/api';
 import { MatchEvent } from '@/types/database';
+
+interface LocalMatchEvent {
+  id: number;
+  type: string;
+  description: string;
+  time: number;
+}
 
 export const useMatchEvents = (fixtureId?: number) => {
   return useQuery({
@@ -46,4 +54,29 @@ export const useUpdatePlayerStats = () => {
       queryClient.invalidateQueries({ queryKey: ['members'] });
     },
   });
+};
+
+export const useLocalMatchEvents = () => {
+  const [events, setEvents] = useState<LocalMatchEvent[]>([]);
+
+  const addEvent = (type: string, description: string, time: number) => {
+    const newEvent: LocalMatchEvent = {
+      id: Date.now(),
+      type,
+      description,
+      time
+    };
+    setEvents(prev => [...prev, newEvent]);
+    return newEvent;
+  };
+
+  const resetEvents = () => {
+    setEvents([]);
+  };
+
+  return {
+    events,
+    addEvent,
+    resetEvents
+  };
 };
