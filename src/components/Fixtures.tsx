@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -33,19 +34,37 @@ const Fixtures = () => {
   };
 
   const formatTime = (timeString: string) => {
-    if (!timeString) return 'TBD';
-    const time = new Date(`2000-01-01T${timeString}`);
-    return time.toLocaleTimeString('en-US', { 
-      hour: 'numeric', 
-      minute: '2-digit',
-      hour12: true 
-    });
+    if (!timeString || timeString === 'TBD') return 'TBD';
+    
+    try {
+      // Handle time format - could be HH:MM:SS or HH:MM
+      const timeParts = timeString.split(':');
+      if (timeParts.length >= 2) {
+        const hour = parseInt(timeParts[0], 10);
+        const minute = parseInt(timeParts[1], 10);
+        
+        // Create a date object for formatting
+        const time = new Date();
+        time.setHours(hour, minute, 0, 0);
+        
+        return time.toLocaleTimeString('en-US', { 
+          hour: 'numeric', 
+          minute: '2-digit',
+          hour12: true 
+        });
+      }
+    } catch (error) {
+      console.warn('Error formatting time:', timeString, error);
+    }
+    
+    return timeString || 'TBD';
   };
 
   // Create a combined date-time for proper sorting with fallback for missing times
   const getFixtureDateTime = (fixture: any) => {
     const dateStr = fixture.match_date;
-    const timeStr = fixture.match_time || '18:00:00'; // Default time fallback
+    // Use match_time if available, otherwise fall back to a default time
+    const timeStr = fixture.match_time || '18:00:00';
     
     try {
       return new Date(`${dateStr}T${timeStr}`);

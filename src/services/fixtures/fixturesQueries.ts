@@ -11,7 +11,8 @@ export const getAllFixtures = async () => {
     .from('fixtures')
     .select('*')
     .order('status', { ascending: false }) // completed first
-    .order('match_date', { ascending: false }); // then by date
+    .order('match_date', { ascending: false }) // then by date
+    .order('time', { ascending: true }); // then by time
   
   if (fixturesError) {
     console.error('❌ FixturesQueries: Error fetching fixtures:', fixturesError);
@@ -21,7 +22,7 @@ export const getAllFixtures = async () => {
   console.log('📊 FixturesQueries: Raw fixtures data from database:', {
     count: fixtures?.length || 0,
     sample: fixtures?.[0] || null,
-    timeVariety: [...new Set(fixtures?.map(f => f.match_time))],
+    timeVariety: [...new Set(fixtures?.map(f => f.time))],
     statusBreakdown: fixtures?.reduce((acc, f) => {
       acc[f.status] = (acc[f.status] || 0) + 1;
       return acc;
@@ -63,7 +64,7 @@ export const getAllFixtures = async () => {
     fixturesWithoutTeams: fixturesWithTeams.filter(f => !f.home_team || !f.away_team).length,
     teamsWithLogos: fixturesWithTeams.filter(f => f.home_team?.logoURL || f.away_team?.logoURL).length,
     timeDistribution: fixturesWithTeams.reduce((acc, f) => {
-      const time = f.match_time || 'null';
+      const time = f.time || 'null';
       acc[time] = (acc[time] || 0) + 1;
       return acc;
     }, {} as Record<string, number>)
@@ -84,7 +85,7 @@ export const getUpcomingFixtures = async () => {
     .eq('status', 'scheduled')
     .gte('match_date', currentDate) // Only matches today or in the future
     .order('match_date', { ascending: true })
-    .order('match_time', { ascending: true }) // Sort by time within each date
+    .order('time', { ascending: true }) // Sort by time within each date
     .limit(3); // Only get the next 3 fixtures
   
   if (fixturesError) {
@@ -97,7 +98,7 @@ export const getUpcomingFixtures = async () => {
     fixtures: fixtures?.map(f => ({
       id: f.id,
       date: f.match_date,
-      time: f.match_time,
+      time: f.time,
       status: f.status
     })) || []
   });
@@ -123,7 +124,7 @@ export const getUpcomingFixtures = async () => {
   console.log('✅ FixturesQueries: Successfully processed upcoming fixtures:', {
     count: fixturesWithTeams.length,
     withBothTeams: fixturesWithTeams.filter(f => f.home_team && f.away_team).length,
-    timesFound: fixturesWithTeams.map(f => f.match_time)
+    timesFound: fixturesWithTeams.map(f => f.time)
   });
   
   return fixturesWithTeams.map(transformFixture);
@@ -137,7 +138,7 @@ export const getRecentFixtures = async () => {
     .select('*')
     .eq('status', 'completed')
     .order('match_date', { ascending: false })
-    .order('match_time', { ascending: false })
+    .order('time', { ascending: false })
     .limit(5);
   
   if (fixturesError) {
@@ -150,7 +151,7 @@ export const getRecentFixtures = async () => {
     fixtures: fixtures?.map(f => ({
       id: f.id,
       date: f.match_date,
-      time: f.match_time,
+      time: f.time,
       homeScore: f.home_score,
       awayScore: f.away_score
     })) || []

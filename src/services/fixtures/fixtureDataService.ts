@@ -152,7 +152,7 @@ export const createFixtureResult = (updatedFixture: any, homeTeam: SimpleTeam, a
       updated_at: ''
     } : undefined,
     match_date: updatedFixture.match_date || updatedFixture.date?.toString() || '',
-    match_time: updatedFixture.match_time?.toString() || updatedFixture.time?.toString() || '',
+    match_time: updatedFixture.time?.toString() || '18:00:00', // Use 'time' column
     home_score: updatedFixture.home_score,
     away_score: updatedFixture.away_score,
     status: (updatedFixture.status as 'scheduled' | 'live' | 'completed' | 'postponed') || 'completed',

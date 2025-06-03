@@ -16,13 +16,30 @@ export const formatTimeForDashboard = (seconds: number): string => {
 };
 
 export const formatTimeDisplay = (timeString: string): string => {
-  if (!timeString) return 'TBD';
-  const time = new Date(`2000-01-01T${timeString}`);
-  return time.toLocaleTimeString('en-US', { 
-    hour: 'numeric', 
-    minute: '2-digit',
-    hour12: true 
-  });
+  if (!timeString || timeString === 'TBD') return 'TBD';
+  
+  try {
+    // Handle time format - could be HH:MM:SS or HH:MM
+    const timeParts = timeString.split(':');
+    if (timeParts.length >= 2) {
+      const hour = parseInt(timeParts[0], 10);
+      const minute = parseInt(timeParts[1], 10);
+      
+      // Create a date object for formatting
+      const time = new Date();
+      time.setHours(hour, minute, 0, 0);
+      
+      return time.toLocaleTimeString('en-US', { 
+        hour: 'numeric', 
+        minute: '2-digit',
+        hour12: true 
+      });
+    }
+  } catch (error) {
+    console.warn('Error formatting time display:', timeString, error);
+  }
+  
+  return timeString || 'TBD';
 };
 
 export const formatDateDisplay = (dateString: string): string => {

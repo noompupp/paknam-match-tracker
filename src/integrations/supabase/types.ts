@@ -20,7 +20,6 @@ export type Database = {
           home_team_id: string | null
           id: number
           match_date: string
-          match_time: string
           matchNo: number | null
           status: string
           team1: string | null
@@ -39,7 +38,6 @@ export type Database = {
           home_team_id?: string | null
           id?: number
           match_date: string
-          match_time?: string
           matchNo?: number | null
           status?: string
           team1?: string | null
@@ -58,7 +56,6 @@ export type Database = {
           home_team_id?: string | null
           id?: number
           match_date?: string
-          match_time?: string
           matchNo?: number | null
           status?: string
           team1?: string | null
