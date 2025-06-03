@@ -178,8 +178,8 @@ const RefereeMatchControls = ({
           <PlayerTimeTracker
             allPlayers={allPlayers}
             trackedPlayers={trackedPlayers}
-            selectedTimePlayer={selectedTimePlayer}
-            setSelectedTimePlayer={setSelectedTimePlayer}
+            selectedPlayer={selectedTimePlayer}
+            onPlayerSelect={setSelectedTimePlayer}
             onAddPlayer={() => {
               const player = allPlayers.find(p => p.id.toString() === selectedTimePlayer);
               if (player) {
