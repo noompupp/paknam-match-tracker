@@ -19,3 +19,12 @@ export const useDebugNormalization = () => {
     retry: false,
   });
 };
+
+export const useDebugConnectivity = () => {
+  return useQuery({
+    queryKey: ['debug', 'connectivity'],
+    queryFn: debugApi.testDataConnectivity,
+    staleTime: 0,
+    retry: false,
+  });
+};

@@ -36,11 +36,21 @@ export const debugApi = {
         console.error('❌ DebugAPI: Fixtures error:', fixturesError);
       }
 
+      console.log('📊 DebugAPI: Raw data results:', {
+        teamsCount: teams?.length || 0,
+        membersCount: members?.length || 0,
+        fixturesCount: fixtures?.length || 0,
+        teamsError: !!teamsError,
+        membersError: !!membersError,
+        fixturesError: !!fixturesError
+      });
+
       const debugData = {
         teams: {
           count: teams?.length || 0,
           data: teams || [],
           sample: teams?.[0] || null,
+          error: teamsError?.message || null,
           idTypes: teams?.map(t => ({
             id: t.id,
             idType: typeof t.id,
@@ -53,6 +63,7 @@ export const debugApi = {
           count: members?.length || 0,
           data: members || [],
           sample: members?.[0] || null,
+          error: membersError?.message || null,
           teamIdMappings: members?.map(m => ({
             name: m.name,
             team_id: m.team_id,
@@ -63,6 +74,7 @@ export const debugApi = {
           count: fixtures?.length || 0,
           data: fixtures || [],
           sample: fixtures?.[0] || null,
+          error: fixturesError?.message || null,
           teamMappings: fixtures?.map(f => ({
             id: f.id,
             team1: f.team1,
@@ -104,5 +116,42 @@ export const debugApi = {
 
     console.log('🧪 DebugAPI: Normalization test results:', results);
     return results;
+  },
+
+  testDataConnectivity: async () => {
+    console.log('🔗 DebugAPI: Testing data connectivity...');
+    
+    try {
+      // Test basic connectivity to each table
+      const connectivityTests = await Promise.all([
+        supabase.from('teams').select('count', { count: 'exact', head: true }),
+        supabase.from('members').select('count', { count: 'exact', head: true }),
+        supabase.from('fixtures').select('count', { count: 'exact', head: true })
+      ]);
+
+      const results = {
+        teams: {
+          accessible: !connectivityTests[0].error,
+          count: connectivityTests[0].count || 0,
+          error: connectivityTests[0].error?.message || null
+        },
+        members: {
+          accessible: !connectivityTests[1].error,
+          count: connectivityTests[1].count || 0,
+          error: connectivityTests[1].error?.message || null
+        },
+        fixtures: {
+          accessible: !connectivityTests[2].error,
+          count: connectivityTests[2].count || 0,
+          error: connectivityTests[2].error?.message || null
+        }
+      };
+
+      console.log('🔗 DebugAPI: Connectivity test results:', results);
+      return results;
+    } catch (error) {
+      console.error('❌ DebugAPI: Connectivity test failed:', error);
+      throw error;
+    }
   }
 };
