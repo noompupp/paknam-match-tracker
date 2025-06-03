@@ -58,9 +58,6 @@ const MatchSummary = ({
   const homeCards = cards.filter(c => c.team === selectedFixtureData?.home_team?.name);
   const awayCards = cards.filter(c => c.team === selectedFixtureData?.away_team?.name);
 
-  // Get all players from context (this would need to be passed as prop in real implementation)
-  const allPlayers: any[] = []; // This should be passed as a prop
-
   return (
     <Card className="card-shadow-lg">
       <CardHeader>
