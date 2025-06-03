@@ -1,12 +1,11 @@
-
 import { useToast } from "@/hooks/use-toast";
 
-// Define consistent Player interface for this component
+// Define consistent Player interface for this component - using number for consistency
 interface ComponentPlayer {
   id: number;
   name: string;
   team: string;
-  number?: string;
+  number?: number; // Changed from string to number for consistency
   position?: string;
 }
 
@@ -78,7 +77,7 @@ export const usePlayerManagement = ({
 }: PlayerManagementProps) => {
   const { toast } = useToast();
 
-  // Create Player objects for card management that match the expected interface
+  // Create Player objects for card management that match the expected interface - already using number
   const playersForCards = members?.filter(member => 
     selectedFixtureData && (
       member.team_id === selectedFixtureData.home_team_id || 
@@ -88,7 +87,7 @@ export const usePlayerManagement = ({
     id: member.id,
     name: member.name,
     team: member.team?.name || '',
-    number: typeof member.number === 'number' ? member.number : parseInt(String(member.number || '0')),
+    number: typeof member.number === 'number' ? member.number : parseInt(String(member.number || '0')), // Ensure number type
     position: member.position
   })) || [];
 
