@@ -1,3 +1,4 @@
+
 import { useToast } from "@/hooks/use-toast";
 import { ComponentPlayer, PlayerTimeTrackerPlayer } from "./useRefereeState";
 import { playerTimeTrackingService } from "@/services/fixtures/playerTimeTrackingService";
@@ -35,6 +36,7 @@ interface UseRefereeHandlersProps {
   removePlayer: (playerId: number) => void;
   togglePlayerTime: (playerId: number, matchTime: number) => any;
   checkForSecondYellow: (playerName: string, teamName: string) => boolean;
+  removeGoal: (team: 'home' | 'away') => void;
 }
 
 export const useRefereeHandlers = (props: UseRefereeHandlersProps) => {
@@ -46,6 +48,14 @@ export const useRefereeHandlers = (props: UseRefereeHandlersProps) => {
       ? `Goal for ${props.selectedFixtureData?.home_team?.name}`
       : `Goal for ${props.selectedFixtureData?.away_team?.name}`;
     props.addEvent('Goal', goalText, props.matchTime);
+  };
+
+  const handleRemoveGoal = (team: 'home' | 'away') => {
+    props.removeGoal(team);
+    const goalText = team === 'home' 
+      ? `Goal removed for ${props.selectedFixtureData?.home_team?.name}`
+      : `Goal removed for ${props.selectedFixtureData?.away_team?.name}`;
+    props.addEvent('Goal Removed', goalText, props.matchTime);
   };
 
   const handleToggleTimer = () => {
@@ -285,6 +295,7 @@ export const useRefereeHandlers = (props: UseRefereeHandlersProps) => {
 
   return {
     handleAddGoal,
+    handleRemoveGoal,
     handleToggleTimer,
     handleResetMatch,
     handleSaveMatch,

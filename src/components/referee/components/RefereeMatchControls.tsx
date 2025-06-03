@@ -37,7 +37,7 @@ interface RefereeMatchControlsProps {
   events: any[];
   updateFixtureScore: any;
   onAddGoal: (team: 'home' | 'away') => void;
-  onRemoveGoal: (index: number) => void;
+  onRemoveGoal: (team: 'home' | 'away') => void;
   onToggleTimer: () => void;
   onResetMatch: () => void;
   onSaveMatch: () => void;

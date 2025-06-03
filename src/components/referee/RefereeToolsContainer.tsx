@@ -64,7 +64,7 @@ const RefereeToolsContainer = () => {
               events={state.events}
               updateFixtureScore={state.updateFixtureScore}
               onAddGoal={handlers.handleAddGoal}
-              onRemoveGoal={state.removeGoal}
+              onRemoveGoal={handlers.handleRemoveGoal}
               onToggleTimer={handlers.handleToggleTimer}
               onResetMatch={handlers.handleResetMatch}
               onSaveMatch={handlers.handleSaveMatch}
