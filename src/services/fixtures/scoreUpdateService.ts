@@ -2,6 +2,8 @@
 import { Fixture } from '@/types/database';
 import { fetchFixtureWithTeams, updateFixtureInDatabase, createFixtureResult } from './fixtureDataService';
 import { updateTeamStats } from './teamStatsService';
+import { calculateAndUpdatePositions } from './positionCalculationService';
+import { createGoalEvents } from './matchEventsCreationService';
 
 export const updateFixtureScore = async (id: number, homeScore: number, awayScore: number): Promise<Fixture> => {
   console.log('🔍 ScoreUpdateService: Starting fixture score update:', { id, homeScore, awayScore });
@@ -27,8 +29,14 @@ export const updateFixtureScore = async (id: number, homeScore: number, awayScor
 
     console.log('✅ ScoreUpdateService: Teams found:', {
       home: homeTeam.name,
-      away: awayTeam.name
+      away: awayTeam.name,
+      currentScore: `${currentFixture.home_score || 0}-${currentFixture.away_score || 0}`,
+      newScore: `${homeScore}-${awayScore}`
     });
+
+    // Store current scores for goal event creation
+    const currentHomeScore = currentFixture.home_score || 0;
+    const currentAwayScore = currentFixture.away_score || 0;
 
     // Update fixture first
     console.log('💾 ScoreUpdateService: Updating fixture in database...');
@@ -38,10 +46,26 @@ export const updateFixtureScore = async (id: number, homeScore: number, awayScor
     console.log('📈 ScoreUpdateService: Updating team statistics...');
     await updateTeamStats(homeTeam, awayTeam, homeScore, awayScore, currentFixture);
 
-    // Return simplified fixture object to avoid deep type instantiation
+    // Calculate and update league positions
+    console.log('🏆 ScoreUpdateService: Updating league table positions...');
+    await calculateAndUpdatePositions();
+
+    // Create goal events for the score change
+    console.log('⚽ ScoreUpdateService: Creating goal events...');
+    await createGoalEvents(
+      id,
+      { id: homeTeam.id, name: homeTeam.name },
+      { id: awayTeam.id, name: awayTeam.name },
+      homeScore,
+      awayScore,
+      currentHomeScore,
+      currentAwayScore
+    );
+
+    // Return simplified fixture object
     const result = createFixtureResult(updatedFixture, homeTeam, awayTeam);
     
-    console.log('✅ ScoreUpdateService: Successfully completed fixture score update');
+    console.log('✅ ScoreUpdateService: Successfully completed fixture score update with all integrations');
     return result;
 
   } catch (error) {
@@ -58,8 +82,11 @@ export const updateFixtureScore = async (id: number, homeScore: number, awayScor
       if (error.message.includes('stats')) {
         throw new Error('Failed to update team statistics. The fixture score was saved but team stats may be inconsistent.');
       }
+      if (error.message.includes('position')) {
+        throw new Error('Failed to update league positions. The match was saved but league table may be inconsistent.');
+      }
     }
     
-    throw error; // Re-throw the error so it can be handled by the calling code
+    throw error;
   }
 };
