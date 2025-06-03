@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useFixtures } from "@/hooks/useFixtures";
 import { useMembers } from "@/hooks/useMembers";
@@ -10,6 +11,7 @@ import { useCardManagement } from "@/hooks/useCardManagement";
 import { usePlayerTracking } from "@/hooks/usePlayerTracking";
 import { useGoalManagement } from "@/hooks/useGoalManagement";
 import { useLocalMatchEvents } from "@/hooks/useMatchEvents";
+import { validateMatchData } from "@/utils/matchValidation";
 import MatchSelection from "./MatchSelection";
 import MatchTimer from "./MatchTimer";
 import ScoreManagement from "./ScoreManagement";
@@ -32,8 +34,28 @@ const RefereeToolsContainer = () => {
   // Custom hooks
   const { matchTime, isRunning, toggleTimer, resetTimer, formatTime } = useMatchTimer();
   const { homeScore, awayScore, addGoal, removeGoal, resetScore } = useScoreManagement();
-  const { cards, playerName, selectedTeam, setPlayerName, setSelectedTeam, addCard, resetCards } = useCardManagement();
-  const { trackedPlayers, selectedPlayer, setSelectedPlayer, addPlayer, removePlayer, togglePlayerTime, resetTracking } = usePlayerTracking(isRunning);
+  const { 
+    cards, 
+    playerName, 
+    selectedTeam, 
+    cardReason,
+    setPlayerName, 
+    setSelectedTeam, 
+    setCardReason,
+    addCard, 
+    resetCards,
+    checkForSecondYellow 
+  } = useCardManagement();
+  const { 
+    trackedPlayers, 
+    selectedPlayer, 
+    setSelectedPlayer, 
+    addPlayer, 
+    removePlayer, 
+    togglePlayerTime, 
+    resetTracking,
+    getPlayersNeedingSubstitution 
+  } = usePlayerTracking(isRunning);
   const { goals, selectedGoalPlayer, selectedGoalType, setSelectedGoalPlayer, setSelectedGoalType, assignGoal, resetGoals } = useGoalManagement();
   const { events, addEvent, resetEvents } = useLocalMatchEvents();
 
@@ -113,25 +135,61 @@ const RefereeToolsContainer = () => {
       ? selectedFixtureData.home_team?.name || 'Home'
       : selectedFixtureData.away_team?.name || 'Away';
 
-    const card = addCard(type, teamName, matchTime);
+    // Check for second yellow card
+    const isSecondYellow = type === 'yellow' && checkForSecondYellow(playerName, teamName);
+    
+    const card = addCard(type, teamName, matchTime, cardReason);
     if (card) {
       addEvent(type === 'yellow' ? 'yellow_card' : 'red_card', `${type} card for ${card.player} (${card.team})`, matchTime);
       
+      let toastTitle = `${type === 'yellow' ? 'Yellow' : 'Red'} Card Issued!`;
+      let toastDescription = `${type === 'yellow' ? 'Yellow' : 'Red'} card issued to ${card.player} at ${formatTime(matchTime)}.`;
+      
+      if (isSecondYellow) {
+        toastTitle = "Second Yellow Card!";
+        toastDescription += " Player should receive an automatic red card.";
+        toast({
+          title: "Warning",
+          description: `${card.player} now has 2 yellow cards and should be sent off.`,
+          variant: "destructive"
+        });
+      }
+      
       toast({
-        title: `${type === 'yellow' ? 'Yellow' : 'Red'} Card Issued!`,
-        description: `${type === 'yellow' ? 'Yellow' : 'Red'} card issued to ${card.player} at ${formatTime(matchTime)}.`,
+        title: toastTitle,
+        description: toastDescription,
       });
     }
   };
 
   const handleSaveMatch = async () => {
-    if (!selectedFixture) {
+    if (!selectedFixture || !selectedFixtureData) {
       toast({
         title: "Error",
         description: "No fixture selected. Please select a match first.",
         variant: "destructive",
       });
       return;
+    }
+
+    // Validate match data before saving
+    const validation = validateMatchData(selectedFixtureData, homeScore, awayScore, matchTime);
+    
+    if (!validation.isValid) {
+      toast({
+        title: "Validation Error",
+        description: validation.errors.join(', '),
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Show warnings if any
+    if (validation.warnings.length > 0) {
+      toast({
+        title: "Warning",
+        description: validation.warnings.join(', '),
+      });
     }
     
     const currentAttempt = saveAttempts + 1;
@@ -145,15 +203,6 @@ const RefereeToolsContainer = () => {
         homeTeam: selectedFixtureData?.home_team?.name,
         awayTeam: selectedFixtureData?.away_team?.name
       });
-
-      // Validate the match data before saving
-      if (homeScore < 0 || awayScore < 0) {
-        throw new Error("Scores cannot be negative");
-      }
-
-      if (!selectedFixtureData?.home_team || !selectedFixtureData?.away_team) {
-        throw new Error("Match teams not found. Please refresh and try again.");
-      }
 
       // Update fixture score with enhanced error handling
       console.log('📊 RefereeTools: Updating fixture score...');
@@ -280,6 +329,9 @@ const RefereeToolsContainer = () => {
     }
   };
 
+  // Check for players needing substitution
+  const playersNeedingSub = getPlayersNeedingSubstitution(allPlayers);
+
   if (fixturesLoading) {
     return (
       <div className="min-h-screen gradient-bg flex items-center justify-center pb-20">
@@ -300,6 +352,13 @@ const RefereeToolsContainer = () => {
             <p className="text-yellow-300 text-sm mt-1">
               Save attempts: {saveAttempts} {saveAttempts >= 3 && "(Multiple failures detected)"}
             </p>
+          )}
+          {playersNeedingSub.length > 0 && (
+            <div className="bg-orange-500/20 border border-orange-400 rounded-lg p-3 mt-2">
+              <p className="text-orange-100 text-sm">
+                ⚠️ {playersNeedingSub.length} player(s) need substitution due to time limits
+              </p>
+            </div>
           )}
         </div>
 

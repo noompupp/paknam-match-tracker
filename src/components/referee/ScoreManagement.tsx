@@ -2,8 +2,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Minus, Play, Square, RotateCcw, Save, CheckCircle, AlertTriangle } from "lucide-react";
+import { Plus, Minus, Play, Square, RotateCcw, Save, CheckCircle, AlertTriangle, Info } from "lucide-react";
 import { Fixture } from "@/types/database";
+import { validateMatchData, formatMatchResult } from "@/utils/matchValidation";
 
 interface ScoreManagementProps {
   selectedFixtureData: Fixture;
@@ -51,6 +52,9 @@ const ScoreManagement = ({
   const isMatchComplete = selectedFixtureData.status === 'completed';
   const hasScoreChange = homeScore !== (selectedFixtureData.home_score || 0) || awayScore !== (selectedFixtureData.away_score || 0);
   
+  // Validate match data
+  const validation = validateMatchData(selectedFixtureData, homeScore, awayScore, 0);
+  
   // Determine save button state
   const getSaveButtonConfig = () => {
     if (isPending) {
@@ -60,6 +64,16 @@ const ScoreManagement = ({
         icon: Save,
         text: "Saving Match...",
         className: "bg-blue-500 hover:bg-blue-600"
+      };
+    }
+    
+    if (!validation.isValid) {
+      return {
+        disabled: true,
+        variant: "destructive" as const,
+        icon: AlertTriangle,
+        text: "Invalid Match Data",
+        className: ""
       };
     }
     
@@ -116,6 +130,35 @@ const ScoreManagement = ({
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
+        {/* Validation Messages */}
+        {validation.errors.length > 0 && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+            <div className="flex items-center gap-2 text-red-800 font-medium mb-1">
+              <AlertTriangle className="h-4 w-4" />
+              Validation Errors
+            </div>
+            <ul className="list-disc list-inside text-red-700 text-sm">
+              {validation.errors.map((error, index) => (
+                <li key={index}>{error}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {validation.warnings.length > 0 && (
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+            <div className="flex items-center gap-2 text-yellow-800 font-medium mb-1">
+              <Info className="h-4 w-4" />
+              Warnings
+            </div>
+            <ul className="list-disc list-inside text-yellow-700 text-sm">
+              {validation.warnings.map((warning, index) => (
+                <li key={index}>{warning}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+
         <div className="space-y-3">
           <div className="flex items-center justify-between p-3 rounded-lg bg-muted/20">
             <div className="flex items-center gap-3">
@@ -176,7 +219,12 @@ const ScoreManagement = ({
         <div className="text-center py-3 bg-primary/10 rounded-lg">
           <div className="text-sm text-muted-foreground mb-1">Current Score</div>
           <div className="text-2xl font-bold">
-            {selectedFixtureData.home_team?.name || 'Home'} {homeScore} - {awayScore} {selectedFixtureData.away_team?.name || 'Away'}
+            {formatMatchResult(
+              selectedFixtureData.home_team?.name || 'Home',
+              selectedFixtureData.away_team?.name || 'Away',
+              homeScore,
+              awayScore
+            )}
           </div>
           {selectedFixtureData.home_score !== null && selectedFixtureData.away_score !== null && (
             <div className="text-sm text-muted-foreground mt-1">

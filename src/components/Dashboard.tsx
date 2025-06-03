@@ -6,6 +6,7 @@ import { ArrowRight, ChevronRight } from "lucide-react";
 import { useTeams } from "@/hooks/useTeams";
 import { useTopScorers } from "@/hooks/useMembers";
 import { useRecentFixtures, useUpcomingFixtures } from "@/hooks/useFixtures";
+import { formatDateDisplay, formatTimeDisplay } from "@/utils/timeUtils";
 import DebugPanel from "./DebugPanel";
 import TournamentLogo from "./TournamentLogo";
 import TeamLogo from "./teams/TeamLogo";
@@ -15,13 +16,6 @@ const Dashboard = () => {
   const { data: topScorers, isLoading: scorersLoading } = useTopScorers();
   const { data: recentFixtures, isLoading: recentLoading } = useRecentFixtures();
   const { data: upcomingFixtures, isLoading: upcomingLoading } = useUpcomingFixtures();
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric'
-    });
-  };
 
   if (teamsError) {
     return (
@@ -189,7 +183,7 @@ const Dashboard = () => {
                 recentFixtures.map((fixture) => (
                   <div key={fixture.id} className="p-4 rounded-lg bg-muted/20 hover:bg-muted/40 transition-colors">
                     <div className="text-xs text-muted-foreground mb-2">
-                      {formatDate(fixture.match_date)}
+                      {formatDateDisplay(fixture.match_date)}
                     </div>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
@@ -243,7 +237,7 @@ const Dashboard = () => {
                 <div key={fixture.id} className="p-4 rounded-lg bg-muted/20 hover:bg-muted/40 transition-colors">
                   <div className="flex items-center justify-between">
                     <div className="text-sm text-muted-foreground">
-                      {formatDate(fixture.match_date)} • {fixture.match_time}
+                      {formatDateDisplay(fixture.match_date)} • {formatTimeDisplay(fixture.match_time)}
                     </div>
                     <ChevronRight className="h-4 w-4 text-muted-foreground" />
                   </div>

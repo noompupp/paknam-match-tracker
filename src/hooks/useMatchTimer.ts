@@ -33,10 +33,17 @@ export const useMatchTimer = () => {
     setIsRunning(false);
   };
 
+  // Enhanced time formatting for consistency across the app
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  // Additional formatting for dashboard display (showing minutes only for completed matches)
+  const formatTimeForDashboard = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    return `${mins}'`;
   };
 
   return {
@@ -45,6 +52,7 @@ export const useMatchTimer = () => {
     toggleTimer,
     resetTimer,
     formatTime,
+    formatTimeForDashboard,
     setMatchTime
   };
 };
