@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useFixtures } from "@/hooks/useFixtures";
 import { useMembers } from "@/hooks/useMembers";
@@ -27,6 +28,15 @@ interface ComponentPlayer {
   team: string;
   number?: number; // Changed from string to number for consistency
   position?: string;
+}
+
+// Player interface specifically for PlayerTimeTracker (requires number)
+interface PlayerWithRequiredNumber {
+  id: number;
+  name: string;
+  team: string;
+  number: number; // Required for PlayerTimeTracker
+  position: string;
 }
 
 const RefereeToolsContainer = () => {
@@ -82,6 +92,20 @@ const RefereeToolsContainer = () => {
     team: member.team?.name || '',
     number: typeof member.number === 'number' ? member.number : parseInt(String(member.number || '0')), // Convert to number
     position: member.position
+  })) || [];
+
+  // Create players specifically for PlayerTimeTracker with required number
+  const playersForTimeTracker: PlayerWithRequiredNumber[] = members?.filter(member => 
+    selectedFixtureData && (
+      member.team_id === selectedFixtureData.home_team_id || 
+      member.team_id === selectedFixtureData.away_team_id
+    )
+  ).map(member => ({
+    id: member.id,
+    name: member.name,
+    team: member.team?.name || '',
+    number: typeof member.number === 'number' ? member.number : parseInt(String(member.number || '0')), // Ensure number type
+    position: member.position || 'Player'
   })) || [];
 
   // Use match handlers
@@ -149,7 +173,7 @@ const RefereeToolsContainer = () => {
   });
 
   // Check for players needing attention (updated for 7-a-side rules)
-  const playersNeedingAttention = getPlayersNeedingAttention(playersForTracking, matchTime);
+  const playersNeedingAttention = getPlayersNeedingAttention(playersForTimeTracker, matchTime);
 
   if (fixturesLoading) {
     return (
@@ -240,7 +264,7 @@ const RefereeToolsContainer = () => {
             <PlayerTimeTracker
               trackedPlayers={trackedPlayers}
               selectedPlayer={selectedTimePlayer}
-              allPlayers={playersForTracking}
+              allPlayers={playersForTimeTracker}
               onPlayerSelect={setSelectedTimePlayer}
               onAddPlayer={handleAddPlayer}
               onRemovePlayer={handleRemovePlayer}
