@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useFixtures } from "@/hooks/useFixtures";
 import { useMembers } from "@/hooks/useMembers";
@@ -29,15 +28,7 @@ interface ComponentPlayer {
   position?: string;
 }
 
-// Player interface for card management (needs number as number)
-interface CardPlayer {
-  id: number;
-  name: string;
-  team: string;
-  number?: number;
-  position?: string;
-}
-
+// Player interface for player tracking (needs number as number)
 interface PlayerTrackingPlayer {
   id: number;
   name: string;
@@ -101,8 +92,8 @@ const RefereeToolsContainer = () => {
     position: member.position
   })) || [];
 
-  // Create CardPlayer objects for card management (requires number as number)
-  const playersForCards: CardPlayer[] = members?.filter(member => 
+  // Create Player objects for card management that match the expected interface
+  const playersForCards = members?.filter(member => 
     selectedFixtureData && (
       member.team_id === selectedFixtureData.home_team_id || 
       member.team_id === selectedFixtureData.away_team_id
