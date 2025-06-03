@@ -4,6 +4,8 @@ import RefereeHeader from "./components/RefereeHeader";
 import RefereeMatchControls from "./components/RefereeMatchControls";
 import { useRefereeState } from "./hooks/useRefereeState";
 import { useRefereeHandlers } from "./hooks/useRefereeHandlers";
+import { Button } from "@/components/ui/button";
+import { Save, Database } from "lucide-react";
 
 const RefereeToolsContainer = () => {
   const state = useRefereeState();
@@ -34,44 +36,65 @@ const RefereeToolsContainer = () => {
         />
 
         {state.selectedFixtureData && (
-          <RefereeMatchControls
-            selectedFixtureData={state.selectedFixtureData}
-            homeScore={state.homeScore}
-            awayScore={state.awayScore}
-            matchTime={state.matchTime}
-            isRunning={state.isRunning}
-            formatTime={state.formatTime}
-            allPlayers={state.allPlayers}
-            playersForTimeTracker={state.playersForTimeTracker}
-            goals={state.goals}
-            selectedGoalPlayer={state.selectedGoalPlayer}
-            selectedGoalType={state.selectedGoalType}
-            setSelectedGoalPlayer={state.setSelectedGoalPlayer}
-            setSelectedGoalType={state.setSelectedGoalType}
-            selectedPlayer={state.selectedPlayer}
-            selectedTeam={state.selectedTeam}
-            selectedCardType={state.selectedCardType}
-            setSelectedPlayer={state.setSelectedPlayer}
-            setSelectedTeam={state.setSelectedTeam}
-            setSelectedCardType={state.setSelectedCardType}
-            cards={state.cards}
-            trackedPlayers={state.trackedPlayers}
-            selectedTimePlayer={state.selectedTimePlayer}
-            setSelectedTimePlayer={state.setSelectedTimePlayer}
-            events={state.events}
-            updateFixtureScore={state.updateFixtureScore}
-            onAddGoal={handlers.handleAddGoal}
-            onRemoveGoal={state.removeGoal}
-            onToggleTimer={handlers.handleToggleTimer}
-            onResetMatch={handlers.handleResetMatch}
-            onSaveMatch={handlers.handleSaveMatch}
-            onAssignGoal={handlers.handleAssignGoal}
-            onAddCard={handlers.handleAddCard}
-            onAddPlayer={handlers.handleAddPlayer}
-            onRemovePlayer={handlers.handleRemovePlayer}
-            onTogglePlayerTime={handlers.handleTogglePlayerTime}
-            onExportSummary={handlers.handleExportSummary}
-          />
+          <>
+            <RefereeMatchControls
+              selectedFixtureData={state.selectedFixtureData}
+              homeScore={state.homeScore}
+              awayScore={state.awayScore}
+              matchTime={state.matchTime}
+              isRunning={state.isRunning}
+              formatTime={state.formatTime}
+              allPlayers={state.allPlayers}
+              playersForTimeTracker={state.playersForTimeTracker}
+              goals={state.goals}
+              selectedGoalPlayer={state.selectedGoalPlayer}
+              selectedGoalType={state.selectedGoalType}
+              setSelectedGoalPlayer={state.setSelectedGoalPlayer}
+              setSelectedGoalType={state.setSelectedGoalType}
+              selectedPlayer={state.selectedPlayer}
+              selectedTeam={state.selectedTeam}
+              selectedCardType={state.selectedCardType}
+              setSelectedPlayer={state.setSelectedPlayer}
+              setSelectedTeam={state.setSelectedTeam}
+              setSelectedCardType={state.setSelectedCardType}
+              cards={state.cards}
+              trackedPlayers={state.trackedPlayers}
+              selectedTimePlayer={state.selectedTimePlayer}
+              setSelectedTimePlayer={state.setSelectedTimePlayer}
+              events={state.events}
+              updateFixtureScore={state.updateFixtureScore}
+              onAddGoal={handlers.handleAddGoal}
+              onRemoveGoal={state.removeGoal}
+              onToggleTimer={handlers.handleToggleTimer}
+              onResetMatch={handlers.handleResetMatch}
+              onSaveMatch={handlers.handleSaveMatch}
+              onAssignGoal={handlers.handleAssignGoal}
+              onAddCard={handlers.handleAddCard}
+              onAddPlayer={handlers.handleAddPlayer}
+              onRemovePlayer={handlers.handleRemovePlayer}
+              onTogglePlayerTime={handlers.handleTogglePlayerTime}
+              onExportSummary={handlers.handleExportSummary}
+            />
+
+            {/* Enhanced Controls for Database Integration */}
+            <div className="flex gap-4 justify-center">
+              <Button 
+                onClick={handlers.handleSaveAllPlayerTimes}
+                variant="outline"
+                className="flex items-center gap-2"
+              >
+                <Database className="h-4 w-4" />
+                Save All Player Times
+              </Button>
+              <Button 
+                onClick={handlers.handleSaveMatch}
+                className="flex items-center gap-2"
+              >
+                <Save className="h-4 w-4" />
+                Save Match Data
+              </Button>
+            </div>
+          </>
         )}
       </div>
     </div>

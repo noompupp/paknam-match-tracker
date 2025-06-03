@@ -1,12 +1,13 @@
 
-import MatchTimer from "../MatchTimer";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ScoreManagement from "../ScoreManagement";
+import MatchTimer from "../MatchTimer";
 import GoalAssignment from "../GoalAssignment";
-import CardManagementDropdown from "../CardManagementDropdown";
+import CardManagement from "../CardManagement";
 import PlayerTimeTracker from "../PlayerTimeTracker";
-import StatsManagement from "../StatsManagement";
-import MatchSummary from "../MatchSummary";
 import MatchEvents from "../MatchEvents";
+import EnhancedMatchSummary from "../EnhancedMatchSummary";
 import { ComponentPlayer, PlayerTimeTrackerPlayer } from "../hooks/useRefereeState";
 
 interface RefereeMatchControlsProps {
@@ -36,116 +37,174 @@ interface RefereeMatchControlsProps {
   events: any[];
   updateFixtureScore: any;
   onAddGoal: (team: 'home' | 'away') => void;
-  onRemoveGoal: (team: 'home' | 'away') => void;
+  onRemoveGoal: (index: number) => void;
   onToggleTimer: () => void;
   onResetMatch: () => void;
   onSaveMatch: () => void;
   onAssignGoal: (player: ComponentPlayer) => void;
-  onAddCard: (playerName: string, team: string, cardType: "yellow" | "red", time: number) => void;
+  onAddCard: (playerName: string, team: string, cardType: 'yellow' | 'red', time: number) => void;
   onAddPlayer: (player: ComponentPlayer) => void;
   onRemovePlayer: (playerId: number) => void;
   onTogglePlayerTime: (playerId: number) => void;
   onExportSummary: () => void;
 }
 
-const RefereeMatchControls = (props: RefereeMatchControlsProps) => {
+const RefereeMatchControls = ({
+  selectedFixtureData,
+  homeScore,
+  awayScore,
+  matchTime,
+  isRunning,
+  formatTime,
+  allPlayers,
+  playersForTimeTracker,
+  goals,
+  selectedGoalPlayer,
+  selectedGoalType,
+  setSelectedGoalPlayer,
+  setSelectedGoalType,
+  selectedPlayer,
+  selectedTeam,
+  selectedCardType,
+  setSelectedPlayer,
+  setSelectedTeam,
+  setSelectedCardType,
+  cards,
+  trackedPlayers,
+  selectedTimePlayer,
+  setSelectedTimePlayer,
+  events,
+  updateFixtureScore,
+  onAddGoal,
+  onRemoveGoal,
+  onToggleTimer,
+  onResetMatch,
+  onSaveMatch,
+  onAssignGoal,
+  onAddCard,
+  onAddPlayer,
+  onRemovePlayer,
+  onTogglePlayerTime,
+  onExportSummary
+}: RefereeMatchControlsProps) => {
   return (
-    <>
-      <MatchTimer
-        selectedFixtureData={props.selectedFixtureData}
-        homeScore={props.homeScore}
-        awayScore={props.awayScore}
-        matchTime={props.matchTime}
-        isRunning={props.isRunning}
-        formatTime={props.formatTime}
-      />
+    <div className="space-y-6">
+      {/* Match Header */}
+      <Card className="card-shadow-lg">
+        <CardHeader className="text-center">
+          <CardTitle className="text-2xl">
+            {selectedFixtureData?.home_team?.name} vs {selectedFixtureData?.away_team?.name}
+          </CardTitle>
+          <p className="text-muted-foreground">
+            Match Date: {selectedFixtureData?.match_date} | Venue: {selectedFixtureData?.venue || 'TBD'}
+          </p>
+        </CardHeader>
+      </Card>
 
-      <ScoreManagement
-        selectedFixtureData={props.selectedFixtureData}
-        homeScore={props.homeScore}
-        awayScore={props.awayScore}
-        isRunning={props.isRunning}
-        isPending={props.updateFixtureScore.isPending}
-        onAddGoal={props.onAddGoal}
-        onRemoveGoal={props.onRemoveGoal}
-        onToggleTimer={props.onToggleTimer}
-        onResetMatch={props.onResetMatch}
-        onSaveMatch={props.onSaveMatch}
-      />
+      {/* Main Control Tabs */}
+      <Tabs defaultValue="score" className="space-y-4">
+        <TabsList className="grid w-full grid-cols-6">
+          <TabsTrigger value="score">Score</TabsTrigger>
+          <TabsTrigger value="timer">Timer</TabsTrigger>
+          <TabsTrigger value="goals">Goals</TabsTrigger>
+          <TabsTrigger value="cards">Cards</TabsTrigger>
+          <TabsTrigger value="time">Time</TabsTrigger>
+          <TabsTrigger value="summary">Summary</TabsTrigger>
+        </TabsList>
 
-      <GoalAssignment
-        allPlayers={props.allPlayers}
-        goals={props.goals}
-        selectedPlayer={props.selectedGoalPlayer}
-        selectedGoalType={props.selectedGoalType}
-        matchTime={props.matchTime}
-        onPlayerSelect={props.setSelectedGoalPlayer}
-        onGoalTypeChange={props.setSelectedGoalType}
-        onAssignGoal={() => {
-          if (props.selectedGoalPlayer) {
-            const player = props.allPlayers.find(p => p.id.toString() === props.selectedGoalPlayer);
-            if (player) {
-              props.onAssignGoal(player);
-            }
-          }
-        }}
-        formatTime={props.formatTime}
-      />
+        <TabsContent value="score">
+          <ScoreManagement
+            homeTeam={selectedFixtureData?.home_team?.name || "Home"}
+            awayTeam={selectedFixtureData?.away_team?.name || "Away"}
+            homeScore={homeScore}
+            awayScore={awayScore}
+            onAddGoal={onAddGoal}
+            onRemoveGoal={onRemoveGoal}
+            onResetMatch={onResetMatch}
+            onSaveMatch={onSaveMatch}
+            updateFixtureScore={updateFixtureScore}
+          />
+        </TabsContent>
 
-      <CardManagementDropdown
-        selectedFixtureData={props.selectedFixtureData}
-        allPlayers={props.allPlayers}
-        selectedPlayer={props.selectedPlayer}
-        selectedTeam={props.selectedTeam}
-        selectedCardType={props.selectedCardType}
-        cards={props.cards}
-        onPlayerSelect={props.setSelectedPlayer}
-        onTeamChange={props.setSelectedTeam}
-        onCardTypeChange={props.setSelectedCardType}
-        onAddCard={() => props.selectedPlayer && props.selectedTeam && props.selectedCardType && props.onAddCard(props.selectedPlayer, props.selectedTeam, props.selectedCardType, props.matchTime)}
-        formatTime={props.formatTime}
-      />
+        <TabsContent value="timer">
+          <MatchTimer
+            matchTime={matchTime}
+            isRunning={isRunning}
+            formatTime={formatTime}
+            onToggleTimer={onToggleTimer}
+            onResetMatch={onResetMatch}
+          />
+        </TabsContent>
 
-      <PlayerTimeTracker
-        trackedPlayers={props.trackedPlayers}
-        selectedPlayer={props.selectedTimePlayer}
-        allPlayers={props.playersForTimeTracker}
-        onPlayerSelect={props.setSelectedTimePlayer}
-        onAddPlayer={() => {
-          if (props.selectedTimePlayer) {
-            const player = props.playersForTimeTracker.find(p => p.id.toString() === props.selectedTimePlayer);
-            if (player) {
-              props.onAddPlayer(player);
-            }
-          }
-        }}
-        onRemovePlayer={props.onRemovePlayer}
-        onTogglePlayerTime={props.onTogglePlayerTime}
-        formatTime={props.formatTime}
-        matchTime={props.matchTime}
-      />
+        <TabsContent value="goals">
+          <GoalAssignment
+            allPlayers={allPlayers}
+            selectedGoalPlayer={selectedGoalPlayer}
+            selectedGoalType={selectedGoalType}
+            setSelectedGoalPlayer={setSelectedGoalPlayer}
+            setSelectedGoalType={setSelectedGoalType}
+            onAssignGoal={onAssignGoal}
+            goals={goals}
+            formatTime={formatTime}
+          />
+        </TabsContent>
 
-      <StatsManagement />
+        <TabsContent value="cards">
+          <CardManagement
+            allPlayers={allPlayers}
+            selectedPlayer={selectedPlayer}
+            selectedTeam={selectedTeam}
+            selectedCardType={selectedCardType}
+            setSelectedPlayer={setSelectedPlayer}
+            setSelectedTeam={setSelectedTeam}
+            setSelectedCardType={setSelectedCardType}
+            cards={cards}
+            onAddCard={onAddCard}
+            formatTime={formatTime}
+            selectedFixtureData={selectedFixtureData}
+            matchTime={matchTime}
+          />
+        </TabsContent>
 
-      <MatchSummary
-        selectedFixtureData={props.selectedFixtureData}
-        homeScore={props.homeScore}
-        awayScore={props.awayScore}
-        matchTime={props.matchTime}
-        events={props.events}
-        goals={props.goals}
-        cards={props.cards}
-        trackedPlayers={props.trackedPlayers}
-        allPlayers={props.allPlayers}
-        onExportSummary={props.onExportSummary}
-        formatTime={props.formatTime}
-      />
+        <TabsContent value="time">
+          <PlayerTimeTracker
+            allPlayers={allPlayers}
+            trackedPlayers={trackedPlayers}
+            selectedTimePlayer={selectedTimePlayer}
+            setSelectedTimePlayer={setSelectedTimePlayer}
+            onAddPlayer={onAddPlayer}
+            onRemovePlayer={onRemovePlayer}
+            onTogglePlayerTime={onTogglePlayerTime}
+            formatTime={formatTime}
+            matchTime={matchTime}
+          />
+        </TabsContent>
 
-      <MatchEvents
-        events={props.events}
-        formatTime={props.formatTime}
-      />
-    </>
+        <TabsContent value="summary">
+          <div className="space-y-6">
+            <EnhancedMatchSummary
+              selectedFixtureData={selectedFixtureData}
+              homeScore={homeScore}
+              awayScore={awayScore}
+              matchTime={matchTime}
+              events={events}
+              goals={goals}
+              cards={cards}
+              trackedPlayers={trackedPlayers}
+              allPlayers={allPlayers}
+              onExportSummary={onExportSummary}
+              formatTime={formatTime}
+            />
+            
+            {/* Traditional Match Events */}
+            <MatchEvents
+              events={events}
+              formatTime={formatTime}
+            />
+          </div>
+        </TabsContent>
+      </Tabs>
+    </div>
   );
 };
 

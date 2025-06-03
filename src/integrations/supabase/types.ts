@@ -153,6 +153,42 @@ export type Database = {
         }
         Relationships: []
       }
+      player_time_tracking: {
+        Row: {
+          created_at: string | null
+          fixture_id: number
+          id: number
+          periods: Json | null
+          player_id: number
+          player_name: string
+          team_id: number
+          total_minutes: number
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          fixture_id: number
+          id?: number
+          periods?: Json | null
+          player_id: number
+          player_name: string
+          team_id: number
+          total_minutes?: number
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          fixture_id?: number
+          id?: number
+          periods?: Json | null
+          player_id?: number
+          player_name?: string
+          team_id?: number
+          total_minutes?: number
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       teams: {
         Row: {
           __id__: string

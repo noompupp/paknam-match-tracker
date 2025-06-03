@@ -1,6 +1,6 @@
-
 import { useToast } from "@/hooks/use-toast";
 import { ComponentPlayer, PlayerTimeTrackerPlayer } from "./useRefereeState";
+import { playerTimeTrackingService } from "@/services/fixtures/playerTimeTrackingService";
 
 interface UseRefereeHandlersProps {
   selectedFixtureData: any;
@@ -140,9 +140,42 @@ export const useRefereeHandlers = (props: UseRefereeHandlersProps) => {
     props.addEvent('Player Added', `${player.name} started tracking`, props.matchTime);
   };
 
-  const handleRemovePlayer = (playerId: number) => {
+  const handleRemovePlayer = async (playerId: number) => {
     const player = props.playersForTimeTracker.find(p => p.id === playerId);
-    if (player) {
+    if (player && props.selectedFixtureData) {
+      // Save player time data to database before removing
+      try {
+        const teamId = player.team === props.selectedFixtureData.home_team?.name 
+          ? props.selectedFixtureData.home_team_id 
+          : props.selectedFixtureData.away_team_id;
+
+        await playerTimeTrackingService.savePlayerTime({
+          fixture_id: props.selectedFixtureData.id,
+          player_id: playerId,
+          player_name: player.name,
+          team_id: teamId,
+          total_minutes: player.totalTime,
+          periods: [{
+            start_time: player.startTime || 0,
+            end_time: props.matchTime,
+            duration: player.totalTime
+          }]
+        });
+
+        console.log('✅ Player time data saved to database');
+        toast({
+          title: "Player Time Saved",
+          description: `${player.name}'s playing time has been saved to the database`,
+        });
+      } catch (error) {
+        console.error('❌ Failed to save player time data:', error);
+        toast({
+          title: "Warning",
+          description: `Failed to save ${player.name}'s time data to database`,
+          variant: "destructive"
+        });
+      }
+
       props.removePlayer(playerId);
       props.addEvent('Player Removed', `${player.name} stopped tracking`, props.matchTime);
     }
@@ -162,16 +195,42 @@ export const useRefereeHandlers = (props: UseRefereeHandlersProps) => {
       fixture: props.selectedFixtureData,
       score: `${props.homeScore}-${props.awayScore}`,
       duration: props.formatTime(props.matchTime),
+      match_info: {
+        home_team: props.selectedFixtureData?.home_team?.name,
+        away_team: props.selectedFixtureData?.away_team?.name,
+        home_score: props.homeScore,
+        away_score: props.awayScore,
+        match_date: props.selectedFixtureData?.match_date,
+        venue: props.selectedFixtureData?.venue
+      },
       events: props.goals,
-      goals: props.goals,
+      goals_and_assists: props.goals.map(goal => ({
+        player: goal.playerName,
+        team: goal.team,
+        type: goal.type,
+        time: props.formatTime(goal.time)
+      })),
       cards: [],
-      playerTimes: props.goals
+      player_times: props.playersForTimeTracker.map(player => ({
+        name: player.name,
+        team: player.team,
+        total_time: props.formatTime(player.totalTime),
+        is_playing: player.isPlaying
+      })),
+      statistics: {
+        total_events: props.goals.length,
+        total_goals: props.goals.filter(g => g.type === 'goal').length,
+        total_assists: props.goals.filter(g => g.type === 'assist').length,
+        players_tracked: props.playersForTimeTracker.length,
+        match_duration: props.formatTime(props.matchTime)
+      },
+      export_timestamp: new Date().toISOString()
     };
     
     const dataStr = JSON.stringify(summaryData, null, 2);
     const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
     
-    const exportFileDefaultName = `match-summary-${props.selectedFixtureData?.home_team?.name}-vs-${props.selectedFixtureData?.away_team?.name}-${new Date().toISOString().split('T')[0]}.json`;
+    const exportFileDefaultName = `enhanced-match-summary-${props.selectedFixtureData?.home_team?.name}-vs-${props.selectedFixtureData?.away_team?.name}-${new Date().toISOString().split('T')[0]}.json`;
     
     const linkElement = document.createElement('a');
     linkElement.setAttribute('href', dataUri);
@@ -179,9 +238,49 @@ export const useRefereeHandlers = (props: UseRefereeHandlersProps) => {
     linkElement.click();
     
     toast({
-      title: "Match Summary Exported",
-      description: "Match summary has been downloaded as JSON file.",
+      title: "Enhanced Match Summary Exported",
+      description: "Complete match data with statistics has been downloaded as JSON file.",
     });
+  };
+
+  // Save all player time data at the end of match
+  const handleSaveAllPlayerTimes = async () => {
+    if (!props.selectedFixtureData || props.playersForTimeTracker.length === 0) return;
+
+    try {
+      const savePromises = props.playersForTimeTracker.map(async (player) => {
+        const teamId = player.team === props.selectedFixtureData.home_team?.name 
+          ? props.selectedFixtureData.home_team_id 
+          : props.selectedFixtureData.away_team_id;
+
+        return playerTimeTrackingService.savePlayerTime({
+          fixture_id: props.selectedFixtureData.id,
+          player_id: player.id,
+          player_name: player.name,
+          team_id: teamId,
+          total_minutes: player.totalTime,
+          periods: [{
+            start_time: player.startTime || 0,
+            end_time: props.matchTime,
+            duration: player.totalTime
+          }]
+        });
+      });
+
+      await Promise.all(savePromises);
+      
+      toast({
+        title: "Player Times Saved",
+        description: `All ${props.playersForTimeTracker.length} player time records saved to database`,
+      });
+    } catch (error) {
+      console.error('❌ Failed to save player time data:', error);
+      toast({
+        title: "Save Failed",
+        description: "Some player time data could not be saved",
+        variant: "destructive"
+      });
+    }
   };
 
   return {
@@ -194,6 +293,7 @@ export const useRefereeHandlers = (props: UseRefereeHandlersProps) => {
     handleAddPlayer,
     handleRemovePlayer,
     handleTogglePlayerTime,
-    handleExportSummary
+    handleExportSummary,
+    handleSaveAllPlayerTimes
   };
 };
