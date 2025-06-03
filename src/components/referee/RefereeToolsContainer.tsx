@@ -61,7 +61,7 @@ const RefereeToolsContainer = () => {
 
   const selectedFixtureData = fixtures?.find(f => f.id.toString() === selectedFixture);
   
-  // Get all players from both teams of the selected fixture
+  // Get all players from both teams of the selected fixture - fix number type conversion
   const allPlayers = members?.filter(member => 
     selectedFixtureData && (
       member.team_id === selectedFixtureData.home_team_id || 
@@ -71,7 +71,7 @@ const RefereeToolsContainer = () => {
     id: member.id,
     name: member.name,
     team: member.team?.name || '',
-    number: member.number,
+    number: member.number?.toString() || '', // Convert number to string
     position: member.position
   })) || [];
 

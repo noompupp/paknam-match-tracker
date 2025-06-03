@@ -22,8 +22,8 @@ export const updateFixtureScore = async (id: number, homeScore: number, awayScor
     console.log('📊 FixturesUpdates: Current fixture data:', currentFixture);
 
     // Enhanced team lookup - try multiple approaches to find teams
-    let homeTeam = null;
-    let awayTeam = null;
+    let homeTeam: any = null;
+    let awayTeam: any = null;
 
     // Try to get teams using different ID fields
     const teamFields = ['__id__', 'id'];
@@ -212,6 +212,7 @@ export const updateFixtureScore = async (id: number, homeScore: number, awayScor
       console.log('ℹ️ FixturesUpdates: No team stats update needed - team not found or match result unchanged');
     }
 
+    // Return simplified fixture object to avoid deep type instantiation
     return {
       id: updatedFixture.id || 0,
       home_team_id: homeTeam?.id || 0,

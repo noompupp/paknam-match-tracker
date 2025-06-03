@@ -106,10 +106,10 @@ export const analyze7aSideMatch = (homeScore: number, awayScore: number, matchTi
   };
 };
 
-// Team validation helper
+// Team validation helper - updated to use correct fixture properties
 export const validateTeams = (fixture: Fixture): boolean => {
   return !!(
-    (fixture.home_team || fixture.home_team_id || fixture.team1) && 
-    (fixture.away_team || fixture.away_team_id || fixture.team2)
+    (fixture.home_team || fixture.home_team_id) && 
+    (fixture.away_team || fixture.away_team_id)
   );
 };
