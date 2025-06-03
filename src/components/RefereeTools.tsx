@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import { useFixtures } from "@/hooks/useFixtures";
 import { useMembers } from "@/hooks/useMembers";
 import { useUpdateFixtureScore } from "@/hooks/useFixtures";
+import { useCreateMatchEvent, useUpdatePlayerStats } from "@/hooks/useMatchEvents";
 import { useToast } from "@/hooks/use-toast";
 import MatchSelection from "./referee/MatchSelection";
 import MatchTimer from "./referee/MatchTimer";
@@ -27,10 +28,19 @@ interface CardData {
   time: number;
 }
 
+interface GoalData {
+  playerId: number;
+  playerName: string;
+  team: string;
+  time: number;
+}
+
 const RefereeTools = () => {
   const { data: fixtures, isLoading: fixturesLoading } = useFixtures();
   const { data: members } = useMembers();
   const updateFixtureScore = useUpdateFixtureScore();
+  const createMatchEvent = useCreateMatchEvent();
+  const updatePlayerStats = useUpdatePlayerStats();
   const { toast } = useToast();
 
   const [selectedFixture, setSelectedFixture] = useState("");
@@ -44,6 +54,7 @@ const RefereeTools = () => {
   const [cards, setCards] = useState<CardData[]>([]);
   const [trackedPlayers, setTrackedPlayers] = useState<PlayerTime[]>([]);
   const [selectedPlayer, setSelectedPlayer] = useState("");
+  const [goals, setGoals] = useState<GoalData[]>([]);
 
   const intervalRef = useRef<NodeJS.Timeout>();
 
@@ -87,16 +98,38 @@ const RefereeTools = () => {
       time: matchTime
     };
     setEvents(prev => [...prev, newEvent]);
+
+    // Create match event in database if fixture is selected
+    if (selectedFixture) {
+      createMatchEvent.mutate({
+        fixture_id: parseInt(selectedFixture),
+        event_type: type as any,
+        player_name: '',
+        team_id: 0,
+        event_time: matchTime,
+        description
+      });
+    }
   };
 
-  const handleAddGoal = (team: 'home' | 'away') => {
+  const handleAddGoal = async (team: 'home' | 'away') => {
+    const teamData = team === 'home' ? selectedFixtureData?.home_team : selectedFixtureData?.away_team;
+    
     if (team === 'home') {
       setHomeScore(prev => prev + 1);
-      addEvent('goal', `Goal for ${selectedFixtureData?.home_team?.name}`);
     } else {
       setAwayScore(prev => prev + 1);
-      addEvent('goal', `Goal for ${selectedFixtureData?.away_team?.name}`);
     }
+
+    // Record goal event
+    const goalDescription = `Goal for ${teamData?.name}`;
+    addEvent('goal', goalDescription);
+
+    // Show toast for goal tracking
+    toast({
+      title: "Goal Scored!",
+      description: `${goalDescription}. Don't forget to assign it to a player in the events section.`,
+    });
   };
 
   const handleRemoveGoal = (team: 'home' | 'away') => {
@@ -120,21 +153,43 @@ const RefereeTools = () => {
     setEvents([]);
     setCards([]);
     setTrackedPlayers([]);
+    setGoals([]);
   };
 
   const handleSaveMatch = async () => {
     if (!selectedFixture) return;
     
     try {
+      // Update fixture score
       await updateFixtureScore.mutateAsync({
         id: parseInt(selectedFixture),
         homeScore,
         awayScore
       });
+
+      // Create final match event
+      if (selectedFixture) {
+        await createMatchEvent.mutateAsync({
+          fixture_id: parseInt(selectedFixture),
+          event_type: 'other',
+          player_name: '',
+          team_id: 0,
+          event_time: matchTime,
+          description: `Match ended: ${selectedFixtureData?.home_team?.name} ${homeScore} - ${awayScore} ${selectedFixtureData?.away_team?.name}`
+        });
+      }
+
+      // Update player stats for goals
+      for (const goal of goals) {
+        await updatePlayerStats.mutateAsync({
+          playerId: goal.playerId,
+          goals: 1
+        });
+      }
       
       toast({
         title: "Match Saved",
-        description: "Match result has been saved successfully.",
+        description: "Match result and all events have been saved successfully.",
       });
     } catch (error) {
       toast({
@@ -163,6 +218,22 @@ const RefereeTools = () => {
     setCards(prev => [...prev, newCard]);
     addEvent('card', `${type.charAt(0).toUpperCase() + type.slice(1)} card for ${playerName} (${teamName})`);
     setPlayerName("");
+
+    // Create match event in database
+    if (selectedFixture) {
+      const teamId = selectedTeam === 'home' 
+        ? selectedFixtureData?.home_team_id 
+        : selectedFixtureData?.away_team_id;
+
+      createMatchEvent.mutate({
+        fixture_id: parseInt(selectedFixture),
+        event_type: type === 'yellow' ? 'yellow_card' : 'red_card',
+        player_name: playerName,
+        team_id: teamId || 0,
+        event_time: matchTime,
+        description: `${type.charAt(0).toUpperCase() + type.slice(1)} card for ${playerName}`
+      });
+    }
   };
 
   const handleAddPlayer = () => {

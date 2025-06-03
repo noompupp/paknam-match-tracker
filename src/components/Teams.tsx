@@ -14,6 +14,18 @@ const Teams = () => {
   const firstTeam = teams?.[0];
   const { data: teamMembers, isLoading: membersLoading } = useTeamMembers(firstTeam?.id || 0);
 
+  const getTeamLogo = (team: any) => {
+    return team?.logoURL || team?.logo || '⚽';
+  };
+
+  const handleViewSquad = (teamId: number) => {
+    // For now, just scroll to the squad section
+    const squadSection = document.getElementById('team-squad');
+    if (squadSection) {
+      squadSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   if (error) {
     return (
       <div className="min-h-screen gradient-bg flex items-center justify-center pb-20">
@@ -66,7 +78,7 @@ const Teams = () => {
             teams.map((team) => (
               <Card key={team.id} className="card-shadow-lg hover:card-shadow-lg hover:scale-105 transition-all duration-300 animate-fade-in">
                 <CardHeader className="text-center">
-                  <div className="text-6xl mb-4">{team.logo}</div>
+                  <div className="text-6xl mb-4">{getTeamLogo(team)}</div>
                   <CardTitle className="text-xl font-bold">{team.name}</CardTitle>
                   <div className="flex justify-center gap-2 mt-2">
                     <Badge variant="outline" className="text-xs">#{team.position}</Badge>
@@ -75,8 +87,8 @@ const Teams = () => {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Founded:</span>
-                    <span className="font-semibold">{team.founded}</span>
+                    <span className="text-muted-foreground">Team Color:</span>
+                    <span className="font-semibold">{team.color || 'Not specified'}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Captain:</span>
@@ -91,6 +103,7 @@ const Teams = () => {
                   <Button 
                     className="w-full mt-4 bg-primary hover:bg-primary/90" 
                     size="sm"
+                    onClick={() => handleViewSquad(team.id)}
                   >
                     View Squad <ArrowRight className="h-4 w-4 ml-1" />
                   </Button>
@@ -107,11 +120,11 @@ const Teams = () => {
 
         {/* Team Squad (showing first team's squad) */}
         {firstTeam && (
-          <Card className="card-shadow-lg animate-fade-in">
+          <Card id="team-squad" className="card-shadow-lg animate-fade-in">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <span className="text-3xl">{firstTeam.logo}</span>
+                  <span className="text-3xl">{getTeamLogo(firstTeam)}</span>
                   <div>
                     <CardTitle className="text-2xl font-bold">{firstTeam.name} Squad</CardTitle>
                     <p className="text-muted-foreground">Current season players</p>

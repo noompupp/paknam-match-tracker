@@ -28,6 +28,32 @@ const PlayerTimeTracker = ({
   onTogglePlayerTime,
   formatTime
 }: PlayerTimeTrackerProps) => {
+  // Role-based time constraints
+  const getRoleConstraints = (position: string) => {
+    const constraints = {
+      'Goalkeeper': { maxTime: 90 * 60, warning: 80 * 60 }, // 90 min max, warn at 80
+      'Defender': { maxTime: 90 * 60, warning: 75 * 60 },   // 90 min max, warn at 75
+      'Midfielder': { maxTime: 85 * 60, warning: 70 * 60 }, // 85 min max, warn at 70
+      'Forward': { maxTime: 80 * 60, warning: 65 * 60 },    // 80 min max, warn at 65
+    };
+    return constraints[position as keyof typeof constraints] || constraints['Midfielder'];
+  };
+
+  const getTimeStatus = (player: PlayerTime, position: string) => {
+    const constraints = getRoleConstraints(position);
+    if (player.totalTime >= constraints.maxTime) return 'exceeded';
+    if (player.totalTime >= constraints.warning) return 'warning';
+    return 'normal';
+  };
+
+  const getTimeStatusColor = (status: string) => {
+    switch (status) {
+      case 'exceeded': return 'text-red-500';
+      case 'warning': return 'text-yellow-500';
+      default: return 'text-green-500';
+    }
+  };
+
   return (
     <Card className="card-shadow-lg">
       <CardHeader>
@@ -44,14 +70,15 @@ const PlayerTimeTracker = ({
             <div>
               <Label htmlFor="playerSelect">Select Player</Label>
               <Select value={selectedPlayer} onValueChange={onPlayerSelect}>
-                <SelectTrigger>
+                <SelectTrigger className="bg-background border-input">
                   <SelectValue placeholder="Choose a player" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-popover border border-border shadow-lg max-h-60 z-50">
                   {allPlayers.map((player) => (
                     <SelectItem 
                       key={player.id} 
                       value={player.id.toString()}
+                      className="hover:bg-accent focus:bg-accent cursor-pointer"
                     >
                       #{player.number} {player.name} ({player.team}) - {player.position}
                     </SelectItem>
@@ -78,43 +105,58 @@ const PlayerTimeTracker = ({
         ) : (
           <div className="space-y-3">
             <h4 className="font-semibold text-sm">Tracked Players</h4>
-            {trackedPlayers.map((player) => (
-              <div key={player.id} className="flex items-center justify-between p-3 bg-muted/20 rounded-lg">
-                <div className="flex items-center gap-3">
-                  <div>
-                    <span className="font-medium">{player.name}</span>
-                    <p className="text-sm text-muted-foreground">{player.team}</p>
-                  </div>
-                  <Badge variant={player.isPlaying ? "default" : "secondary"}>
-                    {player.isPlaying ? "ON FIELD" : "OFF FIELD"}
-                  </Badge>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="text-right">
-                    <div className="font-mono text-lg font-bold">
-                      {formatTime(player.totalTime)}
+            {trackedPlayers.map((player) => {
+              const playerInfo = allPlayers.find(p => p.id === player.id);
+              const position = playerInfo?.position || 'Midfielder';
+              const timeStatus = getTimeStatus(player, position);
+              const constraints = getRoleConstraints(position);
+              
+              return (
+                <div key={player.id} className="flex items-center justify-between p-3 bg-muted/20 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <div>
+                      <span className="font-medium">{player.name}</span>
+                      <p className="text-sm text-muted-foreground">{player.team} - {position}</p>
                     </div>
-                    <p className="text-xs text-muted-foreground">playing time</p>
+                    <Badge variant={player.isPlaying ? "default" : "secondary"}>
+                      {player.isPlaying ? "ON FIELD" : "OFF FIELD"}
+                    </Badge>
                   </div>
-                  <div className="flex gap-1">
-                    <Button
-                      size="sm"
-                      variant={player.isPlaying ? "destructive" : "default"}
-                      onClick={() => onTogglePlayerTime(player.id)}
-                    >
-                      {player.isPlaying ? "Sub Out" : "Sub In"}
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => onRemovePlayer(player.id)}
-                    >
-                      <UserMinus className="h-4 w-4" />
-                    </Button>
+                  <div className="flex items-center gap-3">
+                    <div className="text-right">
+                      <div className={`font-mono text-lg font-bold ${getTimeStatusColor(timeStatus)}`}>
+                        {formatTime(player.totalTime)}
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Max: {formatTime(constraints.maxTime)}
+                      </p>
+                      {timeStatus === 'exceeded' && (
+                        <p className="text-xs text-red-500 font-medium">Time exceeded!</p>
+                      )}
+                      {timeStatus === 'warning' && (
+                        <p className="text-xs text-yellow-500 font-medium">Approaching limit</p>
+                      )}
+                    </div>
+                    <div className="flex gap-1">
+                      <Button
+                        size="sm"
+                        variant={player.isPlaying ? "destructive" : "default"}
+                        onClick={() => onTogglePlayerTime(player.id)}
+                      >
+                        {player.isPlaying ? "Sub Out" : "Sub In"}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => onRemovePlayer(player.id)}
+                      >
+                        <UserMinus className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </CardContent>
