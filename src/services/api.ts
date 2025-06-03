@@ -81,7 +81,24 @@ export const teamsApi = {
       throw error;
     }
     
-    return data as Team;
+    return {
+      id: data.id || 0,
+      name: data.name || '',
+      logo: data.logo || '⚽',
+      founded: data.founded || '2020',
+      captain: data.captain || '',
+      position: data.position || 1,
+      points: data.points || 0,
+      played: data.played || 0,
+      won: data.won || 0,
+      drawn: data.drawn || 0,
+      lost: data.lost || 0,
+      goals_for: data.goals_for || 0,
+      goals_against: data.goals_against || 0,
+      goal_difference: data.goal_difference || 0,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    } as Team;
   }
 };
 
@@ -193,7 +210,18 @@ export const membersApi = {
       throw error;
     }
     
-    return data as Member;
+    return {
+      id: data.id || 0,
+      name: data.name || '',
+      number: parseInt(data.number) || 0,
+      position: data.position || 'Player',
+      role: data.role || 'Player',
+      goals: data.goals || 0,
+      assists: data.assists || 0,
+      team_id: data.team_id ? parseInt(data.team_id) : 0,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    } as Member;
   }
 };
 
@@ -418,7 +446,19 @@ export const fixturesApi = {
       throw error;
     }
     
-    return data as Fixture;
+    return {
+      id: data.id || 0,
+      home_team_id: data.home_team_id ? parseInt(data.home_team_id) : 0,
+      away_team_id: data.away_team_id ? parseInt(data.away_team_id) : 0,
+      match_date: data.match_date || data.date?.toString() || '',
+      match_time: data.match_time?.toString() || data.time?.toString() || '',
+      home_score: data.home_score,
+      away_score: data.away_score,
+      status: (data.status as 'scheduled' | 'live' | 'completed' | 'postponed') || 'scheduled',
+      venue: data.venue,
+      created_at: data.created_at || new Date().toISOString(),
+      updated_at: data.updated_at || new Date().toISOString()
+    } as Fixture;
   }
 };
 
