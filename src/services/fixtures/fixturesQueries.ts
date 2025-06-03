@@ -69,12 +69,17 @@ export const getAllFixtures = async () => {
 export const getUpcomingFixtures = async () => {
   console.log('🔍 FixturesQueries: Getting upcoming fixtures...');
   
+  const currentDate = new Date().toISOString().split('T')[0];
+  
+  // Get upcoming fixtures by date and time, sorted chronologically
   const { data: fixtures, error: fixturesError } = await supabase
     .from('fixtures')
     .select('*')
     .eq('status', 'scheduled')
+    .gte('match_date', currentDate) // Only matches today or in the future
     .order('match_date', { ascending: true })
-    .limit(5);
+    .order('match_time', { ascending: true }) // Sort by time within each date
+    .limit(3); // Only get the next 3 fixtures
   
   if (fixturesError) {
     console.error('❌ FixturesQueries: Error fetching upcoming fixtures:', fixturesError);

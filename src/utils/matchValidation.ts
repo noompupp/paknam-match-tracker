@@ -22,8 +22,13 @@ export const validateMatchData = (
     errors.push("Scores cannot be negative");
   }
 
-  if (!fixture.home_team || !fixture.away_team) {
-    errors.push("Match teams not found");
+  // Enhanced team validation
+  if (!fixture.home_team && !fixture.home_team_id) {
+    errors.push("Home team not found");
+  }
+  
+  if (!fixture.away_team && !fixture.away_team_id) {
+    errors.push("Away team not found");
   }
 
   // 7-a-side specific score validation
@@ -99,4 +104,12 @@ export const analyze7aSideMatch = (homeScore: number, awayScore: number, matchTi
     isOnPaceForHighScoring: (stats.totalGoals / (matchTime / 60)) * 50 > 6,
     matchPhase: isFirstHalf ? 'first_half' : 'second_half'
   };
+};
+
+// Team validation helper
+export const validateTeams = (fixture: Fixture): boolean => {
+  return !!(
+    (fixture.home_team || fixture.home_team_id || fixture.team1) && 
+    (fixture.away_team || fixture.away_team_id || fixture.team2)
+  );
 };

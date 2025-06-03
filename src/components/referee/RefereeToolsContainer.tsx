@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useFixtures } from "@/hooks/useFixtures";
 import { useMembers } from "@/hooks/useMembers";
@@ -6,7 +7,7 @@ import { useCreateMatchEvent, useUpdatePlayerStats } from "@/hooks/useMatchEvent
 import { useToast } from "@/hooks/use-toast";
 import { useMatchTimer } from "@/hooks/useMatchTimer";
 import { useScoreManagement } from "@/hooks/useScoreManagement";
-import { useCardManagement } from "@/hooks/useCardManagement";
+import { useCardManagementDropdown } from "@/hooks/useCardManagementDropdown";
 import { usePlayerTracking } from "@/hooks/usePlayerTracking";
 import { useGoalManagement } from "@/hooks/useGoalManagement";
 import { useLocalMatchEvents } from "@/hooks/useMatchEvents";
@@ -14,7 +15,7 @@ import { validateMatchData } from "@/utils/matchValidation";
 import MatchSelection from "./MatchSelection";
 import MatchTimer from "./MatchTimer";
 import ScoreManagement from "./ScoreManagement";
-import CardManagement from "./CardManagement";
+import CardManagementDropdown from "./CardManagementDropdown";
 import PlayerTimeTracker from "./PlayerTimeTracker";
 import MatchEvents from "./MatchEvents";
 import GoalAssignment from "./GoalAssignment";
@@ -35,20 +36,20 @@ const RefereeToolsContainer = () => {
   const { homeScore, awayScore, addGoal, removeGoal, resetScore } = useScoreManagement();
   const { 
     cards, 
-    playerName, 
+    selectedPlayer, 
     selectedTeam, 
-    cardReason,
-    setPlayerName, 
+    selectedCardType,
+    setSelectedPlayer, 
     setSelectedTeam, 
-    setCardReason,
+    setSelectedCardType,
     addCard, 
     resetCards,
     checkForSecondYellow 
-  } = useCardManagement();
+  } = useCardManagementDropdown();
   const { 
     trackedPlayers, 
-    selectedPlayer, 
-    setSelectedPlayer, 
+    selectedPlayer: selectedTimePlayer, 
+    setSelectedPlayer: setSelectedTimePlayer, 
     addPlayer, 
     removePlayer, 
     togglePlayerTime, 
@@ -127,29 +128,32 @@ const RefereeToolsContainer = () => {
     }
   };
 
-  const handleAddCard = (type: 'yellow' | 'red') => {
-    if (!selectedFixtureData) return;
+  const handleAddCard = () => {
+    if (!selectedPlayer || !selectedFixtureData) return;
+
+    const player = allPlayers.find(p => p.id.toString() === selectedPlayer);
+    if (!player) return;
 
     const teamName = selectedTeam === 'home' 
       ? selectedFixtureData.home_team?.name || 'Home'
       : selectedFixtureData.away_team?.name || 'Away';
 
     // Check for second yellow card
-    const isSecondYellow = type === 'yellow' && checkForSecondYellow(playerName, teamName);
+    const isSecondYellow = selectedCardType === 'yellow' && checkForSecondYellow(player.name, teamName);
     
-    const card = addCard(type, teamName, matchTime, cardReason);
+    const card = addCard(player, teamName, matchTime, selectedCardType);
     if (card) {
-      addEvent(type === 'yellow' ? 'yellow_card' : 'red_card', `${type} card for ${card.player} (${card.team})`, matchTime);
+      addEvent(selectedCardType === 'yellow' ? 'yellow_card' : 'red_card', `${selectedCardType} card for ${player.name} (${teamName})`, matchTime);
       
-      let toastTitle = `${type === 'yellow' ? 'Yellow' : 'Red'} Card Issued!`;
-      let toastDescription = `${type === 'yellow' ? 'Yellow' : 'Red'} card issued to ${card.player} at ${formatTime(matchTime)}.`;
+      let toastTitle = `${selectedCardType === 'yellow' ? 'Yellow' : 'Red'} Card Issued!`;
+      let toastDescription = `${selectedCardType === 'yellow' ? 'Yellow' : 'Red'} card issued to ${player.name} at ${formatTime(matchTime)}.`;
       
       if (isSecondYellow) {
         toastTitle = "Second Yellow Card!";
         toastDescription += " Player should receive an automatic red card.";
         toast({
           title: "Warning",
-          description: `${card.player} now has 2 yellow cards and should be sent off.`,
+          description: `${player.name} now has 2 yellow cards and should be sent off.`,
           variant: "destructive"
         });
       }
@@ -299,9 +303,9 @@ const RefereeToolsContainer = () => {
   };
 
   const handleAddPlayer = () => {
-    if (!selectedPlayer) return;
+    if (!selectedTimePlayer) return;
 
-    const player = allPlayers.find(p => p.id === parseInt(selectedPlayer));
+    const player = allPlayers.find(p => p.id === parseInt(selectedTimePlayer));
     if (player) {
       const playerTime = addPlayer(player, matchTime);
       if (playerTime) {
@@ -403,22 +407,25 @@ const RefereeToolsContainer = () => {
               formatTime={formatTime}
             />
 
-            <CardManagement
+            <CardManagementDropdown
               selectedFixtureData={selectedFixtureData}
-              playerName={playerName}
+              allPlayers={allPlayers}
+              selectedPlayer={selectedPlayer}
               selectedTeam={selectedTeam}
+              selectedCardType={selectedCardType}
               cards={cards}
-              onPlayerNameChange={setPlayerName}
+              onPlayerSelect={setSelectedPlayer}
               onTeamChange={setSelectedTeam}
+              onCardTypeChange={setSelectedCardType}
               onAddCard={handleAddCard}
               formatTime={formatTime}
             />
 
             <PlayerTimeTracker
               trackedPlayers={trackedPlayers}
-              selectedPlayer={selectedPlayer}
+              selectedPlayer={selectedTimePlayer}
               allPlayers={allPlayers}
-              onPlayerSelect={setSelectedPlayer}
+              onPlayerSelect={setSelectedTimePlayer}
               onAddPlayer={handleAddPlayer}
               onRemovePlayer={handleRemovePlayer}
               onTogglePlayerTime={handleTogglePlayerTime}
