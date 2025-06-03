@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useFixtures } from "@/hooks/useFixtures";
 import { useMembers } from "@/hooks/useMembers";
@@ -21,13 +20,13 @@ import PlayerTimeTracker from "./PlayerTimeTracker";
 import MatchEvents from "./MatchEvents";
 import GoalAssignment from "./GoalAssignment";
 
-// Define consistent Player interface for this component - using number as required
+// Define consistent Player interface for this component - using number and position as required
 interface ComponentPlayer {
   id: number;
   name: string;
   team: string;
   number: number; // Made required to match expected Player type
-  position?: string;
+  position: string; // Made required to match expected Player type
 }
 
 // Player interface that matches exactly what PlayerTimeTracker expects
@@ -80,7 +79,7 @@ const RefereeToolsContainer = () => {
 
   const selectedFixtureData = fixtures?.find(f => f.id.toString() === selectedFixture);
   
-  // Get all players from both teams of the selected fixture - create ComponentPlayer objects with required number
+  // Get all players from both teams of the selected fixture - create ComponentPlayer objects with required number and position
   const allPlayers: ComponentPlayer[] = members?.filter(member => 
     selectedFixtureData && (
       member.team_id === selectedFixtureData.home_team_id || 
@@ -91,7 +90,7 @@ const RefereeToolsContainer = () => {
     name: member.name,
     team: member.team?.name || '',
     number: typeof member.number === 'number' ? member.number : parseInt(String(member.number || '0')), // Ensure number type and required
-    position: member.position
+    position: member.position || 'Player' // Ensure position is always a string, never undefined
   })) || [];
 
   // Create players specifically for PlayerTimeTracker with the exact interface it expects
