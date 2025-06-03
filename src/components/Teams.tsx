@@ -18,8 +18,42 @@ const Teams = () => {
   const selectedTeam = teams?.find(team => team.id === targetTeamId);
 
   const getTeamLogo = (team: any) => {
-    // Use logoURL first, then fallback to logo, then default
-    return team?.logoURL || team?.logo || '⚽';
+    // Prioritize logoURL, then fallback to logo, then default emoji
+    if (team?.logoURL) {
+      return (
+        <img 
+          src={team.logoURL} 
+          alt={`${team.name} logo`} 
+          className="w-16 h-16 object-contain rounded-lg border border-gray-200" 
+          onError={(e) => {
+            // Fallback to emoji if image fails to load
+            const target = e.target as HTMLImageElement;
+            target.style.display = 'none';
+            target.nextElementSibling?.classList.remove('hidden');
+          }}
+        />
+      );
+    }
+    return <span className="text-6xl">{team?.logo || '⚽'}</span>;
+  };
+
+  const getTeamLogoSmall = (team: any) => {
+    // For smaller displays (like in squad section)
+    if (team?.logoURL) {
+      return (
+        <img 
+          src={team.logoURL} 
+          alt={`${team.name} logo`} 
+          className="w-8 h-8 object-contain rounded border border-gray-200" 
+          onError={(e) => {
+            const target = e.target as HTMLImageElement;
+            target.style.display = 'none';
+            target.nextElementSibling?.classList.remove('hidden');
+          }}
+        />
+      );
+    }
+    return <span className="text-2xl">{team?.logo || '⚽'}</span>;
   };
 
   const handleViewSquad = (teamId: number) => {
@@ -82,7 +116,10 @@ const Teams = () => {
             teams.map((team) => (
               <Card key={team.id} className="card-shadow-lg hover:card-shadow-lg hover:scale-105 transition-all duration-300 animate-fade-in">
                 <CardHeader className="text-center">
-                  <div className="text-6xl mb-4">{getTeamLogo(team)}</div>
+                  <div className="flex justify-center items-center mb-4 h-16">
+                    {getTeamLogo(team)}
+                    <span className="text-6xl hidden">{team?.logo || '⚽'}</span>
+                  </div>
                   <CardTitle className="text-xl font-bold">{team.name}</CardTitle>
                   <div className="flex justify-center gap-2 mt-2">
                     <Badge variant="outline" className="text-xs">#{team.position}</Badge>
@@ -136,7 +173,10 @@ const Teams = () => {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <span className="text-3xl">{getTeamLogo(selectedTeam)}</span>
+                  <div className="flex items-center">
+                    {getTeamLogoSmall(selectedTeam)}
+                    <span className="text-2xl hidden">{selectedTeam?.logo || '⚽'}</span>
+                  </div>
                   <div>
                     <CardTitle className="text-2xl font-bold">{selectedTeam.name} Squad</CardTitle>
                     <p className="text-muted-foreground">Current season players</p>

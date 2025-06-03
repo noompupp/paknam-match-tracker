@@ -12,14 +12,41 @@ interface MatchSelectionProps {
 
 const MatchSelection = ({ fixtures, selectedFixture, onFixtureChange }: MatchSelectionProps) => {
   const getTeamLogo = (team: any) => {
-    return team?.logoURL || team?.logo || '⚽';
+    // Use logoURL first with proper image handling, then fallback to logo emoji
+    if (team?.logoURL) {
+      return (
+        <img 
+          src={team.logoURL} 
+          alt={`${team.name} logo`} 
+          className="w-5 h-5 object-contain rounded border border-gray-200" 
+          onError={(e) => {
+            // Fallback to emoji if image fails to load
+            const target = e.target as HTMLImageElement;
+            target.style.display = 'none';
+            target.nextElementSibling?.classList.remove('hidden');
+          }}
+        />
+      );
+    }
+    return <span className="text-lg">{team?.logo || '⚽'}</span>;
   };
 
-  // Sort fixtures by __id__ field safely
+  // Sort fixtures chronologically (earliest scheduled first, then most recent completed)
   const sortedFixtures = fixtures?.slice().sort((a, b) => {
-    const aId = a.__id__ || a.id?.toString() || '0';
-    const bId = b.__id__ || b.id?.toString() || '0';
-    return aId.localeCompare(bId);
+    const dateA = new Date(a.match_date || a.date || '');
+    const dateB = new Date(b.match_date || b.date || '');
+    
+    // Scheduled fixtures first, then completed
+    if (a.status !== 'completed' && b.status === 'completed') return -1;
+    if (a.status === 'completed' && b.status !== 'completed') return 1;
+    
+    // For scheduled fixtures, show earliest first
+    if (a.status !== 'completed' && b.status !== 'completed') {
+      return dateA.getTime() - dateB.getTime();
+    }
+    
+    // For completed fixtures, show most recent first
+    return dateB.getTime() - dateA.getTime();
   }) || [];
 
   return (
@@ -42,13 +69,26 @@ const MatchSelection = ({ fixtures, selectedFixture, onFixtureChange }: MatchSel
                   className="hover:bg-accent focus:bg-accent cursor-pointer"
                 >
                   <div className="flex items-center gap-2 py-1">
-                    <span className="text-lg">{getTeamLogo(fixture.home_team)}</span>
+                    <div className="flex items-center">
+                      {getTeamLogo(fixture.home_team)}
+                      <span className="text-lg hidden">{fixture.home_team?.logo || '⚽'}</span>
+                    </div>
                     <span className="font-medium">{fixture.home_team?.name || 'TBD'}</span>
                     <span className="text-muted-foreground">vs</span>
                     <span className="font-medium">{fixture.away_team?.name || 'TBD'}</span>
-                    <span className="text-lg">{getTeamLogo(fixture.away_team)}</span>
+                    <div className="flex items-center">
+                      {getTeamLogo(fixture.away_team)}
+                      <span className="text-lg hidden">{fixture.away_team?.logo || '⚽'}</span>
+                    </div>
                     <span className="text-xs text-muted-foreground ml-2">
                       ({new Date(fixture.match_date).toLocaleDateString()})
+                    </span>
+                    <span className={`text-xs px-2 py-1 rounded ml-2 ${
+                      fixture.status === 'completed' ? 'bg-green-100 text-green-800' : 
+                      fixture.status === 'live' ? 'bg-red-100 text-red-800' :
+                      'bg-blue-100 text-blue-800'
+                    }`}>
+                      {fixture.status}
                     </span>
                   </div>
                 </SelectItem>

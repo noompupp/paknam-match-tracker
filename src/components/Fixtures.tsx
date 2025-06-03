@@ -42,8 +42,23 @@ const Fixtures = () => {
   };
 
   const getTeamLogo = (team: any) => {
-    // Use logoURL first, then fallback to logo, then default
-    return team?.logoURL || team?.logo || '⚽';
+    // Use logoURL first with proper image handling, then fallback to logo emoji
+    if (team?.logoURL) {
+      return (
+        <img 
+          src={team.logoURL} 
+          alt={`${team.name} logo`} 
+          className="w-8 h-8 object-contain rounded border border-gray-200" 
+          onError={(e) => {
+            // Fallback to emoji if image fails to load
+            const target = e.target as HTMLImageElement;
+            target.style.display = 'none';
+            target.nextElementSibling?.classList.remove('hidden');
+          }}
+        />
+      );
+    }
+    return <span className="text-2xl">{team?.logo || '⚽'}</span>;
   };
 
   const FixtureCard = ({ fixture, showScore = false }: { fixture: any, showScore?: boolean }) => (
@@ -65,7 +80,10 @@ const Fixtures = () => {
           {/* Teams */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3 flex-1">
-              <div className="text-2xl">{getTeamLogo(fixture.home_team)}</div>
+              <div className="flex items-center">
+                {getTeamLogo(fixture.home_team)}
+                <span className="text-2xl hidden">{fixture.home_team?.logo || '⚽'}</span>
+              </div>
               <div>
                 <p className="font-semibold">{fixture.home_team?.name || 'TBD'}</p>
                 <p className="text-xs text-muted-foreground">Home</p>
@@ -96,7 +114,10 @@ const Fixtures = () => {
                 <p className="font-semibold">{fixture.away_team?.name || 'TBD'}</p>
                 <p className="text-xs text-muted-foreground">Away</p>
               </div>
-              <div className="text-2xl">{getTeamLogo(fixture.away_team)}</div>
+              <div className="flex items-center">
+                {getTeamLogo(fixture.away_team)}
+                <span className="text-2xl hidden">{fixture.away_team?.logo || '⚽'}</span>
+              </div>
             </div>
           </div>
 
@@ -140,11 +161,26 @@ const Fixtures = () => {
     </Card>
   );
 
-  // Sort fixtures by __id__ field safely
+  // Sort all fixtures chronologically (most recent first for completed, earliest first for scheduled)
   const sortedAllFixtures = allFixtures?.slice().sort((a, b) => {
-    const aId = a.__id__ || a.id?.toString() || '0';
-    const bId = b.__id__ || b.id?.toString() || '0';
-    return aId.localeCompare(bId);
+    const dateA = new Date(a.match_date || a.date || '');
+    const dateB = new Date(b.match_date || b.date || '');
+    
+    // For completed fixtures, show most recent first
+    if (a.status === 'completed' && b.status === 'completed') {
+      return dateB.getTime() - dateA.getTime();
+    }
+    
+    // For scheduled/upcoming fixtures, show earliest first
+    if (a.status !== 'completed' && b.status !== 'completed') {
+      return dateA.getTime() - dateB.getTime();
+    }
+    
+    // Mixed status: completed fixtures first, then upcoming
+    if (a.status === 'completed') return -1;
+    if (b.status === 'completed') return 1;
+    
+    return dateA.getTime() - dateB.getTime();
   });
 
   return (
