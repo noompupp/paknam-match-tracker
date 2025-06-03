@@ -7,6 +7,17 @@ interface TeamLogoProps {
 }
 
 const TeamLogo = ({ team, size = 'medium', className = '', showColor = false }: TeamLogoProps) => {
+  console.log('🖼️ TeamLogo: Rendering with props:', {
+    teamName: team?.name,
+    hasLogoURL: !!team?.logoURL,
+    logoURL: team?.logoURL,
+    logo: team?.logo,
+    hasColor: !!team?.color,
+    color: team?.color,
+    size,
+    showColor
+  });
+
   const getSizeClasses = () => {
     switch (size) {
       case 'small':
@@ -34,6 +45,7 @@ const TeamLogo = ({ team, size = 'medium', className = '', showColor = false }: 
 
   // Prioritize logoURL, then fallback to logo, then default emoji
   if (team?.logoURL) {
+    console.log('🖼️ TeamLogo: Using logoURL:', team.logoURL);
     return (
       <div className={`flex items-center ${className}`}>
         <div 
@@ -47,10 +59,14 @@ const TeamLogo = ({ team, size = 'medium', className = '', showColor = false }: 
             alt={`${team.name} logo`} 
             className="w-full h-full object-contain"
             onError={(e) => {
+              console.log('🖼️ TeamLogo: Image failed to load, falling back to emoji:', team.logoURL);
               // Fallback to emoji if image fails to load
               const target = e.target as HTMLImageElement;
               target.style.display = 'none';
               target.nextElementSibling?.classList.remove('hidden');
+            }}
+            onLoad={() => {
+              console.log('🖼️ TeamLogo: Image loaded successfully:', team.logoURL);
             }}
           />
           <span className={`${sizeClasses.replace(/w-\w+ h-\w+/, '')} hidden flex items-center justify-center`}>
@@ -61,6 +77,7 @@ const TeamLogo = ({ team, size = 'medium', className = '', showColor = false }: 
     );
   }
   
+  console.log('🖼️ TeamLogo: Using emoji fallback:', team?.logo || '⚽');
   return (
     <div className={`flex items-center ${className}`}>
       <div 

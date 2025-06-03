@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { Fixture } from '@/types/database';
 
@@ -24,26 +23,37 @@ const transformFixture = (fixture: any): Fixture => ({
   away_team: fixture.away_team
 });
 
-const createTeamObject = (team: any) => ({
-  id: team.id || 0,
-  name: team.name || '',
-  logo: team.logo || '⚽',
-  logoURL: team.logoURL || undefined, // Include logoURL property
-  color: team.color || undefined, // Include color property
-  founded: team.founded || '2020',
-  captain: team.captain || '',
-  position: team.position || 1,
-  points: team.points || 0,
-  played: team.played || 0,
-  won: team.won || 0,
-  drawn: team.drawn || 0,
-  lost: team.lost || 0,
-  goals_for: team.goals_for || 0,
-  goals_against: team.goals_against || 0,
-  goal_difference: team.goal_difference || 0,
-  created_at: new Date().toISOString(),
-  updated_at: new Date().toISOString()
-});
+const createTeamObject = (team: any) => {
+  const teamObj = {
+    id: team.id || 0,
+    name: team.name || '',
+    logo: team.logo || '⚽',
+    logoURL: team.logoURL || undefined, // Ensure logoURL is preserved
+    color: team.color || undefined,
+    founded: team.founded || '2020',
+    captain: team.captain || '',
+    position: team.position || 1,
+    points: team.points || 0,
+    played: team.played || 0,
+    won: team.won || 0,
+    drawn: team.drawn || 0,
+    lost: team.lost || 0,
+    goals_for: team.goals_for || 0,
+    goals_against: team.goals_against || 0,
+    goal_difference: team.goal_difference || 0,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
+  };
+  
+  console.log('🔧 FixturesAPI: Created team object:', {
+    name: teamObj.name,
+    hasLogoURL: !!teamObj.logoURL,
+    logoURL: teamObj.logoURL,
+    logo: teamObj.logo
+  });
+  
+  return teamObj;
+};
 
 export const fixturesApi = {
   getAll: async () => {
@@ -93,6 +103,8 @@ export const fixturesApi = {
         name: t.name,
         numericId: t.id,
         textId: t.__id__,
+        logoURL: t.logoURL,
+        hasLogoURL: !!t.logoURL,
         normalized: normalizeId(t.__id__)
       })) || []
     });
@@ -117,17 +129,22 @@ export const fixturesApi = {
           id: homeTeam.id, 
           name: homeTeam.name,
           textId: homeTeam.__id__,
+          logoURL: homeTeam.logoURL,
+          hasLogoURL: !!homeTeam.logoURL,
           normalized: normalizeId(homeTeam.__id__)
         } : null,
         foundAwayTeam: awayTeam ? { 
           id: awayTeam.id, 
           name: awayTeam.name,
           textId: awayTeam.__id__,
+          logoURL: awayTeam.logoURL,
+          hasLogoURL: !!awayTeam.logoURL,
           normalized: normalizeId(awayTeam.__id__)
         } : null,
         availableTeams: teams?.map(t => ({
           name: t.name,
           textId: t.__id__,
+          logoURL: t.logoURL,
           normalized: normalizeId(t.__id__)
         })) || []
       });
@@ -142,7 +159,8 @@ export const fixturesApi = {
     console.log('✅ FixturesAPI: Successfully transformed fixtures:', {
       count: fixturesWithTeams.length,
       fixturesWithBothTeams: fixturesWithTeams.filter(f => f.home_team && f.away_team).length,
-      fixturesWithoutTeams: fixturesWithTeams.filter(f => !f.home_team || !f.away_team).length
+      fixturesWithoutTeams: fixturesWithTeams.filter(f => !f.home_team || !f.away_team).length,
+      teamsWithLogos: fixturesWithTeams.filter(f => f.home_team?.logoURL || f.away_team?.logoURL).length
     });
     
     return fixturesWithTeams.map(transformFixture);

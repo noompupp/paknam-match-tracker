@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -41,6 +40,13 @@ const Fixtures = () => {
       minute: '2-digit',
       hour12: true 
     });
+  };
+
+  // Create a combined date-time for proper sorting
+  const getFixtureDateTime = (fixture: any) => {
+    const dateStr = fixture.match_date;
+    const timeStr = fixture.match_time || '00:00:00';
+    return new Date(`${dateStr}T${timeStr}`);
   };
 
   const FixtureCard = ({ fixture, showScore = false }: { fixture: any, showScore?: boolean }) => (
@@ -137,26 +143,26 @@ const Fixtures = () => {
     </Card>
   );
 
-  // Sort all fixtures chronologically (most recent first for completed, earliest first for scheduled)
+  // Sort all fixtures with proper date-time handling
   const sortedAllFixtures = allFixtures?.slice().sort((a, b) => {
-    const dateA = new Date(a.match_date || '');
-    const dateB = new Date(b.match_date || '');
+    const dateTimeA = getFixtureDateTime(a);
+    const dateTimeB = getFixtureDateTime(b);
     
     // For completed fixtures, show most recent first
     if (a.status === 'completed' && b.status === 'completed') {
-      return dateB.getTime() - dateA.getTime();
+      return dateTimeB.getTime() - dateTimeA.getTime();
     }
     
     // For scheduled/upcoming fixtures, show earliest first
     if (a.status !== 'completed' && b.status !== 'completed') {
-      return dateA.getTime() - dateB.getTime();
+      return dateTimeA.getTime() - dateTimeB.getTime();
     }
     
     // Mixed status: completed fixtures first, then upcoming
     if (a.status === 'completed') return -1;
     if (b.status === 'completed') return 1;
     
-    return dateA.getTime() - dateB.getTime();
+    return dateTimeA.getTime() - dateTimeB.getTime();
   });
 
   return (

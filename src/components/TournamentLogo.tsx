@@ -15,9 +15,9 @@ const TournamentLogo = ({ size = 'medium', className = '' }: TournamentLogoProps
   useEffect(() => {
     const fetchTournamentLogo = async () => {
       try {
-        // Get the tournament logo URL from storage
+        // Get the tournament logo URL from the correct bucket
         const { data } = supabase.storage
-          .from('tournament-assets')
+          .from('tournament-logo')
           .getPublicUrl('tournament-logo.png');
 
         if (data?.publicUrl) {
