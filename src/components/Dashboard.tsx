@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -6,6 +5,7 @@ import { ArrowRight, ChevronRight } from "lucide-react";
 import { useTeams } from "@/hooks/useTeams";
 import { useTopScorers } from "@/hooks/useMembers";
 import { useRecentFixtures, useUpcomingFixtures } from "@/hooks/useFixtures";
+import DebugPanel from "./DebugPanel";
 
 const Dashboard = () => {
   const { data: teams, isLoading: teamsLoading, error: teamsError } = useTeams();
@@ -79,8 +79,8 @@ const Dashboard = () => {
                         <td className="p-3 text-center"><Skeleton className="h-4 w-8 mx-auto" /></td>
                       </tr>
                     ))
-                  ) : (
-                    teams?.map((team) => (
+                  ) : teams && teams.length > 0 ? (
+                    teams.map((team) => (
                       <tr key={team.id} className="border-b hover:bg-muted/30 transition-colors">
                         <td className="p-3 font-bold">{team.position}</td>
                         <td className="p-3 font-semibold">{team.name}</td>
@@ -94,6 +94,12 @@ const Dashboard = () => {
                         <td className="p-3 text-center font-bold text-primary">{team.points}</td>
                       </tr>
                     ))
+                  ) : (
+                    <tr>
+                      <td colSpan={8} className="p-8 text-center text-muted-foreground">
+                        No teams data available
+                      </td>
+                    </tr>
                   )}
                 </tbody>
               </table>
@@ -122,7 +128,7 @@ const Dashboard = () => {
                     <Skeleton className="h-6 w-8" />
                   </div>
                 ))
-              ) : (
+              ) : topScorers && topScorers.length > 0 ? (
                 topScorers.map((scorer, index) => (
                   <div key={index} className="flex items-center justify-between p-3 rounded-lg hover:bg-muted/30 transition-colors">
                     <div className="flex items-center space-x-3">
@@ -137,6 +143,10 @@ const Dashboard = () => {
                     <Badge className="bg-primary text-primary-foreground">{scorer.goals}</Badge>
                   </div>
                 ))
+              ) : (
+                <div className="text-center text-muted-foreground py-4">
+                  No scorer data available
+                </div>
               )}
             </CardContent>
           </Card>
@@ -159,23 +169,27 @@ const Dashboard = () => {
                     </div>
                   </div>
                 ))
-              ) : (
-                recentFixtures?.map((fixture) => (
+              ) : recentFixtures && recentFixtures.length > 0 ? (
+                recentFixtures.map((fixture) => (
                   <div key={fixture.id} className="p-4 rounded-lg bg-muted/20 hover:bg-muted/40 transition-colors">
                     <div className="text-xs text-muted-foreground mb-2">
                       {formatDate(fixture.match_date)}
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="font-semibold text-sm">{fixture.home_team?.name}</span>
+                      <span className="font-semibold text-sm">{fixture.home_team?.name || 'TBD'}</span>
                       <div className="flex items-center space-x-2">
                         <Badge variant="outline" className="px-3 py-1">
                           {fixture.home_score} - {fixture.away_score}
                         </Badge>
                       </div>
-                      <span className="font-semibold text-sm">{fixture.away_team?.name}</span>
+                      <span className="font-semibold text-sm">{fixture.away_team?.name || 'TBD'}</span>
                     </div>
                   </div>
                 ))
+              ) : (
+                <div className="text-center text-muted-foreground py-4">
+                  No recent results available
+                </div>
               )}
             </CardContent>
           </Card>
@@ -202,8 +216,8 @@ const Dashboard = () => {
                   </div>
                 </div>
               ))
-            ) : (
-              upcomingFixtures?.map((fixture) => (
+            ) : upcomingFixtures && upcomingFixtures.length > 0 ? (
+              upcomingFixtures.map((fixture) => (
                 <div key={fixture.id} className="p-4 rounded-lg bg-muted/20 hover:bg-muted/40 transition-colors">
                   <div className="flex items-center justify-between">
                     <div className="text-sm text-muted-foreground">
@@ -212,16 +226,23 @@ const Dashboard = () => {
                     <ChevronRight className="h-4 w-4 text-muted-foreground" />
                   </div>
                   <div className="flex items-center justify-between mt-2">
-                    <span className="font-semibold">{fixture.home_team?.name}</span>
+                    <span className="font-semibold">{fixture.home_team?.name || 'TBD'}</span>
                     <span className="text-muted-foreground text-sm">vs</span>
-                    <span className="font-semibold">{fixture.away_team?.name}</span>
+                    <span className="font-semibold">{fixture.away_team?.name || 'TBD'}</span>
                   </div>
                 </div>
               ))
+            ) : (
+              <div className="text-center text-muted-foreground py-4">
+                No upcoming fixtures available
+              </div>
             )}
           </CardContent>
         </Card>
       </div>
+
+      {/* Debug Panel */}
+      <DebugPanel />
     </div>
   );
 };

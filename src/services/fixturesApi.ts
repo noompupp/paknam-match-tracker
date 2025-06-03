@@ -1,6 +1,11 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { Fixture } from '@/types/database';
+
+// Helper function to normalize IDs for consistent matching
+const normalizeId = (id: any): string => {
+  if (id === null || id === undefined) return '';
+  return String(id).trim().toLowerCase();
+};
 
 const transformFixture = (fixture: any): Fixture => ({
   id: fixture.id || 0,
@@ -36,7 +41,13 @@ export const fixturesApi = {
     console.log('📊 FixturesAPI: Raw fixtures data from database:', {
       count: fixtures?.length || 0,
       sample: fixtures?.[0] || null,
-      allData: fixtures
+      teamMappings: fixtures?.map(f => ({
+        id: f.id,
+        team1: f.team1,
+        team2: f.team2,
+        normalizedTeam1: normalizeId(f.team1),
+        normalizedTeam2: normalizeId(f.team2)
+      })) || []
     });
 
     if (!fixtures || fixtures.length === 0) {
@@ -56,22 +67,47 @@ export const fixturesApi = {
 
     console.log('📊 FixturesAPI: Teams data for joining:', {
       count: teams?.length || 0,
-      sample: teams?.[0] || null
+      idMappings: teams?.map(t => ({
+        name: t.name,
+        numericId: t.id,
+        textId: t.__id__,
+        normalized: normalizeId(t.__id__)
+      })) || []
     });
 
-    // Manually join fixtures with teams
+    // Manually join fixtures with teams using normalized IDs
     const fixturesWithTeams = fixtures.map(fixture => {
-      // Find home team using team1 field
-      const homeTeam = teams?.find(team => team.__id__ === fixture.team1);
-      // Find away team using team2 field  
-      const awayTeam = teams?.find(team => team.__id__ === fixture.team2);
+      // Find home team using normalized team1 field
+      const normalizedTeam1 = normalizeId(fixture.team1);
+      const homeTeam = teams?.find(team => normalizeId(team.__id__) === normalizedTeam1);
+      
+      // Find away team using normalized team2 field  
+      const normalizedTeam2 = normalizeId(fixture.team2);
+      const awayTeam = teams?.find(team => normalizeId(team.__id__) === normalizedTeam2);
 
       console.log('🔄 FixturesAPI: Transforming fixture:', {
         fixtureId: fixture.id,
         team1: fixture.team1,
         team2: fixture.team2,
-        foundHomeTeam: homeTeam ? { id: homeTeam.id, name: homeTeam.name } : null,
-        foundAwayTeam: awayTeam ? { id: awayTeam.id, name: awayTeam.name } : null
+        normalizedTeam1,
+        normalizedTeam2,
+        foundHomeTeam: homeTeam ? { 
+          id: homeTeam.id, 
+          name: homeTeam.name,
+          textId: homeTeam.__id__,
+          normalized: normalizeId(homeTeam.__id__)
+        } : null,
+        foundAwayTeam: awayTeam ? { 
+          id: awayTeam.id, 
+          name: awayTeam.name,
+          textId: awayTeam.__id__,
+          normalized: normalizeId(awayTeam.__id__)
+        } : null,
+        availableTeams: teams?.map(t => ({
+          name: t.name,
+          textId: t.__id__,
+          normalized: normalizeId(t.__id__)
+        })) || []
       });
 
       return {
@@ -118,7 +154,7 @@ export const fixturesApi = {
     console.log('✅ FixturesAPI: Successfully transformed fixtures:', {
       count: fixturesWithTeams.length,
       fixturesWithBothTeams: fixturesWithTeams.filter(f => f.home_team && f.away_team).length,
-      firstFixture: fixturesWithTeams[0] || null
+      fixturesWithoutTeams: fixturesWithTeams.filter(f => !f.home_team || !f.away_team).length
     });
     
     return fixturesWithTeams.map(transformFixture);
@@ -159,10 +195,20 @@ export const fixturesApi = {
       throw teamsError;
     }
 
-    // Manually join fixtures with teams
+    // Manually join fixtures with teams using normalized IDs
     const fixturesWithTeams = fixtures.map(fixture => {
-      const homeTeam = teams?.find(team => team.__id__ === fixture.team1);
-      const awayTeam = teams?.find(team => team.__id__ === fixture.team2);
+      const normalizedTeam1 = normalizeId(fixture.team1);
+      const normalizedTeam2 = normalizeId(fixture.team2);
+      const homeTeam = teams?.find(team => normalizeId(team.__id__) === normalizedTeam1);
+      const awayTeam = teams?.find(team => normalizeId(team.__id__) === normalizedTeam2);
+
+      console.log('🔄 FixturesAPI: Processing upcoming fixture:', {
+        fixtureId: fixture.id,
+        foundHome: !!homeTeam,
+        foundAway: !!awayTeam,
+        homeTeamName: homeTeam?.name,
+        awayTeamName: awayTeam?.name
+      });
 
       return {
         ...fixture,
@@ -206,7 +252,8 @@ export const fixturesApi = {
     });
     
     console.log('✅ FixturesAPI: Successfully processed upcoming fixtures:', {
-      count: fixturesWithTeams.length
+      count: fixturesWithTeams.length,
+      withBothTeams: fixturesWithTeams.filter(f => f.home_team && f.away_team).length
     });
     
     return fixturesWithTeams.map(transformFixture);
@@ -247,10 +294,20 @@ export const fixturesApi = {
       throw teamsError;
     }
 
-    // Manually join fixtures with teams
+    // Manually join fixtures with teams using normalized IDs
     const fixturesWithTeams = fixtures.map(fixture => {
-      const homeTeam = teams?.find(team => team.__id__ === fixture.team1);
-      const awayTeam = teams?.find(team => team.__id__ === fixture.team2);
+      const normalizedTeam1 = normalizeId(fixture.team1);
+      const normalizedTeam2 = normalizeId(fixture.team2);
+      const homeTeam = teams?.find(team => normalizeId(team.__id__) === normalizedTeam1);
+      const awayTeam = teams?.find(team => normalizeId(team.__id__) === normalizedTeam2);
+
+      console.log('🔄 FixturesAPI: Processing recent fixture:', {
+        fixtureId: fixture.id,
+        foundHome: !!homeTeam,
+        foundAway: !!awayTeam,
+        homeTeamName: homeTeam?.name,
+        awayTeamName: awayTeam?.name
+      });
 
       return {
         ...fixture,
@@ -265,7 +322,7 @@ export const fixturesApi = {
           played: homeTeam.played || 0,
           won: homeTeam.won || 0,
           drawn: homeTeam.drawn || 0,
-          lost: homeTeam.lost || 0,
+          lost: awayTeam.lost || 0,
           goals_for: homeTeam.goals_for || 0,
           goals_against: homeTeam.goals_against || 0,
           goal_difference: homeTeam.goal_difference || 0,
@@ -294,7 +351,8 @@ export const fixturesApi = {
     });
     
     console.log('✅ FixturesAPI: Successfully processed recent fixtures:', {
-      count: fixturesWithTeams.length
+      count: fixturesWithTeams.length,
+      withBothTeams: fixturesWithTeams.filter(f => f.home_team && f.away_team).length
     });
     
     return fixturesWithTeams.map(transformFixture);

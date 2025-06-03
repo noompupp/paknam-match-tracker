@@ -4,3 +4,4 @@ export { teamsApi } from './teamsApi';
 export { membersApi } from './membersApi';
 export { fixturesApi } from './fixturesApi';
 export { matchEventsApi } from './matchEventsApi';
+export { debugApi } from './debugApi';

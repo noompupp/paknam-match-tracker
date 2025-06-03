@@ -1,6 +1,11 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { Team } from '@/types/database';
+
+// Helper function to normalize IDs for consistent matching
+const normalizeId = (id: any): string => {
+  if (id === null || id === undefined) return '';
+  return String(id).trim().toLowerCase();
+};
 
 export const teamsApi = {
   getAll: async () => {
@@ -19,7 +24,13 @@ export const teamsApi = {
     console.log('📊 TeamsAPI: Raw teams data from database:', {
       count: data?.length || 0,
       sample: data?.[0] || null,
-      allData: data
+      allData: data,
+      idAnalysis: data?.map(team => ({
+        name: team.name,
+        numericId: team.id,
+        textId: team.__id__,
+        normalizedTextId: normalizeId(team.__id__)
+      })) || []
     });
     
     if (!data || data.length === 0) {
@@ -30,12 +41,13 @@ export const teamsApi = {
     // Transform the data to match the expected interface
     const transformedTeams = data.map(team => {
       console.log('🔄 TeamsAPI: Transforming team:', {
-        rawId: team.id,
+        name: team.name,
+        rawNumericId: team.id,
         rawTextId: team.__id__,
-        name: team.name
+        normalizedTextId: normalizeId(team.__id__)
       });
       
-      return {
+      const transformed = {
         id: team.id || 0,
         name: team.name || '',
         logo: team.logo || '⚽',
@@ -53,11 +65,14 @@ export const teamsApi = {
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       } as Team;
+
+      console.log('✅ TeamsAPI: Transformed team:', transformed);
+      return transformed;
     });
 
     console.log('✅ TeamsAPI: Successfully transformed teams:', {
       count: transformedTeams.length,
-      firstTeam: transformedTeams[0] || null
+      teams: transformedTeams
     });
     
     return transformedTeams;

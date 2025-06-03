@@ -1,6 +1,11 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { Member } from '@/types/database';
+
+// Helper function to normalize IDs for consistent matching
+const normalizeId = (id: any): string => {
+  if (id === null || id === undefined) return '';
+  return String(id).trim().toLowerCase();
+};
 
 export const membersApi = {
   getAll: async () => {
@@ -20,7 +25,11 @@ export const membersApi = {
     console.log('📊 MembersAPI: Raw members data from database:', {
       count: members?.length || 0,
       sample: members?.[0] || null,
-      allData: members
+      teamIdAnalysis: members?.map(m => ({
+        name: m.name,
+        team_id: m.team_id,
+        normalizedTeamId: normalizeId(m.team_id)
+      })) || []
     });
     
     if (!members || members.length === 0) {
@@ -28,7 +37,7 @@ export const membersApi = {
       return [];
     }
 
-    // Get all teams for manual joining
+    // Get all teams for joining
     const { data: teams, error: teamsError } = await supabase
       .from('teams')
       .select('*');
@@ -40,20 +49,38 @@ export const membersApi = {
 
     console.log('📊 MembersAPI: Teams data for joining:', {
       count: teams?.length || 0,
-      sample: teams?.[0] || null
+      sample: teams?.[0] || null,
+      idMappings: teams?.map(t => ({
+        name: t.name,
+        numericId: t.id,
+        textId: t.__id__,
+        normalizedTextId: normalizeId(t.__id__)
+      })) || []
     });
     
     const transformedMembers = members.map(member => {
-      // Find the team using the text team_id
-      const team = teams?.find(t => t.__id__ === member.team_id);
+      // Find the team using normalized text ID matching
+      const normalizedMemberTeamId = normalizeId(member.team_id);
+      const team = teams?.find(t => normalizeId(t.__id__) === normalizedMemberTeamId);
       
       console.log('🔄 MembersAPI: Transforming member:', {
         memberName: member.name,
         memberTeamId: member.team_id,
-        foundTeam: team ? { id: team.id, name: team.name } : null
+        normalizedMemberTeamId: normalizedMemberTeamId,
+        foundTeam: team ? { 
+          id: team.id, 
+          name: team.name, 
+          textId: team.__id__,
+          normalizedTextId: normalizeId(team.__id__)
+        } : null,
+        allTeamIds: teams?.map(t => ({ 
+          name: t.name, 
+          textId: t.__id__, 
+          normalized: normalizeId(t.__id__) 
+        })) || []
       });
       
-      return {
+      const transformed = {
         id: member.id || 0,
         name: member.name || '',
         number: parseInt(member.number || '0') || 0,
@@ -83,12 +110,20 @@ export const membersApi = {
           updated_at: new Date().toISOString()
         } : undefined
       } as Member;
+
+      console.log('✅ MembersAPI: Transformed member:', {
+        name: transformed.name,
+        hasTeam: !!transformed.team,
+        teamName: transformed.team?.name
+      });
+
+      return transformed;
     });
 
     console.log('✅ MembersAPI: Successfully transformed members:', {
       count: transformedMembers.length,
-      firstMember: transformedMembers[0] || null,
-      membersWithTeams: transformedMembers.filter(m => m.team).length
+      membersWithTeams: transformedMembers.filter(m => m.team).length,
+      membersWithoutTeams: transformedMembers.filter(m => !m.team).length
     });
     
     return transformedMembers;
@@ -100,7 +135,7 @@ export const membersApi = {
     // First find the team's text ID using the numeric ID
     const { data: team, error: teamError } = await supabase
       .from('teams')
-      .select('__id__, name')
+      .select('__id__, name, *')
       .eq('id', teamId)
       .single();
     
@@ -109,77 +144,94 @@ export const membersApi = {
       return [];
     }
 
-    console.log('✅ MembersAPI: Found team text ID:', team.__id__, 'for numeric ID:', teamId);
+    console.log('✅ MembersAPI: Found team:', {
+      numericId: teamId,
+      textId: team.__id__,
+      normalizedTextId: normalizeId(team.__id__),
+      name: team.name
+    });
     
-    // Get members using the text team ID
-    const { data: members, error: membersError } = await supabase
+    // Get members using normalized text ID matching
+    const normalizedTeamId = normalizeId(team.__id__);
+    const { data: allMembers, error: membersError } = await supabase
       .from('members')
       .select('*')
-      .eq('team_id', team.__id__)
       .order('name', { ascending: true });
     
     if (membersError) {
-      console.error('❌ MembersAPI: Error fetching team members:', membersError);
+      console.error('❌ MembersAPI: Error fetching all members:', membersError);
       throw membersError;
     }
+
+    // Filter members by normalized team ID
+    const teamMembers = allMembers?.filter(member => 
+      normalizeId(member.team_id) === normalizedTeamId
+    ) || [];
     
-    console.log('📊 MembersAPI: Raw team members data:', {
+    console.log('📊 MembersAPI: Team members filtering:', {
       teamName: team.name,
-      count: members?.length || 0,
-      members: members || []
+      targetNormalizedId: normalizedTeamId,
+      allMembersCount: allMembers?.length || 0,
+      filteredMembersCount: teamMembers.length,
+      memberMappings: allMembers?.map(m => ({
+        name: m.name,
+        team_id: m.team_id,
+        normalized: normalizeId(m.team_id),
+        matches: normalizeId(m.team_id) === normalizedTeamId
+      })) || []
     });
     
-    if (!members || members.length === 0) {
-      console.warn('⚠️ MembersAPI: No members found for team:', teamId);
+    if (teamMembers.length === 0) {
+      console.warn('⚠️ MembersAPI: No members found for team:', {
+        teamId,
+        teamName: team.name,
+        textId: team.__id__
+      });
       return [];
     }
+    
+    const transformedMembers = teamMembers.map(member => {
+      console.log('🔄 MembersAPI: Transforming team member:', {
+        name: member.name,
+        team_id: member.team_id,
+        teamName: team.name
+      });
 
-    // Get the full team data for the response
-    const { data: fullTeam, error: fullTeamError } = await supabase
-      .from('teams')
-      .select('*')
-      .eq('__id__', team.__id__)
-      .single();
-    
-    if (fullTeamError) {
-      console.error('❌ MembersAPI: Error fetching full team data:', fullTeamError);
-      throw fullTeamError;
-    }
-    
-    const transformedMembers = members.map(member => ({
-      id: member.id || 0,
-      name: member.name || '',
-      number: parseInt(member.number || '0') || 0,
-      position: member.position || 'Player',
-      role: member.role || 'Player',
-      goals: member.goals || 0,
-      assists: member.assists || 0,
-      team_id: teamId,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      team: fullTeam ? {
-        id: fullTeam.id || 0,
-        name: fullTeam.name || '',
-        logo: fullTeam.logo || '⚽',
-        founded: fullTeam.founded || '2020',
-        captain: fullTeam.captain || '',
-        position: fullTeam.position || 1,
-        points: fullTeam.points || 0,
-        played: fullTeam.played || 0,
-        won: fullTeam.won || 0,
-        drawn: fullTeam.drawn || 0,
-        lost: fullTeam.lost || 0,
-        goals_for: fullTeam.goals_for || 0,
-        goals_against: fullTeam.goals_against || 0,
-        goal_difference: fullTeam.goal_difference || 0,
+      return {
+        id: member.id || 0,
+        name: member.name || '',
+        number: parseInt(member.number || '0') || 0,
+        position: member.position || 'Player',
+        role: member.role || 'Player',
+        goals: member.goals || 0,
+        assists: member.assists || 0,
+        team_id: teamId,
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      } : undefined
-    } as Member));
+        updated_at: new Date().toISOString(),
+        team: {
+          id: team.id || 0,
+          name: team.name || '',
+          logo: team.logo || '⚽',
+          founded: team.founded || '2020',
+          captain: team.captain || '',
+          position: team.position || 1,
+          points: team.points || 0,
+          played: team.played || 0,
+          won: team.won || 0,
+          drawn: team.drawn || 0,
+          lost: team.lost || 0,
+          goals_for: team.goals_for || 0,
+          goals_against: team.goals_against || 0,
+          goal_difference: team.goal_difference || 0,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }
+      } as Member;
+    });
 
     console.log('✅ MembersAPI: Successfully transformed team members:', {
-      count: transformedMembers.length,
-      firstMember: transformedMembers[0] || null
+      teamName: team.name,
+      count: transformedMembers.length
     });
     
     return transformedMembers;
