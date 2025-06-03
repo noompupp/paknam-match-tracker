@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import { useFixtures } from "@/hooks/useFixtures";
 import { useMembers } from "@/hooks/useMembers";
@@ -11,6 +10,7 @@ import ScoreManagement from "./referee/ScoreManagement";
 import CardManagement from "./referee/CardManagement";
 import PlayerTimeTracker from "./referee/PlayerTimeTracker";
 import MatchEvents from "./referee/MatchEvents";
+import GoalAssignment from "./referee/GoalAssignment";
 import { PlayerTime } from "@/types/database";
 
 interface MatchEvent {
@@ -33,6 +33,7 @@ interface GoalData {
   playerName: string;
   team: string;
   time: number;
+  type: 'goal' | 'assist';
 }
 
 const RefereeTools = () => {
@@ -55,6 +56,10 @@ const RefereeTools = () => {
   const [trackedPlayers, setTrackedPlayers] = useState<PlayerTime[]>([]);
   const [selectedPlayer, setSelectedPlayer] = useState("");
   const [goals, setGoals] = useState<GoalData[]>([]);
+  
+  // New state for goal assignment
+  const [selectedGoalPlayer, setSelectedGoalPlayer] = useState("");
+  const [selectedGoalType, setSelectedGoalType] = useState<'goal' | 'assist'>('goal');
 
   const intervalRef = useRef<NodeJS.Timeout>();
 
@@ -128,7 +133,7 @@ const RefereeTools = () => {
     // Show toast for goal tracking
     toast({
       title: "Goal Scored!",
-      description: `${goalDescription}. Don't forget to assign it to a player in the events section.`,
+      description: `${goalDescription}. Please assign it to a player in the Goal Assignment section below.`,
     });
   };
 
@@ -154,6 +159,31 @@ const RefereeTools = () => {
     setCards([]);
     setTrackedPlayers([]);
     setGoals([]);
+    setSelectedGoalPlayer("");
+  };
+
+  const handleAssignGoal = () => {
+    if (!selectedGoalPlayer) return;
+
+    const player = allPlayers.find(p => p.id === parseInt(selectedGoalPlayer));
+    if (!player) return;
+
+    const newGoal: GoalData = {
+      playerId: player.id,
+      playerName: player.name,
+      team: player.team,
+      time: matchTime,
+      type: selectedGoalType
+    };
+
+    setGoals(prev => [...prev, newGoal]);
+    addEvent(selectedGoalType, `${selectedGoalType === 'goal' ? 'Goal' : 'Assist'} by ${player.name} (${player.team})`);
+    setSelectedGoalPlayer("");
+    
+    toast({
+      title: `${selectedGoalType === 'goal' ? 'Goal' : 'Assist'} Assigned!`,
+      description: `${selectedGoalType === 'goal' ? 'Goal' : 'Assist'} assigned to ${player.name} at ${formatTime(matchTime)}.`,
+    });
   };
 
   const handleSaveMatch = async () => {
@@ -179,12 +209,31 @@ const RefereeTools = () => {
         });
       }
 
-      // Update player stats for goals
-      for (const goal of goals) {
-        await updatePlayerStats.mutateAsync({
-          playerId: goal.playerId,
-          goals: 1
-        });
+      // Update player stats for goals and assists
+      const playerStats = new Map();
+      
+      goals.forEach(goal => {
+        if (!playerStats.has(goal.playerId)) {
+          playerStats.set(goal.playerId, { goals: 0, assists: 0 });
+        }
+        
+        const stats = playerStats.get(goal.playerId);
+        if (goal.type === 'goal') {
+          stats.goals += 1;
+        } else if (goal.type === 'assist') {
+          stats.assists += 1;
+        }
+      });
+
+      // Update stats for each player
+      for (const [playerId, stats] of playerStats) {
+        if (stats.goals > 0 || stats.assists > 0) {
+          await updatePlayerStats.mutateAsync({
+            playerId: parseInt(playerId),
+            goals: stats.goals > 0 ? stats.goals : undefined,
+            assists: stats.assists > 0 ? stats.assists : undefined
+          });
+        }
       }
       
       toast({
@@ -344,6 +393,18 @@ const RefereeTools = () => {
               onToggleTimer={handleToggleTimer}
               onResetMatch={handleResetMatch}
               onSaveMatch={handleSaveMatch}
+            />
+
+            <GoalAssignment
+              allPlayers={allPlayers}
+              goals={goals}
+              selectedPlayer={selectedGoalPlayer}
+              selectedGoalType={selectedGoalType}
+              matchTime={matchTime}
+              onPlayerSelect={setSelectedGoalPlayer}
+              onGoalTypeChange={setSelectedGoalType}
+              onAssignGoal={handleAssignGoal}
+              formatTime={formatTime}
             />
 
             <CardManagement

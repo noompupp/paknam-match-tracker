@@ -6,20 +6,24 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowRight, Users } from "lucide-react";
 import { useTeams } from "@/hooks/useTeams";
 import { useTeamMembers } from "@/hooks/useMembers";
+import { useState } from "react";
 
 const Teams = () => {
   const { data: teams, isLoading: teamsLoading, error } = useTeams();
+  const [selectedTeamId, setSelectedTeamId] = useState<number | null>(null);
   
-  // Get the first team (or find a specific team)
-  const firstTeam = teams?.[0];
-  const { data: teamMembers, isLoading: membersLoading } = useTeamMembers(firstTeam?.id || 0);
+  // Get members for the selected team (or first team if none selected)
+  const targetTeamId = selectedTeamId || teams?.[0]?.id || 0;
+  const { data: teamMembers, isLoading: membersLoading } = useTeamMembers(targetTeamId);
+  const selectedTeam = teams?.find(team => team.id === targetTeamId);
 
   const getTeamLogo = (team: any) => {
+    // Use logoURL first, then fallback to logo, then default
     return team?.logoURL || team?.logo || '⚽';
   };
 
   const handleViewSquad = (teamId: number) => {
-    // For now, just scroll to the squad section
+    setSelectedTeamId(teamId);
     const squadSection = document.getElementById('team-squad');
     if (squadSection) {
       squadSection.scrollIntoView({ behavior: 'smooth' });
@@ -88,7 +92,15 @@ const Teams = () => {
                 <CardContent className="space-y-4">
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Team Color:</span>
-                    <span className="font-semibold">{team.color || 'Not specified'}</span>
+                    <div className="flex items-center gap-2">
+                      {team.color && (
+                        <div 
+                          className="w-4 h-4 rounded-full border border-gray-300" 
+                          style={{ backgroundColor: team.color }}
+                        />
+                      )}
+                      <span className="font-semibold">{team.color || 'Not specified'}</span>
+                    </div>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Captain:</span>
@@ -118,15 +130,15 @@ const Teams = () => {
           )}
         </div>
 
-        {/* Team Squad (showing first team's squad) */}
-        {firstTeam && (
+        {/* Team Squad (showing selected team's squad) */}
+        {selectedTeam && (
           <Card id="team-squad" className="card-shadow-lg animate-fade-in">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <span className="text-3xl">{getTeamLogo(firstTeam)}</span>
+                  <span className="text-3xl">{getTeamLogo(selectedTeam)}</span>
                   <div>
-                    <CardTitle className="text-2xl font-bold">{firstTeam.name} Squad</CardTitle>
+                    <CardTitle className="text-2xl font-bold">{selectedTeam.name} Squad</CardTitle>
                     <p className="text-muted-foreground">Current season players</p>
                   </div>
                 </div>
@@ -189,9 +201,6 @@ const Teams = () => {
                     <p className="text-sm">Players will appear here once they are added to the database.</p>
                   </div>
                 )}
-                <Button variant="outline" className="w-full mt-4">
-                  View Full Squad <ArrowRight className="h-4 w-4 ml-1" />
-                </Button>
               </div>
             </CardContent>
           </Card>

@@ -42,6 +42,7 @@ const Fixtures = () => {
   };
 
   const getTeamLogo = (team: any) => {
+    // Use logoURL first, then fallback to logo, then default
     return team?.logoURL || team?.logo || '⚽';
   };
 
@@ -85,7 +86,7 @@ const Fixtures = () => {
                     <Clock className="h-3 w-3" />
                     {formatTime(fixture.match_time || fixture.time)}
                   </div>
-                  <p className="text-xs text-muted-foreground">KO</p>
+                  <p className="text-xs text-muted-foreground">Kick off</p>
                 </div>
               )}
             </div>
