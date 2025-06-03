@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -6,11 +5,12 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Fixture } from "@/types/database";
 
+// Define the Player interface to match what's used in the container
 interface Player {
   id: number;
   name: string;
   team: string;
-  number?: number; // Changed from string to number
+  number?: number;
   position?: string;
 }
 
