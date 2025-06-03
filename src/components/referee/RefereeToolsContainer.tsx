@@ -1,5 +1,3 @@
-
-
 import { useState } from "react";
 import { useFixtures } from "@/hooks/useFixtures";
 import { useMembers } from "@/hooks/useMembers";
@@ -286,4 +284,3 @@ const RefereeToolsContainer = () => {
 };
 
 export default RefereeToolsContainer;
-
