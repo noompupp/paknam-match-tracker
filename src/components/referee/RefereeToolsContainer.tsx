@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useFixtures } from "@/hooks/useFixtures";
 import { useMembers } from "@/hooks/useMembers";
@@ -25,6 +26,15 @@ interface ComponentPlayer {
   name: string;
   team: string;
   number?: string;
+  position?: string;
+}
+
+// Player interface for card management (needs number as number)
+interface CardPlayer {
+  id: number;
+  name: string;
+  team: string;
+  number?: number;
   position?: string;
 }
 
@@ -88,6 +98,20 @@ const RefereeToolsContainer = () => {
     name: member.name,
     team: member.team?.name || '',
     number: typeof member.number === 'string' ? member.number : member.number?.toString() || '', // Handle both string and number types
+    position: member.position
+  })) || [];
+
+  // Create CardPlayer objects for card management (requires number as number)
+  const playersForCards: CardPlayer[] = members?.filter(member => 
+    selectedFixtureData && (
+      member.team_id === selectedFixtureData.home_team_id || 
+      member.team_id === selectedFixtureData.away_team_id
+    )
+  ).map(member => ({
+    id: member.id,
+    name: member.name,
+    team: member.team?.name || '',
+    number: typeof member.number === 'number' ? member.number : parseInt(String(member.number || '0')),
     position: member.position
   })) || [];
 
@@ -161,7 +185,7 @@ const RefereeToolsContainer = () => {
   const handleAddCard = () => {
     if (!selectedPlayer || !selectedFixtureData) return;
 
-    const player = allPlayers.find(p => p.id.toString() === selectedPlayer);
+    const player = playersForCards.find(p => p.id.toString() === selectedPlayer);
     if (!player) return;
 
     const teamName = selectedTeam === 'home' 
@@ -439,7 +463,7 @@ const RefereeToolsContainer = () => {
 
             <CardManagementDropdown
               selectedFixtureData={selectedFixtureData}
-              allPlayers={allPlayers}
+              allPlayers={playersForCards}
               selectedPlayer={selectedPlayer}
               selectedTeam={selectedTeam}
               selectedCardType={selectedCardType}

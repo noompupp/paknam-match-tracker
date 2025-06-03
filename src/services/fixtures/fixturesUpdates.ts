@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { Fixture } from '@/types/database';
 import { calculateTeamStatsUpdate } from './statsCalculator';
@@ -27,51 +28,42 @@ export const updateFixtureScore = async (id: number, homeScore: number, awayScor
 
     console.log('📊 FixturesUpdates: Current fixture data:', currentFixture);
 
-    // Enhanced team lookup - try multiple approaches to find teams
+    // Simplified team lookup - try each team ID systematically
     let homeTeam: SimpleTeam | null = null;
     let awayTeam: SimpleTeam | null = null;
 
-    // Try to get teams using different ID fields
-    const teamFields = ['__id__', 'id'];
-    const homeTeamIds = [currentFixture.team1, currentFixture.home_team_id].filter(Boolean);
-    const awayTeamIds = [currentFixture.team2, currentFixture.away_team_id].filter(Boolean);
+    // Get potential team IDs
+    const homeTeamId = currentFixture.team1 || currentFixture.home_team_id;
+    const awayTeamId = currentFixture.team2 || currentFixture.away_team_id;
 
-    console.log('🔍 FixturesUpdates: Team ID candidates:', { homeTeamIds, awayTeamIds });
+    console.log('🔍 FixturesUpdates: Team IDs found:', { homeTeamId, awayTeamId });
 
-    // Try to find home team
-    for (const teamId of homeTeamIds) {
-      for (const field of teamFields) {
-        const { data: team, error } = await supabase
-          .from('teams')
-          .select('id, name, played, points')
-          .eq(field, teamId)
-          .maybeSingle();
-
-        if (!error && team) {
-          homeTeam = team;
-          console.log('✅ FixturesUpdates: Found home team:', { field, teamId, team: team.name });
-          break;
-        }
+    // Find home team
+    if (homeTeamId) {
+      const { data: team } = await supabase
+        .from('teams')
+        .select('id, name, played, points')
+        .eq('__id__', homeTeamId)
+        .maybeSingle();
+      
+      if (team) {
+        homeTeam = team;
+        console.log('✅ FixturesUpdates: Found home team:', team.name);
       }
-      if (homeTeam) break;
     }
 
-    // Try to find away team
-    for (const teamId of awayTeamIds) {
-      for (const field of teamFields) {
-        const { data: team, error } = await supabase
-          .from('teams')
-          .select('id, name, played, points')
-          .eq(field, teamId)
-          .maybeSingle();
-
-        if (!error && team) {
-          awayTeam = team;
-          console.log('✅ FixturesUpdates: Found away team:', { field, teamId, team: team.name });
-          break;
-        }
+    // Find away team
+    if (awayTeamId) {
+      const { data: team } = await supabase
+        .from('teams')
+        .select('id, name, played, points')
+        .eq('__id__', awayTeamId)
+        .maybeSingle();
+      
+      if (team) {
+        awayTeam = team;
+        console.log('✅ FixturesUpdates: Found away team:', team.name);
       }
-      if (awayTeam) break;
     }
 
     if (!homeTeam || !awayTeam) {
