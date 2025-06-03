@@ -128,6 +128,9 @@ const RefereeMatchControls = ({
 
         <TabsContent value="timer">
           <MatchTimer
+            selectedFixtureData={selectedFixtureData}
+            homeScore={homeScore}
+            awayScore={awayScore}
             matchTime={matchTime}
             isRunning={isRunning}
             formatTime={formatTime}

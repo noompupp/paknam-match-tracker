@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useFixtures } from "@/hooks/useFixtures";
 import { useMembers } from "@/hooks/useMembers";
@@ -26,6 +25,9 @@ interface PlayerTimeTrackerPlayer {
   team: string;
   number: number;
   position: string;
+  totalTime: number;
+  startTime: number | null;
+  isPlaying: boolean;
 }
 
 export const useRefereeState = () => {
@@ -82,19 +84,17 @@ export const useRefereeState = () => {
     position: member.position || 'Player'
   })) || [];
 
-  // Create players specifically for PlayerTimeTracker
-  const playersForTimeTracker: PlayerTimeTrackerPlayer[] = members?.filter(member => 
-    selectedFixtureData && (
-      member.team_id === selectedFixtureData.home_team_id || 
-      member.team_id === selectedFixtureData.away_team_id
-    )
-  ).map(member => ({
-    id: member.id,
-    name: member.name,
-    team: member.team?.name || '',
-    number: typeof member.number === 'number' ? member.number : parseInt(String(member.number || '0')),
-    position: member.position || 'Player'
-  })) || [];
+  // Create players specifically for PlayerTimeTracker with extended properties
+  const playersForTimeTracker: PlayerTimeTrackerPlayer[] = trackedPlayers.map(trackedPlayer => ({
+    id: trackedPlayer.id,
+    name: trackedPlayer.name,
+    team: trackedPlayer.team,
+    number: typeof trackedPlayer.id === 'number' ? trackedPlayer.id : parseInt(String(trackedPlayer.id || '0')),
+    position: 'Player',
+    totalTime: trackedPlayer.totalTime,
+    startTime: trackedPlayer.startTime,
+    isPlaying: trackedPlayer.isPlaying
+  }));
 
   // Check for players needing attention
   const playersNeedingAttention = getPlayersNeedingAttention(playersForTimeTracker, matchTime);
