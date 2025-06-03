@@ -1,4 +1,5 @@
 
+
 import { useState } from "react";
 import { useFixtures } from "@/hooks/useFixtures";
 import { useMembers } from "@/hooks/useMembers";
@@ -30,8 +31,8 @@ interface ComponentPlayer {
   position?: string;
 }
 
-// Player interface specifically for PlayerTimeTracker (requires number)
-interface PlayerWithRequiredNumber {
+// Player interface that matches exactly what PlayerTimeTracker expects
+interface PlayerTimeTrackerPlayer {
   id: number;
   name: string;
   team: string;
@@ -94,8 +95,8 @@ const RefereeToolsContainer = () => {
     position: member.position
   })) || [];
 
-  // Create players specifically for PlayerTimeTracker with required number
-  const playersForTimeTracker: PlayerWithRequiredNumber[] = members?.filter(member => 
+  // Create players specifically for PlayerTimeTracker with the exact interface it expects
+  const playersForTimeTracker: PlayerTimeTrackerPlayer[] = members?.filter(member => 
     selectedFixtureData && (
       member.team_id === selectedFixtureData.home_team_id || 
       member.team_id === selectedFixtureData.away_team_id
@@ -285,3 +286,4 @@ const RefereeToolsContainer = () => {
 };
 
 export default RefereeToolsContainer;
+
