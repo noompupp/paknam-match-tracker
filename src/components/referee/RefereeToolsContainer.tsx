@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useFixtures } from "@/hooks/useFixtures";
 import { useMembers } from "@/hooks/useMembers";
@@ -10,7 +11,8 @@ import { useCardManagementDropdown } from "@/hooks/useCardManagementDropdown";
 import { usePlayerTracking } from "@/hooks/usePlayerTracking";
 import { useGoalManagement } from "@/hooks/useGoalManagement";
 import { useLocalMatchEvents } from "@/hooks/useMatchEvents";
-import { validateMatchData } from "@/utils/matchValidation";
+import { useMatchHandlers } from "./MatchHandlers";
+import { usePlayerManagement } from "./PlayerManagement";
 import MatchSelection from "./MatchSelection";
 import MatchTimer from "./MatchTimer";
 import ScoreManagement from "./ScoreManagement";
@@ -26,15 +28,6 @@ interface ComponentPlayer {
   team: string;
   number?: string;
   position?: string;
-}
-
-// Player interface for player tracking (needs number as number)
-interface PlayerTrackingPlayer {
-  id: number;
-  name: string;
-  team: string;
-  number: number;
-  position: string;
 }
 
 const RefereeToolsContainer = () => {
@@ -92,290 +85,69 @@ const RefereeToolsContainer = () => {
     position: member.position
   })) || [];
 
-  // Create Player objects for card management that match the expected interface
-  const playersForCards = members?.filter(member => 
-    selectedFixtureData && (
-      member.team_id === selectedFixtureData.home_team_id || 
-      member.team_id === selectedFixtureData.away_team_id
-    )
-  ).map(member => ({
-    id: member.id,
-    name: member.name,
-    team: member.team?.name || '',
-    number: typeof member.number === 'number' ? member.number : parseInt(String(member.number || '0')),
-    position: member.position
-  })) || [];
+  // Use match handlers
+  const { handleAddGoal, handleToggleTimer, handleResetMatch, handleSaveMatch } = useMatchHandlers({
+    selectedFixture,
+    selectedFixtureData,
+    homeScore,
+    awayScore,
+    matchTime,
+    isRunning,
+    saveAttempts,
+    setSaveAttempts,
+    updateFixtureScore,
+    createMatchEvent,
+    updatePlayerStats,
+    goals,
+    addGoal,
+    toggleTimer,
+    resetTimer,
+    resetScore,
+    resetEvents,
+    resetCards,
+    resetTracking,
+    resetGoals,
+    addEvent,
+    formatTime
+  });
 
-  // Create PlayerTrackingPlayer objects for player tracking (requires number as number)
-  const playersForTracking: PlayerTrackingPlayer[] = members?.filter(member => 
-    selectedFixtureData && (
-      member.team_id === selectedFixtureData.home_team_id || 
-      member.team_id === selectedFixtureData.away_team_id
-    )
-  ).map(member => ({
-    id: member.id,
-    name: member.name,
-    team: member.team?.name || '',
-    number: typeof member.number === 'number' ? member.number : parseInt(String(member.number || '0')), // Properly handle type conversion
-    position: member.position || 'Player'
-  })) || [];
-
-  const handleAddGoal = async (team: 'home' | 'away') => {
-    const teamData = team === 'home' ? selectedFixtureData?.home_team : selectedFixtureData?.away_team;
-    
-    addGoal(team);
-
-    // Record goal event
-    const goalDescription = `Goal for ${teamData?.name}`;
-    addEvent('goal', goalDescription, matchTime);
-
-    // Show toast for goal tracking
-    toast({
-      title: "Goal Scored!",
-      description: `${goalDescription}. Please assign it to a player in the Goal Assignment section below.`,
-    });
-  };
-
-  const handleToggleTimer = () => {
-    toggleTimer();
-    addEvent('timer', isRunning ? 'Match paused' : 'Match started', matchTime);
-  };
-
-  const handleResetMatch = () => {
-    resetTimer();
-    resetScore();
-    resetEvents();
-    resetCards();
-    resetTracking();
-    resetGoals();
-    setSaveAttempts(0);
-    
-    toast({
-      title: "Match Reset",
-      description: "All match data has been reset. You can start fresh.",
-    });
-  };
-
-  const handleAssignGoal = () => {
-    if (!selectedGoalPlayer) return;
-
-    const player = allPlayers.find(p => p.id === parseInt(selectedGoalPlayer));
-    if (!player) return;
-
-    const goal = assignGoal(player, matchTime);
-    if (goal) {
-      addEvent(selectedGoalType, `${selectedGoalType === 'goal' ? 'Goal' : 'Assist'} by ${player.name} (${player.team})`, matchTime);
-      
-      toast({
-        title: `${selectedGoalType === 'goal' ? 'Goal' : 'Assist'} Assigned!`,
-        description: `${selectedGoalType === 'goal' ? 'Goal' : 'Assist'} assigned to ${player.name} at ${formatTime(matchTime)}.`,
-      });
-    }
-  };
-
-  const handleAddCard = () => {
-    if (!selectedPlayer || !selectedFixtureData) return;
-
-    const player = playersForCards.find(p => p.id.toString() === selectedPlayer);
-    if (!player) return;
-
-    const teamName = selectedTeam === 'home' 
-      ? selectedFixtureData.home_team?.name || 'Home'
-      : selectedFixtureData.away_team?.name || 'Away';
-
-    // Check for second yellow card
-    const isSecondYellow = selectedCardType === 'yellow' && checkForSecondYellow(player.name, teamName);
-    
-    const card = addCard(player, teamName, matchTime, selectedCardType);
-    if (card) {
-      addEvent(selectedCardType === 'yellow' ? 'yellow_card' : 'red_card', `${selectedCardType} card for ${player.name} (${teamName})`, matchTime);
-      
-      let toastTitle = `${selectedCardType === 'yellow' ? 'Yellow' : 'Red'} Card Issued!`;
-      let toastDescription = `${selectedCardType === 'yellow' ? 'Yellow' : 'Red'} card issued to ${player.name} at ${formatTime(matchTime)}.`;
-      
-      if (isSecondYellow) {
-        toastTitle = "Second Yellow Card!";
-        toastDescription += " Player should receive an automatic red card.";
-        toast({
-          title: "Warning",
-          description: `${player.name} now has 2 yellow cards and should be sent off.`,
-          variant: "destructive"
-        });
-      }
-      
-      toast({
-        title: toastTitle,
-        description: toastDescription,
-      });
-    }
-  };
-
-  const handleSaveMatch = async () => {
-    if (!selectedFixture || !selectedFixtureData) {
-      toast({
-        title: "Error",
-        description: "No fixture selected. Please select a match first.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Validate match data before saving
-    const validation = validateMatchData(selectedFixtureData, homeScore, awayScore, matchTime);
-    
-    if (!validation.isValid) {
-      toast({
-        title: "Validation Error",
-        description: validation.errors.join(', '),
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Show warnings if any
-    if (validation.warnings.length > 0) {
-      toast({
-        title: "Warning",
-        description: validation.warnings.join(', '),
-      });
-    }
-    
-    const currentAttempt = saveAttempts + 1;
-    setSaveAttempts(currentAttempt);
-    
-    try {
-      console.log(`🎯 RefereeTools: Starting match save attempt ${currentAttempt}:`, {
-        fixtureId: selectedFixture,
-        homeScore,
-        awayScore,
-        homeTeam: selectedFixtureData?.home_team?.name,
-        awayTeam: selectedFixtureData?.away_team?.name
-      });
-
-      // Update fixture score with enhanced error handling
-      console.log('📊 RefereeTools: Updating fixture score...');
-      const updatedFixture = await updateFixtureScore.mutateAsync({
-        id: parseInt(selectedFixture),
-        homeScore,
-        awayScore
-      });
-
-      console.log('✅ RefereeTools: Fixture score updated successfully:', updatedFixture);
-
-      // Create final match event
-      if (selectedFixture) {
-        console.log('📝 RefereeTools: Creating final match event...');
-        await createMatchEvent.mutateAsync({
-          fixture_id: parseInt(selectedFixture),
-          event_type: 'other',
-          player_name: 'System',
-          team_id: 0,
-          event_time: matchTime,
-          description: `Match completed: ${selectedFixtureData?.home_team?.name} ${homeScore} - ${awayScore} ${selectedFixtureData?.away_team?.name} (Attempt ${currentAttempt})`
-        });
-        console.log('✅ RefereeTools: Final match event created successfully');
-      }
-
-      // Update player stats for goals and assists
-      console.log('👥 RefereeTools: Updating player statistics...');
-      const playerStats = new Map();
-      
-      goals.forEach(goal => {
-        if (!playerStats.has(goal.playerId)) {
-          playerStats.set(goal.playerId, { goals: 0, assists: 0 });
-        }
-        
-        const stats = playerStats.get(goal.playerId);
-        if (goal.type === 'goal') {
-          stats.goals += 1;
-        } else if (goal.type === 'assist') {
-          stats.assists += 1;
-        }
-      });
-
-      // Update stats for each player
-      let playerStatsUpdated = 0;
-      for (const [playerId, stats] of playerStats) {
-        if (stats.goals > 0 || stats.assists > 0) {
-          try {
-            await updatePlayerStats.mutateAsync({
-              playerId: parseInt(playerId),
-              goals: stats.goals > 0 ? stats.goals : undefined,
-              assists: stats.assists > 0 ? stats.assists : undefined
-            });
-            playerStatsUpdated++;
-            console.log(`✅ RefereeTools: Updated stats for player ${playerId}:`, stats);
-          } catch (playerError) {
-            console.error(`❌ RefereeTools: Failed to update player ${playerId} stats:`, playerError);
-            // Continue with other players even if one fails
-          }
-        }
-      }
-
-      console.log(`✅ RefereeTools: Updated stats for ${playerStatsUpdated} players`);
-      
-      toast({
-        title: "Match Saved Successfully! 🎉",
-        description: `Match result saved: ${selectedFixtureData?.home_team?.name} ${homeScore} - ${awayScore} ${selectedFixtureData?.away_team?.name}. ${playerStatsUpdated} player stats updated.`,
-      });
-
-      // Add success event to local events
-      addEvent('match_saved', `Match successfully saved to database (Attempt ${currentAttempt})`, matchTime);
-
-    } catch (error) {
-      console.error(`❌ RefereeTools: Match save attempt ${currentAttempt} failed:`, error);
-      
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-      
-      toast({
-        title: `Save Failed (Attempt ${currentAttempt})`,
-        description: `Failed to save match result: ${errorMessage}. Please check your connection and try again.`,
-        variant: "destructive",
-      });
-
-      // Add error event to local events
-      addEvent('error', `Match save failed (Attempt ${currentAttempt}): ${errorMessage}`, matchTime);
-      
-      // Show detailed error for debugging
-      if (currentAttempt >= 3) {
-        toast({
-          title: "Multiple Save Failures",
-          description: "Match saving has failed multiple times. Please check the console for detailed error information and contact support if the issue persists.",
-          variant: "destructive",
-        });
-      }
-    }
-  };
-
-  const handleAddPlayer = () => {
-    if (!selectedTimePlayer) return;
-
-    const player = playersForTracking.find(p => p.id === parseInt(selectedTimePlayer));
-    if (player) {
-      const playerTime = addPlayer(player, matchTime);
-      if (playerTime) {
-        addEvent('player_on', `${player.name} entered the field`, matchTime);
-      }
-    }
-  };
-
-  const handleRemovePlayer = (playerId: number) => {
-    const player = removePlayer(playerId);
-    if (player) {
-      addEvent('player_removed', `${player.name} removed from tracking`, matchTime);
-    }
-  };
-
-  const handleTogglePlayerTime = (playerId: number) => {
-    const player = togglePlayerTime(playerId, matchTime);
-    if (player) {
-      addEvent(
-        player.isPlaying ? 'player_on' : 'player_off',
-        `${player.name} ${player.isPlaying ? 'entered' : 'left'} the field`,
-        matchTime
-      );
-    }
-  };
+  // Use player management
+  const { 
+    playersForCards, 
+    playersForTracking, 
+    handleAssignGoal, 
+    handleAddCard, 
+    handleAddPlayer, 
+    handleRemovePlayer, 
+    handleTogglePlayerTime 
+  } = usePlayerManagement({
+    members: members || [],
+    selectedFixtureData,
+    allPlayers,
+    selectedGoalPlayer,
+    selectedGoalType,
+    selectedPlayer,
+    selectedTeam,
+    selectedCardType,
+    selectedTimePlayer,
+    cards,
+    goals,
+    matchTime,
+    setSelectedGoalPlayer,
+    setSelectedGoalType,
+    setSelectedPlayer,
+    setSelectedTeam,
+    setSelectedCardType,
+    setSelectedTimePlayer,
+    assignGoal,
+    addCard,
+    addPlayer,
+    removePlayer,
+    togglePlayerTime,
+    addEvent,
+    checkForSecondYellow,
+    formatTime
+  });
 
   // Check for players needing attention (updated for 7-a-side rules)
   const playersNeedingAttention = getPlayersNeedingAttention(playersForTracking, matchTime);
