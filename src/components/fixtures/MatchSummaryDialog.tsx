@@ -41,7 +41,7 @@ const MatchSummaryDialog = ({ fixture, isOpen, onClose }: MatchSummaryDialogProp
   };
 
   const goals = (matchEvents || []).filter(event => event.event_type === 'goal');
-  const assists = (matchEvents || []).filter(event => event.event_type === 'assist');
+  // Remove the assists filter since 'assist' is not a valid event type in the database
   const cards = (matchEvents || []).filter(event => 
     event.event_type === 'yellow_card' || event.event_type === 'red_card'
   );
@@ -63,7 +63,6 @@ const MatchSummaryDialog = ({ fixture, isOpen, onClose }: MatchSummaryDialogProp
       },
       events: matchEvents || [],
       goals,
-      assists,
       cards
     };
     
@@ -128,56 +127,56 @@ const MatchSummaryDialog = ({ fixture, isOpen, onClose }: MatchSummaryDialogProp
             </CardContent>
           </Card>
 
-          {/* Goals & Assists */}
+          {/* Goals */}
           <Card>
             <CardContent className="pt-6 space-y-4">
               <h4 className="font-semibold flex items-center gap-2">
                 <Target className="h-4 w-4" />
-                Goals & Assists ({goals.length + assists.length})
+                Goals ({goals.length})
               </h4>
               
-              {goals.length === 0 && assists.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-4">No goals or assists recorded</p>
+              {goals.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-4">No goals recorded</p>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* Home Goals & Assists */}
+                  {/* Home Goals */}
                   <div>
                     <h5 className="font-medium text-sm mb-2">{fixture.home_team?.name}</h5>
                     <div className="space-y-1">
-                      {[...homeGoals, ...assists.filter(a => a.team_id === fixture.home_team_id)].map((event, index) => (
+                      {homeGoals.map((event, index) => (
                         <div key={event.id} className="text-sm flex items-center justify-between p-2 bg-green-50 rounded">
                           <div>
-                            <Badge variant={event.event_type === 'goal' ? 'default' : 'outline'} className="mr-2">
-                              {event.event_type}
+                            <Badge variant="default" className="mr-2">
+                              goal
                             </Badge>
                             <span>{event.player_name}</span>
                           </div>
                           <span className="text-xs text-muted-foreground">{formatTime(event.event_time)}</span>
                         </div>
                       ))}
-                      {homeGoals.length === 0 && assists.filter(a => a.team_id === fixture.home_team_id).length === 0 && (
-                        <p className="text-xs text-muted-foreground">No goals or assists</p>
+                      {homeGoals.length === 0 && (
+                        <p className="text-xs text-muted-foreground">No goals</p>
                       )}
                     </div>
                   </div>
 
-                  {/* Away Goals & Assists */}
+                  {/* Away Goals */}
                   <div>
                     <h5 className="font-medium text-sm mb-2">{fixture.away_team?.name}</h5>
                     <div className="space-y-1">
-                      {[...awayGoals, ...assists.filter(a => a.team_id === fixture.away_team_id)].map((event, index) => (
+                      {awayGoals.map((event, index) => (
                         <div key={event.id} className="text-sm flex items-center justify-between p-2 bg-blue-50 rounded">
                           <div>
-                            <Badge variant={event.event_type === 'goal' ? 'default' : 'outline'} className="mr-2">
-                              {event.event_type}
+                            <Badge variant="default" className="mr-2">
+                              goal
                             </Badge>
                             <span>{event.player_name}</span>
                           </div>
                           <span className="text-xs text-muted-foreground">{formatTime(event.event_time)}</span>
                         </div>
                       ))}
-                      {awayGoals.length === 0 && assists.filter(a => a.team_id === fixture.away_team_id).length === 0 && (
-                        <p className="text-xs text-muted-foreground">No goals or assists</p>
+                      {awayGoals.length === 0 && (
+                        <p className="text-xs text-muted-foreground">No goals</p>
                       )}
                     </div>
                   </div>

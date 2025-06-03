@@ -101,7 +101,7 @@ export const runSystemValidation = async (): Promise<SystemValidationResult> => 
     if (teams && members && fixtures) {
       // Check for orphaned members
       const teamIds = teams.map(t => t.id);
-      const orphanedMembers = members.filter(m => m.team_id && !teamIds.includes(m.team_id));
+      const orphanedMembers = members.filter(m => m.team_id && !teamIds.includes(parseInt(m.team_id.toString())));
       if (orphanedMembers.length > 0) {
         result.issues.push(`${orphanedMembers.length} members reference non-existent teams`);
         result.recommendations.push('Clean up member-team relationships');

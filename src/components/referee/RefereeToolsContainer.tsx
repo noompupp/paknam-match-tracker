@@ -190,7 +190,7 @@ const RefereeToolsContainer = () => {
     const cardResult = addCard(player, team, matchTime, cardType);
     addEvent('Card', `${cardType} card for ${playerName} (${team})`, matchTime);
     
-    if (cardResult.isSecondYellow) {
+    if (cardResult && cardResult.isSecondYellow) {
       addEvent('Red Card', `Second yellow card - automatic red for ${playerName}`, matchTime);
       toast({
         title: "Second Yellow Card",
