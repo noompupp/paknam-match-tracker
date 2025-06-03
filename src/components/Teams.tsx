@@ -10,9 +10,9 @@ import { useTeamMembers } from "@/hooks/useMembers";
 const Teams = () => {
   const { data: teams, isLoading: teamsLoading, error } = useTeams();
   
-  // Get Paknam FC (assuming it's team id 2 based on the original data)
-  const paknamTeam = teams?.find(team => team.name.toLowerCase().includes('paknam'));
-  const { data: paknamMembers, isLoading: membersLoading } = useTeamMembers(paknamTeam?.id || 0);
+  // Get the first team (or find a specific team)
+  const firstTeam = teams?.[0];
+  const { data: teamMembers, isLoading: membersLoading } = useTeamMembers(firstTeam?.id || 0);
 
   if (error) {
     return (
@@ -20,6 +20,7 @@ const Teams = () => {
         <div className="text-center text-white">
           <h2 className="text-2xl font-bold mb-4">Error Loading Teams</h2>
           <p className="text-white/80">Please check your connection and try again.</p>
+          <p className="text-white/60 text-sm mt-2">{error.message}</p>
         </div>
       </div>
     );
@@ -32,7 +33,7 @@ const Teams = () => {
         <div className="max-w-7xl mx-auto px-4 py-6">
           <div className="text-center">
             <h1 className="text-3xl font-bold text-white mb-2">Teams & Players</h1>
-            <p className="text-white/80">Meet our {teams?.length || 6} competing teams</p>
+            <p className="text-white/80">Meet our {teams?.length || 0} competing teams</p>
           </div>
         </div>
       </div>
@@ -61,8 +62,8 @@ const Teams = () => {
                 </CardContent>
               </Card>
             ))
-          ) : (
-            teams?.map((team) => (
+          ) : teams && teams.length > 0 ? (
+            teams.map((team) => (
               <Card key={team.id} className="card-shadow-lg hover:card-shadow-lg hover:scale-105 transition-all duration-300 animate-fade-in">
                 <CardHeader className="text-center">
                   <div className="text-6xl mb-4">{team.logo}</div>
@@ -79,7 +80,7 @@ const Teams = () => {
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Captain:</span>
-                    <span className="font-semibold">{team.captain}</span>
+                    <span className="font-semibold">{team.captain || 'TBD'}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Record:</span>
@@ -96,23 +97,28 @@ const Teams = () => {
                 </CardContent>
               </Card>
             ))
+          ) : (
+            <div className="col-span-full text-center text-white">
+              <p className="text-xl mb-2">No teams found</p>
+              <p className="text-white/80">Teams will appear here once they are added to the database.</p>
+            </div>
           )}
         </div>
 
-        {/* Paknam FC Squad */}
-        {paknamTeam && (
+        {/* Team Squad (showing first team's squad) */}
+        {firstTeam && (
           <Card className="card-shadow-lg animate-fade-in">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <span className="text-3xl">{paknamTeam.logo}</span>
+                  <span className="text-3xl">{firstTeam.logo}</span>
                   <div>
-                    <CardTitle className="text-2xl font-bold">{paknamTeam.name} Squad</CardTitle>
+                    <CardTitle className="text-2xl font-bold">{firstTeam.name} Squad</CardTitle>
                     <p className="text-muted-foreground">Current season players</p>
                   </div>
                 </div>
                 <Badge className="bg-primary text-primary-foreground">
-                  {paknamMembers?.length || 0} Players
+                  {teamMembers?.length || 0} Players
                 </Badge>
               </div>
             </CardHeader>
@@ -137,19 +143,19 @@ const Teams = () => {
                       </div>
                     </div>
                   ))
-                ) : (
-                  paknamMembers?.map((player, index) => (
+                ) : teamMembers && teamMembers.length > 0 ? (
+                  teamMembers.map((player, index) => (
                     <div key={player.id} className="flex items-center justify-between p-4 rounded-lg bg-muted/20 hover:bg-muted/40 transition-colors">
                       <div className="flex items-center space-x-4">
                         <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center font-bold text-primary">
-                          {player.number}
+                          {player.number || index + 1}
                         </div>
                         <div>
                           <p className="font-semibold">{player.name}</p>
                           <div className="flex items-center gap-2 text-sm text-muted-foreground">
                             <span>{player.position}</span>
                             <Badge 
-                              variant={player.role === "Captain" ? "default" : player.role === "S-Class" ? "secondary" : "outline"}
+                              variant={player.role === "Captain" ? "default" : "outline"}
                               className="text-xs"
                             >
                               {player.role}
@@ -163,6 +169,12 @@ const Teams = () => {
                       </div>
                     </div>
                   ))
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <p>No players found for this team</p>
+                    <p className="text-sm">Players will appear here once they are added to the database.</p>
+                  </div>
                 )}
                 <Button variant="outline" className="w-full mt-4">
                   View Full Squad <ArrowRight className="h-4 w-4 ml-1" />

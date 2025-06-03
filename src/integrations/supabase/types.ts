@@ -12,29 +12,59 @@ export type Database = {
       fixtures: {
         Row: {
           __id__: string
+          away_score: number | null
+          away_team_id: string | null
+          created_at: string | null
           date: string | null
+          home_score: number | null
+          home_team_id: string | null
+          id: number
+          match_date: string | null
+          match_time: string | null
           matchNo: number | null
+          status: string | null
           team1: string | null
           team2: string | null
           time: string | null
+          updated_at: string | null
           venue: string | null
         }
         Insert: {
           __id__: string
+          away_score?: number | null
+          away_team_id?: string | null
+          created_at?: string | null
           date?: string | null
+          home_score?: number | null
+          home_team_id?: string | null
+          id?: number
+          match_date?: string | null
+          match_time?: string | null
           matchNo?: number | null
+          status?: string | null
           team1?: string | null
           team2?: string | null
           time?: string | null
+          updated_at?: string | null
           venue?: string | null
         }
         Update: {
           __id__?: string
+          away_score?: number | null
+          away_team_id?: string | null
+          created_at?: string | null
           date?: string | null
+          home_score?: number | null
+          home_team_id?: string | null
+          id?: number
+          match_date?: string | null
+          match_time?: string | null
           matchNo?: number | null
+          status?: string | null
           team1?: string | null
           team2?: string | null
           time?: string | null
+          updated_at?: string | null
           venue?: string | null
         }
         Relationships: [
@@ -57,25 +87,37 @@ export type Database = {
       members: {
         Row: {
           __id__: string
+          assists: number | null
+          goals: number | null
+          id: number
           name: string | null
           nickname: string | null
           number: string | null
+          position: string | null
           role: string | null
           team_id: string | null
         }
         Insert: {
           __id__: string
+          assists?: number | null
+          goals?: number | null
+          id?: number
           name?: string | null
           nickname?: string | null
           number?: string | null
+          position?: string | null
           role?: string | null
           team_id?: string | null
         }
         Update: {
           __id__?: string
+          assists?: number | null
+          goals?: number | null
+          id?: number
           name?: string | null
           nickname?: string | null
           number?: string | null
+          position?: string | null
           role?: string | null
           team_id?: string | null
         }
@@ -94,22 +136,58 @@ export type Database = {
           __id__: string
           captain: string | null
           color: string | null
+          drawn: number | null
+          founded: string | null
+          goal_difference: number | null
+          goals_against: number | null
+          goals_for: number | null
+          id: number
+          logo: string | null
           logoURL: string | null
+          lost: number | null
           name: string | null
+          played: number | null
+          points: number | null
+          position: number | null
+          won: number | null
         }
         Insert: {
           __id__: string
           captain?: string | null
           color?: string | null
+          drawn?: number | null
+          founded?: string | null
+          goal_difference?: number | null
+          goals_against?: number | null
+          goals_for?: number | null
+          id?: number
+          logo?: string | null
           logoURL?: string | null
+          lost?: number | null
           name?: string | null
+          played?: number | null
+          points?: number | null
+          position?: number | null
+          won?: number | null
         }
         Update: {
           __id__?: string
           captain?: string | null
           color?: string | null
+          drawn?: number | null
+          founded?: string | null
+          goal_difference?: number | null
+          goals_against?: number | null
+          goals_for?: number | null
+          id?: number
+          logo?: string | null
           logoURL?: string | null
+          lost?: number | null
           name?: string | null
+          played?: number | null
+          points?: number | null
+          position?: number | null
+          won?: number | null
         }
         Relationships: []
       }
