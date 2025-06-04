@@ -6,7 +6,55 @@ export interface DuplicateCleanupResult {
   summary: string;
 }
 
+export interface DuplicateCheckResult {
+  isDuplicate: boolean;
+  message?: string;
+}
+
 export const enhancedDuplicatePreventionService = {
+  async checkForDuplicateEvent(data: {
+    fixtureId: number;
+    teamId: number;
+    playerName: string;
+    eventTime: number;
+    eventType: string;
+  }): Promise<DuplicateCheckResult> {
+    console.log('🔍 EnhancedDuplicatePreventionService: Checking for duplicate event:', data);
+    
+    try {
+      const { data: existing, error } = await supabase
+        .from('match_events')
+        .select('id')
+        .eq('fixture_id', data.fixtureId)
+        .eq('team_id', data.teamId)
+        .eq('player_name', data.playerName)
+        .eq('event_time', data.eventTime)
+        .eq('event_type', data.eventType)
+        .limit(1);
+
+      if (error) {
+        console.error('❌ Error checking for duplicate event:', error);
+        return { isDuplicate: false }; // Allow creation on error
+      }
+
+      const isDuplicate = existing && existing.length > 0;
+      
+      if (isDuplicate) {
+        console.log('⚠️ Duplicate event detected and prevented');
+        return {
+          isDuplicate: true,
+          message: `Duplicate ${data.eventType} event prevented for ${data.playerName}`
+        };
+      }
+      
+      return { isDuplicate: false };
+
+    } catch (error) {
+      console.error('❌ Critical error in duplicate check:', error);
+      return { isDuplicate: false }; // Allow creation on error
+    }
+  },
+
   async cleanupAllDuplicateEvents(): Promise<DuplicateCleanupResult> {
     console.log('🧹 EnhancedDuplicatePreventionService: Starting comprehensive duplicate cleanup...');
     

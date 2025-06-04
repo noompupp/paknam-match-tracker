@@ -3,6 +3,7 @@ import { getAllFixtures, getUpcomingFixtures, getRecentFixtures } from './fixtur
 import { updateFixtureScore } from './fixturesUpdates';
 import { matchResetService } from './matchResetService';
 import { enhancedDuplicatePreventionService } from './enhancedDuplicatePreventionService';
+import { unifiedRefereeService } from './unifiedRefereeService';
 
 export const fixturesApi = {
   getAll: getAllFixtures,
@@ -11,4 +12,4 @@ export const fixturesApi = {
   updateScore: updateFixtureScore
 };
 
-export { matchResetService, enhancedDuplicatePreventionService };
+export { matchResetService, enhancedDuplicatePreventionService, unifiedRefereeService };
