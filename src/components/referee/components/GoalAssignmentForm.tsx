@@ -2,18 +2,10 @@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Target, Users } from "lucide-react";
-import { debugPlayerDropdownData } from "@/utils/refereeDataProcessor";
-
-interface Player {
-  id: number;
-  name: string;
-  team: string;
-  number: number;
-  position: string;
-}
+import { debugPlayerDropdownData, ProcessedPlayer } from "@/utils/refereeDataProcessor";
 
 interface GoalAssignmentFormProps {
-  allPlayers: Player[];
+  allPlayers: ProcessedPlayer[];
   selectedPlayer: string;
   selectedGoalType: 'goal' | 'assist';
   onPlayerSelect: (value: string) => void;

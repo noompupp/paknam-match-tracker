@@ -1,19 +1,13 @@
+
 import { usePlayerGoalAssignment } from "@/components/referee/PlayerGoalAssignment";
 import { usePlayerCardManagement } from "@/components/referee/PlayerCardManagement";
 import { usePlayerTimeManagement } from "@/components/referee/PlayerTimeManagement";
-
-interface Player {
-  id: number;
-  name: string;
-  team: string;
-  number: number;
-  position: string;
-}
+import { ProcessedPlayer } from "@/utils/refereeDataProcessor";
 
 interface PlayerManagementProps {
   members: any[];
   selectedFixtureData: any;
-  allPlayers: Player[];
+  allPlayers: ProcessedPlayer[];
   selectedGoalPlayer: string;
   selectedGoalType: 'goal' | 'assist';
   selectedPlayer: string;

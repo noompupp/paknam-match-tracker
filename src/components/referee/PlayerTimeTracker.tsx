@@ -7,12 +7,12 @@ import { Badge } from "@/components/ui/badge";
 import { Timer, UserPlus, UserMinus, AlertTriangle, Clock } from "lucide-react";
 import { PlayerTime, Member } from "@/types/database";
 import { SEVEN_A_SIDE_CONSTANTS, isSecondHalf, getCurrentHalfTime } from "@/utils/timeUtils";
-import { debugPlayerDropdownData } from "@/utils/refereeDataProcessor";
+import { debugPlayerDropdownData, ProcessedPlayer } from "@/utils/refereeDataProcessor";
 
 interface PlayerTimeTrackerProps {
   trackedPlayers: PlayerTime[];
   selectedPlayer: string;
-  allPlayers: Array<{name: string, team: string, number: number, position: string, id: number}>;
+  allPlayers: ProcessedPlayer[];
   onPlayerSelect: (value: string) => void;
   onAddPlayer: () => void;
   onRemovePlayer: (playerId: number) => void;

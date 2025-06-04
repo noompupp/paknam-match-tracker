@@ -1,16 +1,9 @@
 
 import { useToast } from "@/hooks/use-toast";
-
-interface Player {
-  id: number;
-  name: string;
-  team: string;
-  number: number;
-  position: string;
-}
+import { ProcessedPlayer } from "@/utils/refereeDataProcessor";
 
 interface PlayerGoalAssignmentProps {
-  allPlayers: Player[];
+  allPlayers: ProcessedPlayer[];
   selectedFixtureData: any;
   selectedGoalPlayer: string;
   selectedGoalType: 'goal' | 'assist';

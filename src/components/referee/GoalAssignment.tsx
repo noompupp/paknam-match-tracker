@@ -6,14 +6,7 @@ import GoalAssignmentForm from "./components/GoalAssignmentForm";
 import GoalAssignmentButton from "./components/GoalAssignmentButton";
 import AssignedGoalsList from "./components/AssignedGoalsList";
 import NoGoalsPlaceholder from "./components/NoGoalsPlaceholder";
-
-interface Player {
-  id: number;
-  name: string;
-  team: string;
-  number: number;
-  position: string;
-}
+import { ProcessedPlayer } from "@/utils/refereeDataProcessor";
 
 interface GoalData {
   playerId: number;
@@ -24,7 +17,7 @@ interface GoalData {
 }
 
 interface GoalAssignmentProps {
-  allPlayers: Player[];
+  allPlayers: ProcessedPlayer[];
   goals: GoalData[];
   selectedPlayer: string;
   selectedGoalType: 'goal' | 'assist';

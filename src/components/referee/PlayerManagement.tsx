@@ -1,19 +1,11 @@
 
 import { usePlayerManagement } from "@/hooks/usePlayerManagement";
-import { debugPlayerDropdownData } from "@/utils/refereeDataProcessor";
-
-interface Player {
-  id: number;
-  name: string;
-  team: string;
-  number: number;
-  position: string;
-}
+import { debugPlayerDropdownData, ProcessedPlayer } from "@/utils/refereeDataProcessor";
 
 interface PlayerManagementProps {
   members: any[];
   selectedFixtureData: any;
-  allPlayers: Player[];
+  allPlayers: ProcessedPlayer[];
   selectedGoalPlayer: string;
   selectedGoalType: 'goal' | 'assist';
   selectedPlayer: string;

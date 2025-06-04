@@ -2,17 +2,10 @@
 import { useToast } from "@/hooks/use-toast";
 import { useCreateCard } from "@/hooks/useCards";
 import { resolveTeamIdForMatchEvent } from "@/utils/teamIdMapping";
-
-interface Player {
-  id: number;
-  name: string;
-  team: string;
-  number: number;
-  position: string;
-}
+import { ProcessedPlayer } from "@/utils/refereeDataProcessor";
 
 interface PlayerCardManagementProps {
-  allPlayers: Player[];
+  allPlayers: ProcessedPlayer[];
   selectedPlayer: string;
   selectedTeam: string;
   selectedCardType: 'yellow' | 'red';

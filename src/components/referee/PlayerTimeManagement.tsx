@@ -1,16 +1,9 @@
 
 import { useToast } from "@/hooks/use-toast";
-
-interface Player {
-  id: number;
-  name: string;
-  team: string;
-  number: number;
-  position: string;
-}
+import { ProcessedPlayer } from "@/utils/refereeDataProcessor";
 
 interface PlayerTimeManagementProps {
-  allPlayers: Player[];
+  allPlayers: ProcessedPlayer[];
   selectedTimePlayer: string;
   matchTime: number;
   setSelectedTimePlayer: (value: string) => void;
