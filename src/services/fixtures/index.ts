@@ -3,5 +3,6 @@
 export { unifiedRefereeService } from './unifiedRefereeService';
 export { enhancedDuplicatePreventionService } from './enhancedDuplicatePreventionService';
 export { matchResetService } from './matchResetService';
-export { goalAssignmentService } from './goalAssignmentService';
+export { goalAssignmentService } from './goalAssignmentServiceWrapper';
 export { updateFixtureScore } from './scoreUpdateService';
+export { fixturesApi } from './fixturesApi';
