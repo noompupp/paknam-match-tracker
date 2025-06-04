@@ -54,14 +54,12 @@ export const useGoalHandlers = (props: UseGoalHandlersProps) => {
         fixture: props.selectedFixtureData.id
       });
 
-      // Determine team ID using the player's teamId or derive from fixture
+      // Determine team ID using the player's team name and fixture data
       let teamId: string;
-      if (player.teamId) {
-        teamId = player.teamId;
-      } else if (player.team === props.selectedFixtureData.home_team?.name) {
-        teamId = props.selectedFixtureData.home_team.__id__ || props.selectedFixtureData.home_team_id;
+      if (player.team === props.selectedFixtureData.home_team?.name) {
+        teamId = props.selectedFixtureData.home_team_id || props.selectedFixtureData.home_team?.__id__;
       } else if (player.team === props.selectedFixtureData.away_team?.name) {
-        teamId = props.selectedFixtureData.away_team.__id__ || props.selectedFixtureData.away_team_id;
+        teamId = props.selectedFixtureData.away_team_id || props.selectedFixtureData.away_team?.__id__;
       } else {
         throw new Error(`Cannot determine team ID for player ${player.name} on team ${player.team}`);
       }

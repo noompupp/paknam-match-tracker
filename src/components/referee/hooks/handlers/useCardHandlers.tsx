@@ -6,6 +6,7 @@ import { assignCardToPlayer } from "@/services/fixtures/simplifiedCardService";
 interface UseCardHandlersProps {
   allPlayers: ComponentPlayer[];
   matchTime: number;
+  selectedFixtureData: any;
   addCard: (player: ComponentPlayer, team: string, matchTime: number, cardType: 'yellow' | 'red') => any;
   addEvent: (type: string, description: string, time: number) => void;
 }
@@ -24,6 +25,15 @@ export const useCardHandlers = (props: UseCardHandlersProps) => {
       return;
     }
 
+    if (!props.selectedFixtureData) {
+      toast({
+        title: "Error",
+        description: "No fixture selected",
+        variant: "destructive"
+      });
+      return;
+    }
+
     try {
       console.log('🟨🟥 useCardHandlers: Adding card with simplified service:', {
         player: player.name,
@@ -32,12 +42,22 @@ export const useCardHandlers = (props: UseCardHandlersProps) => {
         time
       });
 
+      // Determine team ID from fixture data based on team name
+      let teamId: string;
+      if (player.team === props.selectedFixtureData.home_team?.name) {
+        teamId = props.selectedFixtureData.home_team_id || props.selectedFixtureData.home_team?.__id__;
+      } else if (player.team === props.selectedFixtureData.away_team?.name) {
+        teamId = props.selectedFixtureData.away_team_id || props.selectedFixtureData.away_team?.__id__;
+      } else {
+        throw new Error(`Cannot determine team ID for player ${player.name} on team ${player.team}`);
+      }
+
       // Use the simplified card service directly
       const cardResult = await assignCardToPlayer({
-        fixtureId: props.allPlayers[0]?.fixtureId || 0, // Get fixture ID from player context
+        fixtureId: props.selectedFixtureData.id,
         playerId: player.id,
         playerName: player.name,
-        teamId: player.teamId || team, // Use player's team ID or fallback to team name
+        teamId: teamId,
         cardType,
         eventTime: time
       });

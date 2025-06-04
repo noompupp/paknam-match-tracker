@@ -74,6 +74,7 @@ export const useRefereeHandlers = (props: UseRefereeHandlersProps) => {
   const cardHandlers = useCardHandlers({
     allPlayers: props.allPlayers,
     matchTime: props.matchTime,
+    selectedFixtureData: props.selectedFixtureData,
     addCard: props.addCard,
     addEvent: props.addEvent
   });
