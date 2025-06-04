@@ -29,6 +29,10 @@ export interface Member {
   role: string;
   goals: number;
   assists: number;
+  yellow_cards: number;
+  red_cards: number;
+  total_minutes_played: number;
+  matches_played: number;
   team_id: string; // Changed from number to string
   created_at: string;
   updated_at: string;

@@ -172,38 +172,56 @@ export type Database = {
         Row: {
           __id__: string
           assists: number | null
+          created_at: string | null
           goals: number | null
           id: number
+          matches_played: number | null
           name: string | null
           nickname: string | null
           number: string | null
           position: string | null
+          red_cards: number | null
           role: string | null
           team_id: string | null
+          total_minutes_played: number | null
+          updated_at: string | null
+          yellow_cards: number | null
         }
         Insert: {
           __id__: string
           assists?: number | null
+          created_at?: string | null
           goals?: number | null
           id?: number
+          matches_played?: number | null
           name?: string | null
           nickname?: string | null
           number?: string | null
           position?: string | null
+          red_cards?: number | null
           role?: string | null
           team_id?: string | null
+          total_minutes_played?: number | null
+          updated_at?: string | null
+          yellow_cards?: number | null
         }
         Update: {
           __id__?: string
           assists?: number | null
+          created_at?: string | null
           goals?: number | null
           id?: number
+          matches_played?: number | null
           name?: string | null
           nickname?: string | null
           number?: string | null
           position?: string | null
+          red_cards?: number | null
           role?: string | null
           team_id?: string | null
+          total_minutes_played?: number | null
+          updated_at?: string | null
+          yellow_cards?: number | null
         }
         Relationships: [
           {

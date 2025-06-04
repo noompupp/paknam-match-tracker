@@ -1,6 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { incrementPlayerGoals, incrementPlayerAssists } from './playerStatsUpdateService';
+import { incrementMemberGoals, incrementMemberAssists } from './memberStatsUpdateService';
 
 interface GoalAssignment {
   fixtureId: number;
@@ -12,7 +12,7 @@ interface GoalAssignment {
 }
 
 export const assignGoalToPlayer = async (assignment: GoalAssignment): Promise<void> => {
-  console.log('⚽ GoalAssignmentService: Starting goal assignment with comprehensive validation:', assignment);
+  console.log('⚽ GoalAssignmentService: Starting goal assignment with enhanced members table integration:', assignment);
   
   try {
     const { fixtureId, playerId, playerName, teamId, eventTime, type } = assignment;
@@ -53,23 +53,23 @@ export const assignGoalToPlayer = async (assignment: GoalAssignment): Promise<vo
 
     console.log('✅ GoalAssignmentService: Fixture validation passed:', fixture);
 
-    // Verify player exists and get current stats
-    const { data: player, error: playerError } = await supabase
+    // Verify player exists in enhanced members table and get current stats
+    const { data: member, error: memberError } = await supabase
       .from('members')
       .select('id, name, team_id, goals, assists')
       .eq('id', playerId)
       .single();
 
-    if (playerError || !player) {
-      console.error('❌ GoalAssignmentService: Player validation failed:', playerError);
-      throw new Error(`Player with ID ${playerId} not found: ${playerError?.message}`);
+    if (memberError || !member) {
+      console.error('❌ GoalAssignmentService: Member validation failed:', memberError);
+      throw new Error(`Member with ID ${playerId} not found: ${memberError?.message}`);
     }
 
-    console.log('✅ GoalAssignmentService: Player validation passed:', {
-      player: player.name,
-      currentGoals: player.goals,
-      currentAssists: player.assists,
-      teamId: player.team_id
+    console.log('✅ GoalAssignmentService: Member validation passed:', {
+      member: member.name,
+      currentGoals: member.goals,
+      currentAssists: member.assists,
+      teamId: member.team_id
     });
 
     // Enhanced duplicate check with comprehensive criteria
@@ -116,18 +116,18 @@ export const assignGoalToPlayer = async (assignment: GoalAssignment): Promise<vo
 
     console.log('✅ GoalAssignmentService: Match event created successfully:', newEvent);
 
-    // Update player statistics with proper error handling
-    console.log(`📊 GoalAssignmentService: Updating player stats for ${playerName}...`);
+    // Update member statistics using the new member stats update service
+    console.log(`📊 GoalAssignmentService: Updating member stats for ${playerName}...`);
     try {
       if (type === 'goal') {
-        await incrementPlayerGoals(playerId, 1);
-        console.log('✅ GoalAssignmentService: Player goals incremented successfully');
+        await incrementMemberGoals(playerId, 1);
+        console.log('✅ GoalAssignmentService: Member goals incremented successfully');
       } else if (type === 'assist') {
-        await incrementPlayerAssists(playerId, 1);
-        console.log('✅ GoalAssignmentService: Player assists incremented successfully');
+        await incrementMemberAssists(playerId, 1);
+        console.log('✅ GoalAssignmentService: Member assists incremented successfully');
       }
     } catch (statsError) {
-      console.error('❌ GoalAssignmentService: Failed to update player stats:', statsError);
+      console.error('❌ GoalAssignmentService: Failed to update member stats:', statsError);
       
       // Rollback the match event if stats update fails
       await supabase
@@ -135,10 +135,10 @@ export const assignGoalToPlayer = async (assignment: GoalAssignment): Promise<vo
         .delete()
         .eq('id', newEvent.id);
       
-      throw new Error(`Failed to update player stats: ${statsError instanceof Error ? statsError.message : 'Unknown error'}`);
+      throw new Error(`Failed to update member stats: ${statsError instanceof Error ? statsError.message : 'Unknown error'}`);
     }
 
-    console.log(`✅ GoalAssignmentService: Successfully completed ${type} assignment to ${playerName}`);
+    console.log(`✅ GoalAssignmentService: Successfully completed ${type} assignment to ${playerName} with enhanced members table integration`);
 
   } catch (error) {
     console.error('❌ GoalAssignmentService: Critical error in assignGoalToPlayer:', error);
