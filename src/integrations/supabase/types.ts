@@ -377,6 +377,20 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_enhanced_match_summary: {
+        Args: { p_fixture_id: number }
+        Returns: {
+          fixture_id: number
+          home_team_id: string
+          away_team_id: string
+          home_score: number
+          away_score: number
+          goals: Json
+          cards: Json
+          player_times: Json
+          summary_stats: Json
+        }[]
+      }
       log_operation: {
         Args: {
           p_operation_type: string

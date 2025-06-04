@@ -5,10 +5,9 @@ import MatchHeaderWithScore from "./MatchHeaderWithScore";
 import GoalsSummaryDisplay from "./GoalsSummaryDisplay";
 import CardsSummaryDisplay from "./CardsSummaryDisplay";
 import PlayerTimeTrackingDisplay from "./PlayerTimeTrackingDisplay";
-import { useQuery } from '@tanstack/react-query';
-import { enhancedMatchSummaryService } from '@/services/fixtures/enhancedMatchSummaryService';
+import { useEnhancedMatchSummary } from '@/hooks/useEnhancedMatchSummary';
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2 } from "lucide-react";
+import { Loader2, CheckCircle, AlertTriangle } from "lucide-react";
 
 interface EnhancedMatchSummaryDisplayProps {
   selectedFixtureData: any;
@@ -34,14 +33,8 @@ const EnhancedMatchSummaryDisplay = ({
   formatTime
 }: EnhancedMatchSummaryDisplayProps) => {
   
-  // Fetch enhanced match summary data from database
-  const { data: enhancedData, isLoading, error } = useQuery({
-    queryKey: ['enhancedMatchSummary', selectedFixtureData?.id],
-    queryFn: () => enhancedMatchSummaryService.getEnhancedMatchSummary(selectedFixtureData.id),
-    enabled: !!selectedFixtureData?.id,
-    staleTime: 30 * 1000,
-    refetchOnWindowFocus: false
-  });
+  // Fetch enhanced match summary data from the improved service
+  const { data: enhancedData, isLoading, error, isSuccess } = useEnhancedMatchSummary(selectedFixtureData?.id);
 
   if (!selectedFixtureData) {
     return <NoMatchSelectedPlaceholder />;
@@ -54,16 +47,17 @@ const EnhancedMatchSummaryDisplay = ({
     return remainingSeconds > 0 ? `${minutes}:${remainingSeconds.toString().padStart(2, '0')}` : `${minutes}'`;
   };
 
-  // Use enhanced data if available, fallback to local data
-  const goalsToDisplay = enhancedData?.goals.length ? enhancedData.goals : goals;
-  const cardsToDisplay = enhancedData?.cards.length ? enhancedData.cards : cards;
-  const playerTimesToDisplay = enhancedData?.playerTimes.length ? enhancedData.playerTimes : trackedPlayers;
+  // Use enhanced data if available, with intelligent fallback to local data
+  const shouldUseEnhancedData = enhancedData && isSuccess;
+  const goalsToDisplay = shouldUseEnhancedData ? enhancedData.goals : goals;
+  const cardsToDisplay = shouldUseEnhancedData ? enhancedData.cards : cards;
+  const playerTimesToDisplay = shouldUseEnhancedData ? enhancedData.playerTimes : trackedPlayers;
 
   // Calculate scores from enhanced data if available
-  const calculatedHomeScore = enhancedData?.summary ? enhancedData.summary.homeTeamGoals : homeScore;
-  const calculatedAwayScore = enhancedData?.summary ? enhancedData.summary.awayTeamGoals : awayScore;
+  const calculatedHomeScore = shouldUseEnhancedData ? enhancedData.summary.homeTeamGoals : homeScore;
+  const calculatedAwayScore = shouldUseEnhancedData ? enhancedData.summary.awayTeamGoals : awayScore;
 
-  console.log('📊 EnhancedMatchSummaryDisplay: Rendering with enhanced data integration:', {
+  console.log('📊 EnhancedMatchSummaryDisplay: Rendering with enhanced service integration:', {
     fixture: selectedFixtureData.id,
     homeScore: calculatedHomeScore,
     awayScore: calculatedAwayScore,
@@ -71,31 +65,36 @@ const EnhancedMatchSummaryDisplay = ({
     localGoalsCount: goals.length,
     enhancedCardsCount: enhancedData?.cards.length || 0,
     localCardsCount: cards.length,
-    usingEnhancedData: !!enhancedData,
-    fixtureId: selectedFixtureData.id
+    usingEnhancedData: shouldUseEnhancedData,
+    dataSource: shouldUseEnhancedData ? 'enhanced-service' : 'local-state'
   });
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center p-8">
         <Loader2 className="h-6 w-6 animate-spin mr-2" />
-        <span>Loading enhanced match summary...</span>
+        <span>Loading enhanced match data...</span>
       </div>
     );
-  }
-
-  if (error) {
-    console.error('❌ EnhancedMatchSummaryDisplay: Error loading enhanced data:', error);
-    // Continue with local data as fallback
   }
 
   return (
     <div className="space-y-6">
       {/* Enhanced Data Status Indicator */}
-      {enhancedData && (
+      {shouldUseEnhancedData && (
         <Alert>
+          <CheckCircle className="h-4 w-4" />
           <AlertDescription>
-            ✅ Enhanced match data loaded from database with {enhancedData.goals.length} goals/assists, {enhancedData.cards.length} cards, and {enhancedData.playerTimes.length} player time records.
+            ✅ Enhanced match data loaded successfully from improved database service with {enhancedData.goals.length} goals/assists, {enhancedData.cards.length} cards, and {enhancedData.playerTimes.length} player time records.
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {error && (
+        <Alert variant="destructive">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription>
+            ⚠️ Enhanced data service unavailable. Using local match data as fallback.
           </AlertDescription>
         </Alert>
       )}
@@ -137,9 +136,9 @@ const EnhancedMatchSummaryDisplay = ({
       />
 
       {/* Enhanced Summary Statistics */}
-      {enhancedData?.summary && (
+      {shouldUseEnhancedData && enhancedData.summary && (
         <div className="bg-muted/50 rounded-lg p-4">
-          <h4 className="font-semibold mb-2">Match Statistics</h4>
+          <h4 className="font-semibold mb-2">Enhanced Match Statistics</h4>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
             <div className="text-center">
               <div className="font-bold text-lg">{enhancedData.summary.totalGoals}</div>
@@ -157,6 +156,9 @@ const EnhancedMatchSummaryDisplay = ({
               <div className="font-bold text-lg">{enhancedData.summary.playersTracked}</div>
               <div className="text-muted-foreground">Players Tracked</div>
             </div>
+          </div>
+          <div className="mt-4 text-xs text-muted-foreground text-center">
+            Data source: Enhanced database service
           </div>
         </div>
       )}

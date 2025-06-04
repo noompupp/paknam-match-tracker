@@ -2,7 +2,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Download, Trophy } from "lucide-react";
+import { Download, Trophy, Database } from "lucide-react";
 import { PlayerTime } from "@/types/database";
 import EnhancedMatchHeader from "./components/EnhancedMatchHeader";
 import KeyStatistics from "./components/KeyStatistics";
@@ -11,6 +11,8 @@ import PlayerPerformanceHighlights from "./components/PlayerPerformanceHighlight
 import DisciplinaryActionsSection from "./components/DisciplinaryActionsSection";
 import EnhancedPlayerTimeSummary from "./components/EnhancedPlayerTimeSummary";
 import MatchEventsTimeline from "./components/MatchEventsTimeline";
+import { useEnhancedMatchSummary } from '@/hooks/useEnhancedMatchSummary';
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface EnhancedMatchSummaryProps {
   selectedFixtureData: any;
@@ -39,22 +41,54 @@ const EnhancedMatchSummary = ({
   onExportSummary,
   formatTime
 }: EnhancedMatchSummaryProps) => {
+
+  // Use the enhanced match summary service
+  const { data: enhancedData, isLoading, isSuccess } = useEnhancedMatchSummary(selectedFixtureData?.id);
+
+  // Use enhanced data when available, fallback to local data
+  const displayData = isSuccess && enhancedData ? {
+    goals: enhancedData.goals,
+    cards: enhancedData.cards,
+    trackedPlayers: enhancedData.playerTimes,
+    homeScore: enhancedData.summary.homeTeamGoals,
+    awayScore: enhancedData.summary.awayTeamGoals
+  } : {
+    goals,
+    cards,
+    trackedPlayers,
+    homeScore,
+    awayScore
+  };
+
   return (
     <Card className="card-shadow-lg">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Trophy className="h-5 w-5" />
           Enhanced Match Summary
+          {isSuccess && enhancedData && (
+            <Database className="h-4 w-4 text-green-600" title="Powered by enhanced database service" />
+          )}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
+        {/* Enhanced Service Status */}
+        {isSuccess && enhancedData && (
+          <Alert>
+            <Database className="h-4 w-4" />
+            <AlertDescription>
+              Enhanced data service active - displaying comprehensive match analytics from optimized database queries.
+            </AlertDescription>
+          </Alert>
+        )}
+
         {/* Match Result */}
         <EnhancedMatchHeader
           selectedFixtureData={selectedFixtureData}
-          homeScore={homeScore}
-          awayScore={awayScore}
+          homeScore={displayData.homeScore}
+          awayScore={displayData.awayScore}
           matchTime={matchTime}
-          trackedPlayers={trackedPlayers}
+          trackedPlayers={displayData.trackedPlayers}
           formatTime={formatTime}
         />
 
@@ -63,9 +97,9 @@ const EnhancedMatchSummary = ({
         {/* Key Statistics Dashboard */}
         <KeyStatistics
           events={events}
-          goals={goals}
-          cards={cards}
-          trackedPlayers={trackedPlayers}
+          goals={displayData.goals}
+          cards={displayData.cards}
+          trackedPlayers={displayData.trackedPlayers}
         />
 
         <Separator />
@@ -73,7 +107,7 @@ const EnhancedMatchSummary = ({
         {/* Goals & Assists Summary */}
         <GoalsAndAssistsSection
           selectedFixtureData={selectedFixtureData}
-          goals={goals}
+          goals={displayData.goals}
           allPlayers={allPlayers}
           formatTime={formatTime}
         />
@@ -82,16 +116,16 @@ const EnhancedMatchSummary = ({
 
         {/* Player Performance Highlights */}
         <PlayerPerformanceHighlights
-          trackedPlayers={trackedPlayers}
+          trackedPlayers={displayData.trackedPlayers}
           formatTime={formatTime}
         />
 
-        {trackedPlayers.length > 0 && <Separator />}
+        {displayData.trackedPlayers.length > 0 && <Separator />}
 
         {/* Cards Summary */}
         <DisciplinaryActionsSection
           selectedFixtureData={selectedFixtureData}
-          cards={cards}
+          cards={displayData.cards}
           formatTime={formatTime}
         />
 
@@ -99,7 +133,7 @@ const EnhancedMatchSummary = ({
 
         {/* Player Time Summary */}
         <EnhancedPlayerTimeSummary
-          trackedPlayers={trackedPlayers}
+          trackedPlayers={displayData.trackedPlayers}
           allPlayers={allPlayers}
           matchTime={matchTime}
           formatTime={formatTime}

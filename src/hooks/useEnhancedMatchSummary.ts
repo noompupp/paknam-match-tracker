@@ -1,6 +1,6 @@
 
 import { useQuery } from '@tanstack/react-query';
-import { enhancedMatchSummaryService } from '@/services/fixtures/enhancedMatchSummaryService';
+import { enhancedMatchSummaryService } from '@/services/fixtures/enhancedMatchSummary';
 
 export const useEnhancedMatchSummary = (fixtureId?: number) => {
   return useQuery({
@@ -42,10 +42,11 @@ export const useUpdateMemberStatsFromMatch = () => {
       const enhancedData = await enhancedMatchSummaryService.getEnhancedMatchSummary(fixtureId);
       
       // This could be expanded to actually update member stats
-      // For now, we'll return a success message
+      // For now, we'll return a success message with enhanced data structure
       return {
         success: true,
-        message: `Found ${enhancedData.goals.length} goals/assists, ${enhancedData.cards.length} cards, and ${enhancedData.playerTimes.length} player time records for processing.`
+        message: `Enhanced data processing complete: ${enhancedData.goals.length} goals/assists, ${enhancedData.cards.length} cards, and ${enhancedData.playerTimes.length} player time records processed successfully.`,
+        data: enhancedData
       };
     } catch (error) {
       console.error('❌ useUpdateMemberStatsFromMatch: Error:', error);
