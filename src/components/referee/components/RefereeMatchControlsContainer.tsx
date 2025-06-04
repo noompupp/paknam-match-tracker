@@ -1,8 +1,11 @@
 
-import RefereeMatchControlsContainer from "./RefereeMatchControlsContainer";
+import { Tabs } from "@/components/ui/tabs";
+import RefereeMatchHeader from "./RefereeMatchHeader";
+import RefereeTabsNavigation from "./RefereeTabsNavigation";
+import RefereeTabsContent from "./RefereeTabsContent";
 import { ComponentPlayer } from "../hooks/useRefereeState";
 
-interface RefereeMatchControlsProps {
+interface RefereeMatchControlsContainerProps {
   selectedFixtureData: any;
   homeScore: number;
   awayScore: number;
@@ -10,7 +13,6 @@ interface RefereeMatchControlsProps {
   isRunning: boolean;
   formatTime: (seconds: number) => string;
   allPlayers: ComponentPlayer[];
-  playersForTimeTracker: any[];
   goals: any[];
   selectedGoalPlayer: string;
   selectedGoalType: 'goal' | 'assist';
@@ -27,7 +29,6 @@ interface RefereeMatchControlsProps {
   selectedTimePlayer: string;
   setSelectedTimePlayer: (value: string) => void;
   events: any[];
-  updateFixtureScore: any;
   onAddGoal: (team: 'home' | 'away') => void;
   onRemoveGoal: (team: 'home' | 'away') => void;
   onToggleTimer: () => void;
@@ -41,8 +42,19 @@ interface RefereeMatchControlsProps {
   onExportSummary: () => void;
 }
 
-const RefereeMatchControls = (props: RefereeMatchControlsProps) => {
-  return <RefereeMatchControlsContainer {...props} />;
+const RefereeMatchControlsContainer = (props: RefereeMatchControlsContainerProps) => {
+  return (
+    <div className="space-y-6">
+      {/* Match Header */}
+      <RefereeMatchHeader selectedFixtureData={props.selectedFixtureData} />
+
+      {/* Main Control Tabs */}
+      <Tabs defaultValue="score" className="space-y-4">
+        <RefereeTabsNavigation />
+        <RefereeTabsContent {...props} />
+      </Tabs>
+    </div>
+  );
 };
 
-export default RefereeMatchControls;
+export default RefereeMatchControlsContainer;
