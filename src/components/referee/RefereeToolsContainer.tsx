@@ -68,13 +68,13 @@ const RefereeToolsContainer = () => {
               onToggleTimer={handlers.handleToggleTimer}
               onResetMatch={handlers.handleResetMatch}
               onSaveMatch={handlers.handleSaveMatch}
-              onAssignGoal={handlers.handleAssignGoal}
+              onAssignGoal={(player) => handlers.handleAssignGoal(player)}
               onAddCard={(playerName: string, team: string, cardType: 'yellow' | 'red', time: number) => 
                 handlers.handleAddCard(playerName, team, cardType, time)
               }
-              onAddPlayer={handlers.handleAddPlayer}
-              onRemovePlayer={handlers.handleRemovePlayer}
-              onTogglePlayerTime={handlers.handleTogglePlayerTime}
+              onAddPlayer={(player) => handlers.handleAddPlayer(player)}
+              onRemovePlayer={(playerId: number) => handlers.handleRemovePlayer(playerId)}
+              onTogglePlayerTime={(playerId: number) => handlers.handleTogglePlayerTime(playerId)}
               onExportSummary={handlers.handleExportSummary}
             />
 
