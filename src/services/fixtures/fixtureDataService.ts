@@ -13,6 +13,7 @@ interface SimpleTeam {
   goals_for: number;
   goals_against: number;
   goal_difference: number;
+  __id__?: string; // Add the text ID field
 }
 
 export interface FixtureData {
@@ -38,9 +39,9 @@ export const fetchFixtureWithTeams = async (id: number): Promise<FixtureData> =>
 
   console.log('📊 FixtureDataService: Current fixture data:', currentFixture);
 
-  // Get teams using the consistent team ID approach
-  const homeTeamId = currentFixture.team1;
-  const awayTeamId = currentFixture.team2;
+  // Use the standardized home_team_id and away_team_id fields
+  const homeTeamId = currentFixture.home_team_id;
+  const awayTeamId = currentFixture.away_team_id;
 
   console.log('🔍 FixtureDataService: Team IDs found:', { homeTeamId, awayTeamId });
 
@@ -64,7 +65,7 @@ const fetchTeamById = async (teamId: string, teamType: 'home' | 'away'): Promise
 
   const { data: team, error: teamError } = await supabase
     .from('teams')
-    .select('id, name, played, points, won, drawn, lost, goals_for, goals_against, goal_difference')
+    .select('id, name, played, points, won, drawn, lost, goals_for, goals_against, goal_difference, __id__')
     .eq('__id__', teamId)
     .maybeSingle();
   
@@ -109,8 +110,8 @@ export const updateFixtureInDatabase = async (id: number, homeScore: number, awa
 export const createFixtureResult = (updatedFixture: any, homeTeam: SimpleTeam, awayTeam: SimpleTeam): Fixture => {
   return {
     id: updatedFixture.id || 0,
-    home_team_id: homeTeam?.id?.toString() || '0', // Convert to string
-    away_team_id: awayTeam?.id?.toString() || '0', // Convert to string
+    home_team_id: homeTeam?.__id__ || homeTeam?.id?.toString() || '0', // Use text ID first
+    away_team_id: awayTeam?.__id__ || awayTeam?.id?.toString() || '0', // Use text ID first
     home_team: homeTeam ? {
       id: homeTeam.id,
       name: homeTeam.name,
@@ -129,7 +130,8 @@ export const createFixtureResult = (updatedFixture: any, homeTeam: SimpleTeam, a
       goal_difference: homeTeam.goal_difference,
       color: '',
       created_at: '',
-      updated_at: ''
+      updated_at: '',
+      __id__: homeTeam.__id__
     } : undefined,
     away_team: awayTeam ? {
       id: awayTeam.id,
@@ -149,7 +151,8 @@ export const createFixtureResult = (updatedFixture: any, homeTeam: SimpleTeam, a
       goal_difference: awayTeam.goal_difference,
       color: '',
       created_at: '',
-      updated_at: ''
+      updated_at: '',
+      __id__: awayTeam.__id__
     } : undefined,
     match_date: updatedFixture.match_date || updatedFixture.date?.toString() || '',
     match_time: updatedFixture.time?.toString() || '18:00:00', // Use 'time' column
