@@ -6,7 +6,30 @@ export const fetchAllMembers = async () => {
   
   const { data: members, error: membersError } = await supabase
     .from('members')
-    .select('*')
+    .select(`
+      id,
+      name,
+      nickname,
+      number,
+      position,
+      role,
+      team_id,
+      goals,
+      assists,
+      yellow_cards,
+      red_cards,
+      total_minutes_played,
+      matches_played,
+      created_at,
+      updated_at,
+      teams!inner(
+        id,
+        __id__,
+        name,
+        logo,
+        color
+      )
+    `)
     .order('name', { ascending: true });
   
   if (membersError) {
@@ -14,7 +37,7 @@ export const fetchAllMembers = async () => {
     throw membersError;
   }
   
-  console.log('📊 BaseMemberQueries: Raw members data from database:', {
+  console.log('📊 BaseMemberQueries: Enhanced members data from database:', {
     count: members?.length || 0,
     sample: members?.[0] || null
   });
@@ -25,7 +48,30 @@ export const fetchAllMembers = async () => {
 export const fetchMembersByTeamFilter = async (normalizedTeamId: string) => {
   const { data: allMembers, error: membersError } = await supabase
     .from('members')
-    .select('*')
+    .select(`
+      id,
+      name,
+      nickname,
+      number,
+      position,
+      role,
+      team_id,
+      goals,
+      assists,
+      yellow_cards,
+      red_cards,
+      total_minutes_played,
+      matches_played,
+      created_at,
+      updated_at,
+      teams!inner(
+        id,
+        __id__,
+        name,
+        logo,
+        color
+      )
+    `)
     .order('name', { ascending: true });
   
   if (membersError) {
@@ -36,14 +82,35 @@ export const fetchMembersByTeamFilter = async (normalizedTeamId: string) => {
   return allMembers || [];
 };
 
-export const updateMemberStats = async (id: number, stats: { goals?: number; assists?: number }) => {
+export const updateMemberStats = async (id: number, stats: { goals?: number; assists?: number; yellow_cards?: number; red_cards?: number; total_minutes_played?: number; matches_played?: number }) => {
   console.log('🔍 BaseMemberQueries: Updating member stats:', { id, stats });
   
   const { data, error } = await supabase
     .from('members')
     .update(stats)
     .eq('id', id)
-    .select()
+    .select(`
+      id,
+      name,
+      nickname,
+      number,
+      position,
+      role,
+      team_id,
+      goals,
+      assists,
+      yellow_cards,
+      red_cards,
+      total_minutes_played,
+      matches_played,
+      teams!inner(
+        id,
+        __id__,
+        name,
+        logo,
+        color
+      )
+    `)
     .single();
   
   if (error) {

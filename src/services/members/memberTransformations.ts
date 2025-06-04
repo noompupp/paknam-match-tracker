@@ -1,50 +1,45 @@
 
-import { Member, Team } from '@/types/database';
+import { Member } from '@/types/database';
 
-export const transformMemberWithTeam = (member: any, team: Team | undefined): Member => {
+export const transformMemberStats = (data: any): Member => {
+  console.log('🔄 MemberTransformations: Transforming member stats data:', data);
+  
   return {
-    id: member.id || 0,
-    name: member.name || '',
-    number: parseInt(member.number || '0') || 0,
-    position: member.position || 'Player',
-    role: member.role || 'Player',
-    goals: member.goals || 0,
-    assists: member.assists || 0,
-    team_id: team?.__id__ || '0', // Use text ID and convert to string
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    team: team ? {
-      id: team.id || 0,
-      name: team.name || '',
-      logo: team.logo || '⚽',
-      founded: team.founded || '2020',
-      captain: team.captain || '',
-      position: team.position || 1,
-      points: team.points || 0,
-      played: team.played || 0,
-      won: team.won || 0,
-      drawn: team.drawn || 0,
-      lost: team.lost || 0,
-      goals_for: team.goals_for || 0,
-      goals_against: team.goals_against || 0,
-      goal_difference: team.goal_difference || 0,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
+    id: data.id,
+    name: data.name || 'Unknown Player',
+    nickname: data.nickname,
+    number: data.number || '',
+    position: data.position || 'Player',
+    role: data.role || 'Player',
+    team_id: data.team_id,
+    goals: data.goals || 0,
+    assists: data.assists || 0,
+    yellow_cards: data.yellow_cards || 0,
+    red_cards: data.red_cards || 0,
+    total_minutes_played: data.total_minutes_played || 0,
+    matches_played: data.matches_played || 0,
+    created_at: data.created_at,
+    updated_at: data.updated_at,
+    team: data.teams ? {
+      id: data.teams.id,
+      __id__: data.teams.__id__,
+      name: data.teams.name || 'Unknown Team',
+      logo: data.teams.logo || '⚽',
+      logoURL: data.teams.logoURL,
+      founded: data.teams.founded || '2020',
+      captain: data.teams.captain || '',
+      position: data.teams.position || 1,
+      points: data.teams.points || 0,
+      played: data.teams.played || 0,
+      won: data.teams.won || 0,
+      drawn: data.teams.drawn || 0,
+      lost: data.teams.lost || 0,
+      goals_for: data.teams.goals_for || 0,
+      goals_against: data.teams.goals_against || 0,
+      goal_difference: data.teams.goal_difference || 0,
+      color: data.teams.color,
+      created_at: data.teams.created_at,
+      updated_at: data.teams.updated_at
     } : undefined
-  } as Member;
-};
-
-export const transformMemberStats = (member: any): Member => {
-  return {
-    id: member.id || 0,
-    name: member.name || '',
-    number: parseInt(member.number || '0') || 0,
-    position: member.position || 'Player',
-    role: member.role || 'Player',
-    goals: member.goals || 0,
-    assists: member.assists || 0,
-    team_id: '0', // Default to string '0'
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
   } as Member;
 };

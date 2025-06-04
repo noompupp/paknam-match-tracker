@@ -9,42 +9,6 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      cards: {
-        Row: {
-          card_type: string
-          created_at: string | null
-          description: string | null
-          event_time: number
-          fixture_id: number
-          id: number
-          player_id: number
-          player_name: string
-          team_id: number
-        }
-        Insert: {
-          card_type: string
-          created_at?: string | null
-          description?: string | null
-          event_time?: number
-          fixture_id: number
-          id?: number
-          player_id: number
-          player_name: string
-          team_id: number
-        }
-        Update: {
-          card_type?: string
-          created_at?: string | null
-          description?: string | null
-          event_time?: number
-          fixture_id?: number
-          id?: number
-          player_id?: number
-          player_name?: string
-          team_id?: number
-        }
-        Relationships: []
-      }
       fixtures: {
         Row: {
           __id__: string
@@ -331,31 +295,7 @@ export type Database = {
       }
     }
     Views: {
-      player_stats_view: {
-        Row: {
-          assists: number | null
-          goals: number | null
-          id: number | null
-          matches_played: number | null
-          name: string | null
-          number: string | null
-          position: string | null
-          red_cards: number | null
-          team_id: string | null
-          team_name: string | null
-          total_minutes_played: number | null
-          yellow_cards: number | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "fk_members_team"
-            columns: ["team_id"]
-            isOneToOne: false
-            referencedRelation: "teams"
-            referencedColumns: ["__id__"]
-          },
-        ]
-      }
+      [_ in never]: never
     }
     Functions: {
       [_ in never]: never

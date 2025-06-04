@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { resolveTeamIdForMatchEvent } from '@/utils/teamIdMapping';
 
@@ -55,10 +54,10 @@ export class DataIntegrityValidator {
         }
       }
 
-      // Check members table
+      // Check enhanced members table
       const { data: members, error: membersError } = await supabase
         .from('members')
-        .select('id, name, team_id, goals, assists');
+        .select('id, name, team_id, goals, assists, yellow_cards, red_cards, total_minutes_played, matches_played');
 
       if (membersError) {
         issues.push(`Members query failed: ${membersError.message}`);
@@ -69,13 +68,30 @@ export class DataIntegrityValidator {
           warnings.push(`Found ${unnamedMembers.length} members without names`);
         }
 
-        // Check for negative stats
+        // Check for negative stats in enhanced members table
         const negativeStats = members?.filter(m => 
           (m.goals !== null && m.goals < 0) || 
-          (m.assists !== null && m.assists < 0)
+          (m.assists !== null && m.assists < 0) ||
+          (m.yellow_cards !== null && m.yellow_cards < 0) ||
+          (m.red_cards !== null && m.red_cards < 0) ||
+          (m.total_minutes_played !== null && m.total_minutes_played < 0) ||
+          (m.matches_played !== null && m.matches_played < 0)
         );
         if (negativeStats && negativeStats.length > 0) {
           issues.push(`Found ${negativeStats.length} members with negative stats`);
+        }
+
+        // Check for null stats that should have defaults
+        const nullStats = members?.filter(m => 
+          m.goals === null || 
+          m.assists === null ||
+          m.yellow_cards === null ||
+          m.red_cards === null ||
+          m.total_minutes_played === null ||
+          m.matches_played === null
+        );
+        if (nullStats && nullStats.length > 0) {
+          warnings.push(`Found ${nullStats.length} members with null stats (should have defaults)`);
         }
       }
 
@@ -85,7 +101,7 @@ export class DataIntegrityValidator {
 
       return {
         success: true,
-        message: `Database consistency check passed${warnings.length > 0 ? ' with warnings' : ''}`,
+        message: `Enhanced database consistency check passed${warnings.length > 0 ? ' with warnings' : ''}`,
         warnings,
         details: {
           fixtures: fixtures?.length || 0,
@@ -166,23 +182,23 @@ export class DataIntegrityValidator {
   }
 
   async validatePlayerStatsSync(): Promise<any> {
-    console.log('🔍 DataIntegrityValidator: Checking player stats synchronization...');
+    console.log('🔍 DataIntegrityValidator: Checking enhanced player stats synchronization...');
     
     try {
-      // Get sample of players
+      // Get sample of players from enhanced members table
       const { data: players, error: playersError } = await supabase
         .from('members')
-        .select('id, name, goals, assists')
+        .select('id, name, goals, assists, yellow_cards, red_cards')
         .limit(10);
 
       if (playersError) {
-        throw new Error(`Failed to fetch players: ${playersError.message}`);
+        throw new Error(`Failed to fetch players from enhanced members table: ${playersError.message}`);
       }
 
       if (!players || players.length === 0) {
         return {
           success: true,
-          message: 'No players found to validate stats synchronization',
+          message: 'No players found in enhanced members table to validate stats synchronization',
           details: { playersChecked: 0 }
         };
       }
@@ -193,7 +209,7 @@ export class DataIntegrityValidator {
         // Check match events for this player
         const { data: events, error: eventsError } = await supabase
           .from('match_events')
-          .select('event_type')
+          .select('event_type, card_type')
           .eq('player_name', player.name);
 
         if (eventsError) {
@@ -204,15 +220,32 @@ export class DataIntegrityValidator {
         if (events) {
           const goalsFromEvents = events.filter(e => e.event_type === 'goal').length;
           const assistsFromEvents = events.filter(e => e.event_type === 'assist').length;
+          const yellowCardsFromEvents = events.filter(e => e.event_type === 'yellow_card' || e.card_type === 'yellow').length;
+          const redCardsFromEvents = events.filter(e => e.event_type === 'red_card' || e.card_type === 'red').length;
 
           const playerGoals = player.goals || 0;
           const playerAssists = player.assists || 0;
+          const playerYellowCards = player.yellow_cards || 0;
+          const playerRedCards = player.red_cards || 0;
 
-          if (goalsFromEvents !== playerGoals || assistsFromEvents !== playerAssists) {
+          if (goalsFromEvents !== playerGoals || 
+              assistsFromEvents !== playerAssists ||
+              yellowCardsFromEvents !== playerYellowCards ||
+              redCardsFromEvents !== playerRedCards) {
             inconsistencies.push({
               player: player.name,
-              playerStats: { goals: playerGoals, assists: playerAssists },
-              eventStats: { goals: goalsFromEvents, assists: assistsFromEvents }
+              memberStats: { 
+                goals: playerGoals, 
+                assists: playerAssists,
+                yellow_cards: playerYellowCards,
+                red_cards: playerRedCards
+              },
+              eventStats: { 
+                goals: goalsFromEvents, 
+                assists: assistsFromEvents,
+                yellow_cards: yellowCardsFromEvents,
+                red_cards: redCardsFromEvents
+              }
             });
           }
         }
@@ -221,19 +254,19 @@ export class DataIntegrityValidator {
       if (inconsistencies.length > 0) {
         return {
           success: true,
-          message: `Player stats sync check completed with ${inconsistencies.length} inconsistencies`,
-          warnings: [`Found ${inconsistencies.length} players with mismatched stats`],
+          message: `Enhanced player stats sync check completed with ${inconsistencies.length} inconsistencies`,
+          warnings: [`Found ${inconsistencies.length} players with mismatched stats in enhanced members table`],
           details: { inconsistencies, playersChecked: players.length }
         };
       }
 
       return {
         success: true,
-        message: 'Player stats synchronization validation passed',
+        message: 'Enhanced player stats synchronization validation passed',
         details: { playersChecked: players.length, inconsistencies: 0 }
       };
     } catch (error) {
-      throw new Error(`Player stats sync validation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(`Enhanced player stats sync validation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 
