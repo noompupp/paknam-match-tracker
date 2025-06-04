@@ -33,16 +33,38 @@ const EnhancedMatchSummaryDisplay = ({
     return <NoMatchSelectedPlaceholder />;
   }
 
-  // Convert seconds to minutes for display
+  // Enhanced time formatting for better display
   const formatTimeInMinutes = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
     return remainingSeconds > 0 ? `${minutes}:${remainingSeconds.toString().padStart(2, '0')}` : `${minutes}'`;
   };
 
+  // Calculate actual goals from events for accurate display
+  const homeTeamGoals = goals.filter(goal => 
+    goal.type === 'goal' && goal.team === selectedFixtureData?.home_team?.name
+  );
+  
+  const awayTeamGoals = goals.filter(goal => 
+    goal.type === 'goal' && goal.team === selectedFixtureData?.away_team?.name
+  );
+
+  const totalAssists = goals.filter(goal => goal.type === 'assist');
+
+  console.log('📊 EnhancedMatchSummaryDisplay: Rendering with enhanced data:', {
+    fixture: selectedFixtureData.id,
+    homeScore,
+    awayScore,
+    homeGoalsCount: homeTeamGoals.length,
+    awayGoalsCount: awayTeamGoals.length,
+    assistsCount: totalAssists.length,
+    cardsCount: cards.length,
+    trackedPlayersCount: trackedPlayers.length
+  });
+
   return (
     <div className="space-y-6">
-      {/* Match Header */}
+      {/* Match Header with Real-time Score */}
       <MatchHeaderWithScore
         selectedFixtureData={selectedFixtureData}
         homeScore={homeScore}
@@ -51,7 +73,7 @@ const EnhancedMatchSummaryDisplay = ({
         formatTime={formatTimeInMinutes}
       />
 
-      {/* Goals Summary */}
+      {/* Goals Summary with Enhanced Display */}
       <GoalsSummaryDisplay
         selectedFixtureData={selectedFixtureData}
         goals={goals}
@@ -65,11 +87,12 @@ const EnhancedMatchSummaryDisplay = ({
         formatTime={formatTimeInMinutes}
       />
 
-      {/* Player Time Tracking */}
+      {/* Player Time Tracking with Minutes Conversion */}
       <PlayerTimeTrackingDisplay
         trackedPlayers={trackedPlayers.map(player => ({
           ...player,
-          totalTime: Math.floor(player.totalTime / 60) // Convert seconds to minutes
+          totalTime: Math.floor(player.totalTime / 60), // Convert seconds to minutes for display
+          displayTime: formatTimeInMinutes(player.totalTime) // Add formatted display time
         }))}
         formatTime={formatTimeInMinutes}
       />

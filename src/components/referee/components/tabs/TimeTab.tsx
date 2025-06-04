@@ -4,6 +4,8 @@ import { ComponentPlayer } from "../../hooks/useRefereeState";
 
 interface TimeTabProps {
   allPlayers: ComponentPlayer[];
+  homeTeamPlayers?: ComponentPlayer[];
+  awayTeamPlayers?: ComponentPlayer[];
   trackedPlayers: any[];
   selectedPlayer: string;
   matchTime: number;
@@ -16,6 +18,8 @@ interface TimeTabProps {
 
 const TimeTab = ({
   allPlayers,
+  homeTeamPlayers,
+  awayTeamPlayers,
   trackedPlayers,
   selectedPlayer,
   onPlayerSelect,
@@ -28,15 +32,31 @@ const TimeTab = ({
   const handleAddPlayer = () => {
     if (!selectedPlayer) return;
     
-    const player = allPlayers.find(p => p.id.toString() === selectedPlayer);
+    // Use match-specific players first, fallback to all players
+    const playersToSearch = homeTeamPlayers && awayTeamPlayers 
+      ? [...homeTeamPlayers, ...awayTeamPlayers]
+      : allPlayers;
+    
+    const player = playersToSearch.find(p => p.id.toString() === selectedPlayer);
     if (!player) return;
+    
+    console.log('⏱️ TimeTab: Adding player to time tracking:', {
+      player: player.name,
+      team: player.team,
+      source: homeTeamPlayers && awayTeamPlayers ? 'match-specific' : 'all-players'
+    });
     
     onAddPlayer(player);
   };
 
+  // Use match-specific players for the dropdown
+  const playersForDropdown = homeTeamPlayers && awayTeamPlayers 
+    ? [...homeTeamPlayers, ...awayTeamPlayers]
+    : allPlayers;
+
   return (
     <PlayerTimeTracker
-      allPlayers={allPlayers}
+      allPlayers={playersForDropdown}
       trackedPlayers={trackedPlayers}
       selectedPlayer={selectedPlayer}
       onPlayerSelect={onPlayerSelect}

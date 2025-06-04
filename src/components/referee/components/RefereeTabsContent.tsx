@@ -153,6 +153,8 @@ const RefereeTabsContent = ({
       <TabsContent value="time">
         <TimeTab
           allPlayers={allPlayers}
+          homeTeamPlayers={homeTeamPlayers}
+          awayTeamPlayers={awayTeamPlayers}
           trackedPlayers={trackedPlayers}
           selectedPlayer={selectedTimePlayer}
           matchTime={matchTime}
