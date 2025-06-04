@@ -58,7 +58,7 @@ const Teams = () => {
           onViewSquad={handleViewSquad}
         />
 
-        {/* Team Squad (showing selected team's squad) */}
+        {/* Team Squad (showing selected team's squad with enhanced data) */}
         {selectedTeam && (
           <TeamSquad
             team={selectedTeam}

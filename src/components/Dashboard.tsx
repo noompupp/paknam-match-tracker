@@ -1,7 +1,6 @@
 
 import { useTeams } from "@/hooks/useTeams";
-import { useTopScorers } from "@/hooks/useMembers";
-import { useTopAssists } from "@/hooks/useTopAssists";
+import { useEnhancedTopScorers, useEnhancedTopAssists } from "@/hooks/useEnhancedPlayerStats";
 import { useRecentFixtures, useUpcomingFixtures } from "@/hooks/useFixtures";
 import DashboardHeader from "./dashboard/DashboardHeader";
 import LeagueTable from "./dashboard/LeagueTable";
@@ -12,8 +11,8 @@ import UpcomingFixturesCard from "./dashboard/UpcomingFixturesCard";
 
 const Dashboard = () => {
   const { data: teams, isLoading: teamsLoading, error: teamsError } = useTeams();
-  const { data: topScorers, isLoading: scorersLoading, error: scorersError } = useTopScorers();
-  const { data: topAssists, isLoading: assistsLoading, error: assistsError } = useTopAssists();
+  const { data: topScorers, isLoading: scorersLoading, error: scorersError } = useEnhancedTopScorers(5);
+  const { data: topAssists, isLoading: assistsLoading, error: assistsError } = useEnhancedTopAssists(5);
   const { data: recentFixtures, isLoading: recentLoading } = useRecentFixtures();
   const { data: upcomingFixtures, isLoading: upcomingLoading } = useUpcomingFixtures();
 
