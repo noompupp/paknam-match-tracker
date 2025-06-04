@@ -6,7 +6,7 @@ export interface Card {
   fixture_id: number;
   player_id: number;
   player_name: string;
-  team_id: number;
+  team_id: string; // Updated to string to match match_events table
   card_type: 'yellow' | 'red';
   event_time: number;
   created_at: string;
@@ -26,9 +26,18 @@ export const cardsApi = {
       throw new Error('Invalid card type. Must be "yellow" or "red"');
     }
 
+    // Create match event for card
     const { data, error } = await supabase
-      .from('cards')
-      .insert([cardData])
+      .from('match_events')
+      .insert([{
+        fixture_id: cardData.fixture_id,
+        event_type: cardData.card_type,
+        player_name: cardData.player_name,
+        team_id: cardData.team_id,
+        event_time: cardData.event_time,
+        description: cardData.description || `${cardData.card_type} card for ${cardData.player_name}`,
+        card_type: cardData.card_type
+      }])
       .select()
       .single();
 
@@ -38,7 +47,19 @@ export const cardsApi = {
     }
 
     console.log('✅ CardsAPI: Card created successfully:', data);
-    return data as Card;
+    
+    // Transform match_events data to Card format
+    return {
+      id: data.id,
+      fixture_id: data.fixture_id,
+      player_id: cardData.player_id, // Use original player_id
+      player_name: data.player_name,
+      team_id: data.team_id,
+      card_type: data.card_type as 'yellow' | 'red',
+      event_time: data.event_time,
+      created_at: data.created_at,
+      description: data.description
+    } as Card;
   },
 
   async getByFixture(fixtureId: number): Promise<Card[]> {
@@ -49,9 +70,10 @@ export const cardsApi = {
     }
     
     const { data, error } = await supabase
-      .from('cards')
+      .from('match_events')
       .select('*')
       .eq('fixture_id', fixtureId)
+      .in('event_type', ['yellow', 'red'])
       .order('event_time', { ascending: true });
 
     if (error) {
@@ -60,7 +82,19 @@ export const cardsApi = {
     }
 
     console.log('📊 CardsAPI: Cards fetched successfully:', data);
-    return (data || []) as Card[];
+    
+    // Transform match_events data to Card format
+    return (data || []).map(event => ({
+      id: event.id,
+      fixture_id: event.fixture_id,
+      player_id: 0, // We don't store player_id in match_events, would need to lookup
+      player_name: event.player_name,
+      team_id: event.team_id,
+      card_type: event.event_type as 'yellow' | 'red',
+      event_time: event.event_time,
+      created_at: event.created_at,
+      description: event.description
+    })) as Card[];
   },
 
   async getByPlayer(playerId: number): Promise<Card[]> {
@@ -70,10 +104,22 @@ export const cardsApi = {
       throw new Error('Invalid player ID provided');
     }
     
+    // Get player name first
+    const { data: member, error: memberError } = await supabase
+      .from('members')
+      .select('name')
+      .eq('id', playerId)
+      .single();
+
+    if (memberError || !member) {
+      throw new Error(`Player with ID ${playerId} not found`);
+    }
+    
     const { data, error } = await supabase
-      .from('cards')
+      .from('match_events')
       .select('*')
-      .eq('player_id', playerId)
+      .eq('player_name', member.name)
+      .in('event_type', ['yellow', 'red'])
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -81,7 +127,18 @@ export const cardsApi = {
       throw new Error(`Failed to fetch player cards: ${error.message}`);
     }
 
-    return (data || []) as Card[];
+    // Transform match_events data to Card format
+    return (data || []).map(event => ({
+      id: event.id,
+      fixture_id: event.fixture_id,
+      player_id: playerId,
+      player_name: event.player_name,
+      team_id: event.team_id,
+      card_type: event.event_type as 'yellow' | 'red',
+      event_time: event.event_time,
+      created_at: event.created_at,
+      description: event.description
+    })) as Card[];
   },
 
   async delete(cardId: number): Promise<void> {
@@ -92,9 +149,10 @@ export const cardsApi = {
     }
     
     const { error } = await supabase
-      .from('cards')
+      .from('match_events')
       .delete()
-      .eq('id', cardId);
+      .eq('id', cardId)
+      .in('event_type', ['yellow', 'red']);
 
     if (error) {
       console.error('❌ CardsAPI: Error deleting card:', error);
@@ -107,12 +165,24 @@ export const cardsApi = {
   async checkForSecondYellow(playerId: number, fixtureId: number): Promise<boolean> {
     console.log('🔍 CardsAPI: Checking for existing yellow cards:', { playerId, fixtureId });
     
+    // Get player name first
+    const { data: member, error: memberError } = await supabase
+      .from('members')
+      .select('name')
+      .eq('id', playerId)
+      .single();
+
+    if (memberError || !member) {
+      console.error('❌ CardsAPI: Error fetching player:', memberError);
+      return false;
+    }
+    
     const { data, error } = await supabase
-      .from('cards')
+      .from('match_events')
       .select('id')
-      .eq('player_id', playerId)
+      .eq('player_name', member.name)
       .eq('fixture_id', fixtureId)
-      .eq('card_type', 'yellow');
+      .eq('event_type', 'yellow');
 
     if (error) {
       console.error('❌ CardsAPI: Error checking for yellow cards:', error);
