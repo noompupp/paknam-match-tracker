@@ -11,11 +11,20 @@ import { normalizeId, filterMembersByTeam } from './teamIdUtils';
 import { transformMemberStats } from './memberTransformations';
 import { Member } from '@/types/database';
 
+const ensureTeamProperties = (teams: any[]) => {
+  return teams.map(team => ({
+    ...team,
+    created_at: team.created_at || new Date().toISOString(),
+    updated_at: team.updated_at || new Date().toISOString()
+  }));
+};
+
 export const membersApi = {
   getAll: async () => {
     const members = await fetchAllMembers();
     const teams = await fetchAllTeams();
-    return processAllMembersData(members, teams);
+    const enhancedTeams = ensureTeamProperties(teams);
+    return processAllMembersData(members, enhancedTeams);
   },
 
   getByTeam: async (teamId: number) => {
@@ -37,7 +46,13 @@ export const membersApi = {
       filteredMembersCount: teamMembers.length
     });
     
-    return processTeamMembersData(teamMembers, team, teamId);
+    const enhancedTeam = {
+      ...team,
+      created_at: team.created_at || new Date().toISOString(),
+      updated_at: team.updated_at || new Date().toISOString()
+    };
+    
+    return processTeamMembersData(teamMembers, enhancedTeam, teamId);
   },
 
   updateStats: async (id: number, stats: { goals?: number; assists?: number }) => {

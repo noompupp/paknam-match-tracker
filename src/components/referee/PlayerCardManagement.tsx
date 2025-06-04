@@ -1,4 +1,3 @@
-
 import { useToast } from "@/hooks/use-toast";
 import { useCreateCard } from "@/hooks/useCards";
 import { resolveTeamIdForMatchEvent } from "@/utils/teamIdMapping";
@@ -102,12 +101,12 @@ export const usePlayerCardManagement = ({
       // Resolve the text team ID for the database
       const teamId = resolveTeamIdForMatchEvent(selectedTeam, homeTeam, awayTeam);
 
-      // Save to database first - convert string teamId to number for database
+      // Save to database first - keep teamId as string for database
       await createCard.mutateAsync({
         fixture_id: selectedFixtureData.id,
         player_id: player.id,
         player_name: player.name,
-        team_id: parseInt(teamId) || 0, // Convert string to number for database
+        team_id: teamId, // Keep as string for database
         card_type: selectedCardType,
         event_time: matchTime,
         description: `${selectedCardType} card for ${player.name} (${selectedTeam})`

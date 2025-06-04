@@ -41,7 +41,7 @@ export const processAllMembersData = (rawMembers: RawMemberData[], teams: Team[]
     // Find the team for this member
     const team = teams.find(t => t.__id__ === member.team_id);
     
-    return {
+    const processedMember: Member = {
       id: member.id,
       name: member.name || 'Unknown Player',
       nickname: member.nickname,
@@ -78,7 +78,9 @@ export const processAllMembersData = (rawMembers: RawMemberData[], teams: Team[]
         created_at: team.created_at,
         updated_at: team.updated_at
       } : undefined
-    } as Member;
+    };
+
+    return processedMember;
   });
 
   console.log('✅ MemberDataProcessor: Successfully processed members with enhanced stats:', {
@@ -108,44 +110,48 @@ export const processTeamMembersData = (rawMembers: RawMemberData[], team: Team, 
     return [];
   }
 
-  const processedMembers = rawMembers.map(member => ({
-    id: member.id,
-    name: member.name || 'Unknown Player',
-    nickname: member.nickname,
-    number: member.number || '',
-    position: member.position || 'Player',
-    role: member.role || 'Player',
-    team_id: member.team_id,
-    goals: member.goals || 0,
-    assists: member.assists || 0,
-    yellow_cards: member.yellow_cards || 0,
-    red_cards: member.red_cards || 0,
-    total_minutes_played: member.total_minutes_played || 0,
-    matches_played: member.matches_played || 0,
-    created_at: member.created_at,
-    updated_at: member.updated_at,
-    team: {
-      id: team.id,
-      __id__: team.__id__,
-      name: team.name || 'Unknown Team',
-      logo: team.logo || '⚽',
-      logoURL: team.logoURL,
-      founded: team.founded || '2020',
-      captain: team.captain || '',
-      position: team.position || 1,
-      points: team.points || 0,
-      played: team.played || 0,
-      won: team.won || 0,
-      drawn: team.drawn || 0,
-      lost: team.lost || 0,
-      goals_for: team.goals_for || 0,
-      goals_against: team.goals_against || 0,
-      goal_difference: team.goal_difference || 0,
-      color: team.color,
-      created_at: team.created_at,
-      updated_at: team.updated_at
-    }
-  })) as Member[];
+  const processedMembers = rawMembers.map(member => {
+    const processedMember: Member = {
+      id: member.id,
+      name: member.name || 'Unknown Player',
+      nickname: member.nickname,
+      number: member.number || '',
+      position: member.position || 'Player',
+      role: member.role || 'Player',
+      team_id: member.team_id,
+      goals: member.goals || 0,
+      assists: member.assists || 0,
+      yellow_cards: member.yellow_cards || 0,
+      red_cards: member.red_cards || 0,
+      total_minutes_played: member.total_minutes_played || 0,
+      matches_played: member.matches_played || 0,
+      created_at: member.created_at,
+      updated_at: member.updated_at,
+      team: {
+        id: team.id,
+        __id__: team.__id__,
+        name: team.name || 'Unknown Team',
+        logo: team.logo || '⚽',
+        logoURL: team.logoURL,
+        founded: team.founded || '2020',
+        captain: team.captain || '',
+        position: team.position || 1,
+        points: team.points || 0,
+        played: team.played || 0,
+        won: team.won || 0,
+        drawn: team.drawn || 0,
+        lost: team.lost || 0,
+        goals_for: team.goals_for || 0,
+        goals_against: team.goals_against || 0,
+        goal_difference: team.goal_difference || 0,
+        color: team.color,
+        created_at: team.created_at,
+        updated_at: team.updated_at
+      }
+    };
+
+    return processedMember;
+  });
 
   console.log('✅ MemberDataProcessor: Successfully processed team members with enhanced stats:', {
     processedCount: processedMembers.length,

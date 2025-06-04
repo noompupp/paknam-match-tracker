@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useCreateCard } from "@/hooks/useCards";
 import { cardsApi } from "@/services/cardsApi";
@@ -79,12 +78,12 @@ export const useCardManagementImproved = ({ selectedFixtureData }: UseCardManage
       const playerId = typeof player === 'object' ? player.id : 0;
       const playerName = typeof player === 'object' ? player.name : player;
 
-      // Save to database - convert teamId to number for database compatibility
+      // Save to database - keep teamId as string for database compatibility
       const savedCard = await createCard.mutateAsync({
         fixture_id: selectedFixtureData.id,
         player_id: playerId,
         player_name: playerName,
-        team_id: parseInt(teamId) || 0, // Convert string to number for database
+        team_id: teamId, // Keep as string for database
         card_type: cardType,
         event_time: matchTime,
         description: `${cardType} card for ${playerName} (${team})`
@@ -112,7 +111,7 @@ export const useCardManagementImproved = ({ selectedFixtureData }: UseCardManage
           fixture_id: selectedFixtureData.id,
           player_id: playerId,
           player_name: playerName,
-          team_id: parseInt(teamId) || 0, // Convert string to number for database
+          team_id: teamId, // Keep as string for database
           card_type: 'red',
           event_time: matchTime,
           description: `Automatic red card for ${playerName} (second yellow)`

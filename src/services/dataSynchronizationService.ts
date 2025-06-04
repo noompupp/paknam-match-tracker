@@ -127,15 +127,15 @@ export const dataSynchronizationService = {
 
   async refreshCachedData(): Promise<void> {
     try {
-      // Trigger a refresh of the player stats view
+      // Refresh members table data instead of player_stats_view
       const { error } = await supabase
-        .from('player_stats_view')
+        .from('members')
         .select('count(*)', { count: 'exact' });
 
       if (error) {
-        console.warn('⚠️ DataSynchronizationService: Could not refresh player stats view:', error);
+        console.warn('⚠️ DataSynchronizationService: Could not refresh members data:', error);
       } else {
-        console.log('🔄 DataSynchronizationService: Player stats view refreshed');
+        console.log('🔄 DataSynchronizationService: Members data refreshed');
       }
     } catch (error) {
       console.warn('⚠️ DataSynchronizationService: Error refreshing cached data:', error);
