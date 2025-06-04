@@ -4,9 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Card, CardContent } from "@/components/ui/card";
-import { Download, Trophy, Target, Timer, AlertTriangle } from "lucide-react";
+import { Download, Trophy, Target, Timer, AlertTriangle, Users, FileImage, FileText } from "lucide-react";
 import { useMatchEvents } from "@/hooks/useMatchEvents";
 import { useToast } from "@/hooks/use-toast";
+import { exportToJPEG, exportToCSV } from "@/utils/exportUtils";
 
 interface MatchSummaryDialogProps {
   fixture: any;
@@ -41,16 +42,19 @@ const MatchSummaryDialog = ({ fixture, isOpen, onClose }: MatchSummaryDialogProp
   };
 
   const goals = (matchEvents || []).filter(event => event.event_type === 'goal');
+  const assists = (matchEvents || []).filter(event => event.event_type === 'assist');
   const cards = (matchEvents || []).filter(event => 
     event.event_type === 'yellow_card' || event.event_type === 'red_card'
   );
 
   const homeGoals = goals.filter(g => g.team_id === fixture?.home_team_id);
   const awayGoals = goals.filter(g => g.team_id === fixture?.away_team_id);
+  const homeAssists = assists.filter(a => a.team_id === fixture?.home_team_id);
+  const awayAssists = assists.filter(a => a.team_id === fixture?.away_team_id);
   const homeCards = cards.filter(c => c.team_id === fixture?.home_team_id);
   const awayCards = cards.filter(c => c.team_id === fixture?.away_team_id);
 
-  const handleExportSummary = () => {
+  const handleExportJSON = () => {
     const summaryData = {
       fixture: {
         homeTeam: fixture?.home_team?.name,
@@ -62,6 +66,7 @@ const MatchSummaryDialog = ({ fixture, isOpen, onClose }: MatchSummaryDialogProp
       },
       events: matchEvents || [],
       goals,
+      assists,
       cards
     };
     
@@ -81,6 +86,72 @@ const MatchSummaryDialog = ({ fixture, isOpen, onClose }: MatchSummaryDialogProp
     });
   };
 
+  const handleExportJPEG = async () => {
+    try {
+      const filename = `match-summary-${fixture?.home_team?.name}-vs-${fixture?.away_team?.name}-${fixture?.match_date}.jpg`;
+      await exportToJPEG('match-summary-content', filename);
+      toast({
+        title: "Match Summary Exported",
+        description: "Match summary has been downloaded as JPEG image.",
+      });
+    } catch (error) {
+      toast({
+        title: "Export Failed",
+        description: "Failed to export match summary as image.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleExportCSV = () => {
+    try {
+      // Prepare CSV data
+      const csvData = [
+        // Match info
+        { Type: 'Match', Team: fixture?.home_team?.name, Score: fixture?.home_score || 0, Result: getResult() },
+        { Type: 'Match', Team: fixture?.away_team?.name, Score: fixture?.away_score || 0, Result: getResult() },
+        // Goals
+        ...goals.map(goal => ({
+          Type: 'Goal',
+          Team: goal.team_id === fixture?.home_team_id ? fixture?.home_team?.name : fixture?.away_team?.name,
+          Player: goal.player_name,
+          Time: formatTime(goal.event_time),
+          Description: goal.description
+        })),
+        // Assists
+        ...assists.map(assist => ({
+          Type: 'Assist',
+          Team: assist.team_id === fixture?.home_team_id ? fixture?.home_team?.name : fixture?.away_team?.name,
+          Player: assist.player_name,
+          Time: formatTime(assist.event_time),
+          Description: assist.description
+        })),
+        // Cards
+        ...cards.map(card => ({
+          Type: card.event_type === 'yellow_card' ? 'Yellow Card' : 'Red Card',
+          Team: card.team_id === fixture?.home_team_id ? fixture?.home_team?.name : fixture?.away_team?.name,
+          Player: card.player_name,
+          Time: formatTime(card.event_time),
+          Description: card.description
+        }))
+      ];
+
+      const filename = `match-summary-${fixture?.home_team?.name}-vs-${fixture?.away_team?.name}-${fixture?.match_date}.csv`;
+      exportToCSV(csvData, filename);
+      
+      toast({
+        title: "Match Summary Exported",
+        description: "Match summary has been downloaded as CSV file.",
+      });
+    } catch (error) {
+      toast({
+        title: "Export Failed",
+        description: "Failed to export match summary as CSV.",
+        variant: "destructive",
+      });
+    }
+  };
+
   if (!fixture) return null;
 
   return (
@@ -93,7 +164,7 @@ const MatchSummaryDialog = ({ fixture, isOpen, onClose }: MatchSummaryDialogProp
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-6">
+        <div id="match-summary-content" className="space-y-6">
           {/* Match Result */}
           <Card>
             <CardContent className="pt-6">
@@ -173,6 +244,64 @@ const MatchSummaryDialog = ({ fixture, isOpen, onClose }: MatchSummaryDialogProp
                       ))}
                       {awayGoals.length === 0 && (
                         <p className="text-xs text-muted-foreground">No goals</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Assists */}
+          <Card>
+            <CardContent className="pt-6 space-y-4">
+              <h4 className="font-semibold flex items-center gap-2">
+                <Users className="h-4 w-4" />
+                Assists ({assists.length})
+              </h4>
+              
+              {assists.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-4">No assists recorded</p>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Home Assists */}
+                  <div>
+                    <h5 className="font-medium text-sm mb-2">{fixture.home_team?.name}</h5>
+                    <div className="space-y-1">
+                      {homeAssists.map((event, index) => (
+                        <div key={event.id} className="text-sm flex items-center justify-between p-2 bg-purple-50 rounded">
+                          <div>
+                            <Badge variant="outline" className="mr-2">
+                              assist
+                            </Badge>
+                            <span>{event.player_name}</span>
+                          </div>
+                          <span className="text-xs text-muted-foreground">{formatTime(event.event_time)}</span>
+                        </div>
+                      ))}
+                      {homeAssists.length === 0 && (
+                        <p className="text-xs text-muted-foreground">No assists</p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Away Assists */}
+                  <div>
+                    <h5 className="font-medium text-sm mb-2">{fixture.away_team?.name}</h5>
+                    <div className="space-y-1">
+                      {awayAssists.map((event, index) => (
+                        <div key={event.id} className="text-sm flex items-center justify-between p-2 bg-purple-50 rounded">
+                          <div>
+                            <Badge variant="outline" className="mr-2">
+                              assist
+                            </Badge>
+                            <span>{event.player_name}</span>
+                          </div>
+                          <span className="text-xs text-muted-foreground">{formatTime(event.event_time)}</span>
+                        </div>
+                      ))}
+                      {awayAssists.length === 0 && (
+                        <p className="text-xs text-muted-foreground">No assists</p>
                       )}
                     </div>
                   </div>
@@ -266,11 +395,21 @@ const MatchSummaryDialog = ({ fixture, isOpen, onClose }: MatchSummaryDialogProp
               )}
             </CardContent>
           </Card>
+        </div>
 
-          {/* Export Button */}
-          <Button onClick={handleExportSummary} className="w-full" variant="outline">
+        {/* Export Buttons */}
+        <div className="flex gap-2">
+          <Button onClick={handleExportJSON} variant="outline" className="flex-1">
             <Download className="h-4 w-4 mr-2" />
-            Export Match Summary
+            JSON
+          </Button>
+          <Button onClick={handleExportJPEG} variant="outline" className="flex-1">
+            <FileImage className="h-4 w-4 mr-2" />
+            JPEG
+          </Button>
+          <Button onClick={handleExportCSV} variant="outline" className="flex-1">
+            <FileText className="h-4 w-4 mr-2" />
+            CSV
           </Button>
         </div>
       </DialogContent>
