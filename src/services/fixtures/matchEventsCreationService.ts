@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { MatchEvent } from '@/types/database';
 
 interface TeamInfo {
-  id: number;
+  id: string; // Changed from number to string to match standardized IDs
   name: string;
 }
 
@@ -36,7 +36,7 @@ export const createGoalEventsWithDuplicateCheck = async (
           .select('id')
           .eq('fixture_id', fixtureId)
           .eq('event_type', 'goal')
-          .eq('team_id', homeTeam.id.toString()) // Convert to string
+          .eq('team_id', homeTeam.id) // Now expects string, no need to convert
           .eq('player_name', 'Unknown Player');
 
         const existingCount = existingGoals?.length || 0;
@@ -46,7 +46,7 @@ export const createGoalEventsWithDuplicateCheck = async (
             fixture_id: fixtureId,
             event_type: 'goal',
             player_name: 'Unknown Player',
-            team_id: homeTeam.id.toString(), // Convert to string
+            team_id: homeTeam.id, // Now string, no need to convert
             event_time: 0, // Default time, can be updated later
             description: `Goal by Unknown Player (${homeTeam.name})`
           });
@@ -64,7 +64,7 @@ export const createGoalEventsWithDuplicateCheck = async (
           .select('id')
           .eq('fixture_id', fixtureId)
           .eq('event_type', 'goal')
-          .eq('team_id', awayTeam.id.toString()) // Convert to string
+          .eq('team_id', awayTeam.id) // Now expects string, no need to convert
           .eq('player_name', 'Unknown Player');
 
         const existingCount = existingGoals?.length || 0;
@@ -74,7 +74,7 @@ export const createGoalEventsWithDuplicateCheck = async (
             fixture_id: fixtureId,
             event_type: 'goal',
             player_name: 'Unknown Player',
-            team_id: awayTeam.id.toString(), // Convert to string
+            team_id: awayTeam.id, // Now string, no need to convert
             event_time: 0, // Default time, can be updated later
             description: `Goal by Unknown Player (${awayTeam.name})`
           });
