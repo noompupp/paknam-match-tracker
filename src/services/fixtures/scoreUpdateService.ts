@@ -56,8 +56,8 @@ export const updateFixtureScore = async (id: number, homeScore: number, awayScor
     console.log('⚽ ScoreUpdateService: Creating goal events with duplicate prevention...');
     await createGoalEventsWithDuplicateCheck(
       id,
-      { id: homeTeam.__id__ || homeTeam.id, name: homeTeam.name }, // Use standardized text ID
-      { id: awayTeam.__id__ || awayTeam.id, name: awayTeam.name }, // Use standardized text ID
+      { id: homeTeam.__id__ || homeTeam.id.toString(), name: homeTeam.name }, // Use text ID for match events
+      { id: awayTeam.__id__ || awayTeam.id.toString(), name: awayTeam.name }, // Use text ID for match events
       homeScore,
       awayScore,
       currentHomeScore,
