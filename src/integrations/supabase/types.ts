@@ -66,6 +66,20 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "fixtures_away_team_id_fkey"
+            columns: ["away_team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["__id__"]
+          },
+          {
+            foreignKeyName: "fixtures_home_team_id_fkey"
+            columns: ["home_team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["__id__"]
+          },
+          {
             foreignKeyName: "fk_fixtures_away_team"
             columns: ["away_team_id"]
             isOneToOne: false
@@ -125,6 +139,13 @@ export type Database = {
           },
           {
             foreignKeyName: "fk_match_events_team"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["__id__"]
+          },
+          {
+            foreignKeyName: "match_events_team_id_fkey"
             columns: ["team_id"]
             isOneToOne: false
             referencedRelation: "teams"
@@ -190,6 +211,13 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "fk_members_team"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["__id__"]
+          },
+          {
+            foreignKeyName: "members_team_id_fkey"
             columns: ["team_id"]
             isOneToOne: false
             referencedRelation: "teams"

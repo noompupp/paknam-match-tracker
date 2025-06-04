@@ -2,6 +2,7 @@
 import { useToast } from "@/hooks/use-toast";
 import { ComponentPlayer } from "../useRefereeState";
 import { assignCardToPlayer } from "@/services/fixtures/simplifiedCardService";
+import { resolveTeamIdForMatchEvent, normalizeTeamIdForDatabase } from "@/utils/teamIdMapping";
 
 interface UseCardHandlersProps {
   allPlayers: ComponentPlayer[];
@@ -35,7 +36,7 @@ export const useCardHandlers = (props: UseCardHandlersProps) => {
     }
 
     try {
-      console.log('🟨🟥 useCardHandlers: Adding card with simplified service:', {
+      console.log('🟨🟥 useCardHandlers: Adding card with improved team ID resolution:', {
         player: player.name,
         team: player.team,
         cardType,
@@ -43,19 +44,32 @@ export const useCardHandlers = (props: UseCardHandlersProps) => {
         fixture: props.selectedFixtureData.id
       });
 
-      // Determine team ID from fixture data based on team name
-      let teamId: string;
-      if (player.team === props.selectedFixtureData.home_team?.name) {
-        teamId = props.selectedFixtureData.home_team_id || props.selectedFixtureData.home_team?.__id__;
-      } else if (player.team === props.selectedFixtureData.away_team?.name) {
-        teamId = props.selectedFixtureData.away_team_id || props.selectedFixtureData.away_team?.__id__;
-      } else {
-        throw new Error(`Cannot determine team ID for player ${player.name} on team ${player.team}`);
+      // Validate team data
+      if (!props.selectedFixtureData.home_team || !props.selectedFixtureData.away_team) {
+        throw new Error('Missing team data in fixture');
       }
 
-      console.log('🔍 useCardHandlers: Team ID resolved:', {
+      // Use the new team ID resolution utility
+      const teamId = resolveTeamIdForMatchEvent(
+        player.team,
+        {
+          id: props.selectedFixtureData.home_team_id || props.selectedFixtureData.home_team?.id?.toString(),
+          name: props.selectedFixtureData.home_team?.name,
+          __id__: props.selectedFixtureData.home_team?.__id__ || props.selectedFixtureData.home_team_id
+        },
+        {
+          id: props.selectedFixtureData.away_team_id || props.selectedFixtureData.away_team?.id?.toString(),
+          name: props.selectedFixtureData.away_team?.name,
+          __id__: props.selectedFixtureData.away_team?.__id__ || props.selectedFixtureData.away_team_id
+        }
+      );
+
+      const normalizedTeamId = normalizeTeamIdForDatabase(teamId);
+
+      console.log('🔍 useCardHandlers: Team ID resolution result:', {
         playerTeam: player.team,
-        teamId,
+        resolvedTeamId: teamId,
+        normalizedTeamId,
         homeTeam: props.selectedFixtureData.home_team?.name,
         awayTeam: props.selectedFixtureData.away_team?.name
       });
@@ -65,7 +79,7 @@ export const useCardHandlers = (props: UseCardHandlersProps) => {
         fixtureId: props.selectedFixtureData.id,
         playerId: player.id,
         playerName: player.name,
-        teamId: teamId,
+        teamId: normalizedTeamId,
         cardType,
         eventTime: time
       });

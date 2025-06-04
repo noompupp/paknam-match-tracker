@@ -1,15 +1,15 @@
 
 interface TeamInfo {
-  id: string; // Changed from number to string
+  id: string;
   name: string;
-  __id__?: string; // Add the text ID field
+  __id__?: string;
 }
 
 export const resolveTeamIdForMatchEvent = (
   playerTeamName: string,
   homeTeam: TeamInfo,
   awayTeam: TeamInfo
-): string => { // Return string instead of number
+): string => {
   console.log('🔍 TeamIdMapping: Resolving team ID for player team:', {
     playerTeamName,
     homeTeam: homeTeam.name,
@@ -18,7 +18,7 @@ export const resolveTeamIdForMatchEvent = (
     awayTeamTextId: awayTeam.__id__
   });
 
-  // Direct team name matching - return text ID (now standardized)
+  // Always prioritize __id__ over id for database consistency
   if (playerTeamName === homeTeam.name) {
     const textId = homeTeam.__id__ || homeTeam.id;
     console.log('✅ TeamIdMapping: Matched home team:', textId);
@@ -48,15 +48,15 @@ export const resolveTeamIdForMatchEvent = (
     return textId;
   }
 
-  // If no match found, use the text ID from the first available team as fallback
-  const fallbackId = homeTeam.__id__ || homeTeam.id;
-  console.warn('⚠️ TeamIdMapping: No exact match found, using home team as fallback:', {
+  // If no match found, throw error instead of using fallback
+  console.error('❌ TeamIdMapping: No team match found:', {
     playerTeamName,
     availableTeams: [homeTeam.name, awayTeam.name],
-    fallbackId
+    homeTeamId: homeTeam.__id__ || homeTeam.id,
+    awayTeamId: awayTeam.__id__ || awayTeam.id
   });
   
-  return fallbackId;
+  throw new Error(`Cannot resolve team ID for player team "${playerTeamName}". Available teams: ${homeTeam.name}, ${awayTeam.name}`);
 };
 
 export const validateTeamData = (homeTeam: TeamInfo, awayTeam: TeamInfo): boolean => {
@@ -70,4 +70,11 @@ export const validateTeamData = (homeTeam: TeamInfo, awayTeam: TeamInfo): boolea
   
   console.log('🔍 TeamIdMapping: Team data validation:', { isValid, homeTeam, awayTeam });
   return isValid;
+};
+
+export const normalizeTeamIdForDatabase = (teamId: string | number): string => {
+  if (!teamId) {
+    throw new Error('Team ID cannot be null or undefined');
+  }
+  return String(teamId).trim();
 };
