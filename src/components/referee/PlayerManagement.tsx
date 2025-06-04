@@ -38,6 +38,6 @@ interface PlayerManagementProps {
   formatTime: (seconds: number) => string;
 }
 
-export const usePlayerManagement = (props: PlayerManagementProps) => {
+export const PlayerManagement = (props: PlayerManagementProps) => {
   return usePlayerManagement(props);
 };
