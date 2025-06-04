@@ -100,7 +100,22 @@ export type Database = {
           updated_at?: string | null
           venue?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_fixtures_away_team"
+            columns: ["away_team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["__id__"]
+          },
+          {
+            foreignKeyName: "fk_fixtures_home_team"
+            columns: ["home_team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["__id__"]
+          },
+        ]
       }
       match_events: {
         Row: {
@@ -112,7 +127,7 @@ export type Database = {
           fixture_id: number
           id: number
           player_name: string
-          team_id: number
+          team_id: string
         }
         Insert: {
           card_type?: string | null
@@ -123,7 +138,7 @@ export type Database = {
           fixture_id: number
           id?: number
           player_name: string
-          team_id: number
+          team_id: string
         }
         Update: {
           card_type?: string | null
@@ -134,7 +149,7 @@ export type Database = {
           fixture_id?: number
           id?: number
           player_name?: string
-          team_id?: number
+          team_id?: string
         }
         Relationships: [
           {
@@ -149,7 +164,7 @@ export type Database = {
             columns: ["team_id"]
             isOneToOne: false
             referencedRelation: "teams"
-            referencedColumns: ["id"]
+            referencedColumns: ["__id__"]
           },
         ]
       }
@@ -190,7 +205,15 @@ export type Database = {
           role?: string | null
           team_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_members_team"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["__id__"]
+          },
+        ]
       }
       player_time_tracking: {
         Row: {
@@ -305,7 +328,15 @@ export type Database = {
           total_minutes_played: number | null
           yellow_cards: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_members_team"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["__id__"]
+          },
+        ]
       }
     }
     Functions: {

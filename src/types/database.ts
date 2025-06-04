@@ -1,3 +1,4 @@
+
 export interface Team {
   id: number;
   name: string;
@@ -28,7 +29,7 @@ export interface Member {
   role: string;
   goals: number;
   assists: number;
-  team_id: number;
+  team_id: string; // Changed from number to string
   created_at: string;
   updated_at: string;
   team?: Team;
@@ -36,8 +37,8 @@ export interface Member {
 
 export interface Fixture {
   id: number;
-  home_team_id: number;
-  away_team_id: number;
+  home_team_id: string; // Changed from number to string
+  away_team_id: string; // Changed from number to string
   match_date: string;
   match_time: string;
   home_score: number | null;
@@ -56,7 +57,7 @@ export interface MatchEvent {
   fixture_id: number;
   event_type: 'goal' | 'yellow_card' | 'red_card' | 'substitution' | 'other';
   player_name: string;
-  team_id: number;
+  team_id: string; // Changed from number to string
   event_time: number;
   description: string;
   created_at: string;

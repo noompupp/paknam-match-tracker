@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { incrementPlayerGoals, incrementPlayerAssists } from './playerStatsUpdateService';
 
@@ -5,7 +6,7 @@ interface GoalAssignment {
   fixtureId: number;
   playerId: number;
   playerName: string;
-  teamId: number;
+  teamId: string; // Changed from number to string
   eventTime: number;
   type: 'goal' | 'assist';
 }
@@ -26,8 +27,8 @@ export const assignGoalToPlayer = async (assignment: GoalAssignment): Promise<vo
     if (!playerName?.trim()) {
       throw new Error('Player name is required and cannot be empty');
     }
-    if (!teamId || teamId <= 0) {
-      throw new Error('Invalid team ID: Must be a positive number');
+    if (!teamId?.trim()) { // Changed validation for string team ID
+      throw new Error('Team ID is required and cannot be empty');
     }
     if (eventTime < 0) {
       throw new Error('Event time must be non-negative');
@@ -101,7 +102,7 @@ export const assignGoalToPlayer = async (assignment: GoalAssignment): Promise<vo
         fixture_id: fixtureId,
         event_type: type,
         player_name: playerName,
-        team_id: teamId,
+        team_id: teamId, // Now using string team ID
         event_time: eventTime,
         description: `${type === 'goal' ? 'Goal' : 'Assist'} by ${playerName} at ${Math.floor(eventTime / 60)}'${String(eventTime % 60).padStart(2, '0')}`
       }])
