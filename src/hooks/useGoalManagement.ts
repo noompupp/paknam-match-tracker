@@ -36,8 +36,8 @@ export const useGoalManagement = () => {
     player: any, 
     matchTime: number, 
     fixtureId: number, 
-    homeTeam: { id: number; name: string }, 
-    awayTeam: { id: number; name: string }
+    homeTeam: { id: string; name: string }, // Changed to string
+    awayTeam: { id: string; name: string }  // Changed to string
   ) => {
     if (!player) {
       throw new Error('Player is required for goal assignment');
@@ -74,7 +74,7 @@ export const useGoalManagement = () => {
     }
 
     try {
-      // Resolve the numeric team ID for the database
+      // Resolve the text team ID for the database
       const teamId = resolveTeamIdForMatchEvent(player.team, homeTeam, awayTeam);
       
       console.log('✅ useGoalManagement: Team ID resolved:', {
@@ -89,7 +89,7 @@ export const useGoalManagement = () => {
         fixtureId,
         playerId: player.id,
         playerName: player.name,
-        teamId,
+        teamId, // This is now a string
         teamName: player.team,
         goalType: selectedGoalType,
         eventTime: matchTime,

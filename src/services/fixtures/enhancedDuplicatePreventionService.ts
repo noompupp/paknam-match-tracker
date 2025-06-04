@@ -2,7 +2,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 interface DuplicateCheckParams {
   fixtureId: number;
-  teamId: number;
+  teamId: string; // Changed from number to string
   playerName: string;
   eventTime: number;
   eventType: 'goal' | 'assist' | 'yellow' | 'red';
@@ -52,7 +52,7 @@ export const enhancedDuplicatePreventionService = {
     }
   },
 
-  async preventDuplicateGoalEvent(fixtureId: number, teamId: number, playerName: string): Promise<boolean> {
+  async preventDuplicateGoalEvent(fixtureId: number, teamId: string, playerName: string): Promise<boolean> {
     console.log('🛡️ EnhancedDuplicatePreventionService: Preventing duplicate goal event');
     
     try {

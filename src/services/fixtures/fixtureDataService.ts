@@ -109,8 +109,8 @@ export const updateFixtureInDatabase = async (id: number, homeScore: number, awa
 export const createFixtureResult = (updatedFixture: any, homeTeam: SimpleTeam, awayTeam: SimpleTeam): Fixture => {
   return {
     id: updatedFixture.id || 0,
-    home_team_id: homeTeam?.id || 0,
-    away_team_id: awayTeam?.id || 0,
+    home_team_id: homeTeam?.id?.toString() || '0', // Convert to string
+    away_team_id: awayTeam?.id?.toString() || '0', // Convert to string
     home_team: homeTeam ? {
       id: homeTeam.id,
       name: homeTeam.name,

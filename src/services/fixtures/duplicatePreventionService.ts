@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 
 interface DuplicateCheckResult {
@@ -9,7 +10,7 @@ interface DuplicateCheckResult {
 export const duplicatePreventionService = {
   async checkGoalEventDuplicate(
     fixtureId: number,
-    teamId: number,
+    teamId: string, // Changed from number to string
     playerName: string,
     eventTime: number
   ): Promise<DuplicateCheckResult> {

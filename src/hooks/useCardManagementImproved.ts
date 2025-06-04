@@ -12,7 +12,7 @@ interface CardData {
   type: 'yellow' | 'red';
   time: number;
   playerId: number;
-  teamId: number;
+  teamId: string; // Changed to string
 }
 
 interface UseCardManagementImprovedProps {
@@ -53,12 +53,14 @@ export const useCardManagementImproved = ({ selectedFixtureData }: UseCardManage
       // Prepare team data for proper ID resolution
       const homeTeam = {
         id: selectedFixtureData.home_team_id,
-        name: selectedFixtureData.home_team?.name
+        name: selectedFixtureData.home_team?.name,
+        __id__: selectedFixtureData.home_team_id // Use text ID
       };
       
       const awayTeam = {
         id: selectedFixtureData.away_team_id,
-        name: selectedFixtureData.away_team?.name
+        name: selectedFixtureData.away_team?.name,
+        __id__: selectedFixtureData.away_team_id // Use text ID
       };
 
       // Validate team data
@@ -72,7 +74,7 @@ export const useCardManagementImproved = ({ selectedFixtureData }: UseCardManage
         isSecondYellow = await cardsApi.checkForSecondYellow(player.id, selectedFixtureData.id);
       }
 
-      // Resolve the numeric team ID for the database
+      // Resolve the text team ID for the database
       const teamId = resolveTeamIdForMatchEvent(team, homeTeam, awayTeam);
       const playerId = typeof player === 'object' ? player.id : 0;
       const playerName = typeof player === 'object' ? player.name : player;
@@ -82,7 +84,7 @@ export const useCardManagementImproved = ({ selectedFixtureData }: UseCardManage
         fixture_id: selectedFixtureData.id,
         player_id: playerId,
         player_name: playerName,
-        team_id: teamId,
+        team_id: teamId, // This is now a string
         card_type: cardType,
         event_time: matchTime,
         description: `${cardType} card for ${playerName} (${team})`
@@ -96,7 +98,7 @@ export const useCardManagementImproved = ({ selectedFixtureData }: UseCardManage
         type: cardType,
         time: matchTime,
         playerId,
-        teamId
+        teamId // This is now a string
       };
 
       setCards(prev => [...prev, newCard]);
@@ -110,7 +112,7 @@ export const useCardManagementImproved = ({ selectedFixtureData }: UseCardManage
           fixture_id: selectedFixtureData.id,
           player_id: playerId,
           player_name: playerName,
-          team_id: teamId,
+          team_id: teamId, // This is now a string
           card_type: 'red',
           event_time: matchTime,
           description: `Automatic red card for ${playerName} (second yellow)`
@@ -123,7 +125,7 @@ export const useCardManagementImproved = ({ selectedFixtureData }: UseCardManage
           type: 'red',
           time: matchTime,
           playerId,
-          teamId
+          teamId // This is now a string
         };
 
         setCards(prev => [...prev, autoRedCard]);

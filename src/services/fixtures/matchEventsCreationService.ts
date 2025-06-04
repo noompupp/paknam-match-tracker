@@ -36,7 +36,7 @@ export const createGoalEventsWithDuplicateCheck = async (
           .select('id')
           .eq('fixture_id', fixtureId)
           .eq('event_type', 'goal')
-          .eq('team_id', homeTeam.id)
+          .eq('team_id', homeTeam.id.toString()) // Convert to string
           .eq('player_name', 'Unknown Player');
 
         const existingCount = existingGoals?.length || 0;
@@ -46,7 +46,7 @@ export const createGoalEventsWithDuplicateCheck = async (
             fixture_id: fixtureId,
             event_type: 'goal',
             player_name: 'Unknown Player',
-            team_id: homeTeam.id,
+            team_id: homeTeam.id.toString(), // Convert to string
             event_time: 0, // Default time, can be updated later
             description: `Goal by Unknown Player (${homeTeam.name})`
           });
@@ -64,7 +64,7 @@ export const createGoalEventsWithDuplicateCheck = async (
           .select('id')
           .eq('fixture_id', fixtureId)
           .eq('event_type', 'goal')
-          .eq('team_id', awayTeam.id)
+          .eq('team_id', awayTeam.id.toString()) // Convert to string
           .eq('player_name', 'Unknown Player');
 
         const existingCount = existingGoals?.length || 0;
@@ -74,7 +74,7 @@ export const createGoalEventsWithDuplicateCheck = async (
             fixture_id: fixtureId,
             event_type: 'goal',
             player_name: 'Unknown Player',
-            team_id: awayTeam.id,
+            team_id: awayTeam.id.toString(), // Convert to string
             event_time: 0, // Default time, can be updated later
             description: `Goal by Unknown Player (${awayTeam.name})`
           });
@@ -108,7 +108,7 @@ export const createCardEvent = async (
   fixtureId: number,
   playerId: number,
   playerName: string,
-  teamId: number,
+  teamId: string, // Changed from number to string
   cardType: 'yellow' | 'red',
   eventTime: number
 ): Promise<void> => {
@@ -124,7 +124,7 @@ export const createCardEvent = async (
       fixture_id: fixtureId,
       event_type: cardType === 'yellow' ? 'yellow_card' : 'red_card',
       player_name: playerName,
-      team_id: teamId,
+      team_id: teamId, // Now string
       event_time: eventTime,
       description: `${cardType} card for ${playerName}`,
       card_type: cardType

@@ -8,12 +8,12 @@ interface UnifiedGoalData {
   fixtureId: number;
   playerId: number;
   playerName: string;
-  teamId: number;
+  teamId: string; // Changed from number to string
   teamName: string;
   goalType: 'goal' | 'assist';
   eventTime: number;
-  homeTeam: { id: number; name: string };
-  awayTeam: { id: number; name: string };
+  homeTeam: { id: string; name: string }; // Changed to string
+  awayTeam: { id: string; name: string }; // Changed to string
 }
 
 interface GoalResult {
@@ -36,7 +36,7 @@ export const unifiedGoalService = {
       // Enhanced duplicate check
       const duplicateCheck = await enhancedDuplicatePreventionService.checkForDuplicateEvent({
         fixtureId: data.fixtureId,
-        teamId: data.teamId,
+        teamId: data.teamId, // Now string
         playerName: data.playerName,
         eventTime: data.eventTime,
         eventType: data.goalType
@@ -59,7 +59,7 @@ export const unifiedGoalService = {
         fixtureId: data.fixtureId,
         playerId: data.playerId,
         playerName: data.playerName,
-        teamId: data.teamId,
+        teamId: data.teamId, // Now string
         eventTime: data.eventTime,
         type: data.goalType
       });
@@ -96,7 +96,7 @@ export const unifiedGoalService = {
     }
   },
 
-  async removeUnknownPlayerPlaceholders(fixtureId: number, teamId: number, eventType: 'goal' | 'assist'): Promise<void> {
+  async removeUnknownPlayerPlaceholders(fixtureId: number, teamId: string, eventType: 'goal' | 'assist'): Promise<void> {
     console.log('🧹 UnifiedGoalService: Removing Unknown Player placeholders for:', { fixtureId, teamId, eventType });
     
     try {
@@ -104,7 +104,7 @@ export const unifiedGoalService = {
         .from('match_events')
         .select('id')
         .eq('fixture_id', fixtureId)
-        .eq('team_id', teamId)
+        .eq('team_id', teamId) // Now string
         .eq('event_type', eventType)
         .eq('player_name', 'Unknown Player');
 
@@ -139,14 +139,14 @@ export const unifiedGoalService = {
         .from('match_events')
         .select('id')
         .eq('fixture_id', data.fixtureId)
-        .eq('team_id', data.homeTeam.id)
+        .eq('team_id', data.homeTeam.id) // Now string
         .eq('event_type', 'goal');
 
       const { data: awayGoals } = await supabase
         .from('match_events')
         .select('id')
         .eq('fixture_id', data.fixtureId)
-        .eq('team_id', data.awayTeam.id)
+        .eq('team_id', data.awayTeam.id) // Now string
         .eq('event_type', 'goal');
 
       const homeScore = (homeGoals || []).length;
@@ -185,7 +185,7 @@ export const unifiedGoalService = {
       .eq('player_name', data.playerName)
       .eq('event_type', data.goalType)
       .eq('event_time', data.eventTime)
-      .eq('team_id', data.teamId);
+      .eq('team_id', data.teamId); // Now string
 
     if (error) {
       console.error('❌ UnifiedGoalService: Error checking for duplicates:', error);
@@ -205,7 +205,7 @@ export const unifiedGoalService = {
     if (!data.playerName?.trim()) {
       throw new Error('Player name is required');
     }
-    if (!data.teamId || data.teamId <= 0) {
+    if (!data.teamId?.trim()) { // Changed validation for string
       throw new Error('Invalid team ID');
     }
     if (!['goal', 'assist'].includes(data.goalType)) {

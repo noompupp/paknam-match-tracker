@@ -96,15 +96,17 @@ export const usePlayerCardManagement = ({
       // Prepare team data for proper ID resolution
       const homeTeam = {
         id: selectedFixtureData.home_team_id,
-        name: selectedFixtureData.home_team?.name
+        name: selectedFixtureData.home_team?.name,
+        __id__: selectedFixtureData.home_team_id // Ensure we have the text ID
       };
       
       const awayTeam = {
         id: selectedFixtureData.away_team_id,
-        name: selectedFixtureData.away_team?.name
+        name: selectedFixtureData.away_team?.name,
+        __id__: selectedFixtureData.away_team_id // Ensure we have the text ID
       };
 
-      // Resolve the numeric team ID for the database
+      // Resolve the text team ID for the database
       const teamId = resolveTeamIdForMatchEvent(selectedTeam, homeTeam, awayTeam);
 
       // Save to database first
@@ -112,7 +114,7 @@ export const usePlayerCardManagement = ({
         fixture_id: selectedFixtureData.id,
         player_id: player.id,
         player_name: player.name,
-        team_id: teamId,
+        team_id: teamId, // This is now a string
         card_type: selectedCardType,
         event_time: matchTime,
         description: `${selectedCardType} card for ${player.name} (${selectedTeam})`

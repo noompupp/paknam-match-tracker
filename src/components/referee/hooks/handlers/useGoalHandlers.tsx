@@ -56,12 +56,14 @@ export const useGoalHandlers = (props: UseGoalHandlersProps) => {
       // Prepare proper team data for assignment
       const homeTeam = {
         id: props.selectedFixtureData.home_team_id,
-        name: props.selectedFixtureData.home_team?.name
+        name: props.selectedFixtureData.home_team?.name,
+        __id__: props.selectedFixtureData.home_team_id // Use text ID
       };
       
       const awayTeam = {
         id: props.selectedFixtureData.away_team_id,
-        name: props.selectedFixtureData.away_team?.name
+        name: props.selectedFixtureData.away_team?.name,
+        __id__: props.selectedFixtureData.away_team_id // Use text ID
       };
 
       // Validate team data
@@ -77,7 +79,7 @@ export const useGoalHandlers = (props: UseGoalHandlersProps) => {
         fixtureId: props.selectedFixtureData.id,
         playerId: player.id,
         playerName: player.name,
-        teamId,
+        teamId, // This is now a string
         teamName: player.team,
         goalType: props.selectedGoalType,
         eventTime: props.matchTime,

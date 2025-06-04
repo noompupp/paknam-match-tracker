@@ -10,7 +10,7 @@ export const transformMemberWithTeam = (member: any, team: Team | undefined): Me
     role: member.role || 'Player',
     goals: member.goals || 0,
     assists: member.assists || 0,
-    team_id: team?.id || 0,
+    team_id: team?.__id__ || '0', // Use text ID and convert to string
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
     team: team ? {
@@ -43,7 +43,7 @@ export const transformMemberStats = (member: any): Member => {
     role: member.role || 'Player',
     goals: member.goals || 0,
     assists: member.assists || 0,
-    team_id: 0,
+    team_id: '0', // Default to string '0'
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString()
   } as Member;

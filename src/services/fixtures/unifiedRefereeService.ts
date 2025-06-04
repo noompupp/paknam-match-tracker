@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { updateFixtureScore } from './scoreUpdateService';
 import { assignGoalToPlayer } from './goalAssignmentService';
@@ -47,8 +46,8 @@ export interface MatchDataToSave {
       duration: number;
     }>;
   }>;
-  homeTeam: { id: number; name: string };
-  awayTeam: { id: number; name: string };
+  homeTeam: { id: string; name: string }; // Changed to string
+  awayTeam: { id: string; name: string }; // Changed to string
 }
 
 export const unifiedRefereeService = {
@@ -90,11 +89,11 @@ export const unifiedRefereeService = {
         try {
           console.log(`⚽ Assigning ${goal.type} to ${goal.playerName}...`);
           
-          // Check for duplicates before creating
+          // Resolve team ID to string format
           const teamId = goal.team === matchData.homeTeam.name ? matchData.homeTeam.id : matchData.awayTeam.id;
           const canCreate = await enhancedDuplicatePreventionService.preventDuplicateGoalEvent(
             matchData.fixtureId,
-            teamId,
+            teamId, // Now string
             goal.playerName
           );
 
@@ -103,7 +102,7 @@ export const unifiedRefereeService = {
               fixtureId: matchData.fixtureId,
               playerId: goal.playerId,
               playerName: goal.playerName,
-              teamId,
+              teamId, // Now string
               eventTime: goal.time,
               type: goal.type
             });
