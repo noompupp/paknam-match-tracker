@@ -378,7 +378,6 @@ export const useRefereeHandlers = (props: UseRefereeHandlersProps) => {
     });
   };
 
-  // Save all player time data at the end of match
   const handleSaveAllPlayerTimes = async () => {
     if (!props.selectedFixtureData || props.playersForTimeTracker.length === 0) return;
 
@@ -528,114 +527,18 @@ export const useRefereeHandlers = (props: UseRefereeHandlersProps) => {
   };
 
   return {
-    handleAddGoal: props.addGoal,
-    handleRemoveGoal: props.removeGoal,
-    handleToggleTimer: props.toggleTimer,
-    handleResetMatch: () => {
-      props.resetTimer();
-      props.resetScore();
-      props.resetEvents();
-      props.resetCards();
-      props.resetTracking();
-      props.resetGoals();
-      props.addEvent('Reset', 'Match reset', 0);
-    },
+    handleAddGoal,
+    handleRemoveGoal,
+    handleToggleTimer,
+    handleResetMatch,
     handleSaveMatch,
-    handleAssignGoal: props.assignGoal,
-    handleAddCard: props.addCard,
-    handleAddPlayer: props.addPlayer,
-    handleRemovePlayer: props.removePlayer,
-    handleTogglePlayerTime: props.togglePlayerTime,
-    handleExportSummary: () => {
-      // Enhanced export functionality with time in minutes
-      const summaryData = {
-        fixture: props.selectedFixtureData,
-        score: `${props.homeScore}-${props.awayScore}`,
-        duration: `${Math.floor(props.matchTime / 60)} minutes`,
-        match_info: {
-          home_team: props.selectedFixtureData?.home_team?.name,
-          away_team: props.selectedFixtureData?.away_team?.name,
-          home_score: props.homeScore,
-          away_score: props.awayScore,
-          match_date: props.selectedFixtureData?.match_date,
-          venue: props.selectedFixtureData?.venue
-        },
-        events: props.goals,
-        goals_and_assists: props.goals.map(goal => ({
-          player: goal.playerName,
-          team: goal.team,
-          type: goal.type,
-          time: `${Math.floor(goal.time / 60)} min`
-        })),
-        player_times: props.playersForTimeTracker.map(player => ({
-          name: player.name,
-          team: player.team,
-          total_time: `${Math.floor(player.totalTime / 60)} minutes`,
-          is_playing: player.isPlaying
-        })),
-        statistics: {
-          total_events: props.goals.length,
-          total_goals: props.goals.filter(g => g.type === 'goal').length,
-          total_assists: props.goals.filter(g => g.type === 'assist').length,
-          players_tracked: props.playersForTimeTracker.length,
-          match_duration: `${Math.floor(props.matchTime / 60)} minutes`
-        },
-        export_timestamp: new Date().toISOString()
-      };
-      
-      const dataStr = JSON.stringify(summaryData, null, 2);
-      const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-      
-      const exportFileDefaultName = `enhanced-match-summary-${props.selectedFixtureData?.home_team?.name}-vs-${props.selectedFixtureData?.away_team?.name}-${new Date().toISOString().split('T')[0]}.json`;
-      
-      const linkElement = document.createElement('a');
-      linkElement.setAttribute('href', dataUri);
-      linkElement.setAttribute('download', exportFileDefaultName);
-      linkElement.click();
-      
-      toast({
-        title: "Enhanced Match Summary Exported",
-        description: "Complete match data with statistics has been downloaded as JSON file.",
-      });
-    },
-    handleSaveAllPlayerTimes: async () => {
-      if (!props.selectedFixtureData || props.playersForTimeTracker.length === 0) return;
-
-      try {
-        const savePromises = props.playersForTimeTracker.map(async (player) => {
-          const teamId = player.team === props.selectedFixtureData.home_team?.name 
-            ? props.selectedFixtureData.home_team_id 
-            : props.selectedFixtureData.away_team_id;
-
-          return playerTimeTrackingService.savePlayerTime({
-            fixture_id: props.selectedFixtureData.id,
-            player_id: player.id,
-            player_name: player.name,
-            team_id: teamId,
-            total_minutes: Math.floor(player.totalTime / 60), // Convert to minutes
-            periods: [{
-              start_time: player.startTime || 0,
-              end_time: props.matchTime,
-              duration: Math.floor(player.totalTime / 60)
-            }]
-          });
-        });
-
-        await Promise.all(savePromises);
-        
-        toast({
-          title: "Player Times Saved",
-          description: `All ${props.playersForTimeTracker.length} player time records saved to database`,
-        });
-      } catch (error) {
-        console.error('❌ Failed to save player time data:', error);
-        toast({
-          title: "Save Failed",
-          description: "Some player time data could not be saved",
-          variant: "destructive"
-        });
-      }
-    },
+    handleAssignGoal,
+    handleAddCard,
+    handleAddPlayer,
+    handleRemovePlayer,
+    handleTogglePlayerTime,
+    handleExportSummary,
+    handleSaveAllPlayerTimes,
     handleResetMatchData,
     handleCleanupDuplicates
   };
