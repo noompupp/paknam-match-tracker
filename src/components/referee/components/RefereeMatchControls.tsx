@@ -10,6 +10,8 @@ interface RefereeMatchControlsProps {
   isRunning: boolean;
   formatTime: (seconds: number) => string;
   allPlayers: ComponentPlayer[];
+  homeTeamPlayers?: ComponentPlayer[];
+  awayTeamPlayers?: ComponentPlayer[];
   playersForTimeTracker: any[];
   goals: any[];
   selectedGoalPlayer: string;

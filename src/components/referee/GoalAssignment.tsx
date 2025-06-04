@@ -18,6 +18,8 @@ interface GoalData {
 
 interface GoalAssignmentProps {
   allPlayers: ProcessedPlayer[];
+  homeTeamPlayers?: ProcessedPlayer[];
+  awayTeamPlayers?: ProcessedPlayer[];
   goals: GoalData[];
   selectedPlayer: string;
   selectedGoalType: 'goal' | 'assist';
@@ -33,6 +35,8 @@ interface GoalAssignmentProps {
 
 const GoalAssignment = ({
   allPlayers,
+  homeTeamPlayers,
+  awayTeamPlayers,
   goals,
   selectedPlayer,
   selectedGoalType,
@@ -71,6 +75,8 @@ const GoalAssignment = ({
 
         <GoalAssignmentForm
           allPlayers={allPlayers}
+          homeTeamPlayers={homeTeamPlayers}
+          awayTeamPlayers={awayTeamPlayers}
           selectedPlayer={selectedPlayer}
           selectedGoalType={selectedGoalType}
           onPlayerSelect={onPlayerSelect}

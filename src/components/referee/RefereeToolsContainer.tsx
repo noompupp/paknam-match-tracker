@@ -45,6 +45,8 @@ const RefereeToolsContainer = () => {
               isRunning={state.isRunning}
               formatTime={state.formatTime}
               allPlayers={state.allPlayers}
+              homeTeamPlayers={state.homeTeamPlayers}
+              awayTeamPlayers={state.awayTeamPlayers}
               playersForTimeTracker={state.playersForTimeTracker}
               goals={state.goals}
               selectedGoalPlayer={state.selectedGoalPlayer}

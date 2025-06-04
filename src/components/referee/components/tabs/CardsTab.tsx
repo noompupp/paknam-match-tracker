@@ -4,6 +4,8 @@ import { ProcessedPlayer } from "@/utils/refereeDataProcessor";
 
 interface CardsTabProps {
   allPlayers: ProcessedPlayer[];
+  homeTeamPlayers?: ProcessedPlayer[];
+  awayTeamPlayers?: ProcessedPlayer[];
   cards: any[];
   selectedPlayer: string;
   selectedTeam: string;
@@ -19,6 +21,8 @@ interface CardsTabProps {
 
 const CardsTab = ({
   allPlayers,
+  homeTeamPlayers,
+  awayTeamPlayers,
   cards,
   selectedPlayer,
   selectedTeam,
@@ -34,7 +38,20 @@ const CardsTab = ({
   const handleAddCard = () => {
     if (!selectedPlayer || !selectedTeam) return;
     
-    const player = allPlayers.find(p => p.id.toString() === selectedPlayer);
+    // Find player in filtered arrays first, then fall back to all players
+    let player: ProcessedPlayer | undefined;
+    
+    if (selectedTeam === 'home' && homeTeamPlayers) {
+      player = homeTeamPlayers.find(p => p.id.toString() === selectedPlayer);
+    } else if (selectedTeam === 'away' && awayTeamPlayers) {
+      player = awayTeamPlayers.find(p => p.id.toString() === selectedPlayer);
+    }
+    
+    // Fallback to all players if not found in filtered arrays
+    if (!player) {
+      player = allPlayers.find(p => p.id.toString() === selectedPlayer);
+    }
+    
     if (!player) return;
     
     onAddCard(player.name, selectedTeam, selectedCardType, matchTime);
@@ -44,6 +61,8 @@ const CardsTab = ({
     <CardManagementDropdown
       selectedFixtureData={selectedFixtureData}
       allPlayers={allPlayers}
+      homeTeamPlayers={homeTeamPlayers}
+      awayTeamPlayers={awayTeamPlayers}
       selectedPlayer={selectedPlayer}
       selectedTeam={selectedTeam}
       selectedCardType={selectedCardType}

@@ -13,6 +13,8 @@ interface RefereeMatchControlsContainerProps {
   isRunning: boolean;
   formatTime: (seconds: number) => string;
   allPlayers: ComponentPlayer[];
+  homeTeamPlayers?: ComponentPlayer[];
+  awayTeamPlayers?: ComponentPlayer[];
   goals: any[];
   selectedGoalPlayer: string;
   selectedGoalType: 'goal' | 'assist';

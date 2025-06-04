@@ -4,6 +4,8 @@ import { ComponentPlayer } from "../../hooks/useRefereeState";
 
 interface GoalsTabProps {
   allPlayers: ComponentPlayer[];
+  homeTeamPlayers?: ComponentPlayer[];
+  awayTeamPlayers?: ComponentPlayer[];
   goals: any[];
   selectedPlayer: string;
   selectedGoalType: 'goal' | 'assist';
@@ -19,6 +21,8 @@ interface GoalsTabProps {
 
 const GoalsTab = ({
   allPlayers,
+  homeTeamPlayers,
+  awayTeamPlayers,
   goals,
   selectedPlayer,
   selectedGoalType,
@@ -34,7 +38,12 @@ const GoalsTab = ({
   const handleAssignGoal = () => {
     if (!selectedPlayer) return;
     
-    const player = allPlayers.find(p => p.id.toString() === selectedPlayer);
+    // Check both filtered and all players arrays
+    const playersToSearch = homeTeamPlayers && awayTeamPlayers 
+      ? [...homeTeamPlayers, ...awayTeamPlayers]
+      : allPlayers;
+    
+    const player = playersToSearch.find(p => p.id.toString() === selectedPlayer);
     if (!player) return;
     
     onAssignGoal(player);
@@ -43,6 +52,8 @@ const GoalsTab = ({
   return (
     <GoalAssignment
       allPlayers={allPlayers}
+      homeTeamPlayers={homeTeamPlayers}
+      awayTeamPlayers={awayTeamPlayers}
       goals={goals}
       selectedPlayer={selectedPlayer}
       selectedGoalType={selectedGoalType}

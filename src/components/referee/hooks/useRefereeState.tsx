@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useFixtures } from "@/hooks/useFixtures";
 import { useMembers } from "@/hooks/useMembers";
@@ -38,10 +39,14 @@ export const useRefereeState = () => {
   const [saveAttempts, setSaveAttempts] = useState(0);
   const [enhancedPlayersData, setEnhancedPlayersData] = useState<{
     allPlayers: ComponentPlayer[];
+    homeTeamPlayers: ComponentPlayer[];
+    awayTeamPlayers: ComponentPlayer[];
     hasValidData: boolean;
     dataIssues: string[];
   }>({
     allPlayers: [],
+    homeTeamPlayers: [],
+    awayTeamPlayers: [],
     hasValidData: false,
     dataIssues: []
   });
@@ -53,61 +58,94 @@ export const useRefereeState = () => {
     debugRefereeToolsData(fixtures, members, selectedFixture);
   }
 
-  // Enhanced player data processing with async service integration
+  // Enhanced player data processing with match-specific filtering
   useEffect(() => {
     async function loadEnhancedPlayerData() {
       if (!selectedFixtureData) {
         setEnhancedPlayersData({
           allPlayers: [],
+          homeTeamPlayers: [],
+          awayTeamPlayers: [],
           hasValidData: false,
           dataIssues: ['No fixture selected']
         });
         return;
       }
 
-      console.log('🔄 useRefereeState: Loading enhanced player data...');
+      console.log('🔄 useRefereeState: Loading enhanced player data for fixture:', selectedFixtureData.id);
       
       try {
-        // First, try to use the traditional processing
-        const traditionalData = selectedFixtureData && members 
-          ? processFixtureAndPlayers(selectedFixtureData, members)
-          : null;
+        const homeTeamName = selectedFixtureData.home_team?.name;
+        const awayTeamName = selectedFixtureData.away_team?.name;
 
-        // Then, try the enhanced dropdown service
-        const enhancedData = await processPlayersForDropdowns(selectedFixtureData);
-
-        // Use the best available data
-        const finalData = enhancedData.hasValidData ? enhancedData : traditionalData;
-
-        if (finalData) {
-          setEnhancedPlayersData({
-            allPlayers: finalData.allPlayers,
-            hasValidData: finalData.hasValidData,
-            dataIssues: finalData.dataIssues
-          });
-
-          // Debug the final data
-          debugPlayerDropdownData(finalData.allPlayers, "Enhanced useRefereeState");
-          
-          console.log('✅ useRefereeState: Enhanced player data loaded:', {
-            method: enhancedData.hasValidData ? 'enhanced' : 'traditional',
-            totalPlayers: finalData.allPlayers.length,
-            hasValidData: finalData.hasValidData,
-            dataIssues: finalData.dataIssues
-          });
-        } else {
-          console.warn('⚠️ useRefereeState: No valid player data available');
-          setEnhancedPlayersData({
-            allPlayers: [],
-            hasValidData: false,
-            dataIssues: ['No valid player data available']
-          });
+        if (!homeTeamName || !awayTeamName) {
+          throw new Error('Missing team names in fixture');
         }
+
+        // Use the enhanced dropdown service for match-specific players
+        const { homeTeamPlayers, awayTeamPlayers, allPlayers } = 
+          await playerDropdownService.getPlayersByTeam(homeTeamName, awayTeamName);
+
+        const dataIssues: string[] = [];
+        
+        if (homeTeamPlayers.length === 0) {
+          dataIssues.push(`No players found for home team: ${homeTeamName}`);
+        }
+        
+        if (awayTeamPlayers.length === 0) {
+          dataIssues.push(`No players found for away team: ${awayTeamName}`);
+        }
+
+        const hasValidData = homeTeamPlayers.length > 0 && awayTeamPlayers.length > 0;
+
+        setEnhancedPlayersData({
+          allPlayers: allPlayers.map(p => ({
+            id: p.id,
+            name: p.name,
+            team: p.team,
+            team_id: p.team_id,
+            number: p.number,
+            position: p.position
+          })),
+          homeTeamPlayers: homeTeamPlayers.map(p => ({
+            id: p.id,
+            name: p.name,
+            team: p.team,
+            team_id: p.team_id,
+            number: p.number,
+            position: p.position
+          })),
+          awayTeamPlayers: awayTeamPlayers.map(p => ({
+            id: p.id,
+            name: p.name,
+            team: p.team,
+            team_id: p.team_id,
+            number: p.number,
+            position: p.position
+          })),
+          hasValidData,
+          dataIssues
+        });
+
+        // Debug the final data
+        debugPlayerDropdownData(allPlayers, "Enhanced useRefereeState - Match Specific");
+        
+        console.log('✅ useRefereeState: Enhanced player data loaded for match:', {
+          fixture: selectedFixtureData.id,
+          homeTeam: homeTeamName,
+          awayTeam: awayTeamName,
+          homePlayersCount: homeTeamPlayers.length,
+          awayPlayersCount: awayTeamPlayers.length,
+          totalPlayers: allPlayers.length,
+          hasValidData
+        });
 
       } catch (error) {
         console.error('❌ useRefereeState: Failed to load enhanced player data:', error);
         setEnhancedPlayersData({
           allPlayers: [],
+          homeTeamPlayers: [],
+          awayTeamPlayers: [],
           hasValidData: false,
           dataIssues: ['Failed to load player data: ' + (error instanceof Error ? error.message : 'Unknown error')]
         });
@@ -116,11 +154,6 @@ export const useRefereeState = () => {
 
     loadEnhancedPlayerData();
   }, [selectedFixtureData, members]);
-
-  // Process fixture and player data using the traditional method as fallback
-  const processedData = selectedFixtureData && members 
-    ? processFixtureAndPlayers(selectedFixtureData, members)
-    : null;
 
   // Custom hooks
   const { matchTime, isRunning, toggleTimer, resetTimer, formatTime } = useMatchTimer();
@@ -151,24 +184,6 @@ export const useRefereeState = () => {
     resetCards,
     checkForSecondYellow 
   } = useCardManagementImproved({ selectedFixtureData });
-  
-  // Use enhanced players data when available, fallback to traditional processing
-  const allPlayers: ComponentPlayer[] = enhancedPlayersData.hasValidData 
-    ? enhancedPlayersData.allPlayers 
-    : (processedData?.allPlayers || []);
-
-  // Debug player dropdown data
-  if (allPlayers.length > 0) {
-    debugPlayerDropdownData(allPlayers, "Final useRefereeState Players");
-  } else {
-    console.warn('⚠️ useRefereeState: No players available for UI components!', {
-      enhancedDataValid: enhancedPlayersData.hasValidData,
-      enhancedDataIssues: enhancedPlayersData.dataIssues,
-      traditionalDataAvailable: !!processedData,
-      membersCount: members?.length || 0,
-      selectedFixture: !!selectedFixtureData
-    });
-  }
 
   // Create players specifically for PlayerTimeTracker with extended properties
   const playersForTimeTracker: PlayerTimeTrackerPlayer[] = trackedPlayers.map(trackedPlayer => ({
@@ -189,8 +204,9 @@ export const useRefereeState = () => {
     selectedFixture,
     hasSelectedFixtureData: !!selectedFixtureData,
     totalMembers: members?.length || 0,
-    enhancedPlayersCount: enhancedPlayersData.allPlayers.length,
-    finalPlayersCount: allPlayers.length,
+    homePlayersCount: enhancedPlayersData.homeTeamPlayers.length,
+    awayPlayersCount: enhancedPlayersData.awayTeamPlayers.length,
+    totalPlayersCount: enhancedPlayersData.allPlayers.length,
     enhancedDataValid: enhancedPlayersData.hasValidData,
     dataIssues: enhancedPlayersData.dataIssues
   });
@@ -203,12 +219,16 @@ export const useRefereeState = () => {
     selectedFixture,
     setSelectedFixture,
     selectedFixtureData,
-    allPlayers,
+    
+    // Enhanced player data with team filtering
+    allPlayers: enhancedPlayersData.allPlayers,
+    homeTeamPlayers: enhancedPlayersData.homeTeamPlayers,
+    awayTeamPlayers: enhancedPlayersData.awayTeamPlayers,
     playersForTimeTracker,
     playersNeedingAttention,
+    
     saveAttempts,
     setSaveAttempts,
-    processedData, // Add processed data for debugging
     enhancedPlayersData, // Add enhanced data for debugging
     
     // Mutation hooks

@@ -18,6 +18,8 @@ interface CardData {
 interface CardManagementDropdownProps {
   selectedFixtureData: Fixture;
   allPlayers: ProcessedPlayer[];
+  homeTeamPlayers?: ProcessedPlayer[];
+  awayTeamPlayers?: ProcessedPlayer[];
   selectedPlayer: string;
   selectedTeam: string;
   selectedCardType: 'yellow' | 'red';
@@ -32,6 +34,8 @@ interface CardManagementDropdownProps {
 const CardManagementDropdown = ({
   selectedFixtureData,
   allPlayers,
+  homeTeamPlayers,
+  awayTeamPlayers,
   selectedPlayer,
   selectedTeam,
   selectedCardType,
@@ -44,29 +48,30 @@ const CardManagementDropdown = ({
 }: CardManagementDropdownProps) => {
   console.log('🟨 CardManagementDropdown Debug:');
   console.log('  - All players available:', allPlayers.length);
+  console.log('  - Home team players:', homeTeamPlayers?.length || 0);
+  console.log('  - Away team players:', awayTeamPlayers?.length || 0);
   console.log('  - Selected team:', selectedTeam);
-  console.log('  - Home team name:', selectedFixtureData.home_team?.name);
-  console.log('  - Away team name:', selectedFixtureData.away_team?.name);
   
-  // Filter players by selected team with improved logic
+  // Use filtered players when available, otherwise filter from all players
   let teamPlayers: ProcessedPlayer[] = [];
   
   if (selectedTeam === 'home') {
-    teamPlayers = allPlayers.filter(player => 
+    teamPlayers = homeTeamPlayers || allPlayers.filter(player => 
       player.team === selectedFixtureData.home_team?.name
     );
     console.log(`  - Home team (${selectedFixtureData.home_team?.name}) players:`, teamPlayers.length);
   } else if (selectedTeam === 'away') {
-    teamPlayers = allPlayers.filter(player => 
+    teamPlayers = awayTeamPlayers || allPlayers.filter(player => 
       player.team === selectedFixtureData.away_team?.name
     );
     console.log(`  - Away team (${selectedFixtureData.away_team?.name}) players:`, teamPlayers.length);
   }
   
-  // Debug filtered players - now the types match
-  debugPlayerDropdownData(teamPlayers, `Card Management - ${selectedTeam} team`);
+  // Debug filtered players
+  debugPlayerDropdownData(teamPlayers, `Card Management - ${selectedTeam} team (Filtered)`);
 
-  const selectedPlayerData = allPlayers.find(p => p.id.toString() === selectedPlayer);
+  const selectedPlayerData = teamPlayers.find(p => p.id.toString() === selectedPlayer) || 
+                           allPlayers.find(p => p.id.toString() === selectedPlayer);
 
   return (
     <Card className="card-shadow-lg">
@@ -86,7 +91,7 @@ const CardManagementDropdown = ({
               >
                 {selectedFixtureData.home_team?.name || 'Home Team'}
                 <span className="ml-2 text-xs">
-                  ({allPlayers.filter(p => p.team === selectedFixtureData.home_team?.name).length})
+                  ({homeTeamPlayers?.length || allPlayers.filter(p => p.team === selectedFixtureData.home_team?.name).length})
                 </span>
               </Button>
               <Button
@@ -97,7 +102,7 @@ const CardManagementDropdown = ({
               >
                 {selectedFixtureData.away_team?.name || 'Away Team'}
                 <span className="ml-2 text-xs">
-                  ({allPlayers.filter(p => p.team === selectedFixtureData.away_team?.name).length})
+                  ({awayTeamPlayers?.length || allPlayers.filter(p => p.team === selectedFixtureData.away_team?.name).length})
                 </span>
               </Button>
             </div>
@@ -132,7 +137,9 @@ const CardManagementDropdown = ({
                       className="hover:bg-accent focus:bg-accent cursor-pointer py-3"
                     >
                       <div className="flex items-center gap-2 w-full">
-                        <div className="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center text-xs font-bold text-primary">
+                        <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                          selectedTeam === 'home' ? 'bg-blue-100 text-blue-600' : 'bg-red-100 text-red-600'
+                        }`}>
                           {player.number || '?'}
                         </div>
                         <span className="font-medium">{player.name}</span>

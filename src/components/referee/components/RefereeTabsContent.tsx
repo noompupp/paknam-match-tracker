@@ -16,6 +16,8 @@ interface RefereeTabsContentProps {
   isRunning: boolean;
   formatTime: (seconds: number) => string;
   allPlayers: ComponentPlayer[];
+  homeTeamPlayers?: ComponentPlayer[];
+  awayTeamPlayers?: ComponentPlayer[];
   goals: any[];
   selectedGoalPlayer: string;
   selectedGoalType: 'goal' | 'assist';
@@ -53,6 +55,8 @@ const RefereeTabsContent = ({
   isRunning,
   formatTime,
   allPlayers,
+  homeTeamPlayers,
+  awayTeamPlayers,
   goals,
   selectedGoalPlayer,
   selectedGoalType,
@@ -111,6 +115,8 @@ const RefereeTabsContent = ({
       <TabsContent value="goals">
         <GoalsTab
           allPlayers={allPlayers}
+          homeTeamPlayers={homeTeamPlayers}
+          awayTeamPlayers={awayTeamPlayers}
           goals={goals}
           selectedPlayer={selectedGoalPlayer}
           selectedGoalType={selectedGoalType}
@@ -128,6 +134,8 @@ const RefereeTabsContent = ({
       <TabsContent value="cards">
         <CardsTab
           allPlayers={allPlayers}
+          homeTeamPlayers={homeTeamPlayers}
+          awayTeamPlayers={awayTeamPlayers}
           cards={cards}
           selectedPlayer={selectedPlayer}
           selectedTeam={selectedTeam}
