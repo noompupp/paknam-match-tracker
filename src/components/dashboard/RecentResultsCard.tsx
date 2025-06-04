@@ -7,7 +7,7 @@ import { Fixture } from "@/types/database";
 import { formatDateDisplay } from "@/utils/timeUtils";
 import TeamLogo from "../teams/TeamLogo";
 import { useState } from "react";
-import { MatchSummaryDialog } from "../fixtures/MatchSummaryDialog";
+import MatchSummaryDialog from "../fixtures/MatchSummaryDialog";
 
 interface RecentResultsCardProps {
   recentFixtures: Fixture[] | undefined;
