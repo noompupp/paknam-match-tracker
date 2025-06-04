@@ -19,9 +19,9 @@ export const useGoalManagement = () => {
   const assignGoal = async (
     player: any, 
     matchTime: number, 
-    fixtureId?: number, 
-    homeTeam?: { id: number; name: string }, 
-    awayTeam?: { id: number; name: string }
+    fixtureId: number, 
+    homeTeam: { id: number; name: string }, 
+    awayTeam: { id: number; name: string }
   ) => {
     if (!player) {
       throw new Error('Player is required for goal assignment');
