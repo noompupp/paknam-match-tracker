@@ -21,7 +21,7 @@ export const playerStatsApi = {
     console.log('🏆 PlayerStatsAPI: Fetching all players from members table...');
     
     try {
-      // Query the enhanced members table directly
+      // Query the enhanced members table directly with explicit relationship
       const { data, error } = await supabase
         .from('members')
         .select(`
@@ -36,13 +36,13 @@ export const playerStatsApi = {
           position,
           number,
           team_id,
-          teams!inner(name)
+          teams!members_team_id_fkey(name)
         `)
         .order('name', { ascending: true });
 
       if (error) {
         console.error('❌ PlayerStatsAPI: Error fetching all players:', error);
-        throw error;
+        throw new Error(`Failed to fetch players: ${error.message}`);
       }
 
       // Transform the data to match expected format
@@ -74,7 +74,7 @@ export const playerStatsApi = {
     console.log('🏆 PlayerStatsAPI: Fetching top scorers from members table, limit:', limit);
     
     try {
-      // Query the enhanced members table directly, ordered by goals
+      // Query the enhanced members table directly with explicit relationship
       const { data, error } = await supabase
         .from('members')
         .select(`
@@ -89,9 +89,9 @@ export const playerStatsApi = {
           position,
           number,
           team_id,
-          teams!inner(name)
+          teams!members_team_id_fkey(name)
         `)
-        .gt('goals', 0)
+        .gte('goals', 0)
         .order('goals', { ascending: false })
         .order('assists', { ascending: false })
         .order('name', { ascending: true })
@@ -99,7 +99,7 @@ export const playerStatsApi = {
 
       if (error) {
         console.error('❌ PlayerStatsAPI: Error fetching top scorers:', error);
-        throw error;
+        throw new Error(`Failed to fetch top scorers: ${error.message}`);
       }
 
       // Transform the data to match expected format
@@ -131,7 +131,7 @@ export const playerStatsApi = {
     console.log('🎯 PlayerStatsAPI: Fetching top assists from members table, limit:', limit);
     
     try {
-      // Query the enhanced members table directly, ordered by assists
+      // Query the enhanced members table directly with explicit relationship
       const { data, error } = await supabase
         .from('members')
         .select(`
@@ -146,9 +146,9 @@ export const playerStatsApi = {
           position,
           number,
           team_id,
-          teams!inner(name)
+          teams!members_team_id_fkey(name)
         `)
-        .gt('assists', 0)
+        .gte('assists', 0)
         .order('assists', { ascending: false })
         .order('goals', { ascending: false })
         .order('name', { ascending: true })
@@ -156,7 +156,7 @@ export const playerStatsApi = {
 
       if (error) {
         console.error('❌ PlayerStatsAPI: Error fetching top assists:', error);
-        throw error;
+        throw new Error(`Failed to fetch top assists: ${error.message}`);
       }
 
       // Transform the data to match expected format
@@ -188,7 +188,7 @@ export const playerStatsApi = {
     console.log('👥 PlayerStatsAPI: Fetching team players from members table, teamId:', teamId);
     
     try {
-      // Query the enhanced members table directly for team players
+      // Query the enhanced members table directly for team players with explicit relationship
       const { data, error } = await supabase
         .from('members')
         .select(`
@@ -203,14 +203,14 @@ export const playerStatsApi = {
           position,
           number,
           team_id,
-          teams!inner(name)
+          teams!members_team_id_fkey(name)
         `)
         .eq('team_id', teamId)
         .order('name', { ascending: true });
 
       if (error) {
         console.error('❌ PlayerStatsAPI: Error fetching team players:', error);
-        throw error;
+        throw new Error(`Failed to fetch team players: ${error.message}`);
       }
 
       // Transform the data to match expected format
@@ -249,7 +249,7 @@ export const playerStatsApi = {
         .order('name');
 
       if (error) {
-        throw error;
+        throw new Error(`Failed to refresh stats: ${error.message}`);
       }
 
       console.log(`✅ PlayerStatsAPI: Stats refresh completed for ${allPlayers?.length || 0} players from members table`);

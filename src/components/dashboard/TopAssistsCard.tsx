@@ -26,7 +26,10 @@ const TopAssistsCard = ({ topAssists, isLoading, error }: TopAssistsCardProps) =
       <CardContent className="space-y-4">
         {error ? (
           <div className="text-center text-destructive py-4">
-            Error loading assists data
+            <p className="font-medium">Error loading assists data</p>
+            <p className="text-sm text-muted-foreground mt-1">
+              {error.message || 'Unable to fetch top assists'}
+            </p>
           </div>
         ) : isLoading ? (
           Array.from({ length: 5 }).map((_, index) => (
@@ -57,8 +60,9 @@ const TopAssistsCard = ({ topAssists, isLoading, error }: TopAssistsCardProps) =
             </div>
           ))
         ) : (
-          <div className="text-center text-muted-foreground py-4">
-            No assist data available
+          <div className="text-center text-muted-foreground py-8">
+            <p className="font-medium">No assist data yet</p>
+            <p className="text-sm mt-1">Assists will appear here once matches are played</p>
           </div>
         )}
       </CardContent>

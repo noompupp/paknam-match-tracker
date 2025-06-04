@@ -26,7 +26,10 @@ const TopScorersCard = ({ topScorers, isLoading, error }: TopScorersCardProps) =
       <CardContent className="space-y-4">
         {error ? (
           <div className="text-center text-destructive py-4">
-            Error loading scorer data
+            <p className="font-medium">Error loading scorer data</p>
+            <p className="text-sm text-muted-foreground mt-1">
+              {error.message || 'Unable to fetch top scorers'}
+            </p>
           </div>
         ) : isLoading ? (
           Array.from({ length: 5 }).map((_, index) => (
@@ -57,8 +60,9 @@ const TopScorersCard = ({ topScorers, isLoading, error }: TopScorersCardProps) =
             </div>
           ))
         ) : (
-          <div className="text-center text-muted-foreground py-4">
-            No scorer data available
+          <div className="text-center text-muted-foreground py-8">
+            <p className="font-medium">No scoring data yet</p>
+            <p className="text-sm mt-1">Goals will appear here once matches are played</p>
           </div>
         )}
       </CardContent>

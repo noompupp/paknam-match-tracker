@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -29,9 +30,12 @@ const EnhancedTeamSquad = ({ teamId, teamName }: EnhancedTeamSquadProps) => {
     return (
       <Card>
         <CardContent className="p-6">
-          <p className="text-center text-destructive">
-            Error loading squad data: {error instanceof Error ? error.message : 'Unknown error'}
-          </p>
+          <div className="text-center text-destructive">
+            <p className="font-medium">Error loading squad data</p>
+            <p className="text-sm text-muted-foreground mt-1">
+              {error instanceof Error ? error.message : 'Unable to fetch team squad'}
+            </p>
+          </div>
         </CardContent>
       </Card>
     );
@@ -158,7 +162,7 @@ const EnhancedTeamSquad = ({ teamId, teamName }: EnhancedTeamSquadProps) => {
         ) : (
           <div className="text-center text-muted-foreground py-8">
             <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
-            <p>No players found for this team</p>
+            <p className="font-medium">No players found for this team</p>
             <p className="text-sm mt-2">Players will appear here once they're added to the squad</p>
           </div>
         )}
