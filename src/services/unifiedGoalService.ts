@@ -1,7 +1,7 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { assignGoalToPlayer } from './fixtures/goalAssignmentService';
 import { resolveTeamIdForMatchEvent } from '@/utils/teamIdMapping';
+import { enhancedDuplicatePreventionService } from './fixtures/enhancedDuplicatePreventionService';
 
 interface UnifiedGoalData {
   fixtureId: number;
@@ -20,23 +20,32 @@ interface GoalResult {
   goalData?: any;
   shouldUpdateScore?: boolean;
   message?: string;
+  duplicatePrevented?: boolean;
 }
 
 export const unifiedGoalService = {
   async assignGoalWithScoreUpdate(data: UnifiedGoalData): Promise<GoalResult> {
-    console.log('⚽ UnifiedGoalService: Starting unified goal assignment:', data);
+    console.log('⚽ UnifiedGoalService: Starting unified goal assignment with enhanced duplicate prevention:', data);
     
     try {
       // Validate input data
       this.validateGoalData(data);
 
-      // Check if this creates a duplicate entry
-      const isDuplicate = await this.checkForDuplicateGoal(data);
-      if (isDuplicate) {
-        console.warn('⚠️ UnifiedGoalService: Duplicate goal detected, skipping');
+      // Enhanced duplicate check
+      const duplicateCheck = await enhancedDuplicatePreventionService.checkForDuplicateEvent({
+        fixtureId: data.fixtureId,
+        teamId: data.teamId,
+        playerName: data.playerName,
+        eventTime: data.eventTime,
+        eventType: data.goalType
+      });
+
+      if (duplicateCheck.isDuplicate) {
+        console.warn('⚠️ UnifiedGoalService: Enhanced duplicate detection prevented goal assignment:', duplicateCheck);
         return {
           success: false,
-          message: 'This goal/assist has already been assigned to this player at this time'
+          message: duplicateCheck.message || 'Duplicate goal/assist prevented',
+          duplicatePrevented: true
         };
       }
 
@@ -56,7 +65,7 @@ export const unifiedGoalService = {
         shouldUpdateScore = await this.shouldUpdateFixtureScore(data);
       }
 
-      console.log('✅ UnifiedGoalService: Goal assignment completed successfully');
+      console.log('✅ UnifiedGoalService: Goal assignment completed successfully with enhanced duplicate prevention');
       
       return {
         success: true,
@@ -68,7 +77,8 @@ export const unifiedGoalService = {
           type: data.goalType
         },
         shouldUpdateScore,
-        message: `${data.goalType === 'goal' ? 'Goal' : 'Assist'} assigned successfully`
+        message: `${data.goalType === 'goal' ? 'Goal' : 'Assist'} assigned successfully`,
+        duplicatePrevented: false
       };
 
     } catch (error) {
@@ -189,5 +199,26 @@ export const unifiedGoalService = {
     }
 
     return goals || [];
+  },
+
+  async cleanupDuplicateGoals(): Promise<{ success: boolean; removedCount: number; errors: string[] }> {
+    console.log('🧹 UnifiedGoalService: Cleaning up duplicate goals...');
+    
+    try {
+      const result = await enhancedDuplicatePreventionService.cleanupAllDuplicateEvents();
+      
+      return {
+        success: result.errors.length === 0,
+        removedCount: result.removedCount,
+        errors: result.errors
+      };
+    } catch (error) {
+      console.error('❌ UnifiedGoalService: Error during cleanup:', error);
+      return {
+        success: false,
+        removedCount: 0,
+        errors: [error instanceof Error ? error.message : 'Unknown cleanup error']
+      };
+    }
   }
 };

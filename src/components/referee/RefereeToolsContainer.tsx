@@ -5,7 +5,7 @@ import RefereeMatchControls from "./components/RefereeMatchControls";
 import { useRefereeState } from "./hooks/useRefereeState";
 import { useRefereeHandlers } from "./hooks/useRefereeHandlers";
 import { Button } from "@/components/ui/button";
-import { Save, Database } from "lucide-react";
+import { Save, Database, RotateCcw, Trash2 } from "lucide-react";
 
 const RefereeToolsContainer = () => {
   const state = useRefereeState();
@@ -77,21 +77,37 @@ const RefereeToolsContainer = () => {
             />
 
             {/* Enhanced Controls for Database Integration */}
-            <div className="flex gap-4 justify-center">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <Button 
                 onClick={handlers.handleSaveAllPlayerTimes}
                 variant="outline"
                 className="flex items-center gap-2"
               >
                 <Database className="h-4 w-4" />
-                Save All Player Times
+                Save Player Times
               </Button>
               <Button 
                 onClick={handlers.handleSaveMatch}
                 className="flex items-center gap-2"
               >
                 <Save className="h-4 w-4" />
-                Save Match Data
+                Save Match
+              </Button>
+              <Button 
+                onClick={handlers.handleCleanupDuplicates}
+                variant="outline"
+                className="flex items-center gap-2"
+              >
+                <RotateCcw className="h-4 w-4" />
+                Cleanup Duplicates
+              </Button>
+              <Button 
+                onClick={handlers.handleResetMatchData}
+                variant="destructive"
+                className="flex items-center gap-2"
+              >
+                <Trash2 className="h-4 w-4" />
+                Reset Match Data
               </Button>
             </div>
           </>
