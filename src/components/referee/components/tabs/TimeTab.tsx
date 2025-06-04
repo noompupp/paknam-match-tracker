@@ -8,7 +8,7 @@ interface TimeTabProps {
   selectedPlayer: string;
   matchTime: number;
   onPlayerSelect: (value: string) => void;
-  onAddPlayer: () => void;
+  onAddPlayer: (player: ComponentPlayer) => void;
   onRemovePlayer: (playerId: number) => void;
   onTogglePlayerTime: (playerId: number) => void;
   formatTime: (seconds: number) => string;

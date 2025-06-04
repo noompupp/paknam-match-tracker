@@ -12,7 +12,7 @@ interface CardsTabProps {
   onPlayerSelect: (value: string) => void;
   onTeamSelect: (value: string) => void;
   onCardTypeChange: (value: 'yellow' | 'red') => void;
-  onAddCard: () => void;
+  onAddCard: (playerName: string, team: string, cardType: 'yellow' | 'red', time: number) => void;
   formatTime: (seconds: number) => string;
 }
 

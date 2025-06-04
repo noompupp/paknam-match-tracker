@@ -10,7 +10,7 @@ interface GoalsTabProps {
   matchTime: number;
   onPlayerSelect: (value: string) => void;
   onGoalTypeChange: (value: 'goal' | 'assist') => void;
-  onAssignGoal: () => void;
+  onAssignGoal: (player: ComponentPlayer) => void;
   formatTime: (seconds: number) => string;
   homeScore: number;
   awayScore: number;
