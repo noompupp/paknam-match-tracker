@@ -1,5 +1,6 @@
-
 import { supabase } from '@/integrations/supabase/client';
+import { enhancedMemberStatsService } from './enhancedMemberStatsService';
+import { operationLoggingService } from './operationLoggingService';
 
 interface PlayerStatsData {
   id: number;
@@ -36,12 +37,20 @@ export const playerStatsApi = {
           position,
           number,
           team_id,
+          validation_status,
+          sync_status,
           teams!members_team_id_fkey(name)
         `)
         .order('name', { ascending: true });
 
       if (error) {
         console.error('❌ PlayerStatsAPI: Error fetching all players:', error);
+        await operationLoggingService.logOperation({
+          operation_type: 'player_stats_fetch_all',
+          table_name: 'members',
+          error_message: error.message,
+          success: false
+        });
         throw new Error(`Failed to fetch players: ${error.message}`);
       }
 
@@ -60,6 +69,13 @@ export const playerStatsApi = {
         total_minutes_played: player.total_minutes_played || 0,
         matches_played: player.matches_played || 0
       }));
+
+      await operationLoggingService.logOperation({
+        operation_type: 'player_stats_fetch_all',
+        table_name: 'members',
+        result: { count: transformedData.length },
+        success: true
+      });
 
       console.log('✅ PlayerStatsAPI: All players fetched successfully from members table:', transformedData.length);
       return transformedData;
@@ -245,18 +261,39 @@ export const playerStatsApi = {
       // Validate the current data structure in the enhanced members table
       const { data: allPlayers, error } = await supabase
         .from('members')
-        .select('id, name, goals, assists, yellow_cards, red_cards, total_minutes_played, matches_played')
+        .select('id, name, goals, assists, yellow_cards, red_cards, total_minutes_played, matches_played, validation_status, sync_status')
         .order('name');
 
       if (error) {
+        await operationLoggingService.logOperation({
+          operation_type: 'player_stats_refresh',
+          table_name: 'members',
+          error_message: error.message,
+          success: false
+        });
         throw new Error(`Failed to refresh stats: ${error.message}`);
       }
+
+      // Check for any validation issues
+      const invalidPlayers = allPlayers?.filter(player => 
+        player.validation_status !== 'valid' || player.sync_status !== 'synced'
+      ) || [];
+
+      await operationLoggingService.logOperation({
+        operation_type: 'player_stats_refresh',
+        table_name: 'members',
+        result: { 
+          total_players: allPlayers?.length || 0,
+          invalid_players: invalidPlayers.length 
+        },
+        success: true
+      });
 
       console.log(`✅ PlayerStatsAPI: Stats refresh completed for ${allPlayers?.length || 0} players from members table`);
       
       return {
         success: true,
-        message: `Successfully refreshed stats for ${allPlayers?.length || 0} players from enhanced members table`
+        message: `Successfully refreshed stats for ${allPlayers?.length || 0} players from enhanced members table. ${invalidPlayers.length > 0 ? `Found ${invalidPlayers.length} players with validation issues.` : ''}`
       };
 
     } catch (error) {
@@ -266,5 +303,19 @@ export const playerStatsApi = {
         message: error instanceof Error ? error.message : 'Unknown error during stats refresh'
       };
     }
+  },
+
+  async updatePlayerStats(playerId: number, stats: { goals?: number; assists?: number; yellowCards?: number; redCards?: number }): Promise<{ success: boolean; message: string }> {
+    console.log('🔄 PlayerStatsAPI: Updating player stats via enhanced service:', { playerId, stats });
+    
+    const result = await enhancedMemberStatsService.updateMemberStats({
+      memberId: playerId,
+      goals: stats.goals,
+      assists: stats.assists,
+      yellowCards: stats.yellowCards,
+      redCards: stats.redCards
+    });
+
+    return result;
   }
 };

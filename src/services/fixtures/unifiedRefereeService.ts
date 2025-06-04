@@ -1,10 +1,11 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { updateFixtureScore } from './scoreUpdateService';
 import { assignGoalToPlayer } from './goalAssignmentService';
 import { cardsApi } from '@/services/cardsApi';
 import { playerTimeTrackingService } from './playerTimeTrackingService';
 import { enhancedDuplicatePreventionService } from './enhancedDuplicatePreventionService';
+import { enhancedMemberStatsService } from '@/services/enhancedMemberStatsService';
+import { operationLoggingService } from '@/services/operationLoggingService';
 
 export interface UnifiedSaveResult {
   success: boolean;
@@ -62,6 +63,20 @@ export const unifiedRefereeService = {
       playerTimes: matchData.playerTimes.length
     });
 
+    // Log the operation start
+    await operationLoggingService.logOperation({
+      operation_type: 'referee_match_save_start',
+      table_name: 'fixtures',
+      record_id: matchData.fixtureId.toString(),
+      payload: {
+        fixture_id: matchData.fixtureId,
+        goals_count: matchData.goals.length,
+        cards_count: matchData.cards.length,
+        player_times_count: matchData.playerTimes.length
+      },
+      success: true
+    });
+
     const errors: string[] = [];
     let scoreUpdated = false;
     let goalsAssigned = 0;
@@ -79,13 +94,32 @@ export const unifiedRefereeService = {
         await updateFixtureScore(matchData.fixtureId, matchData.homeScore, matchData.awayScore);
         scoreUpdated = true;
         console.log('✅ Fixture score updated successfully');
+        
+        await operationLoggingService.logOperation({
+          operation_type: 'fixture_score_update',
+          table_name: 'fixtures',
+          record_id: matchData.fixtureId.toString(),
+          payload: { home_score: matchData.homeScore, away_score: matchData.awayScore },
+          success: true
+        });
       } catch (error) {
         const errorMsg = `Failed to update score: ${error instanceof Error ? error.message : 'Unknown error'}`;
         errors.push(errorMsg);
         console.error('❌', errorMsg);
+        
+        await operationLoggingService.logOperation({
+          operation_type: 'fixture_score_update',
+          table_name: 'fixtures',
+          record_id: matchData.fixtureId.toString(),
+          payload: { home_score: matchData.homeScore, away_score: matchData.awayScore },
+          error_message: errorMsg,
+          success: false
+        });
       }
 
-      // 2. Assign goals and assists with duplicate prevention
+      // 2. Assign goals and assists with duplicate prevention and enhanced member stats update
+      const memberStatsUpdates = new Map<number, { goals: number; assists: number }>();
+      
       for (const goal of matchData.goals) {
         try {
           console.log(`⚽ Assigning ${goal.type} to ${goal.playerName}...`);
@@ -94,7 +128,7 @@ export const unifiedRefereeService = {
           const teamId = goal.team === matchData.homeTeam.name ? matchData.homeTeam.id : matchData.awayTeam.id;
           const canCreate = await enhancedDuplicatePreventionService.preventDuplicateGoalEvent(
             matchData.fixtureId,
-            teamId, // Already string
+            teamId,
             goal.playerName
           );
 
@@ -103,17 +137,50 @@ export const unifiedRefereeService = {
               fixtureId: matchData.fixtureId,
               playerId: goal.playerId,
               playerName: goal.playerName,
-              teamId, // Already string
+              teamId,
               eventTime: goal.time,
               type: goal.type
             });
             goalsAssigned++;
+            
+            // Track member stats updates
+            if (!memberStatsUpdates.has(goal.playerId)) {
+              memberStatsUpdates.set(goal.playerId, { goals: 0, assists: 0 });
+            }
+            const stats = memberStatsUpdates.get(goal.playerId)!;
+            if (goal.type === 'goal') {
+              stats.goals += 1;
+            } else if (goal.type === 'assist') {
+              stats.assists += 1;
+            }
+            
             console.log(`✅ ${goal.type} assigned to ${goal.playerName}`);
           } else {
             console.log(`⚠️ Skipped duplicate ${goal.type} for ${goal.playerName}`);
           }
         } catch (error) {
           const errorMsg = `Failed to assign ${goal.type} to ${goal.playerName}: ${error instanceof Error ? error.message : 'Unknown error'}`;
+          errors.push(errorMsg);
+          console.error('❌', errorMsg);
+        }
+      }
+
+      // Update member stats using the enhanced service
+      for (const [playerId, stats] of memberStatsUpdates) {
+        try {
+          const result = await enhancedMemberStatsService.updateMemberStats({
+            memberId: playerId,
+            goals: stats.goals > 0 ? stats.goals : undefined,
+            assists: stats.assists > 0 ? stats.assists : undefined
+          });
+          
+          if (!result.success) {
+            errors.push(`Failed to update stats for player ${playerId}: ${result.message}`);
+          } else {
+            console.log(`✅ Enhanced stats update for player ${playerId}:`, stats);
+          }
+        } catch (error) {
+          const errorMsg = `Critical error updating stats for player ${playerId}: ${error instanceof Error ? error.message : 'Unknown error'}`;
           errors.push(errorMsg);
           console.error('❌', errorMsg);
         }
@@ -130,7 +197,7 @@ export const unifiedRefereeService = {
             fixture_id: matchData.fixtureId,
             player_id: card.playerId,
             player_name: card.playerName,
-            team_id: teamId, // Keep as string for database
+            team_id: teamId,
             card_type: card.type,
             event_time: card.time,
             description: `${card.type} card for ${card.playerName}`
@@ -155,7 +222,7 @@ export const unifiedRefereeService = {
             fixture_id: matchData.fixtureId,
             player_id: playerTime.playerId,
             player_name: playerTime.playerName,
-            team_id: parseInt(teamId) || 0, // Convert string to number for database
+            team_id: parseInt(teamId) || 0,
             total_minutes: playerTime.totalTime,
             periods: playerTime.periods
           });
@@ -176,6 +243,25 @@ export const unifiedRefereeService = {
       const message = success 
         ? `Match data saved successfully: Score updated, ${goalsAssigned} goals/assists assigned, ${cardsCreated} cards created, ${playerTimesUpdated} player times saved`
         : `Match data partially saved with ${errors.length} errors`;
+
+      // Log the final result
+      await operationLoggingService.logOperation({
+        operation_type: 'referee_match_save_complete',
+        table_name: 'fixtures',
+        record_id: matchData.fixtureId.toString(),
+        payload: {
+          fixture_id: matchData.fixtureId,
+          total_errors: errors.length
+        },
+        result: {
+          score_updated: scoreUpdated,
+          goals_assigned: goalsAssigned,
+          cards_created: cardsCreated,
+          player_times_updated: playerTimesUpdated
+        },
+        error_message: errors.length > 0 ? errors.join('; ') : null,
+        success
+      });
 
       console.log(success ? '✅' : '⚠️', 'UnifiedRefereeService save completed:', {
         success,
@@ -200,6 +286,14 @@ export const unifiedRefereeService = {
 
     } catch (error) {
       console.error('❌ UnifiedRefereeService: Critical error during save:', error);
+      
+      await operationLoggingService.logOperation({
+        operation_type: 'referee_match_save_critical_error',
+        table_name: 'fixtures',
+        record_id: matchData.fixtureId.toString(),
+        error_message: error instanceof Error ? error.message : 'Unknown critical error',
+        success: false
+      });
       
       return {
         success: false,

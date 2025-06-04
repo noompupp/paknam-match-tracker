@@ -160,6 +160,7 @@ export type Database = {
           created_at: string | null
           goals: number | null
           id: number
+          last_updated_by: string | null
           matches_played: number | null
           name: string | null
           nickname: string | null
@@ -167,9 +168,11 @@ export type Database = {
           position: string | null
           red_cards: number | null
           role: string | null
+          sync_status: string | null
           team_id: string | null
           total_minutes_played: number | null
           updated_at: string | null
+          validation_status: string | null
           yellow_cards: number | null
         }
         Insert: {
@@ -178,6 +181,7 @@ export type Database = {
           created_at?: string | null
           goals?: number | null
           id?: number
+          last_updated_by?: string | null
           matches_played?: number | null
           name?: string | null
           nickname?: string | null
@@ -185,9 +189,11 @@ export type Database = {
           position?: string | null
           red_cards?: number | null
           role?: string | null
+          sync_status?: string | null
           team_id?: string | null
           total_minutes_played?: number | null
           updated_at?: string | null
+          validation_status?: string | null
           yellow_cards?: number | null
         }
         Update: {
@@ -196,6 +202,7 @@ export type Database = {
           created_at?: string | null
           goals?: number | null
           id?: number
+          last_updated_by?: string | null
           matches_played?: number | null
           name?: string | null
           nickname?: string | null
@@ -203,9 +210,11 @@ export type Database = {
           position?: string | null
           red_cards?: number | null
           role?: string | null
+          sync_status?: string | null
           team_id?: string | null
           total_minutes_played?: number | null
           updated_at?: string | null
+          validation_status?: string | null
           yellow_cards?: number | null
         }
         Relationships: [
@@ -224,6 +233,48 @@ export type Database = {
             referencedColumns: ["__id__"]
           },
         ]
+      }
+      operation_logs: {
+        Row: {
+          created_at: string | null
+          error_message: string | null
+          id: number
+          ip_address: string | null
+          operation_type: string
+          payload: Json | null
+          record_id: string | null
+          result: Json | null
+          success: boolean | null
+          table_name: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          error_message?: string | null
+          id?: number
+          ip_address?: string | null
+          operation_type: string
+          payload?: Json | null
+          record_id?: string | null
+          result?: Json | null
+          success?: boolean | null
+          table_name?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          error_message?: string | null
+          id?: number
+          ip_address?: string | null
+          operation_type?: string
+          payload?: Json | null
+          record_id?: string | null
+          result?: Json | null
+          success?: boolean | null
+          table_name?: string | null
+          user_agent?: string | null
+        }
+        Relationships: []
       }
       player_time_tracking: {
         Row: {
@@ -326,7 +377,30 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      log_operation: {
+        Args: {
+          p_operation_type: string
+          p_table_name?: string
+          p_record_id?: string
+          p_payload?: Json
+          p_result?: Json
+          p_error_message?: string
+          p_success?: boolean
+        }
+        Returns: string
+      }
+      safe_update_member_stats: {
+        Args: {
+          p_member_id: number
+          p_goals?: number
+          p_assists?: number
+          p_yellow_cards?: number
+          p_red_cards?: number
+          p_total_minutes_played?: number
+          p_matches_played?: number
+        }
+        Returns: Json
+      }
     }
     Enums: {
       [_ in never]: never
