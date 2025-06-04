@@ -9,6 +9,7 @@ interface CardsTabProps {
   selectedTeam: string;
   selectedCardType: 'yellow' | 'red';
   matchTime: number;
+  selectedFixtureData: any;
   onPlayerSelect: (value: string) => void;
   onTeamSelect: (value: string) => void;
   onCardTypeChange: (value: 'yellow' | 'red') => void;
@@ -23,6 +24,7 @@ const CardsTab = ({
   selectedTeam,
   selectedCardType,
   matchTime,
+  selectedFixtureData,
   onPlayerSelect,
   onTeamSelect,
   onCardTypeChange,
@@ -40,7 +42,7 @@ const CardsTab = ({
 
   return (
     <CardManagementDropdown
-      selectedFixtureData={null}
+      selectedFixtureData={selectedFixtureData}
       allPlayers={allPlayers}
       selectedPlayer={selectedPlayer}
       selectedTeam={selectedTeam}

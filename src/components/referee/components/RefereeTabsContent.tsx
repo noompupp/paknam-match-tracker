@@ -135,6 +135,7 @@ const RefereeTabsContent = ({
           selectedTeam={selectedTeam}
           selectedCardType={selectedCardType}
           matchTime={matchTime}
+          selectedFixtureData={selectedFixtureData}
           onPlayerSelect={setSelectedPlayer}
           onTeamSelect={setSelectedTeam}
           onCardTypeChange={setSelectedCardType}
