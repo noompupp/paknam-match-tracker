@@ -13,9 +13,10 @@ interface TopScorer {
 interface TopScorersCardProps {
   topScorers: TopScorer[] | undefined;
   isLoading: boolean;
+  error?: Error | null;
 }
 
-const TopScorersCard = ({ topScorers, isLoading }: TopScorersCardProps) => {
+const TopScorersCard = ({ topScorers, isLoading, error }: TopScorersCardProps) => {
   return (
     <Card className="card-shadow-lg animate-fade-in">
       <CardHeader className="flex flex-row items-center justify-between">
@@ -23,7 +24,11 @@ const TopScorersCard = ({ topScorers, isLoading }: TopScorersCardProps) => {
         <ArrowRight className="h-5 w-5 text-muted-foreground" />
       </CardHeader>
       <CardContent className="space-y-4">
-        {isLoading ? (
+        {error ? (
+          <div className="text-center text-destructive py-4">
+            Error loading scorer data
+          </div>
+        ) : isLoading ? (
           Array.from({ length: 5 }).map((_, index) => (
             <div key={index} className="flex items-center justify-between p-3 rounded-lg">
               <div className="flex items-center space-x-3">
