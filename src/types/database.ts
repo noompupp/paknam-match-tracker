@@ -1,4 +1,3 @@
-
 export interface Team {
   id: number;
   name: string;
@@ -18,6 +17,7 @@ export interface Team {
   color?: string;
   created_at: string;
   updated_at: string;
+  __id__?: string; // Add the text ID used in database queries
 }
 
 export interface Member {

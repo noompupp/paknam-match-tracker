@@ -69,6 +69,7 @@ export const teamsApi = {
         goals_against: team.goals_against || 0,
         goal_difference: team.goal_difference || 0,
         color: team.color || undefined,
+        __id__: team.__id__ || undefined, // Include the text ID
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       } as Team;
@@ -118,6 +119,7 @@ export const teamsApi = {
       goals_against: data.goals_against || 0,
       goal_difference: data.goal_difference || 0,
       color: data.color || undefined,
+      __id__: data.__id__ || undefined, // Include the text ID
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     } as Team;
@@ -157,6 +159,7 @@ export const teamsApi = {
       goals_against: data.goals_against || 0,
       goal_difference: data.goal_difference || 0,
       color: data.color || undefined,
+      __id__: data.__id__ || undefined, // Include the text ID
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     } as Team;
