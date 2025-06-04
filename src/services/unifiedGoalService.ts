@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { assignGoalToPlayer } from './fixtures/goalAssignmentService';
 import { resolveTeamIdForMatchEvent } from '@/utils/teamIdMapping';
@@ -21,6 +22,7 @@ interface GoalResult {
   shouldUpdateScore?: boolean;
   message?: string;
   duplicatePrevented?: boolean;
+  autoScoreUpdated?: boolean;
 }
 
 export const unifiedGoalService = {
@@ -49,6 +51,9 @@ export const unifiedGoalService = {
         };
       }
 
+      // Check for and remove any "Unknown Player" placeholder events before assignment
+      await this.removeUnknownPlayerPlaceholders(data.fixtureId, data.teamId, data.goalType);
+
       // Assign the goal to the player and update stats
       await assignGoalToPlayer({
         fixtureId: data.fixtureId,
@@ -59,10 +64,10 @@ export const unifiedGoalService = {
         type: data.goalType
       });
 
-      // For goals (not assists), check if we need to update the fixture score
-      let shouldUpdateScore = false;
+      // For goals (not assists), update the fixture score automatically
+      let autoScoreUpdated = false;
       if (data.goalType === 'goal') {
-        shouldUpdateScore = await this.shouldUpdateFixtureScore(data);
+        autoScoreUpdated = await this.updateFixtureScoreAfterGoal(data);
       }
 
       console.log('✅ UnifiedGoalService: Goal assignment completed successfully with enhanced duplicate prevention');
@@ -76,7 +81,8 @@ export const unifiedGoalService = {
           time: data.eventTime,
           type: data.goalType
         },
-        shouldUpdateScore,
+        shouldUpdateScore: autoScoreUpdated,
+        autoScoreUpdated,
         message: `${data.goalType === 'goal' ? 'Goal' : 'Assist'} assigned successfully`,
         duplicatePrevented: false
       };
@@ -87,6 +93,85 @@ export const unifiedGoalService = {
         success: false,
         message: error instanceof Error ? error.message : 'Failed to assign goal'
       };
+    }
+  },
+
+  async removeUnknownPlayerPlaceholders(fixtureId: number, teamId: number, eventType: 'goal' | 'assist'): Promise<void> {
+    console.log('🧹 UnifiedGoalService: Removing Unknown Player placeholders for:', { fixtureId, teamId, eventType });
+    
+    try {
+      const { data: unknownEvents, error: fetchError } = await supabase
+        .from('match_events')
+        .select('id')
+        .eq('fixture_id', fixtureId)
+        .eq('team_id', teamId)
+        .eq('event_type', eventType)
+        .eq('player_name', 'Unknown Player');
+
+      if (fetchError) {
+        console.error('❌ UnifiedGoalService: Error fetching unknown player events:', fetchError);
+        return;
+      }
+
+      if (unknownEvents && unknownEvents.length > 0) {
+        const { error: deleteError } = await supabase
+          .from('match_events')
+          .delete()
+          .in('id', unknownEvents.map(e => e.id));
+
+        if (deleteError) {
+          console.error('❌ UnifiedGoalService: Error deleting unknown player events:', deleteError);
+        } else {
+          console.log(`✅ UnifiedGoalService: Removed ${unknownEvents.length} Unknown Player placeholders`);
+        }
+      }
+    } catch (error) {
+      console.error('❌ UnifiedGoalService: Error in removeUnknownPlayerPlaceholders:', error);
+    }
+  },
+
+  async updateFixtureScoreAfterGoal(data: UnifiedGoalData): Promise<boolean> {
+    console.log('📊 UnifiedGoalService: Updating fixture score after goal assignment');
+    
+    try {
+      // Count total goals for each team from match_events
+      const { data: homeGoals } = await supabase
+        .from('match_events')
+        .select('id')
+        .eq('fixture_id', data.fixtureId)
+        .eq('team_id', data.homeTeam.id)
+        .eq('event_type', 'goal');
+
+      const { data: awayGoals } = await supabase
+        .from('match_events')
+        .select('id')
+        .eq('fixture_id', data.fixtureId)
+        .eq('team_id', data.awayTeam.id)
+        .eq('event_type', 'goal');
+
+      const homeScore = (homeGoals || []).length;
+      const awayScore = (awayGoals || []).length;
+
+      // Update fixture with calculated scores
+      const { error: updateError } = await supabase
+        .from('fixtures')
+        .update({
+          home_score: homeScore,
+          away_score: awayScore
+        })
+        .eq('id', data.fixtureId);
+
+      if (updateError) {
+        console.error('❌ UnifiedGoalService: Error updating fixture score:', updateError);
+        return false;
+      }
+
+      console.log('✅ UnifiedGoalService: Fixture score updated successfully:', { homeScore, awayScore });
+      return true;
+
+    } catch (error) {
+      console.error('❌ UnifiedGoalService: Error in updateFixtureScoreAfterGoal:', error);
+      return false;
     }
   },
 
@@ -108,55 +193,6 @@ export const unifiedGoalService = {
     }
 
     return (existingEvents || []).length > 0;
-  },
-
-  async shouldUpdateFixtureScore(data: UnifiedGoalData): Promise<boolean> {
-    console.log('🔍 UnifiedGoalService: Checking if fixture score needs updating');
-    
-    // Get current fixture score
-    const { data: fixture, error } = await supabase
-      .from('fixtures')
-      .select('home_score, away_score, home_team_id, away_team_id')
-      .eq('id', data.fixtureId)
-      .single();
-
-    if (error || !fixture) {
-      console.error('❌ UnifiedGoalService: Error fetching fixture:', error);
-      return false;
-    }
-
-    // Count total goals for each team from match_events
-    const { data: homeGoals } = await supabase
-      .from('match_events')
-      .select('id')
-      .eq('fixture_id', data.fixtureId)
-      .eq('team_id', data.homeTeam.id)
-      .eq('event_type', 'goal');
-
-    const { data: awayGoals } = await supabase
-      .from('match_events')
-      .select('id')
-      .eq('fixture_id', data.fixtureId)
-      .eq('team_id', data.awayTeam.id)
-      .eq('event_type', 'goal');
-
-    const totalHomeGoals = (homeGoals || []).length;
-    const totalAwayGoals = (awayGoals || []).length;
-    const currentHomeScore = fixture.home_score || 0;
-    const currentAwayScore = fixture.away_score || 0;
-
-    // Update needed if match_events goals don't match fixture scores
-    const needsUpdate = totalHomeGoals !== currentHomeScore || totalAwayGoals !== currentAwayScore;
-    
-    console.log('📊 UnifiedGoalService: Score update check:', {
-      totalHomeGoals,
-      totalAwayGoals,
-      currentHomeScore,
-      currentAwayScore,
-      needsUpdate
-    });
-
-    return needsUpdate;
   },
 
   validateGoalData(data: UnifiedGoalData): void {
@@ -191,6 +227,7 @@ export const unifiedGoalService = {
       .select('*')
       .eq('fixture_id', fixtureId)
       .in('event_type', ['goal', 'assist'])
+      .neq('player_name', 'Unknown Player')
       .order('event_time', { ascending: true });
 
     if (error) {
