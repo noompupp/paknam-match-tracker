@@ -10,9 +10,62 @@ interface PlayerStatsData {
   assists: number;
   position: string;
   number: string;
+  yellow_cards?: number;
+  red_cards?: number;
+  total_minutes_played?: number;
+  matches_played?: number;
 }
 
 export const playerStatsApi = {
+  async getAll(): Promise<PlayerStatsData[]> {
+    console.log('🏆 PlayerStatsAPI: Fetching all players...');
+    
+    try {
+      // Query all members with their team information
+      const { data, error } = await supabase
+        .from('members')
+        .select(`
+          id,
+          name,
+          goals,
+          assists,
+          position,
+          number,
+          team_id,
+          teams!inner(name)
+        `)
+        .order('name', { ascending: true });
+
+      if (error) {
+        console.error('❌ PlayerStatsAPI: Error fetching all players:', error);
+        throw error;
+      }
+
+      // Transform the data to match expected format
+      const transformedData = (data || []).map(player => ({
+        id: player.id,
+        name: player.name || 'Unknown Player',
+        team_name: (player.teams as any)?.name || 'Unknown Team',
+        team_id: player.team_id || '',
+        goals: player.goals || 0,
+        assists: player.assists || 0,
+        position: player.position || 'Player',
+        number: player.number || '',
+        yellow_cards: 0, // Default values since not in members table
+        red_cards: 0,
+        total_minutes_played: 0,
+        matches_played: 0
+      }));
+
+      console.log('✅ PlayerStatsAPI: All players fetched successfully:', transformedData.length);
+      return transformedData;
+
+    } catch (error) {
+      console.error('❌ PlayerStatsAPI: Critical error fetching all players:', error);
+      throw error;
+    }
+  },
+
   async getTopScorers(limit: number = 10): Promise<PlayerStatsData[]> {
     console.log('🏆 PlayerStatsAPI: Fetching top scorers, limit:', limit);
     
@@ -50,7 +103,11 @@ export const playerStatsApi = {
         goals: player.goals || 0,
         assists: player.assists || 0,
         position: player.position || 'Player',
-        number: player.number || ''
+        number: player.number || '',
+        yellow_cards: 0,
+        red_cards: 0,
+        total_minutes_played: 0,
+        matches_played: 0
       }));
 
       console.log('✅ PlayerStatsAPI: Top scorers fetched successfully:', transformedData.length);
@@ -99,7 +156,11 @@ export const playerStatsApi = {
         goals: player.goals || 0,
         assists: player.assists || 0,
         position: player.position || 'Player',
-        number: player.number || ''
+        number: player.number || '',
+        yellow_cards: 0,
+        red_cards: 0,
+        total_minutes_played: 0,
+        matches_played: 0
       }));
 
       console.log('✅ PlayerStatsAPI: Top assists fetched successfully:', transformedData.length);
@@ -115,18 +176,10 @@ export const playerStatsApi = {
     console.log('👥 PlayerStatsAPI: Fetching team players, teamId:', teamId);
     
     try {
+      // Use the player_stats_view which includes card statistics
       const { data, error } = await supabase
-        .from('members')
-        .select(`
-          id,
-          name,
-          goals,
-          assists,
-          position,
-          number,
-          team_id,
-          teams!inner(name)
-        `)
+        .from('player_stats_view')
+        .select('*')
         .eq('team_id', teamId)
         .order('name', { ascending: true });
 
@@ -139,12 +192,16 @@ export const playerStatsApi = {
       const transformedData = (data || []).map(player => ({
         id: player.id,
         name: player.name || 'Unknown Player',
-        team_name: (player.teams as any)?.name || 'Unknown Team',
+        team_name: player.team_name || 'Unknown Team',
         team_id: player.team_id || '',
         goals: player.goals || 0,
         assists: player.assists || 0,
         position: player.position || 'Player',
-        number: player.number || ''
+        number: player.number || '',
+        yellow_cards: player.yellow_cards || 0,
+        red_cards: player.red_cards || 0,
+        total_minutes_played: player.total_minutes_played || 0,
+        matches_played: player.matches_played || 0
       }));
 
       console.log('✅ PlayerStatsAPI: Team players fetched successfully:', transformedData.length);
