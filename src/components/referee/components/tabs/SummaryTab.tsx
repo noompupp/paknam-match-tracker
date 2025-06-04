@@ -2,6 +2,7 @@
 import EnhancedMatchSummary from "../../EnhancedMatchSummary";
 import MatchEvents from "../../MatchEvents";
 import { ComponentPlayer } from "../../hooks/useRefereeState";
+import { useDataValidation } from "@/hooks/useDataValidation";
 
 interface SummaryTabProps {
   selectedFixtureData: any;
@@ -30,6 +31,15 @@ const SummaryTab = ({
   onExportSummary,
   formatTime
 }: SummaryTabProps) => {
+  
+  // Add data validation for this component
+  useDataValidation({
+    componentName: 'SummaryTab',
+    goals,
+    cards,
+    enabled: true
+  });
+
   return (
     <div className="space-y-6">
       <EnhancedMatchSummary

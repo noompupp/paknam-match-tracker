@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -12,6 +11,19 @@ interface EnhancedTeamSquadProps {
 
 const EnhancedTeamSquad = ({ teamId, teamName }: EnhancedTeamSquadProps) => {
   const { data: players, isLoading, error } = useTeamPlayerStats(teamId);
+
+  // Helper function to convert seconds to minutes
+  const formatPlayingTime = (totalMinutesPlayed: number | null | undefined): string => {
+    if (!totalMinutesPlayed || totalMinutesPlayed === 0) return '0';
+    
+    // If the value seems to be in seconds (very large number), convert to minutes
+    if (totalMinutesPlayed > 1000) {
+      return Math.round(totalMinutesPlayed / 60).toString();
+    }
+    
+    // Otherwise assume it's already in minutes
+    return Math.round(totalMinutesPlayed).toString();
+  };
 
   if (error) {
     return (
@@ -104,7 +116,7 @@ const EnhancedTeamSquad = ({ teamId, teamName }: EnhancedTeamSquadProps) => {
                     <div className="flex items-center gap-1">
                       <Clock className="h-4 w-4 text-gray-600" />
                       <Badge variant="outline" className="bg-gray-50 text-gray-700">
-                        {Math.round(player.total_minutes_played)}m
+                        {formatPlayingTime(player.total_minutes_played)}m
                       </Badge>
                     </div>
                   )}

@@ -38,23 +38,29 @@ const EnhancedMatchSummaryDisplay = ({
     );
   }
 
-  // Deduplicate goals by creating a Set based on unique properties
-  const uniqueGoals = goals.filter((goal, index, self) => 
-    index === self.findIndex(g => 
-      g.playerId === goal.playerId && 
-      g.time === goal.time && 
-      g.type === goal.type
-    )
-  );
+  // Enhanced deduplication with more comprehensive unique key generation
+  const createUniqueKey = (item: any, type: string) => {
+    return `${type}-${item.playerId || item.player_id}-${item.time}-${item.type || item.card_type}-${item.team}`;
+  };
 
-  // Deduplicate cards similarly
-  const uniqueCards = cards.filter((card, index, self) => 
-    index === self.findIndex(c => 
-      c.playerId === card.playerId && 
-      c.time === card.time && 
-      c.type === card.type
-    )
-  );
+  // Deduplicate goals with enhanced logic
+  const uniqueGoals = goals.filter((goal, index, self) => {
+    const currentKey = createUniqueKey(goal, 'goal');
+    return index === self.findIndex(g => createUniqueKey(g, 'goal') === currentKey);
+  });
+
+  // Deduplicate cards with enhanced logic
+  const uniqueCards = cards.filter((card, index, self) => {
+    const currentKey = createUniqueKey(card, 'card');
+    return index === self.findIndex(c => createUniqueKey(c, 'card') === currentKey);
+  });
+
+  console.log('🔍 Enhanced deduplication results:', {
+    originalGoals: goals.length,
+    uniqueGoals: uniqueGoals.length,
+    originalCards: cards.length,
+    uniqueCards: uniqueCards.length
+  });
 
   const homeTeam = selectedFixtureData.home_team?.name || 'Home Team';
   const awayTeam = selectedFixtureData.away_team?.name || 'Away Team';
@@ -106,6 +112,9 @@ const EnhancedMatchSummaryDisplay = ({
             <CardTitle className="flex items-center gap-2">
               <Target className="h-5 w-5" />
               Goals & Assists ({uniqueGoals.length})
+              <Badge variant="outline" className="ml-auto text-xs">
+                Deduplicated
+              </Badge>
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -115,7 +124,7 @@ const EnhancedMatchSummaryDisplay = ({
                 <h4 className="font-semibold text-sm text-muted-foreground mb-2">{homeTeam}</h4>
                 <div className="space-y-2">
                   {homeGoals.map((goal, index) => (
-                    <div key={`home-goal-${index}`} className="flex items-center justify-between p-2 bg-green-50 rounded-lg">
+                    <div key={`home-goal-${index}-${goal.playerId}-${goal.time}`} className="flex items-center justify-between p-2 bg-green-50 rounded-lg">
                       <span className="font-medium">{goal.playerName}</span>
                       <div className="flex items-center gap-2">
                         <Badge variant="outline" className="bg-green-100 text-green-800">
@@ -126,7 +135,7 @@ const EnhancedMatchSummaryDisplay = ({
                     </div>
                   ))}
                   {assists.filter(assist => assist.team === homeTeam).map((assist, index) => (
-                    <div key={`home-assist-${index}`} className="flex items-center justify-between p-2 bg-blue-50 rounded-lg">
+                    <div key={`home-assist-${index}-${assist.playerId}-${assist.time}`} className="flex items-center justify-between p-2 bg-blue-50 rounded-lg">
                       <span className="font-medium">{assist.playerName}</span>
                       <div className="flex items-center gap-2">
                         <Badge variant="outline" className="bg-blue-100 text-blue-800">
@@ -147,7 +156,7 @@ const EnhancedMatchSummaryDisplay = ({
                 <h4 className="font-semibold text-sm text-muted-foreground mb-2">{awayTeam}</h4>
                 <div className="space-y-2">
                   {awayGoals.map((goal, index) => (
-                    <div key={`away-goal-${index}`} className="flex items-center justify-between p-2 bg-green-50 rounded-lg">
+                    <div key={`away-goal-${index}-${goal.playerId}-${goal.time}`} className="flex items-center justify-between p-2 bg-green-50 rounded-lg">
                       <span className="font-medium">{goal.playerName}</span>
                       <div className="flex items-center gap-2">
                         <Badge variant="outline" className="bg-green-100 text-green-800">
@@ -158,7 +167,7 @@ const EnhancedMatchSummaryDisplay = ({
                     </div>
                   ))}
                   {assists.filter(assist => assist.team === awayTeam).map((assist, index) => (
-                    <div key={`away-assist-${index}`} className="flex items-center justify-between p-2 bg-blue-50 rounded-lg">
+                    <div key={`away-assist-${index}-${assist.playerId}-${assist.time}`} className="flex items-center justify-between p-2 bg-blue-50 rounded-lg">
                       <span className="font-medium">{assist.playerName}</span>
                       <div className="flex items-center gap-2">
                         <Badge variant="outline" className="bg-blue-100 text-blue-800">
@@ -185,6 +194,9 @@ const EnhancedMatchSummaryDisplay = ({
             <CardTitle className="flex items-center gap-2">
               <Users className="h-5 w-5" />
               Disciplinary Actions ({uniqueCards.length})
+              <Badge variant="outline" className="ml-auto text-xs">
+                Deduplicated
+              </Badge>
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -193,11 +205,11 @@ const EnhancedMatchSummaryDisplay = ({
                 <h4 className="font-semibold text-sm text-muted-foreground mb-2">{homeTeam}</h4>
                 <div className="space-y-2">
                   {homeCards.map((card, index) => (
-                    <div key={`home-card-${index}`} className="flex items-center justify-between p-2 bg-yellow-50 rounded-lg">
-                      <span className="font-medium">{card.playerName}</span>
+                    <div key={`home-card-${index}-${card.playerId || card.player_id}-${card.time}`} className="flex items-center justify-between p-2 bg-yellow-50 rounded-lg">
+                      <span className="font-medium">{card.playerName || card.player_name}</span>
                       <div className="flex items-center gap-2">
-                        <Badge variant="outline" className={card.type === 'yellow' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}>
-                          {card.type === 'yellow' ? 'Yellow' : 'Red'} Card
+                        <Badge variant="outline" className={card.type === 'yellow' || card.card_type === 'yellow' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}>
+                          {(card.type || card.card_type) === 'yellow' ? 'Yellow' : 'Red'} Card
                         </Badge>
                         <span className="text-sm text-muted-foreground">{formatTime(card.time)}</span>
                       </div>
@@ -213,11 +225,11 @@ const EnhancedMatchSummaryDisplay = ({
                 <h4 className="font-semibold text-sm text-muted-foreground mb-2">{awayTeam}</h4>
                 <div className="space-y-2">
                   {awayCards.map((card, index) => (
-                    <div key={`away-card-${index}`} className="flex items-center justify-between p-2 bg-yellow-50 rounded-lg">
-                      <span className="font-medium">{card.playerName}</span>
+                    <div key={`away-card-${index}-${card.playerId || card.player_id}-${card.time}`} className="flex items-center justify-between p-2 bg-yellow-50 rounded-lg">
+                      <span className="font-medium">{card.playerName || card.player_name}</span>
                       <div className="flex items-center gap-2">
-                        <Badge variant="outline" className={card.type === 'yellow' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}>
-                          {card.type === 'yellow' ? 'Yellow' : 'Red'} Card
+                        <Badge variant="outline" className={card.type === 'yellow' || card.card_type === 'yellow' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}>
+                          {(card.type || card.card_type) === 'yellow' ? 'Yellow' : 'Red'} Card
                         </Badge>
                         <span className="text-sm text-muted-foreground">{formatTime(card.time)}</span>
                       </div>
@@ -245,7 +257,7 @@ const EnhancedMatchSummaryDisplay = ({
           <CardContent>
             <div className="space-y-2">
               {trackedPlayers.map((player, index) => (
-                <div key={`tracked-player-${index}`} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
+                <div key={`tracked-player-${index}-${player.id}`} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
                   <div>
                     <span className="font-medium">{player.name}</span>
                     <span className="text-sm text-muted-foreground ml-2">({player.team})</span>

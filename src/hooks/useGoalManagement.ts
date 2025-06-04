@@ -9,12 +9,28 @@ interface GoalData {
   team: string;
   time: number;
   type: 'goal' | 'assist';
+  id?: string; // Add unique identifier for better deduplication
 }
 
 export const useGoalManagement = () => {
   const [goals, setGoals] = useState<GoalData[]>([]);
   const [selectedGoalPlayer, setSelectedGoalPlayer] = useState("");
   const [selectedGoalType, setSelectedGoalType] = useState<'goal' | 'assist'>('goal');
+
+  // Helper function to create unique identifier for goals
+  const createGoalId = (playerId: number, time: number, type: string, team: string): string => {
+    return `${playerId}-${time}-${type}-${team}-${Date.now()}`;
+  };
+
+  // Helper function to check for duplicates
+  const isDuplicateGoal = (newGoal: Omit<GoalData, 'id'>, existingGoals: GoalData[]): boolean => {
+    return existingGoals.some(existingGoal => 
+      existingGoal.playerId === newGoal.playerId &&
+      existingGoal.time === newGoal.time &&
+      existingGoal.type === newGoal.type &&
+      existingGoal.team === newGoal.team
+    );
+  };
 
   const assignGoal = async (
     player: any, 
@@ -27,7 +43,22 @@ export const useGoalManagement = () => {
       throw new Error('Player is required for goal assignment');
     }
 
-    console.log('⚽ useGoalManagement: Starting unified goal assignment with auto-score update:', {
+    // Create preliminary goal data for duplicate checking
+    const preliminaryGoal: Omit<GoalData, 'id'> = {
+      playerId: player.id,
+      playerName: player.name,
+      team: player.team,
+      time: matchTime,
+      type: selectedGoalType
+    };
+
+    // Check for duplicates in local state
+    if (isDuplicateGoal(preliminaryGoal, goals)) {
+      console.warn('🚫 useGoalManagement: Duplicate goal detected in local state, skipping assignment');
+      throw new Error('This goal/assist has already been assigned to this player at this time');
+    }
+
+    console.log('⚽ useGoalManagement: Starting unified goal assignment with enhanced duplicate prevention:', {
       player: player.name,
       team: player.team,
       type: selectedGoalType,
@@ -70,24 +101,30 @@ export const useGoalManagement = () => {
         throw new Error(result.message || 'Failed to assign goal');
       }
 
-      // Add to local state only if successful
+      // Add to local state only if successful and not duplicate
       const newGoal: GoalData = {
-        playerId: player.id,
-        playerName: player.name,
-        team: player.team,
-        time: matchTime,
-        type: selectedGoalType
+        ...preliminaryGoal,
+        id: createGoalId(player.id, matchTime, selectedGoalType, player.team)
       };
 
-      setGoals(prev => [...prev, newGoal]);
+      setGoals(prev => {
+        // Double-check for duplicates before adding
+        if (isDuplicateGoal(newGoal, prev)) {
+          console.warn('🚫 useGoalManagement: Duplicate detected during state update, skipping');
+          return prev;
+        }
+        return [...prev, newGoal];
+      });
+      
       setSelectedGoalPlayer("");
       
-      console.log('✅ useGoalManagement: Goal successfully assigned with unified service and auto-score update');
+      console.log('✅ useGoalManagement: Goal successfully assigned with enhanced duplicate prevention');
       
       return {
         ...result.goalData,
         shouldUpdateScore: result.shouldUpdateScore,
-        autoScoreUpdated: selectedGoalType === 'goal' // Indicate that score should be automatically updated for goals
+        autoScoreUpdated: selectedGoalType === 'goal',
+        goalId: newGoal.id
       };
 
     } catch (error) {
@@ -96,10 +133,16 @@ export const useGoalManagement = () => {
     }
   };
 
+  const removeGoal = (goalId: string) => {
+    setGoals(prev => prev.filter(goal => goal.id !== goalId));
+    console.log('🗑️ useGoalManagement: Goal removed:', goalId);
+  };
+
   const resetGoals = () => {
     setGoals([]);
     setSelectedGoalPlayer("");
     setSelectedGoalType('goal');
+    console.log('🔄 useGoalManagement: Goals reset');
   };
 
   return {
@@ -109,6 +152,8 @@ export const useGoalManagement = () => {
     setSelectedGoalPlayer,
     setSelectedGoalType,
     assignGoal,
-    resetGoals
+    removeGoal,
+    resetGoals,
+    isDuplicateGoal: (goal: Omit<GoalData, 'id'>) => isDuplicateGoal(goal, goals)
   };
 };
