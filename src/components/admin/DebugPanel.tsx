@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,6 +8,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { RefreshCw, AlertCircle, CheckCircle, XCircle, Clock } from "lucide-react";
 import { operationLoggingService } from "@/services/operationLoggingService";
 import { enhancedMemberStatsService } from "@/services/enhancedMemberStatsService";
+import { playerDropdownService } from "@/services/playerDropdownService";
 
 interface OperationLog {
   id: string;
@@ -27,6 +27,7 @@ const DebugPanel = () => {
   const [failedLogs, setFailedLogs] = useState<OperationLog[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [playerValidation, setPlayerValidation] = useState<any>(null);
 
   const fetchLogs = async () => {
     setIsLoading(true);
@@ -95,6 +96,28 @@ const DebugPanel = () => {
     await fetchLogs();
   };
 
+  const testPlayerDropdownService = async () => {
+    console.log('🧪 DebugPanel: Testing player dropdown service...');
+    
+    try {
+      // Test the validation function
+      const validation = await playerDropdownService.validatePlayerDropdownData();
+      setPlayerValidation(validation);
+      
+      console.log('🧪 DebugPanel: Player validation result:', validation);
+      
+      // Test getting players for dropdown
+      const players = await playerDropdownService.getPlayersForDropdown();
+      console.log('🧪 DebugPanel: Player dropdown fetch result:', players.length);
+      
+      // Refresh logs to see the test operations
+      await fetchLogs();
+      
+    } catch (error) {
+      console.error('🧪 DebugPanel: Player dropdown test failed:', error);
+    }
+  };
+
   return (
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex items-center justify-between">
@@ -149,6 +172,7 @@ const DebugPanel = () => {
           <TabsTrigger value="all">All Operations</TabsTrigger>
           <TabsTrigger value="failed">Failed Operations</TabsTrigger>
           <TabsTrigger value="test">Test Panel</TabsTrigger>
+          <TabsTrigger value="validation">Player Validation</TabsTrigger>
         </TabsList>
 
         <TabsContent value="all" className="space-y-4">
@@ -254,13 +278,101 @@ const DebugPanel = () => {
               <Alert>
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>
-                  Use these test functions to validate the enhanced member stats service and operation logging.
+                  Use these test functions to validate services and operation logging.
                 </AlertDescription>
               </Alert>
               
-              <Button onClick={testMemberStatsUpdate} className="w-full">
-                Test Member Stats Update
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Button onClick={testMemberStatsUpdate} className="w-full">
+                  Test Member Stats Update
+                </Button>
+                <Button onClick={testPlayerDropdownService} className="w-full">
+                  Test Player Dropdown Service
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="validation" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Player Dropdown Validation</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Button onClick={testPlayerDropdownService} className="w-full mb-4">
+                Run Player Validation
               </Button>
+              
+              {playerValidation && (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <Card>
+                      <CardContent className="p-4">
+                        <div className="text-2xl font-bold text-center">
+                          {playerValidation.summary.totalPlayers}
+                        </div>
+                        <div className="text-sm text-center text-muted-foreground">
+                          Total Players
+                        </div>
+                      </CardContent>
+                    </Card>
+                    
+                    <Card>
+                      <CardContent className="p-4">
+                        <div className="text-2xl font-bold text-center">
+                          {playerValidation.summary.teamsFound}
+                        </div>
+                        <div className="text-sm text-center text-muted-foreground">
+                          Teams Found
+                        </div>
+                      </CardContent>
+                    </Card>
+                    
+                    <Card>
+                      <CardContent className="p-4">
+                        <div className="text-2xl font-bold text-center text-red-600">
+                          {playerValidation.summary.playersWithoutNames}
+                        </div>
+                        <div className="text-sm text-center text-muted-foreground">
+                          Without Names
+                        </div>
+                      </CardContent>
+                    </Card>
+                    
+                    <Card>
+                      <CardContent className="p-4">
+                        <div className="text-2xl font-bold text-center text-red-600">
+                          {playerValidation.summary.playersWithoutTeams}
+                        </div>
+                        <div className="text-sm text-center text-muted-foreground">
+                          Without Teams
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                  
+                  <Alert>
+                    {playerValidation.isValid ? (
+                      <CheckCircle className="h-4 w-4 text-green-600" />
+                    ) : (
+                      <XCircle className="h-4 w-4 text-red-600" />
+                    )}
+                    <AlertDescription>
+                      <div className="font-semibold mb-2">
+                        Validation Status: {playerValidation.isValid ? 'PASSED' : 'FAILED'}
+                      </div>
+                      {playerValidation.issues.length > 0 && (
+                        <ul className="list-disc list-inside space-y-1">
+                          {playerValidation.issues.map((issue: string, index: number) => (
+                            <li key={index} className="text-sm">{issue}</li>
+                          ))}
+                        </ul>
+                      )}
+                    </AlertDescription>
+                  </Alert>
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>

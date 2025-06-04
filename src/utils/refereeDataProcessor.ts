@@ -1,168 +1,229 @@
-
-interface RawMember {
-  id: number;
-  name: string;
-  team_id: string;
-  number?: string | number;
-  position?: string;
-  team?: { name: string };
-}
-
-interface RawFixture {
-  id: number;
-  home_team_id: string;
-  away_team_id: string;
-  home_team?: { name: string; __id__?: string };
-  away_team?: { name: string; __id__?: string };
-}
+import { playerDropdownService, type DropdownPlayerData } from '@/services/playerDropdownService';
 
 export interface ProcessedPlayer {
   id: number;
   name: string;
   team: string;
-  number: number;
+  team_id: string;
+  number: string;
   position: string;
 }
 
-export interface ProcessedTeamInfo {
-  id: string;
-  name: string;
-}
-
 export interface ProcessedFixtureData {
-  fixture: RawFixture;
-  homeTeam: ProcessedTeamInfo;
-  awayTeam: ProcessedTeamInfo;
   allPlayers: ProcessedPlayer[];
   homeTeamPlayers: ProcessedPlayer[];
   awayTeamPlayers: ProcessedPlayer[];
+  hasValidData: boolean;
+  dataIssues: string[];
 }
 
-const normalizeTeamId = (teamId: string | number): string => {
-  return teamId.toString().trim();
-};
-
-const normalizePlayerNumber = (number: string | number | undefined): number => {
-  if (number === undefined || number === null) return 0;
-  const parsed = parseInt(String(number));
-  return isNaN(parsed) ? 0 : parsed;
-};
-
-const findMembersByTeamId = (members: RawMember[], teamId: string): RawMember[] => {
-  const normalizedTargetId = normalizeTeamId(teamId);
+export function processFixtureAndPlayers(
+  selectedFixtureData: any,
+  members: any[]
+): ProcessedFixtureData | null {
+  console.log('🔄 RefereeDataProcessor: Processing fixture and players...');
+  console.log('  - Fixture:', selectedFixtureData?.id);
+  console.log('  - Members count:', members?.length || 0);
   
-  console.log(`🔍 Finding members for team ID: ${teamId} (normalized: ${normalizedTargetId})`);
+  if (!selectedFixtureData) {
+    console.warn('⚠️ RefereeDataProcessor: No fixture data provided');
+    return null;
+  }
+
+  const homeTeamName = selectedFixtureData.home_team?.name;
+  const awayTeamName = selectedFixtureData.away_team?.name;
   
-  // Strategy 1: Direct match with team.__id__ from fixture
-  const directMatches = members.filter(member => {
-    const memberTeamId = normalizeTeamId(member.team_id);
-    return memberTeamId === normalizedTargetId;
+  if (!homeTeamName || !awayTeamName) {
+    console.warn('⚠️ RefereeDataProcessor: Missing team names in fixture');
+    return {
+      allPlayers: [],
+      homeTeamPlayers: [],
+      awayTeamPlayers: [],
+      hasValidData: false,
+      dataIssues: ['Missing team names in fixture data']
+    };
+  }
+
+  // Enhanced member processing with better validation
+  const validMembers = (members || []).filter(member => {
+    const isValid = member && 
+                   member.name && 
+                   member.name.trim() !== '' &&
+                   member.id &&
+                   member.team;
+    
+    if (!isValid) {
+      console.log(`⚠️ Filtering out invalid member:`, {
+        id: member?.id,
+        name: member?.name,
+        hasTeam: !!member?.team
+      });
+    }
+    
+    return isValid;
   });
-  
-  if (directMatches.length > 0) {
-    console.log(`✅ Found ${directMatches.length} members using direct team ID match`);
-    return directMatches;
-  }
-  
-  console.log(`❌ No members found for team ID: ${teamId}`);
-  console.log(`Available team IDs:`, [...new Set(members.map(m => m.team_id))]);
-  
-  return [];
-};
 
-const processPlayer = (member: RawMember): ProcessedPlayer => {
-  return {
+  const allPlayers: ProcessedPlayer[] = validMembers.map(member => ({
     id: member.id,
-    name: member.name || 'Unknown Player',
+    name: member.name.trim(),
     team: member.team?.name || 'Unknown Team',
-    number: normalizePlayerNumber(member.number),
+    team_id: member.team_id || member.team?.id?.toString() || '',
+    number: member.number || '',
     position: member.position || 'Player'
-  };
-};
+  }));
 
-export const processFixtureAndPlayers = (
-  selectedFixtureData: RawFixture,
-  allMembers: RawMember[]
-): ProcessedFixtureData => {
-  console.log('🏗️ Processing fixture and players data...');
-  console.log('📋 Fixture:', selectedFixtureData);
-  console.log('👥 Total members:', allMembers?.length || 0);
+  const homeTeamPlayers = allPlayers.filter(player => player.team === homeTeamName);
+  const awayTeamPlayers = allPlayers.filter(player => player.team === awayTeamName);
+
+  const dataIssues: string[] = [];
   
-  // Extract team IDs from fixture - use __id__ from team objects which contain the correct string IDs
-  const homeTeamId = selectedFixtureData.home_team?.__id__ || selectedFixtureData.home_team_id;
-  const awayTeamId = selectedFixtureData.away_team?.__id__ || selectedFixtureData.away_team_id;
-  
-  // Process team information
-  const homeTeam: ProcessedTeamInfo = {
-    id: normalizeTeamId(homeTeamId),
-    name: selectedFixtureData.home_team?.name || 'Home Team'
-  };
-  
-  const awayTeam: ProcessedTeamInfo = {
-    id: normalizeTeamId(awayTeamId),
-    name: selectedFixtureData.away_team?.name || 'Away Team'
-  };
-  
-  console.log('🏠 Home team:', homeTeam);
-  console.log('✈️ Away team:', awayTeam);
-  
-  // Find team members using the correct team IDs
-  const homeTeamMembers = findMembersByTeamId(allMembers, homeTeam.id);
-  const awayTeamMembers = findMembersByTeamId(allMembers, awayTeam.id);
-  
-  console.log(`👥 Found ${homeTeamMembers.length} home team members`);
-  console.log(`👥 Found ${awayTeamMembers.length} away team members`);
-  
-  // Process players
-  const homeTeamPlayers = homeTeamMembers.map(processPlayer);
-  const awayTeamPlayers = awayTeamMembers.map(processPlayer);
-  const allPlayers = [...homeTeamPlayers, ...awayTeamPlayers];
-  
-  console.log(`⚽ Processed ${allPlayers.length} total players`);
-  
-  // Debug output
   if (allPlayers.length === 0) {
-    console.warn('⚠️ WARNING: No players found for this fixture!');
-    console.log('Debug info:');
-    console.log('- Home team ID from fixture:', homeTeamId, typeof homeTeamId);
-    console.log('- Away team ID from fixture:', awayTeamId, typeof awayTeamId);
-    console.log('- Home team __id__:', selectedFixtureData.home_team?.__id__);
-    console.log('- Away team __id__:', selectedFixtureData.away_team?.__id__);
-    console.log('- Available member team IDs:', [...new Set(allMembers.map(m => `${m.team_id} (${typeof m.team_id})`))]);
+    dataIssues.push('No valid players found');
   }
   
-  const result: ProcessedFixtureData = {
-    fixture: selectedFixtureData,
-    homeTeam,
-    awayTeam,
+  if (homeTeamPlayers.length === 0) {
+    dataIssues.push(`No players found for home team: ${homeTeamName}`);
+  }
+  
+  if (awayTeamPlayers.length === 0) {
+    dataIssues.push(`No players found for away team: ${awayTeamName}`);
+  }
+
+  const hasValidData = dataIssues.length === 0 && allPlayers.length > 0;
+
+  console.log('✅ RefereeDataProcessor: Processing complete:', {
+    totalPlayers: allPlayers.length,
+    homeTeamPlayers: homeTeamPlayers.length,
+    awayTeamPlayers: awayTeamPlayers.length,
+    hasValidData,
+    dataIssues
+  });
+
+  return {
     allPlayers,
     homeTeamPlayers,
-    awayTeamPlayers
+    awayTeamPlayers,
+    hasValidData,
+    dataIssues
   };
-  
-  console.log('✅ Fixture and players processing complete');
-  return result;
-};
+}
 
-export const debugPlayerDropdownData = (players: ProcessedPlayer[], context: string) => {
-  console.log(`🎮 Player Dropdown Debug - ${context}:`);
-  console.log(`  - Total players: ${players.length}`);
+// Enhanced function to process players specifically for dropdowns with service integration
+export async function processPlayersForDropdowns(
+  selectedFixtureData: any
+): Promise<ProcessedFixtureData> {
+  console.log('🎯 RefereeDataProcessor: Processing players for dropdowns with service integration...');
   
-  if (players.length > 0) {
-    console.log(`  - Sample players:`, players.slice(0, 3).map(p => ({
+  if (!selectedFixtureData) {
+    console.warn('⚠️ RefereeDataProcessor: No fixture data for dropdown processing');
+    return {
+      allPlayers: [],
+      homeTeamPlayers: [],
+      awayTeamPlayers: [],
+      hasValidData: false,
+      dataIssues: ['No fixture data provided']
+    };
+  }
+
+  const homeTeamName = selectedFixtureData.home_team?.name;
+  const awayTeamName = selectedFixtureData.away_team?.name;
+  
+  if (!homeTeamName || !awayTeamName) {
+    console.warn('⚠️ RefereeDataProcessor: Missing team names for dropdown processing');
+    return {
+      allPlayers: [],
+      homeTeamPlayers: [],
+      awayTeamPlayers: [],
+      hasValidData: false,
+      dataIssues: ['Missing team names in fixture']
+    };
+  }
+
+  try {
+    // Use the dedicated dropdown service
+    const { homeTeamPlayers, awayTeamPlayers, allPlayers } = 
+      await playerDropdownService.getPlayersByTeam(homeTeamName, awayTeamName);
+
+    const dataIssues: string[] = [];
+    
+    if (allPlayers.length === 0) {
+      dataIssues.push('No players found via dropdown service');
+    }
+    
+    if (homeTeamPlayers.length === 0) {
+      dataIssues.push(`No players found for home team: ${homeTeamName}`);
+    }
+    
+    if (awayTeamPlayers.length === 0) {
+      dataIssues.push(`No players found for away team: ${awayTeamName}`);
+    }
+
+    const hasValidData = dataIssues.length === 0 && allPlayers.length > 0;
+
+    console.log('✅ RefereeDataProcessor: Dropdown processing complete:', {
+      totalPlayers: allPlayers.length,
+      homeTeamPlayers: homeTeamPlayers.length,
+      awayTeamPlayers: awayTeamPlayers.length,
+      hasValidData,
+      dataIssues
+    });
+
+    return {
+      allPlayers: allPlayers.map(p => ({
+        id: p.id,
+        name: p.name,
+        team: p.team,
+        team_id: p.team_id,
+        number: p.number,
+        position: p.position
+      })),
+      homeTeamPlayers: homeTeamPlayers.map(p => ({
+        id: p.id,
+        name: p.name,
+        team: p.team,
+        team_id: p.team_id,
+        number: p.number,
+        position: p.position
+      })),
+      awayTeamPlayers: awayTeamPlayers.map(p => ({
+        id: p.id,
+        name: p.name,
+        team: p.team,
+        team_id: p.team_id,
+        number: p.number,
+        position: p.position
+      })),
+      hasValidData,
+      dataIssues
+    };
+
+  } catch (error) {
+    console.error('❌ RefereeDataProcessor: Failed to process players for dropdowns:', error);
+    return {
+      allPlayers: [],
+      homeTeamPlayers: [],
+      awayTeamPlayers: [],
+      hasValidData: false,
+      dataIssues: ['Failed to fetch player data: ' + (error instanceof Error ? error.message : 'Unknown error')]
+    };
+  }
+}
+
+export function debugPlayerDropdownData(players: ProcessedPlayer[], context: string = "Generic") {
+  console.log(`🔍 ${context} - Player Dropdown Debug:`, {
+    totalPlayers: players.length,
+    playersWithNames: players.filter(p => p.name && p.name.trim() !== '').length,
+    playersWithTeams: players.filter(p => p.team && p.team !== 'Unknown Team').length,
+    uniqueTeams: [...new Set(players.map(p => p.team))],
+    samplePlayers: players.slice(0, 3).map(p => ({
       id: p.id,
       name: p.name,
       team: p.team,
       number: p.number
-    })));
-    
-    const teamCounts = players.reduce((acc, player) => {
-      acc[player.team] = (acc[player.team] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
-    
-    console.log(`  - Players by team:`, teamCounts);
-  } else {
-    console.log(`  ❌ NO PLAYERS AVAILABLE FOR DROPDOWN!`);
+    }))
+  });
+  
+  if (players.length === 0) {
+    console.warn(`⚠️ ${context}: NO PLAYERS AVAILABLE FOR DROPDOWN!`);
   }
-};
+}

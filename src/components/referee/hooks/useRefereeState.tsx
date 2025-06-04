@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useFixtures } from "@/hooks/useFixtures";
 import { useMembers } from "@/hooks/useMembers";
 import { useUpdateFixtureScore } from "@/hooks/useFixtures";
@@ -10,7 +9,8 @@ import { usePlayerTracking } from "@/hooks/usePlayerTracking";
 import { useGoalManagement } from "@/hooks/useGoalManagement";
 import { useLocalMatchEvents } from "@/hooks/useMatchEvents";
 import { useCardManagementImproved } from "@/hooks/useCardManagementImproved";
-import { processFixtureAndPlayers, debugPlayerDropdownData, type ProcessedPlayer } from "@/utils/refereeDataProcessor";
+import { processFixtureAndPlayers, processPlayersForDropdowns, debugPlayerDropdownData, type ProcessedPlayer } from "@/utils/refereeDataProcessor";
+import { playerDropdownService } from "@/services/playerDropdownService";
 import { debugRefereeToolsData } from "@/utils/refereeToolsDebug";
 
 // Use the ProcessedPlayer from refereeDataProcessor for consistency
@@ -36,6 +36,15 @@ export const useRefereeState = () => {
 
   const [selectedFixture, setSelectedFixture] = useState("");
   const [saveAttempts, setSaveAttempts] = useState(0);
+  const [enhancedPlayersData, setEnhancedPlayersData] = useState<{
+    allPlayers: ComponentPlayer[];
+    hasValidData: boolean;
+    dataIssues: string[];
+  }>({
+    allPlayers: [],
+    hasValidData: false,
+    dataIssues: []
+  });
 
   const selectedFixtureData = fixtures?.find(f => f.id.toString() === selectedFixture);
 
@@ -44,7 +53,71 @@ export const useRefereeState = () => {
     debugRefereeToolsData(fixtures, members, selectedFixture);
   }
 
-  // Process fixture and player data using the new utility
+  // Enhanced player data processing with async service integration
+  useEffect(() => {
+    async function loadEnhancedPlayerData() {
+      if (!selectedFixtureData) {
+        setEnhancedPlayersData({
+          allPlayers: [],
+          hasValidData: false,
+          dataIssues: ['No fixture selected']
+        });
+        return;
+      }
+
+      console.log('🔄 useRefereeState: Loading enhanced player data...');
+      
+      try {
+        // First, try to use the traditional processing
+        const traditionalData = selectedFixtureData && members 
+          ? processFixtureAndPlayers(selectedFixtureData, members)
+          : null;
+
+        // Then, try the enhanced dropdown service
+        const enhancedData = await processPlayersForDropdowns(selectedFixtureData);
+
+        // Use the best available data
+        const finalData = enhancedData.hasValidData ? enhancedData : traditionalData;
+
+        if (finalData) {
+          setEnhancedPlayersData({
+            allPlayers: finalData.allPlayers,
+            hasValidData: finalData.hasValidData,
+            dataIssues: finalData.dataIssues
+          });
+
+          // Debug the final data
+          debugPlayerDropdownData(finalData.allPlayers, "Enhanced useRefereeState");
+          
+          console.log('✅ useRefereeState: Enhanced player data loaded:', {
+            method: enhancedData.hasValidData ? 'enhanced' : 'traditional',
+            totalPlayers: finalData.allPlayers.length,
+            hasValidData: finalData.hasValidData,
+            dataIssues: finalData.dataIssues
+          });
+        } else {
+          console.warn('⚠️ useRefereeState: No valid player data available');
+          setEnhancedPlayersData({
+            allPlayers: [],
+            hasValidData: false,
+            dataIssues: ['No valid player data available']
+          });
+        }
+
+      } catch (error) {
+        console.error('❌ useRefereeState: Failed to load enhanced player data:', error);
+        setEnhancedPlayersData({
+          allPlayers: [],
+          hasValidData: false,
+          dataIssues: ['Failed to load player data: ' + (error instanceof Error ? error.message : 'Unknown error')]
+        });
+      }
+    }
+
+    loadEnhancedPlayerData();
+  }, [selectedFixtureData, members]);
+
+  // Process fixture and player data using the traditional method as fallback
   const processedData = selectedFixtureData && members 
     ? processFixtureAndPlayers(selectedFixtureData, members)
     : null;
@@ -79,12 +152,22 @@ export const useRefereeState = () => {
     checkForSecondYellow 
   } = useCardManagementImproved({ selectedFixtureData });
   
-  // Get all players from processed data - these are already ProcessedPlayer type
-  const allPlayers: ComponentPlayer[] = processedData?.allPlayers || [];
+  // Use enhanced players data when available, fallback to traditional processing
+  const allPlayers: ComponentPlayer[] = enhancedPlayersData.hasValidData 
+    ? enhancedPlayersData.allPlayers 
+    : (processedData?.allPlayers || []);
 
   // Debug player dropdown data
-  if (processedData) {
-    debugPlayerDropdownData(allPlayers, "All Players for Dropdowns");
+  if (allPlayers.length > 0) {
+    debugPlayerDropdownData(allPlayers, "Final useRefereeState Players");
+  } else {
+    console.warn('⚠️ useRefereeState: No players available for UI components!', {
+      enhancedDataValid: enhancedPlayersData.hasValidData,
+      enhancedDataIssues: enhancedPlayersData.dataIssues,
+      traditionalDataAvailable: !!processedData,
+      membersCount: members?.length || 0,
+      selectedFixture: !!selectedFixtureData
+    });
   }
 
   // Create players specifically for PlayerTimeTracker with extended properties
@@ -106,9 +189,10 @@ export const useRefereeState = () => {
     selectedFixture,
     hasSelectedFixtureData: !!selectedFixtureData,
     totalMembers: members?.length || 0,
-    processedPlayers: allPlayers.length,
-    homeTeamPlayers: processedData?.homeTeamPlayers.length || 0,
-    awayTeamPlayers: processedData?.awayTeamPlayers.length || 0
+    enhancedPlayersCount: enhancedPlayersData.allPlayers.length,
+    finalPlayersCount: allPlayers.length,
+    enhancedDataValid: enhancedPlayersData.hasValidData,
+    dataIssues: enhancedPlayersData.dataIssues
   });
 
   return {
@@ -125,6 +209,7 @@ export const useRefereeState = () => {
     saveAttempts,
     setSaveAttempts,
     processedData, // Add processed data for debugging
+    enhancedPlayersData, // Add enhanced data for debugging
     
     // Mutation hooks
     updateFixtureScore,

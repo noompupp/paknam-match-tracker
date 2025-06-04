@@ -17,12 +17,79 @@ interface PlayerStatsData {
   matches_played: number;
 }
 
+// Fallback query function for when relationships fail
+async function fallbackPlayerQuery(): Promise<PlayerStatsData[]> {
+  console.log('🔄 PlayerStatsAPI: Using fallback query strategy...');
+  
+  try {
+    // Get members without relationship
+    const { data: members, error: membersError } = await supabase
+      .from('members')
+      .select(`
+        id,
+        name,
+        goals,
+        assists,
+        yellow_cards,
+        red_cards,
+        total_minutes_played,
+        matches_played,
+        position,
+        number,
+        team_id
+      `)
+      .order('name', { ascending: true });
+
+    if (membersError) {
+      console.error('❌ PlayerStatsAPI: Fallback members query failed:', membersError);
+      throw membersError;
+    }
+
+    // Get teams separately
+    const { data: teams, error: teamsError } = await supabase
+      .from('teams')
+      .select('id, __id__, name');
+
+    if (teamsError) {
+      console.error('❌ PlayerStatsAPI: Fallback teams query failed:', teamsError);
+      throw teamsError;
+    }
+
+    // Manual join
+    const transformedData = (members || []).map(member => {
+      const team = teams?.find(t => t.__id__ === member.team_id || t.id.toString() === member.team_id);
+      
+      return {
+        id: member.id,
+        name: member.name || 'Unknown Player',
+        team_name: team?.name || 'Unknown Team',
+        team_id: member.team_id || '',
+        goals: member.goals || 0,
+        assists: member.assists || 0,
+        position: member.position || 'Player',
+        number: member.number || '',
+        yellow_cards: member.yellow_cards || 0,
+        red_cards: member.red_cards || 0,
+        total_minutes_played: member.total_minutes_played || 0,
+        matches_played: member.matches_played || 0
+      };
+    });
+
+    console.log('✅ PlayerStatsAPI: Fallback query successful:', transformedData.length);
+    return transformedData;
+
+  } catch (error) {
+    console.error('❌ PlayerStatsAPI: Fallback query completely failed:', error);
+    throw error;
+  }
+}
+
 export const playerStatsApi = {
   async getAll(): Promise<PlayerStatsData[]> {
-    console.log('🏆 PlayerStatsAPI: Fetching all players from members table...');
+    console.log('🏆 PlayerStatsAPI: Fetching all players with enhanced error handling...');
     
     try {
-      // Query the enhanced members table directly with explicit relationship
+      // Primary query with explicit relationship syntax
       const { data, error } = await supabase
         .from('members')
         .select(`
@@ -37,24 +104,29 @@ export const playerStatsApi = {
           position,
           number,
           team_id,
-          validation_status,
-          sync_status,
-          teams!members_team_id_fkey(name)
+          teams!inner(
+            id,
+            __id__,
+            name
+          )
         `)
         .order('name', { ascending: true });
 
       if (error) {
-        console.error('❌ PlayerStatsAPI: Error fetching all players:', error);
+        console.warn('⚠️ PlayerStatsAPI: Primary query failed, trying fallback:', error.message);
+        
         await operationLoggingService.logOperation({
-          operation_type: 'player_stats_fetch_all',
+          operation_type: 'player_stats_fetch_primary_failed',
           table_name: 'members',
           error_message: error.message,
           success: false
         });
-        throw new Error(`Failed to fetch players: ${error.message}`);
+
+        // Use fallback strategy
+        return await fallbackPlayerQuery();
       }
 
-      // Transform the data to match expected format
+      // Transform successful primary query data
       const transformedData = (data || []).map(player => ({
         id: player.id,
         name: player.name || 'Unknown Player',
@@ -73,24 +145,33 @@ export const playerStatsApi = {
       await operationLoggingService.logOperation({
         operation_type: 'player_stats_fetch_all',
         table_name: 'members',
-        result: { count: transformedData.length },
+        result: { count: transformedData.length, method: 'primary' },
         success: true
       });
 
-      console.log('✅ PlayerStatsAPI: All players fetched successfully from members table:', transformedData.length);
+      console.log('✅ PlayerStatsAPI: Primary query successful:', transformedData.length);
       return transformedData;
 
     } catch (error) {
-      console.error('❌ PlayerStatsAPI: Critical error fetching all players:', error);
-      throw error;
+      console.error('❌ PlayerStatsAPI: All query strategies failed:', error);
+      
+      await operationLoggingService.logOperation({
+        operation_type: 'player_stats_fetch_all_failed',
+        table_name: 'members',
+        error_message: error instanceof Error ? error.message : 'Unknown error',
+        success: false
+      });
+
+      // Return empty array instead of throwing to prevent UI crashes
+      return [];
     }
   },
 
   async getTopScorers(limit: number = 10): Promise<PlayerStatsData[]> {
-    console.log('🏆 PlayerStatsAPI: Fetching top scorers from members table, limit:', limit);
+    console.log('🏆 PlayerStatsAPI: Fetching top scorers with fallback strategy...');
     
     try {
-      // Query the enhanced members table directly with explicit relationship
+      // Try primary query first
       const { data, error } = await supabase
         .from('members')
         .select(`
@@ -105,7 +186,7 @@ export const playerStatsApi = {
           position,
           number,
           team_id,
-          teams!members_team_id_fkey(name)
+          teams!inner(name)
         `)
         .gte('goals', 0)
         .order('goals', { ascending: false })
@@ -114,11 +195,21 @@ export const playerStatsApi = {
         .limit(limit);
 
       if (error) {
-        console.error('❌ PlayerStatsAPI: Error fetching top scorers:', error);
-        throw new Error(`Failed to fetch top scorers: ${error.message}`);
+        console.warn('⚠️ PlayerStatsAPI: Top scorers primary query failed, using fallback');
+        
+        // Fallback: get all players and filter/sort manually
+        const allPlayers = await fallbackPlayerQuery();
+        return allPlayers
+          .filter(player => player.goals >= 0)
+          .sort((a, b) => {
+            if (b.goals !== a.goals) return b.goals - a.goals;
+            if (b.assists !== a.assists) return b.assists - a.assists;
+            return a.name.localeCompare(b.name);
+          })
+          .slice(0, limit);
       }
 
-      // Transform the data to match expected format
+      // Transform successful data
       const transformedData = (data || []).map(player => ({
         id: player.id,
         name: player.name || 'Unknown Player',
@@ -134,20 +225,20 @@ export const playerStatsApi = {
         matches_played: player.matches_played || 0
       }));
 
-      console.log('✅ PlayerStatsAPI: Top scorers fetched successfully from members table:', transformedData.length);
+      console.log('✅ PlayerStatsAPI: Top scorers fetched successfully:', transformedData.length);
       return transformedData;
 
     } catch (error) {
-      console.error('❌ PlayerStatsAPI: Critical error fetching top scorers:', error);
-      throw error;
+      console.error('❌ PlayerStatsAPI: Top scorers query failed completely:', error);
+      return [];
     }
   },
 
   async getTopAssists(limit: number = 10): Promise<PlayerStatsData[]> {
-    console.log('🎯 PlayerStatsAPI: Fetching top assists from members table, limit:', limit);
+    console.log('🎯 PlayerStatsAPI: Fetching top assists with fallback strategy...');
     
     try {
-      // Query the enhanced members table directly with explicit relationship
+      // Try primary query first
       const { data, error } = await supabase
         .from('members')
         .select(`
@@ -162,7 +253,7 @@ export const playerStatsApi = {
           position,
           number,
           team_id,
-          teams!members_team_id_fkey(name)
+          teams!inner(name)
         `)
         .gte('assists', 0)
         .order('assists', { ascending: false })
@@ -171,11 +262,21 @@ export const playerStatsApi = {
         .limit(limit);
 
       if (error) {
-        console.error('❌ PlayerStatsAPI: Error fetching top assists:', error);
-        throw new Error(`Failed to fetch top assists: ${error.message}`);
+        console.warn('⚠️ PlayerStatsAPI: Top assists primary query failed, using fallback');
+        
+        // Fallback: get all players and filter/sort manually
+        const allPlayers = await fallbackPlayerQuery();
+        return allPlayers
+          .filter(player => player.assists >= 0)
+          .sort((a, b) => {
+            if (b.assists !== a.assists) return b.assists - a.assists;
+            if (b.goals !== a.goals) return b.goals - a.goals;
+            return a.name.localeCompare(b.name);
+          })
+          .slice(0, limit);
       }
 
-      // Transform the data to match expected format
+      // Transform successful data
       const transformedData = (data || []).map(player => ({
         id: player.id,
         name: player.name || 'Unknown Player',
@@ -191,20 +292,20 @@ export const playerStatsApi = {
         matches_played: player.matches_played || 0
       }));
 
-      console.log('✅ PlayerStatsAPI: Top assists fetched successfully from members table:', transformedData.length);
+      console.log('✅ PlayerStatsAPI: Top assists fetched successfully:', transformedData.length);
       return transformedData;
 
     } catch (error) {
-      console.error('❌ PlayerStatsAPI: Critical error fetching top assists:', error);
-      throw error;
+      console.error('❌ PlayerStatsAPI: Top assists query failed completely:', error);
+      return [];
     }
   },
 
   async getByTeam(teamId: string): Promise<PlayerStatsData[]> {
-    console.log('👥 PlayerStatsAPI: Fetching team players from members table, teamId:', teamId);
+    console.log('👥 PlayerStatsAPI: Fetching team players with enhanced error handling, teamId:', teamId);
     
     try {
-      // Query the enhanced members table directly for team players with explicit relationship
+      // Try primary query first
       const { data, error } = await supabase
         .from('members')
         .select(`
@@ -219,17 +320,20 @@ export const playerStatsApi = {
           position,
           number,
           team_id,
-          teams!members_team_id_fkey(name)
+          teams!inner(name)
         `)
         .eq('team_id', teamId)
         .order('name', { ascending: true });
 
       if (error) {
-        console.error('❌ PlayerStatsAPI: Error fetching team players:', error);
-        throw new Error(`Failed to fetch team players: ${error.message}`);
+        console.warn('⚠️ PlayerStatsAPI: Team players primary query failed, using fallback');
+        
+        // Fallback: get all players and filter manually
+        const allPlayers = await fallbackPlayerQuery();
+        return allPlayers.filter(player => player.team_id === teamId);
       }
 
-      // Transform the data to match expected format
+      // Transform successful data
       const transformedData = (data || []).map(player => ({
         id: player.id,
         name: player.name || 'Unknown Player',
@@ -245,55 +349,39 @@ export const playerStatsApi = {
         matches_played: player.matches_played || 0
       }));
 
-      console.log('✅ PlayerStatsAPI: Team players fetched successfully from members table:', transformedData.length);
+      console.log('✅ PlayerStatsAPI: Team players fetched successfully:', transformedData.length);
       return transformedData;
 
     } catch (error) {
-      console.error('❌ PlayerStatsAPI: Critical error fetching team players:', error);
-      throw error;
+      console.error('❌ PlayerStatsAPI: Team players query failed completely:', error);
+      return [];
     }
   },
 
   async refreshPlayerStats(): Promise<{ success: boolean; message: string }> {
-    console.log('🔄 PlayerStatsAPI: Refreshing all player stats from members table...');
+    console.log('🔄 PlayerStatsAPI: Refreshing all player stats with enhanced validation...');
     
     try {
-      // Validate the current data structure in the enhanced members table
-      const { data: allPlayers, error } = await supabase
-        .from('members')
-        .select('id, name, goals, assists, yellow_cards, red_cards, total_minutes_played, matches_played, validation_status, sync_status')
-        .order('name');
-
-      if (error) {
-        await operationLoggingService.logOperation({
-          operation_type: 'player_stats_refresh',
-          table_name: 'members',
-          error_message: error.message,
-          success: false
-        });
-        throw new Error(`Failed to refresh stats: ${error.message}`);
-      }
-
-      // Check for any validation issues
-      const invalidPlayers = allPlayers?.filter(player => 
-        player.validation_status !== 'valid' || player.sync_status !== 'synced'
-      ) || [];
-
+      // Test both primary and fallback queries
+      const primaryResult = await this.getAll();
+      const fallbackResult = await fallbackPlayerQuery();
+      
       await operationLoggingService.logOperation({
         operation_type: 'player_stats_refresh',
         table_name: 'members',
         result: { 
-          total_players: allPlayers?.length || 0,
-          invalid_players: invalidPlayers.length 
+          primary_count: primaryResult.length,
+          fallback_count: fallbackResult.length,
+          data_consistency: primaryResult.length === fallbackResult.length
         },
         success: true
       });
 
-      console.log(`✅ PlayerStatsAPI: Stats refresh completed for ${allPlayers?.length || 0} players from members table`);
+      console.log(`✅ PlayerStatsAPI: Stats refresh completed. Primary: ${primaryResult.length}, Fallback: ${fallbackResult.length}`);
       
       return {
         success: true,
-        message: `Successfully refreshed stats for ${allPlayers?.length || 0} players from enhanced members table. ${invalidPlayers.length > 0 ? `Found ${invalidPlayers.length} players with validation issues.` : ''}`
+        message: `Successfully refreshed stats. Primary query: ${primaryResult.length} players, Fallback query: ${fallbackResult.length} players.`
       };
 
     } catch (error) {
