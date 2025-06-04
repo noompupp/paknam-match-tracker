@@ -6,7 +6,7 @@ import { calculateAndUpdatePositions } from './positionCalculationService';
 import { createGoalEventsWithDuplicateCheck } from './matchEventsCreationService';
 
 export const updateFixtureScore = async (id: number, homeScore: number, awayScore: number): Promise<Fixture> => {
-  console.log('🔍 ScoreUpdateService: Starting fixture score update:', { id, homeScore, awayScore });
+  console.log('🔍 ScoreUpdateService: Starting fixture score update with standardized team IDs:', { id, homeScore, awayScore });
   
   try {
     // Validate input parameters
@@ -27,9 +27,11 @@ export const updateFixtureScore = async (id: number, homeScore: number, awayScor
       throw new Error('Could not find both teams for this fixture');
     }
 
-    console.log('✅ ScoreUpdateService: Teams found:', {
+    console.log('✅ ScoreUpdateService: Teams found with standardized IDs:', {
       home: homeTeam.name,
+      homeId: currentFixture.home_team_id,
       away: awayTeam.name,
+      awayId: currentFixture.away_team_id,
       currentScore: `${currentFixture.home_score || 0}-${currentFixture.away_score || 0}`,
       newScore: `${homeScore}-${awayScore}`
     });
@@ -54,8 +56,8 @@ export const updateFixtureScore = async (id: number, homeScore: number, awayScor
     console.log('⚽ ScoreUpdateService: Creating goal events with duplicate prevention...');
     await createGoalEventsWithDuplicateCheck(
       id,
-      { id: homeTeam.id, name: homeTeam.name },
-      { id: awayTeam.id, name: awayTeam.name },
+      { id: homeTeam.__id__ || homeTeam.id, name: homeTeam.name }, // Use standardized text ID
+      { id: awayTeam.__id__ || awayTeam.id, name: awayTeam.name }, // Use standardized text ID
       homeScore,
       awayScore,
       currentHomeScore,
@@ -65,7 +67,7 @@ export const updateFixtureScore = async (id: number, homeScore: number, awayScor
     // Return simplified fixture object
     const result = createFixtureResult(updatedFixture, homeTeam, awayTeam);
     
-    console.log('✅ ScoreUpdateService: Successfully completed fixture score update with duplicate prevention');
+    console.log('✅ ScoreUpdateService: Successfully completed fixture score update with standardized team IDs');
     return result;
 
   } catch (error) {

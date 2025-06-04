@@ -1,10 +1,9 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { transformFixture } from './utils';
 import { joinFixturesWithTeams } from './teamUtils';
 
 export const getAllFixtures = async () => {
-  console.log('🔍 FixturesQueries: Starting getAll request...');
+  console.log('🔍 FixturesQueries: Starting getAll request with standardized team IDs...');
   
   // Get all fixtures with better sorting (completed matches by date desc, scheduled by date asc)
   const { data: fixtures, error: fixturesError } = await supabase
@@ -19,9 +18,14 @@ export const getAllFixtures = async () => {
     throw fixturesError;
   }
 
-  console.log('📊 FixturesQueries: Raw fixtures data from database:', {
+  console.log('📊 FixturesQueries: Raw fixtures data with standardized IDs:', {
     count: fixtures?.length || 0,
     sample: fixtures?.[0] || null,
+    teamIdFormat: fixtures?.[0] ? {
+      homeTeamId: fixtures[0].home_team_id,
+      awayTeamId: fixtures[0].away_team_id,
+      hasStandardizedIds: !!(fixtures[0].home_team_id && fixtures[0].away_team_id)
+    } : null,
     timeVariety: [...new Set(fixtures?.map(f => f.time))],
     statusBreakdown: fixtures?.reduce((acc, f) => {
       acc[f.status] = (acc[f.status] || 0) + 1;
@@ -55,10 +59,10 @@ export const getAllFixtures = async () => {
     })) || []
   });
 
-  // Manually join fixtures with teams using normalized IDs
+  // Join fixtures with teams using the standardized team ID fields
   const fixturesWithTeams = joinFixturesWithTeams(fixtures, teams || []);
 
-  console.log('✅ FixturesQueries: Successfully transformed fixtures:', {
+  console.log('✅ FixturesQueries: Successfully transformed fixtures with standardized IDs:', {
     count: fixturesWithTeams.length,
     fixturesWithBothTeams: fixturesWithTeams.filter(f => f.home_team && f.away_team).length,
     fixturesWithoutTeams: fixturesWithTeams.filter(f => !f.home_team || !f.away_team).length,
@@ -99,7 +103,9 @@ export const getUpcomingFixtures = async () => {
       id: f.id,
       date: f.match_date,
       time: f.time,
-      status: f.status
+      status: f.status,
+      homeTeamId: f.home_team_id,
+      awayTeamId: f.away_team_id
     })) || []
   });
 
@@ -153,7 +159,9 @@ export const getRecentFixtures = async () => {
       date: f.match_date,
       time: f.time,
       homeScore: f.home_score,
-      awayScore: f.away_score
+      awayScore: f.away_score,
+      homeTeamId: f.home_team_id,
+      awayTeamId: f.away_team_id
     })) || []
   });
 

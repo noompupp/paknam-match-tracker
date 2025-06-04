@@ -12,6 +12,7 @@ interface SimpleTeam {
   goals_for: number;
   goals_against: number;
   goal_difference: number;
+  __id__?: string; // Add the text ID field
 }
 
 export const updateTeamStats = async (
@@ -21,9 +22,11 @@ export const updateTeamStats = async (
   awayScore: number, 
   currentFixture: any
 ): Promise<void> => {
-  console.log('🔄 TeamStatsService: Starting team stats update:', {
+  console.log('🔄 TeamStatsService: Starting team stats update with standardized IDs:', {
     homeTeam: homeTeam.name,
+    homeTeamId: homeTeam.__id__ || homeTeam.id,
     awayTeam: awayTeam.name,
+    awayTeamId: awayTeam.__id__ || awayTeam.id,
     homeScore,
     awayScore,
     fixtureStatus: currentFixture.status
@@ -92,29 +95,31 @@ export const updateTeamStats = async (
     points: newAwayPoints
   };
 
-  // Update home team stats
-  console.log('🏠 TeamStatsService: Updating home team stats:', homeStatsUpdate);
+  // Update home team stats using the standardized text ID
+  const homeTeamId = homeTeam.__id__ || currentFixture.home_team_id;
+  console.log('🏠 TeamStatsService: Updating home team stats:', { homeTeamId, stats: homeStatsUpdate });
   const { error: homeError } = await supabase
     .from('teams')
     .update(homeStatsUpdate)
-    .eq('__id__', currentFixture.team1);
+    .eq('__id__', homeTeamId);
 
   if (homeError) {
     console.error('❌ TeamStatsService: Failed to update home team stats:', homeError);
     throw new Error(`Failed to update home team stats: ${homeError.message}`);
   }
 
-  // Update away team stats
-  console.log('🚗 TeamStatsService: Updating away team stats:', awayStatsUpdate);
+  // Update away team stats using the standardized text ID
+  const awayTeamId = awayTeam.__id__ || currentFixture.away_team_id;
+  console.log('🚗 TeamStatsService: Updating away team stats:', { awayTeamId, stats: awayStatsUpdate });
   const { error: awayError } = await supabase
     .from('teams')
     .update(awayStatsUpdate)
-    .eq('__id__', currentFixture.team2);
+    .eq('__id__', awayTeamId);
 
   if (awayError) {
     console.error('❌ TeamStatsService: Failed to update away team stats:', awayError);
     throw new Error(`Failed to update away team stats: ${awayError.message}`);
   }
 
-  console.log('✅ TeamStatsService: Successfully updated both team stats');
+  console.log('✅ TeamStatsService: Successfully updated both team stats with standardized IDs');
 };

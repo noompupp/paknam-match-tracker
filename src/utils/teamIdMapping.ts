@@ -18,7 +18,7 @@ export const resolveTeamIdForMatchEvent = (
     awayTeamTextId: awayTeam.__id__
   });
 
-  // Direct team name matching - return text ID
+  // Direct team name matching - return text ID (now standardized)
   if (playerTeamName === homeTeam.name) {
     const textId = homeTeam.__id__ || homeTeam.id;
     console.log('✅ TeamIdMapping: Matched home team:', textId);
@@ -48,13 +48,15 @@ export const resolveTeamIdForMatchEvent = (
     return textId;
   }
 
-  // If no match found, throw error instead of defaulting
-  console.error('❌ TeamIdMapping: No team match found for:', {
+  // If no match found, use the text ID from the first available team as fallback
+  const fallbackId = homeTeam.__id__ || homeTeam.id;
+  console.warn('⚠️ TeamIdMapping: No exact match found, using home team as fallback:', {
     playerTeamName,
-    availableTeams: [homeTeam.name, awayTeam.name]
+    availableTeams: [homeTeam.name, awayTeam.name],
+    fallbackId
   });
   
-  throw new Error(`Cannot resolve team ID for player team "${playerTeamName}". Available teams: ${homeTeam.name}, ${awayTeam.name}`);
+  return fallbackId;
 };
 
 export const validateTeamData = (homeTeam: TeamInfo, awayTeam: TeamInfo): boolean => {

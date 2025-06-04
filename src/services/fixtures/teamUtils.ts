@@ -18,11 +18,14 @@ export const createTeamObject = (team: any) => {
     goals_against: team.goals_against || 0,
     goal_difference: team.goal_difference || 0,
     created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
+    updated_at: new Date().toISOString(),
+    __id__: team.__id__ // Ensure we preserve the text ID
   };
   
   console.log('🔧 TeamUtils: Created team object:', {
     name: teamObj.name,
+    numericId: teamObj.id,
+    textId: teamObj.__id__,
     hasLogoURL: !!teamObj.logoURL,
     logoURL: teamObj.logoURL,
     logo: teamObj.logo
@@ -39,20 +42,19 @@ export const joinFixturesWithTeams = (fixtures: any[], teams: any[]) => {
       return String(id).trim().toLowerCase();
     };
 
-    // Find home team using normalized team1 field
-    const normalizedTeam1 = normalizeId(fixture.team1);
-    const homeTeam = teams?.find(team => normalizeId(team.__id__) === normalizedTeam1);
+    // Now use the standardized home_team_id and away_team_id fields
+    const normalizedHomeTeamId = normalizeId(fixture.home_team_id);
+    const homeTeam = teams?.find(team => normalizeId(team.__id__) === normalizedHomeTeamId);
     
-    // Find away team using normalized team2 field  
-    const normalizedTeam2 = normalizeId(fixture.team2);
-    const awayTeam = teams?.find(team => normalizeId(team.__id__) === normalizedTeam2);
+    const normalizedAwayTeamId = normalizeId(fixture.away_team_id);
+    const awayTeam = teams?.find(team => normalizeId(team.__id__) === normalizedAwayTeamId);
 
-    console.log('🔄 TeamUtils: Transforming fixture:', {
+    console.log('🔄 TeamUtils: Transforming fixture with standardized IDs:', {
       fixtureId: fixture.id,
-      team1: fixture.team1,
-      team2: fixture.team2,
-      normalizedTeam1,
-      normalizedTeam2,
+      homeTeamId: fixture.home_team_id,
+      awayTeamId: fixture.away_team_id,
+      normalizedHomeTeamId,
+      normalizedAwayTeamId,
       foundHomeTeam: homeTeam ? { 
         id: homeTeam.id, 
         name: homeTeam.name,
