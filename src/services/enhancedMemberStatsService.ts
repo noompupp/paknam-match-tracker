@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { operationLoggingService } from './operationLoggingService';
 
@@ -10,6 +9,14 @@ export interface MemberStatsUpdate {
   redCards?: number;
   totalMinutesPlayed?: number;
   matchesPlayed?: number;
+}
+
+// Define the expected response type from safe_update_member_stats RPC
+interface SafeUpdateResponse {
+  success: boolean;
+  error?: string;
+  member_id?: number;
+  updated_at?: string;
 }
 
 export const enhancedMemberStatsService = {
@@ -50,8 +57,25 @@ export const enhancedMemberStatsService = {
         };
       }
 
-      if (!result || !result.success) {
-        const errorMsg = result?.error || 'Unknown error from safe_update_member_stats';
+      // Type guard to ensure result has the expected structure
+      if (!result || typeof result !== 'object' || result === null) {
+        const errorMsg = 'Invalid response from safe_update_member_stats';
+        console.error('❌ EnhancedMemberStatsService: Invalid response:', result);
+        logData.error_message = errorMsg;
+        logData.success = false;
+        await operationLoggingService.logOperation(logData);
+        
+        return {
+          success: false,
+          message: errorMsg
+        };
+      }
+
+      // Cast to expected type after validation
+      const safeResult = result as SafeUpdateResponse;
+
+      if (!safeResult.success) {
+        const errorMsg = safeResult.error || 'Unknown error from safe_update_member_stats';
         console.error('❌ EnhancedMemberStatsService: Function error:', errorMsg);
         logData.error_message = errorMsg;
         logData.success = false;
@@ -63,16 +87,16 @@ export const enhancedMemberStatsService = {
         };
       }
 
-      logData.result = result;
+      logData.result = safeResult;
       logData.success = true;
       await operationLoggingService.logOperation(logData);
 
-      console.log('✅ EnhancedMemberStatsService: Member stats updated successfully:', result);
+      console.log('✅ EnhancedMemberStatsService: Member stats updated successfully:', safeResult);
       
       return {
         success: true,
         message: `Member ${update.memberId} stats updated successfully`,
-        data: result
+        data: safeResult
       };
 
     } catch (error) {
