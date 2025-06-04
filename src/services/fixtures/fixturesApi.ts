@@ -1,63 +1,42 @@
 
+import { getAllFixtures, getUpcomingFixtures, getRecentFixtures } from './fixturesQueries';
 import { supabase } from '@/integrations/supabase/client';
 
 export const fixturesApi = {
   async getAll() {
     console.log('🎯 fixturesApi: Fetching all fixtures...');
-    const { data, error } = await supabase
-      .from('fixtures')
-      .select('*')
-      .order('match_date', { ascending: true });
-
-    if (error) {
+    try {
+      const fixtures = await getAllFixtures();
+      console.log('✅ fixturesApi: Successfully fetched fixtures:', fixtures?.length || 0);
+      return fixtures || [];
+    } catch (error) {
       console.error('❌ fixturesApi: Error fetching fixtures:', error);
       throw error;
     }
-
-    console.log('✅ fixturesApi: Successfully fetched fixtures:', data?.length || 0);
-    return data || [];
   },
 
   async getUpcoming() {
     console.log('🎯 fixturesApi: Fetching upcoming fixtures...');
-    const today = new Date().toISOString().split('T')[0];
-    
-    const { data, error } = await supabase
-      .from('fixtures')
-      .select('*')
-      .gte('match_date', today)
-      .order('match_date', { ascending: true })
-      .limit(5);
-
-    if (error) {
+    try {
+      const fixtures = await getUpcomingFixtures();
+      console.log('✅ fixturesApi: Successfully fetched upcoming fixtures:', fixtures?.length || 0);
+      return fixtures || [];
+    } catch (error) {
       console.error('❌ fixturesApi: Error fetching upcoming fixtures:', error);
       throw error;
     }
-
-    console.log('✅ fixturesApi: Successfully fetched upcoming fixtures:', data?.length || 0);
-    return data || [];
   },
 
   async getRecent() {
     console.log('🎯 fixturesApi: Fetching recent fixtures...');
-    const today = new Date().toISOString().split('T')[0];
-    
-    const { data, error } = await supabase
-      .from('fixtures')
-      .select('*')
-      .lt('match_date', today)
-      .not('home_score', 'is', null)
-      .not('away_score', 'is', null)
-      .order('match_date', { ascending: false })
-      .limit(5);
-
-    if (error) {
+    try {
+      const fixtures = await getRecentFixtures();
+      console.log('✅ fixturesApi: Successfully fetched recent fixtures:', fixtures?.length || 0);
+      return fixtures || [];
+    } catch (error) {
       console.error('❌ fixturesApi: Error fetching recent fixtures:', error);
       throw error;
     }
-
-    console.log('✅ fixturesApi: Successfully fetched recent fixtures:', data?.length || 0);
-    return data || [];
   },
 
   async updateScore(id: number, homeScore: number, awayScore: number) {

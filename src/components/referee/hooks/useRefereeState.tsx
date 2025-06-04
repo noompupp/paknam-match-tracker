@@ -76,8 +76,8 @@ export const useRefereeState = () => {
   // Get all players from both teams of the selected fixture
   const allPlayers: ComponentPlayer[] = members?.filter(member => 
     selectedFixtureData && (
-      member.team_id === selectedFixtureData.home_team_id || 
-      member.team_id === selectedFixtureData.away_team_id
+      member.team_id === selectedFixtureData.home_team_id?.toString() || 
+      member.team_id === selectedFixtureData.away_team_id?.toString()
     )
   ).map(member => ({
     id: member.id,
