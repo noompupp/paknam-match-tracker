@@ -1,5 +1,7 @@
 
 import { useToast } from "@/hooks/use-toast";
+import { useCreateCard } from "@/hooks/useCards";
+import { resolveTeamIdForMatchEvent } from "@/utils/teamIdMapping";
 
 interface Player {
   id: number;
@@ -15,6 +17,7 @@ interface PlayerCardManagementProps {
   selectedTeam: string;
   selectedCardType: 'yellow' | 'red';
   matchTime: number;
+  selectedFixtureData: any;
   setSelectedPlayer: (value: string) => void;
   addCard: (player: string, team: string, type: string, time: number) => void;
   addEvent: (type: string, description: string, time: number) => void;
@@ -28,6 +31,7 @@ export const usePlayerCardManagement = ({
   selectedTeam,
   selectedCardType,
   matchTime,
+  selectedFixtureData,
   setSelectedPlayer,
   addCard,
   addEvent,
@@ -35,6 +39,7 @@ export const usePlayerCardManagement = ({
   formatTime
 }: PlayerCardManagementProps) => {
   const { toast } = useToast();
+  const createCard = useCreateCard();
 
   // Filter players for cards based on selected team
   const playersForCards = allPlayers.filter(player => {
@@ -42,7 +47,7 @@ export const usePlayerCardManagement = ({
     return player.team === selectedTeam;
   });
 
-  const handleAddCard = () => {
+  const handleAddCard = async () => {
     if (!selectedPlayer || !selectedTeam) {
       toast({
         title: "Error",
@@ -62,6 +67,15 @@ export const usePlayerCardManagement = ({
       return;
     }
 
+    if (!selectedFixtureData) {
+      toast({
+        title: "Error",
+        description: "No fixture selected. Please select a match first.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     // Check for second yellow card
     if (selectedCardType === 'yellow' && checkForSecondYellow(player.name)) {
       toast({
@@ -70,16 +84,68 @@ export const usePlayerCardManagement = ({
       });
     }
 
-    addCard(player.name, selectedTeam, selectedCardType, matchTime);
-    addEvent('card', `${selectedCardType} card for ${player.name} (${selectedTeam})`, matchTime);
-    
-    // Reset selections
-    setSelectedPlayer("");
-    
-    toast({
-      title: "Card Added",
-      description: `${selectedCardType} card given to ${player.name} at ${formatTime(matchTime)}`,
-    });
+    try {
+      console.log('🟨 PlayerCardManagement: Adding card to database and local state:', {
+        player: player.name,
+        team: selectedTeam,
+        type: selectedCardType,
+        time: matchTime,
+        fixture: selectedFixtureData.id
+      });
+
+      // Prepare team data for proper ID resolution
+      const homeTeam = {
+        id: selectedFixtureData.home_team_id,
+        name: selectedFixtureData.home_team?.name
+      };
+      
+      const awayTeam = {
+        id: selectedFixtureData.away_team_id,
+        name: selectedFixtureData.away_team?.name
+      };
+
+      // Resolve the numeric team ID for the database
+      const teamId = resolveTeamIdForMatchEvent(selectedTeam, homeTeam, awayTeam);
+
+      // Save to database first
+      await createCard.mutateAsync({
+        fixture_id: selectedFixtureData.id,
+        player_id: player.id,
+        player_name: player.name,
+        team_id: teamId,
+        card_type: selectedCardType,
+        event_time: matchTime,
+        description: `${selectedCardType} card for ${player.name} (${selectedTeam})`
+      });
+
+      // Add to local state
+      addCard(player.name, selectedTeam, selectedCardType, matchTime);
+      addEvent('card', `${selectedCardType} card for ${player.name} (${selectedTeam})`, matchTime);
+      
+      // Reset selections
+      setSelectedPlayer("");
+      
+      toast({
+        title: "Card Added",
+        description: `${selectedCardType} card given to ${player.name} at ${formatTime(matchTime)} and saved to database.`,
+      });
+
+      console.log('✅ PlayerCardManagement: Card successfully added to database and local state');
+
+    } catch (error) {
+      console.error('❌ PlayerCardManagement: Error adding card:', error);
+      
+      let errorMessage = 'Failed to add card';
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      
+      toast({
+        title: "Failed to Add Card",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    }
   };
 
   return {

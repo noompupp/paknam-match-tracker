@@ -9,6 +9,42 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      cards: {
+        Row: {
+          card_type: string
+          created_at: string | null
+          description: string | null
+          event_time: number
+          fixture_id: number
+          id: number
+          player_id: number
+          player_name: string
+          team_id: number
+        }
+        Insert: {
+          card_type: string
+          created_at?: string | null
+          description?: string | null
+          event_time?: number
+          fixture_id: number
+          id?: number
+          player_id: number
+          player_name: string
+          team_id: number
+        }
+        Update: {
+          card_type?: string
+          created_at?: string | null
+          description?: string | null
+          event_time?: number
+          fixture_id?: number
+          id?: number
+          player_id?: number
+          player_name?: string
+          team_id?: number
+        }
+        Relationships: []
+      }
       fixtures: {
         Row: {
           __id__: string
@@ -68,6 +104,7 @@ export type Database = {
       }
       match_events: {
         Row: {
+          card_type: string | null
           created_at: string | null
           description: string
           event_time: number
@@ -78,6 +115,7 @@ export type Database = {
           team_id: number
         }
         Insert: {
+          card_type?: string | null
           created_at?: string | null
           description: string
           event_time: number
@@ -88,6 +126,7 @@ export type Database = {
           team_id: number
         }
         Update: {
+          card_type?: string | null
           created_at?: string | null
           description?: string
           event_time?: number
@@ -251,7 +290,23 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      player_stats_view: {
+        Row: {
+          assists: number | null
+          goals: number | null
+          id: number | null
+          matches_played: number | null
+          name: string | null
+          number: string | null
+          position: string | null
+          red_cards: number | null
+          team_id: string | null
+          team_name: string | null
+          total_minutes_played: number | null
+          yellow_cards: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       [_ in never]: never

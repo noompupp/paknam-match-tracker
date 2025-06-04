@@ -1,4 +1,3 @@
-
 import { usePlayerGoalAssignment } from "@/components/referee/PlayerGoalAssignment";
 import { usePlayerCardManagement } from "@/components/referee/PlayerCardManagement";
 import { usePlayerTimeManagement } from "@/components/referee/PlayerTimeManagement";
@@ -58,6 +57,7 @@ export const usePlayerManagement = (props: PlayerManagementProps) => {
     selectedTeam: props.selectedTeam,
     selectedCardType: props.selectedCardType,
     matchTime: props.matchTime,
+    selectedFixtureData: props.selectedFixtureData,
     setSelectedPlayer: props.setSelectedPlayer,
     addCard: props.addCard,
     addEvent: props.addEvent,
