@@ -5,6 +5,10 @@ import MatchHeaderWithScore from "./MatchHeaderWithScore";
 import GoalsSummaryDisplay from "./GoalsSummaryDisplay";
 import CardsSummaryDisplay from "./CardsSummaryDisplay";
 import PlayerTimeTrackingDisplay from "./PlayerTimeTrackingDisplay";
+import { useQuery } from '@tanstack/react-query';
+import { enhancedMatchSummaryService } from '@/services/fixtures/enhancedMatchSummaryService';
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Loader2 } from "lucide-react";
 
 interface EnhancedMatchSummaryDisplayProps {
   selectedFixtureData: any;
@@ -29,6 +33,16 @@ const EnhancedMatchSummaryDisplay = ({
   allPlayers,
   formatTime
 }: EnhancedMatchSummaryDisplayProps) => {
+  
+  // Fetch enhanced match summary data from database
+  const { data: enhancedData, isLoading, error } = useQuery({
+    queryKey: ['enhancedMatchSummary', selectedFixtureData?.id],
+    queryFn: () => enhancedMatchSummaryService.getEnhancedMatchSummary(selectedFixtureData.id),
+    enabled: !!selectedFixtureData?.id,
+    staleTime: 30 * 1000,
+    refetchOnWindowFocus: false
+  });
+
   if (!selectedFixtureData) {
     return <NoMatchSelectedPlaceholder />;
   }
@@ -40,36 +54,57 @@ const EnhancedMatchSummaryDisplay = ({
     return remainingSeconds > 0 ? `${minutes}:${remainingSeconds.toString().padStart(2, '0')}` : `${minutes}'`;
   };
 
-  // Calculate actual goals from events for accurate display
-  const homeTeamGoals = goals.filter(goal => 
-    goal.type === 'goal' && goal.team === selectedFixtureData?.home_team?.name
-  );
-  
-  const awayTeamGoals = goals.filter(goal => 
-    goal.type === 'goal' && goal.team === selectedFixtureData?.away_team?.name
-  );
+  // Use enhanced data if available, fallback to local data
+  const goalsToDisplay = enhancedData?.goals.length ? enhancedData.goals : goals;
+  const cardsToDisplay = enhancedData?.cards.length ? enhancedData.cards : cards;
+  const playerTimesToDisplay = enhancedData?.playerTimes.length ? enhancedData.playerTimes : trackedPlayers;
 
-  const totalAssists = goals.filter(goal => goal.type === 'assist');
+  // Calculate scores from enhanced data if available
+  const calculatedHomeScore = enhancedData?.summary ? enhancedData.summary.homeTeamGoals : homeScore;
+  const calculatedAwayScore = enhancedData?.summary ? enhancedData.summary.awayTeamGoals : awayScore;
 
-  console.log('📊 EnhancedMatchSummaryDisplay: Rendering with enhanced data and database integration:', {
+  console.log('📊 EnhancedMatchSummaryDisplay: Rendering with enhanced data integration:', {
     fixture: selectedFixtureData.id,
-    homeScore,
-    awayScore,
-    homeGoalsCount: homeTeamGoals.length,
-    awayGoalsCount: awayTeamGoals.length,
-    assistsCount: totalAssists.length,
-    cardsCount: cards.length,
-    trackedPlayersCount: trackedPlayers.length,
+    homeScore: calculatedHomeScore,
+    awayScore: calculatedAwayScore,
+    enhancedGoalsCount: enhancedData?.goals.length || 0,
+    localGoalsCount: goals.length,
+    enhancedCardsCount: enhancedData?.cards.length || 0,
+    localCardsCount: cards.length,
+    usingEnhancedData: !!enhancedData,
     fixtureId: selectedFixtureData.id
   });
 
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <Loader2 className="h-6 w-6 animate-spin mr-2" />
+        <span>Loading enhanced match summary...</span>
+      </div>
+    );
+  }
+
+  if (error) {
+    console.error('❌ EnhancedMatchSummaryDisplay: Error loading enhanced data:', error);
+    // Continue with local data as fallback
+  }
+
   return (
     <div className="space-y-6">
+      {/* Enhanced Data Status Indicator */}
+      {enhancedData && (
+        <Alert>
+          <AlertDescription>
+            ✅ Enhanced match data loaded from database with {enhancedData.goals.length} goals/assists, {enhancedData.cards.length} cards, and {enhancedData.playerTimes.length} player time records.
+          </AlertDescription>
+        </Alert>
+      )}
+
       {/* Match Header with Real-time Score */}
       <MatchHeaderWithScore
         selectedFixtureData={selectedFixtureData}
-        homeScore={homeScore}
-        awayScore={awayScore}
+        homeScore={calculatedHomeScore}
+        awayScore={calculatedAwayScore}
         matchTime={matchTime}
         formatTime={formatTimeInMinutes}
       />
@@ -77,7 +112,7 @@ const EnhancedMatchSummaryDisplay = ({
       {/* Goals Summary with Enhanced Display and Database Integration */}
       <GoalsSummaryDisplay
         selectedFixtureData={selectedFixtureData}
-        goals={goals}
+        goals={goalsToDisplay}
         formatTime={formatTimeInMinutes}
         fixtureId={selectedFixtureData.id}
       />
@@ -85,21 +120,46 @@ const EnhancedMatchSummaryDisplay = ({
       {/* Cards Summary with Database Integration */}
       <CardsSummaryDisplay
         selectedFixtureData={selectedFixtureData}
-        cards={cards}
+        cards={cardsToDisplay}
         formatTime={formatTimeInMinutes}
         fixtureId={selectedFixtureData.id}
       />
 
-      {/* Player Time Tracking with Minutes Conversion and Database Integration */}
+      {/* Player Time Tracking with Enhanced Data */}
       <PlayerTimeTrackingDisplay
-        trackedPlayers={trackedPlayers.map(player => ({
+        trackedPlayers={playerTimesToDisplay.map(player => ({
           ...player,
-          totalTime: Math.floor(player.totalTime / 60), // Convert seconds to minutes for display
-          displayTime: formatTimeInMinutes(player.totalTime) // Add formatted display time
+          totalTime: Math.floor((player.totalMinutes || player.totalTime || 0) * 60), // Convert to seconds for display consistency
+          displayTime: formatTimeInMinutes((player.totalMinutes || player.totalTime || 0) * 60)
         }))}
         formatTime={formatTimeInMinutes}
         fixtureId={selectedFixtureData.id}
       />
+
+      {/* Enhanced Summary Statistics */}
+      {enhancedData?.summary && (
+        <div className="bg-muted/50 rounded-lg p-4">
+          <h4 className="font-semibold mb-2">Match Statistics</h4>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+            <div className="text-center">
+              <div className="font-bold text-lg">{enhancedData.summary.totalGoals}</div>
+              <div className="text-muted-foreground">Goals</div>
+            </div>
+            <div className="text-center">
+              <div className="font-bold text-lg">{enhancedData.summary.totalAssists}</div>
+              <div className="text-muted-foreground">Assists</div>
+            </div>
+            <div className="text-center">
+              <div className="font-bold text-lg">{enhancedData.summary.totalCards}</div>
+              <div className="text-muted-foreground">Cards</div>
+            </div>
+            <div className="text-center">
+              <div className="font-bold text-lg">{enhancedData.summary.playersTracked}</div>
+              <div className="text-muted-foreground">Players Tracked</div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
