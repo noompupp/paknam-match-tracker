@@ -17,7 +17,9 @@ interface EnhancedTeamSquadProps {
 }
 
 const EnhancedTeamSquad = ({ teamId, teamName }: EnhancedTeamSquadProps) => {
-  const { data: enhancedPlayers, isLoading: enhancedLoading, refetch } = useEnhancedTeamPlayerStats(teamId);
+  // Convert string teamId to number for the hook
+  const numericTeamId = parseInt(teamId);
+  const { data: enhancedPlayers, isLoading: enhancedLoading, refetch } = useEnhancedTeamPlayerStats(numericTeamId);
   const [isAggregating, setIsAggregating] = useState(false);
   const { toast } = useToast();
 
@@ -60,9 +62,33 @@ const EnhancedTeamSquad = ({ teamId, teamName }: EnhancedTeamSquadProps) => {
     (current.goals || 0) > (prev?.goals || 0) ? current : prev, playersData[0]
   );
 
+  // Create a proper Team object for the header
+  const teamForHeader = {
+    id: numericTeamId,
+    name: teamName,
+    logo: '⚽',
+    logoURL: undefined,
+    founded: '2020',
+    captain: '',
+    position: 1,
+    points: 0,
+    played: 0,
+    won: 0,
+    drawn: 0,
+    lost: 0,
+    goals_for: 0,
+    goals_against: 0,
+    goal_difference: 0,
+    color: undefined,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    __id__: teamId
+  };
+
   console.log('👥 EnhancedTeamSquad: Rendering with enhanced data:', {
     teamName,
     teamId,
+    numericTeamId,
     playersCount: playersData?.length,
     totalMinutesPlayed,
     playersWithMinutes: playersData?.filter(p => (p.totalMinutesPlayed || 0) > 0).length,
@@ -72,7 +98,7 @@ const EnhancedTeamSquad = ({ teamId, teamName }: EnhancedTeamSquadProps) => {
   return (
     <Card id="team-squad" className="card-shadow-lg animate-fade-in">
       <TeamSquadHeader 
-        team={{ name: teamName, id: parseInt(teamId) }} 
+        team={teamForHeader}
         playerCount={playersData?.length || 0} 
       />
       <CardContent>
@@ -134,7 +160,8 @@ const EnhancedTeamSquad = ({ teamId, teamName }: EnhancedTeamSquadProps) => {
             <div className="mt-6 p-4 bg-gray-50 rounded-lg text-sm">
               <h4 className="font-semibold mb-2">Debug Info:</h4>
               <ul className="space-y-1 text-gray-600">
-                <li>Team ID: {teamId}</li>
+                <li>Team ID (string): {teamId}</li>
+                <li>Team ID (numeric): {numericTeamId}</li>
                 <li>Players Count: {playersData?.length || 0}</li>
                 <li>Total Minutes: {totalMinutesPlayed}</li>
                 <li>Players with Minutes: {playersData?.filter(p => (p.totalMinutesPlayed || 0) > 0).length}</li>
