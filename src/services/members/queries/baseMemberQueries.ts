@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 export const fetchAllMembers = async () => {
   console.log('🔍 BaseMemberQueries: Starting getAll request...');
   
+  // First try with the inner join
   const { data: members, error: membersError } = await supabase
     .from('members')
     .select(`
@@ -22,7 +23,7 @@ export const fetchAllMembers = async () => {
       matches_played,
       created_at,
       updated_at,
-      teams!inner(
+      teams(
         id,
         __id__,
         name,
@@ -64,7 +65,7 @@ export const fetchMembersByTeamFilter = async (normalizedTeamId: string) => {
       matches_played,
       created_at,
       updated_at,
-      teams!inner(
+      teams(
         id,
         __id__,
         name,
@@ -103,7 +104,7 @@ export const updateMemberStats = async (id: number, stats: { goals?: number; ass
       red_cards,
       total_minutes_played,
       matches_played,
-      teams!inner(
+      teams(
         id,
         __id__,
         name,

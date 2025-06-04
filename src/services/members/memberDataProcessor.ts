@@ -26,7 +26,7 @@ interface RawMemberData {
   };
 }
 
-export const processAllMembersData = (rawMembers: RawMemberData[], teams: Team[]): Member[] => {
+export const processAllMembersData = (rawMembers: any[], teams: Team[]): Member[] => {
   console.log('🔧 MemberDataProcessor: Processing all members data with enhanced stats:', {
     rawMembersCount: rawMembers?.length || 0,
     teamsCount: teams?.length || 0
@@ -38,8 +38,43 @@ export const processAllMembersData = (rawMembers: RawMemberData[], teams: Team[]
   }
 
   const processedMembers = rawMembers.map(member => {
-    // Find the team for this member
-    const team = teams.find(t => t.__id__ === member.team_id);
+    // Handle team data - check if teams property exists and is valid
+    let teamData: Team | undefined;
+    
+    if (member.teams && typeof member.teams === 'object' && !member.teams.error) {
+      // Use the joined team data if available and valid
+      teamData = {
+        id: member.teams.id,
+        __id__: member.teams.__id__,
+        name: member.teams.name || 'Unknown Team',
+        logo: member.teams.logo || '⚽',
+        logoURL: member.teams.logoURL,
+        founded: member.teams.founded || '2020',
+        captain: member.teams.captain || '',
+        position: member.teams.position || 1,
+        points: member.teams.points || 0,
+        played: member.teams.played || 0,
+        won: member.teams.won || 0,
+        drawn: member.teams.drawn || 0,
+        lost: member.teams.lost || 0,
+        goals_for: member.teams.goals_for || 0,
+        goals_against: member.teams.goals_against || 0,
+        goal_difference: member.teams.goal_difference || 0,
+        color: member.teams.color,
+        created_at: member.teams.created_at || new Date().toISOString(),
+        updated_at: member.teams.updated_at || new Date().toISOString()
+      };
+    } else {
+      // Fallback to finding the team in the teams array
+      teamData = teams.find(t => t.__id__ === member.team_id);
+      if (teamData) {
+        teamData = {
+          ...teamData,
+          created_at: teamData.created_at || new Date().toISOString(),
+          updated_at: teamData.updated_at || new Date().toISOString()
+        };
+      }
+    }
     
     const processedMember: Member = {
       id: member.id,
@@ -57,27 +92,7 @@ export const processAllMembersData = (rawMembers: RawMemberData[], teams: Team[]
       matches_played: member.matches_played || 0,
       created_at: member.created_at,
       updated_at: member.updated_at,
-      team: team ? {
-        id: team.id,
-        __id__: team.__id__,
-        name: team.name || 'Unknown Team',
-        logo: team.logo || '⚽',
-        logoURL: team.logoURL,
-        founded: team.founded || '2020',
-        captain: team.captain || '',
-        position: team.position || 1,
-        points: team.points || 0,
-        played: team.played || 0,
-        won: team.won || 0,
-        drawn: team.drawn || 0,
-        lost: team.lost || 0,
-        goals_for: team.goals_for || 0,
-        goals_against: team.goals_against || 0,
-        goal_difference: team.goal_difference || 0,
-        color: team.color,
-        created_at: team.created_at,
-        updated_at: team.updated_at
-      } : undefined
+      team: teamData
     };
 
     return processedMember;
@@ -98,7 +113,7 @@ export const processAllMembersData = (rawMembers: RawMemberData[], teams: Team[]
   return processedMembers;
 };
 
-export const processTeamMembersData = (rawMembers: RawMemberData[], team: Team, teamId: number): Member[] => {
+export const processTeamMembersData = (rawMembers: any[], team: Team, teamId: number): Member[] => {
   console.log('🔧 MemberDataProcessor: Processing team members data with enhanced stats:', {
     teamName: team.name,
     teamId,
@@ -145,8 +160,8 @@ export const processTeamMembersData = (rawMembers: RawMemberData[], team: Team, 
         goals_against: team.goals_against || 0,
         goal_difference: team.goal_difference || 0,
         color: team.color,
-        created_at: team.created_at,
-        updated_at: team.updated_at
+        created_at: team.created_at || new Date().toISOString(),
+        updated_at: team.updated_at || new Date().toISOString()
       }
     };
 
