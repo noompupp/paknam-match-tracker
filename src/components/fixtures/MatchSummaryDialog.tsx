@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Card, CardContent } from "@/components/ui/card";
-import { Download, Trophy, Target, Timer, Users, AlertTriangle } from "lucide-react";
+import { Download, Trophy, Target, Timer, AlertTriangle } from "lucide-react";
 import { useMatchEvents } from "@/hooks/useMatchEvents";
 import { useToast } from "@/hooks/use-toast";
 
@@ -41,15 +41,12 @@ const MatchSummaryDialog = ({ fixture, isOpen, onClose }: MatchSummaryDialogProp
   };
 
   const goals = (matchEvents || []).filter(event => event.event_type === 'goal');
-  const assists = (matchEvents || []).filter(event => event.event_type === 'assist');
   const cards = (matchEvents || []).filter(event => 
     event.event_type === 'yellow_card' || event.event_type === 'red_card'
   );
 
   const homeGoals = goals.filter(g => g.team_id === fixture?.home_team_id);
   const awayGoals = goals.filter(g => g.team_id === fixture?.away_team_id);
-  const homeAssists = assists.filter(a => a.team_id === fixture?.home_team_id);
-  const awayAssists = assists.filter(a => a.team_id === fixture?.away_team_id);
   const homeCards = cards.filter(c => c.team_id === fixture?.home_team_id);
   const awayCards = cards.filter(c => c.team_id === fixture?.away_team_id);
 
@@ -65,7 +62,6 @@ const MatchSummaryDialog = ({ fixture, isOpen, onClose }: MatchSummaryDialogProp
       },
       events: matchEvents || [],
       goals,
-      assists,
       cards
     };
     
@@ -177,64 +173,6 @@ const MatchSummaryDialog = ({ fixture, isOpen, onClose }: MatchSummaryDialogProp
                       ))}
                       {awayGoals.length === 0 && (
                         <p className="text-xs text-muted-foreground">No goals</p>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Assists */}
-          <Card>
-            <CardContent className="pt-6 space-y-4">
-              <h4 className="font-semibold flex items-center gap-2">
-                <Users className="h-4 w-4" />
-                Assists ({assists.length})
-              </h4>
-              
-              {assists.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-4">No assists recorded</p>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* Home Assists */}
-                  <div>
-                    <h5 className="font-medium text-sm mb-2">{fixture.home_team?.name}</h5>
-                    <div className="space-y-1">
-                      {homeAssists.map((event, index) => (
-                        <div key={event.id} className="text-sm flex items-center justify-between p-2 bg-purple-50 rounded">
-                          <div>
-                            <Badge variant="outline" className="mr-2">
-                              assist
-                            </Badge>
-                            <span>{event.player_name}</span>
-                          </div>
-                          <span className="text-xs text-muted-foreground">{formatTime(event.event_time)}</span>
-                        </div>
-                      ))}
-                      {homeAssists.length === 0 && (
-                        <p className="text-xs text-muted-foreground">No assists</p>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Away Assists */}
-                  <div>
-                    <h5 className="font-medium text-sm mb-2">{fixture.away_team?.name}</h5>
-                    <div className="space-y-1">
-                      {awayAssists.map((event, index) => (
-                        <div key={event.id} className="text-sm flex items-center justify-between p-2 bg-purple-50 rounded">
-                          <div>
-                            <Badge variant="outline" className="mr-2">
-                              assist
-                            </Badge>
-                            <span>{event.player_name}</span>
-                          </div>
-                          <span className="text-xs text-muted-foreground">{formatTime(event.event_time)}</span>
-                        </div>
-                      ))}
-                      {awayAssists.length === 0 && (
-                        <p className="text-xs text-muted-foreground">No assists</p>
                       )}
                     </div>
                   </div>
