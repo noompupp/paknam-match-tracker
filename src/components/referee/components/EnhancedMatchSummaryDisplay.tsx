@@ -33,6 +33,13 @@ const EnhancedMatchSummaryDisplay = ({
     return <NoMatchSelectedPlaceholder />;
   }
 
+  // Convert seconds to minutes for display
+  const formatTimeInMinutes = (seconds: number) => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return remainingSeconds > 0 ? `${minutes}:${remainingSeconds.toString().padStart(2, '0')}` : `${minutes}'`;
+  };
+
   return (
     <div className="space-y-6">
       {/* Match Header */}
@@ -41,27 +48,30 @@ const EnhancedMatchSummaryDisplay = ({
         homeScore={homeScore}
         awayScore={awayScore}
         matchTime={matchTime}
-        formatTime={formatTime}
+        formatTime={formatTimeInMinutes}
       />
 
       {/* Goals Summary */}
       <GoalsSummaryDisplay
         selectedFixtureData={selectedFixtureData}
         goals={goals}
-        formatTime={formatTime}
+        formatTime={formatTimeInMinutes}
       />
 
       {/* Cards Summary */}
       <CardsSummaryDisplay
         selectedFixtureData={selectedFixtureData}
         cards={cards}
-        formatTime={formatTime}
+        formatTime={formatTimeInMinutes}
       />
 
       {/* Player Time Tracking */}
       <PlayerTimeTrackingDisplay
-        trackedPlayers={trackedPlayers}
-        formatTime={formatTime}
+        trackedPlayers={trackedPlayers.map(player => ({
+          ...player,
+          totalTime: Math.floor(player.totalTime / 60) // Convert seconds to minutes
+        }))}
+        formatTime={formatTimeInMinutes}
       />
     </div>
   );

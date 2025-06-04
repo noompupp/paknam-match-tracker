@@ -1,7 +1,7 @@
 import { useToast } from "@/hooks/use-toast";
 import { ComponentPlayer, PlayerTimeTrackerPlayer } from "./useRefereeState";
 import { playerTimeTrackingService } from "@/services/fixtures/playerTimeTrackingService";
-import { matchResetService, enhancedDuplicatePreventionService } from "@/services/fixtures";
+import { matchResetService, enhancedDuplicatePreventionService, unifiedRefereeService } from "@/services/fixtures";
 
 interface UseRefereeHandlersProps {
   selectedFixtureData: any;
@@ -80,19 +80,61 @@ export const useRefereeHandlers = (props: UseRefereeHandlersProps) => {
     props.setSaveAttempts(prev => prev + 1);
     
     try {
-      await props.updateFixtureScore.mutateAsync({
-        id: props.selectedFixtureData.id,
-        homeScore: props.homeScore,
-        awayScore: props.awayScore
-      });
+      console.log('💾 useRefereeHandlers: Starting unified match save...');
       
-      props.addEvent('Save', `Match saved with score ${props.homeScore}-${props.awayScore}`, props.matchTime);
-      toast({
-        title: "Match Saved",
-        description: `Score updated: ${props.homeScore}-${props.awayScore}`,
-      });
+      // Prepare match data for unified save
+      const matchData = {
+        fixtureId: props.selectedFixtureData.id,
+        homeScore: props.homeScore,
+        awayScore: props.awayScore,
+        goals: props.goals.map(goal => ({
+          playerId: goal.playerId,
+          playerName: goal.playerName,
+          team: goal.team,
+          type: goal.type as 'goal' | 'assist',
+          time: goal.time
+        })),
+        cards: [], // Cards are handled separately in the current implementation
+        playerTimes: props.playersForTimeTracker.map(player => ({
+          playerId: player.id,
+          playerName: player.name,
+          team: player.team,
+          totalTime: Math.floor(player.totalTime / 60), // Convert to minutes
+          periods: [{
+            start_time: player.startTime || 0,
+            end_time: props.matchTime,
+            duration: Math.floor(player.totalTime / 60)
+          }]
+        })),
+        homeTeam: {
+          id: props.selectedFixtureData.home_team_id,
+          name: props.selectedFixtureData.home_team?.name
+        },
+        awayTeam: {
+          id: props.selectedFixtureData.away_team_id,
+          name: props.selectedFixtureData.away_team?.name
+        }
+      };
+
+      const result = await unifiedRefereeService.saveCompleteMatchData(matchData);
+      
+      if (result.success) {
+        props.addEvent('Save', `Match saved successfully: ${result.message}`, props.matchTime);
+        toast({
+          title: "Match Saved Successfully!",
+          description: result.message,
+        });
+      } else {
+        toast({
+          title: "Save Completed with Issues",
+          description: `${result.message}\n\nErrors: ${result.errors.join(', ')}`,
+          variant: "destructive"
+        });
+      }
+      
+      console.log('✅ useRefereeHandlers: Unified match save completed');
     } catch (error) {
-      console.error('Failed to save match:', error);
+      console.error('❌ useRefereeHandlers: Failed to save match:', error);
       toast({
         title: "Save Failed",
         description: "Failed to save match. Please try again.",
@@ -284,10 +326,11 @@ export const useRefereeHandlers = (props: UseRefereeHandlersProps) => {
   };
 
   const handleExportSummary = () => {
+    // Enhanced export functionality with time in minutes
     const summaryData = {
       fixture: props.selectedFixtureData,
       score: `${props.homeScore}-${props.awayScore}`,
-      duration: props.formatTime(props.matchTime),
+      duration: `${Math.floor(props.matchTime / 60)} minutes`,
       match_info: {
         home_team: props.selectedFixtureData?.home_team?.name,
         away_team: props.selectedFixtureData?.away_team?.name,
@@ -301,13 +344,12 @@ export const useRefereeHandlers = (props: UseRefereeHandlersProps) => {
         player: goal.playerName,
         team: goal.team,
         type: goal.type,
-        time: props.formatTime(goal.time)
+        time: `${Math.floor(goal.time / 60)} min`
       })),
-      cards: [],
       player_times: props.playersForTimeTracker.map(player => ({
         name: player.name,
         team: player.team,
-        total_time: props.formatTime(player.totalTime),
+        total_time: `${Math.floor(player.totalTime / 60)} minutes`,
         is_playing: player.isPlaying
       })),
       statistics: {
@@ -315,7 +357,7 @@ export const useRefereeHandlers = (props: UseRefereeHandlersProps) => {
         total_goals: props.goals.filter(g => g.type === 'goal').length,
         total_assists: props.goals.filter(g => g.type === 'assist').length,
         players_tracked: props.playersForTimeTracker.length,
-        match_duration: props.formatTime(props.matchTime)
+        match_duration: `${Math.floor(props.matchTime / 60)} minutes`
       },
       export_timestamp: new Date().toISOString()
     };
@@ -351,11 +393,11 @@ export const useRefereeHandlers = (props: UseRefereeHandlersProps) => {
           player_id: player.id,
           player_name: player.name,
           team_id: teamId,
-          total_minutes: player.totalTime,
+          total_minutes: Math.floor(player.totalTime / 60), // Convert to minutes
           periods: [{
             start_time: player.startTime || 0,
             end_time: props.matchTime,
-            duration: player.totalTime
+            duration: Math.floor(player.totalTime / 60)
           }]
         });
       });
@@ -486,18 +528,114 @@ export const useRefereeHandlers = (props: UseRefereeHandlersProps) => {
   };
 
   return {
-    handleAddGoal,
-    handleRemoveGoal,
-    handleToggleTimer,
-    handleResetMatch,
+    handleAddGoal: props.addGoal,
+    handleRemoveGoal: props.removeGoal,
+    handleToggleTimer: props.toggleTimer,
+    handleResetMatch: () => {
+      props.resetTimer();
+      props.resetScore();
+      props.resetEvents();
+      props.resetCards();
+      props.resetTracking();
+      props.resetGoals();
+      props.addEvent('Reset', 'Match reset', 0);
+    },
     handleSaveMatch,
-    handleAssignGoal,
-    handleAddCard,
-    handleAddPlayer,
-    handleRemovePlayer,
-    handleTogglePlayerTime,
-    handleExportSummary,
-    handleSaveAllPlayerTimes,
+    handleAssignGoal: props.assignGoal,
+    handleAddCard: props.addCard,
+    handleAddPlayer: props.addPlayer,
+    handleRemovePlayer: props.removePlayer,
+    handleTogglePlayerTime: props.togglePlayerTime,
+    handleExportSummary: () => {
+      // Enhanced export functionality with time in minutes
+      const summaryData = {
+        fixture: props.selectedFixtureData,
+        score: `${props.homeScore}-${props.awayScore}`,
+        duration: `${Math.floor(props.matchTime / 60)} minutes`,
+        match_info: {
+          home_team: props.selectedFixtureData?.home_team?.name,
+          away_team: props.selectedFixtureData?.away_team?.name,
+          home_score: props.homeScore,
+          away_score: props.awayScore,
+          match_date: props.selectedFixtureData?.match_date,
+          venue: props.selectedFixtureData?.venue
+        },
+        events: props.goals,
+        goals_and_assists: props.goals.map(goal => ({
+          player: goal.playerName,
+          team: goal.team,
+          type: goal.type,
+          time: `${Math.floor(goal.time / 60)} min`
+        })),
+        player_times: props.playersForTimeTracker.map(player => ({
+          name: player.name,
+          team: player.team,
+          total_time: `${Math.floor(player.totalTime / 60)} minutes`,
+          is_playing: player.isPlaying
+        })),
+        statistics: {
+          total_events: props.goals.length,
+          total_goals: props.goals.filter(g => g.type === 'goal').length,
+          total_assists: props.goals.filter(g => g.type === 'assist').length,
+          players_tracked: props.playersForTimeTracker.length,
+          match_duration: `${Math.floor(props.matchTime / 60)} minutes`
+        },
+        export_timestamp: new Date().toISOString()
+      };
+      
+      const dataStr = JSON.stringify(summaryData, null, 2);
+      const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+      
+      const exportFileDefaultName = `enhanced-match-summary-${props.selectedFixtureData?.home_team?.name}-vs-${props.selectedFixtureData?.away_team?.name}-${new Date().toISOString().split('T')[0]}.json`;
+      
+      const linkElement = document.createElement('a');
+      linkElement.setAttribute('href', dataUri);
+      linkElement.setAttribute('download', exportFileDefaultName);
+      linkElement.click();
+      
+      toast({
+        title: "Enhanced Match Summary Exported",
+        description: "Complete match data with statistics has been downloaded as JSON file.",
+      });
+    },
+    handleSaveAllPlayerTimes: async () => {
+      if (!props.selectedFixtureData || props.playersForTimeTracker.length === 0) return;
+
+      try {
+        const savePromises = props.playersForTimeTracker.map(async (player) => {
+          const teamId = player.team === props.selectedFixtureData.home_team?.name 
+            ? props.selectedFixtureData.home_team_id 
+            : props.selectedFixtureData.away_team_id;
+
+          return playerTimeTrackingService.savePlayerTime({
+            fixture_id: props.selectedFixtureData.id,
+            player_id: player.id,
+            player_name: player.name,
+            team_id: teamId,
+            total_minutes: Math.floor(player.totalTime / 60), // Convert to minutes
+            periods: [{
+              start_time: player.startTime || 0,
+              end_time: props.matchTime,
+              duration: Math.floor(player.totalTime / 60)
+            }]
+          });
+        });
+
+        await Promise.all(savePromises);
+        
+        toast({
+          title: "Player Times Saved",
+          description: `All ${props.playersForTimeTracker.length} player time records saved to database`,
+        });
+      } catch (error) {
+        console.error('❌ Failed to save player time data:', error);
+        toast({
+          title: "Save Failed",
+          description: "Some player time data could not be saved",
+          variant: "destructive"
+        });
+      }
+    },
     handleResetMatchData,
     handleCleanupDuplicates
   };

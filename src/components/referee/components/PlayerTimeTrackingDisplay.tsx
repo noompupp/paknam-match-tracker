@@ -1,8 +1,6 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Clock } from "lucide-react";
-import { ComponentPlayer } from "../hooks/useRefereeState";
 
 interface PlayerTimeTrackingDisplayProps {
   trackedPlayers: any[];
@@ -14,6 +12,14 @@ const PlayerTimeTrackingDisplay = ({
   formatTime
 }: PlayerTimeTrackingDisplayProps) => {
   if (trackedPlayers.length === 0) return null;
+
+  // Format time consistently as minutes
+  const formatTimeInMinutes = (timeValue: number) => {
+    // If timeValue is already in minutes (which it should be after conversion), display it
+    // Otherwise convert from seconds to minutes
+    const minutes = timeValue < 200 ? timeValue : Math.floor(timeValue / 60);
+    return `${minutes} min`;
+  };
 
   return (
     <Card>
@@ -35,7 +41,7 @@ const PlayerTimeTrackingDisplay = ({
                 <Badge variant={player.isPlaying ? "default" : "secondary"}>
                   {player.isPlaying ? 'Playing' : 'Not Playing'}
                 </Badge>
-                <span className="text-sm font-mono">{formatTime(player.totalTime)}</span>
+                <span className="text-sm font-mono">{formatTimeInMinutes(player.totalTime)}</span>
               </div>
             </div>
           ))}
