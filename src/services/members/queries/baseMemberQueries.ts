@@ -1,0 +1,57 @@
+
+import { supabase } from '@/integrations/supabase/client';
+
+export const fetchAllMembers = async () => {
+  console.log('🔍 BaseMemberQueries: Starting getAll request...');
+  
+  const { data: members, error: membersError } = await supabase
+    .from('members')
+    .select('*')
+    .order('name', { ascending: true });
+  
+  if (membersError) {
+    console.error('❌ BaseMemberQueries: Error fetching members:', membersError);
+    throw membersError;
+  }
+  
+  console.log('📊 BaseMemberQueries: Raw members data from database:', {
+    count: members?.length || 0,
+    sample: members?.[0] || null
+  });
+  
+  return members || [];
+};
+
+export const fetchMembersByTeamFilter = async (normalizedTeamId: string) => {
+  const { data: allMembers, error: membersError } = await supabase
+    .from('members')
+    .select('*')
+    .order('name', { ascending: true });
+  
+  if (membersError) {
+    console.error('❌ BaseMemberQueries: Error fetching all members:', membersError);
+    throw membersError;
+  }
+
+  return allMembers || [];
+};
+
+export const updateMemberStats = async (id: number, stats: { goals?: number; assists?: number }) => {
+  console.log('🔍 BaseMemberQueries: Updating member stats:', { id, stats });
+  
+  const { data, error } = await supabase
+    .from('members')
+    .update(stats)
+    .eq('id', id)
+    .select()
+    .single();
+  
+  if (error) {
+    console.error('❌ BaseMemberQueries: Error updating member stats:', error);
+    throw error;
+  }
+  
+  console.log('✅ BaseMemberQueries: Successfully updated member:', data);
+  
+  return data;
+};
