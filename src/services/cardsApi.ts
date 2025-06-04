@@ -29,7 +29,7 @@ export const cardsApi = {
     }
 
     console.log('✅ CardsAPI: Card created successfully:', data);
-    return data;
+    return data as Card;
   },
 
   async getByFixture(fixtureId: number): Promise<Card[]> {
@@ -47,7 +47,7 @@ export const cardsApi = {
     }
 
     console.log('📊 CardsAPI: Cards fetched successfully:', data);
-    return data || [];
+    return (data || []) as Card[];
   },
 
   async getByPlayer(playerId: number): Promise<Card[]> {
@@ -64,7 +64,7 @@ export const cardsApi = {
       throw new Error(`Failed to fetch player cards: ${error.message}`);
     }
 
-    return data || [];
+    return (data || []) as Card[];
   },
 
   async delete(cardId: number): Promise<void> {

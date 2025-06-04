@@ -60,6 +60,7 @@ export interface MatchEvent {
   event_time: number;
   description: string;
   created_at: string;
+  card_type?: 'yellow' | 'red';
 }
 
 export interface PlayerTime {
