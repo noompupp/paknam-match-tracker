@@ -42,7 +42,7 @@ export const assignGoalToPlayer = async (assignment: GoalAssignment): Promise<vo
     // Verify fixture exists and is valid
     const { data: fixture, error: fixtureError } = await supabase
       .from('fixtures')
-      .select('id, home_team_id, away_team_id, home_team:teams!fixtures_home_team_id_fkey(name), away_team:teams!fixtures_away_team_id_fkey(name)')
+      .select('id, home_team_id, away_team_id')
       .eq('id', fixtureId)
       .single();
 
@@ -53,10 +53,10 @@ export const assignGoalToPlayer = async (assignment: GoalAssignment): Promise<vo
 
     console.log('✅ GoalAssignmentService: Fixture validation passed:', fixture);
 
-    // Verify player exists and get current stats
+    // Verify player exists and get current stats - Fixed query without join
     const { data: player, error: playerError } = await supabase
       .from('members')
-      .select('id, name, team_id, goals, assists, team:teams!members_team_id_fkey(name)')
+      .select('id, name, team_id, goals, assists')
       .eq('id', playerId)
       .single();
 
@@ -69,7 +69,7 @@ export const assignGoalToPlayer = async (assignment: GoalAssignment): Promise<vo
       player: player.name,
       currentGoals: player.goals,
       currentAssists: player.assists,
-      team: player.team?.name
+      teamId: player.team_id
     });
 
     // Enhanced duplicate check with comprehensive criteria
