@@ -1,3 +1,4 @@
+
 import { useToast } from "@/hooks/use-toast";
 
 interface Player {
@@ -27,7 +28,7 @@ interface PlayerManagementProps {
   setSelectedTeam: (value: string) => void;
   setSelectedCardType: (value: 'yellow' | 'red') => void;
   setSelectedTimePlayer: (value: string) => void;
-  assignGoal: (player: any, matchTime: number, homeTeam?: any, awayTeam?: any) => any;
+  assignGoal: (player: any, matchTime: number, fixtureId: number, homeTeam: { id: number; name: string }, awayTeam: { id: number; name: string }) => any;
   addCard: (player: string, team: string, type: string, time: number) => void;
   addPlayer: (player: any) => void;
   removePlayer: (playerId: number) => void;
