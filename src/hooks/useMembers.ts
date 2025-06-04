@@ -55,10 +55,12 @@ export const useUpdateMemberStats = () => {
 };
 
 export const useTopScorers = () => {
-  const { data: members, ...query } = useMembers();
+  const { data: members, isLoading, error } = useMembers();
+  
+  console.log('🎣 useTopScorers: Raw members data:', members);
   
   const topScorers = members
-    ?.filter(member => member.goals > 0)
+    ?.filter(member => member.goals && member.goals > 0)
     .sort((a, b) => b.goals - a.goals)
     .slice(0, 5)
     .map(member => ({
@@ -70,7 +72,8 @@ export const useTopScorers = () => {
   console.log('🎣 useTopScorers: Computed top scorers:', topScorers);
 
   return {
-    ...query,
     data: topScorers,
+    isLoading,
+    error,
   };
 };

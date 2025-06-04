@@ -12,8 +12,8 @@ import UpcomingFixturesCard from "./dashboard/UpcomingFixturesCard";
 
 const Dashboard = () => {
   const { data: teams, isLoading: teamsLoading, error: teamsError } = useTeams();
-  const { data: topScorers, isLoading: scorersLoading } = useTopScorers();
-  const { data: topAssists, isLoading: assistsLoading } = useTopAssists();
+  const { data: topScorers, isLoading: scorersLoading, error: scorersError } = useTopScorers();
+  const { data: topAssists, isLoading: assistsLoading, error: assistsError } = useTopAssists();
   const { data: recentFixtures, isLoading: recentLoading } = useRecentFixtures();
   const { data: upcomingFixtures, isLoading: upcomingLoading } = useUpcomingFixtures();
 
@@ -36,8 +36,14 @@ const Dashboard = () => {
         <LeagueTable teams={teams} isLoading={teamsLoading} />
 
         <div className="grid md:grid-cols-2 gap-8">
-          <TopScorersCard topScorers={topScorers} isLoading={scorersLoading} />
-          <TopAssistsCard topAssists={topAssists} isLoading={assistsLoading} />
+          <TopScorersCard 
+            topScorers={topScorers} 
+            isLoading={scorersLoading || !topScorers} 
+          />
+          <TopAssistsCard 
+            topAssists={topAssists} 
+            isLoading={assistsLoading || !topAssists} 
+          />
           <RecentResultsCard recentFixtures={recentFixtures} isLoading={recentLoading} />
         </div>
 

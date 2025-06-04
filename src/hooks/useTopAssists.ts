@@ -2,10 +2,12 @@
 import { useMembers } from './useMembers';
 
 export const useTopAssists = () => {
-  const { data: members, ...query } = useMembers();
+  const { data: members, isLoading, error } = useMembers();
+  
+  console.log('🎯 useTopAssists: Raw members data:', members);
   
   const topAssists = members
-    ?.filter(member => member.assists > 0)
+    ?.filter(member => member.assists && member.assists > 0)
     .sort((a, b) => b.assists - a.assists)
     .slice(0, 5)
     .map(member => ({
@@ -17,7 +19,8 @@ export const useTopAssists = () => {
   console.log('🎯 useTopAssists: Computed top assists:', topAssists);
 
   return {
-    ...query,
     data: topAssists,
+    isLoading,
+    error,
   };
 };
