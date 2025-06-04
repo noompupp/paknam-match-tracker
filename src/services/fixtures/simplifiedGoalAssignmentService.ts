@@ -20,6 +20,9 @@ export const assignGoalToPlayer = async (data: GoalAssignmentData) => {
       throw new Error('Missing required data for goal assignment');
     }
 
+    // Ensure teamId is a string and handle numeric values
+    const teamIdString = String(data.teamId);
+
     // Create match event
     const { data: matchEvent, error: eventError } = await supabase
       .from('match_events')
@@ -27,7 +30,7 @@ export const assignGoalToPlayer = async (data: GoalAssignmentData) => {
         fixture_id: data.fixtureId,
         event_type: data.type,
         player_name: data.playerName,
-        team_id: data.teamId,
+        team_id: teamIdString,
         event_time: data.eventTime,
         description: `${data.type === 'goal' ? 'Goal' : 'Assist'} by ${data.playerName}`
       })

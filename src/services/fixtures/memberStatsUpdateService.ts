@@ -195,11 +195,19 @@ export const incrementMemberCards = async (memberId: number, cardType: 'yellow' 
 
     if (fetchError) {
       console.error(`❌ MemberStatsUpdateService: Error fetching member ${memberId}:`, fetchError);
+      
+      // If member not found, log warning but don't throw error to prevent breaking the flow
+      if (fetchError.code === 'PGRST116') {
+        console.warn(`⚠️ MemberStatsUpdateService: Member ${memberId} not found, skipping card stats update`);
+        return;
+      }
+      
       throw new Error(`Failed to fetch member data: ${fetchError.message}`);
     }
 
     if (!member) {
-      throw new Error(`Member with ID ${memberId} not found`);
+      console.warn(`⚠️ MemberStatsUpdateService: Member ${memberId} not found, skipping card stats update`);
+      return;
     }
 
     const currentCards = member[cardField] || 0;
@@ -224,6 +232,13 @@ export const incrementMemberCards = async (memberId: number, cardType: 'yellow' 
 
   } catch (error) {
     console.error(`❌ MemberStatsUpdateService: Critical error incrementing ${cardType} cards for member ${memberId}:`, error);
+    
+    // Don't re-throw member not found errors to prevent breaking the main flow
+    if (error instanceof Error && error.message.includes('not found')) {
+      console.warn(`⚠️ MemberStatsUpdateService: Continuing despite member not found error for member ${memberId}`);
+      return;
+    }
+    
     throw error;
   }
 };

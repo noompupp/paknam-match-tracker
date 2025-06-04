@@ -39,7 +39,8 @@ export const useCardHandlers = (props: UseCardHandlersProps) => {
         player: player.name,
         team: player.team,
         cardType,
-        time
+        time,
+        fixture: props.selectedFixtureData.id
       });
 
       // Determine team ID from fixture data based on team name
@@ -51,6 +52,13 @@ export const useCardHandlers = (props: UseCardHandlersProps) => {
       } else {
         throw new Error(`Cannot determine team ID for player ${player.name} on team ${player.team}`);
       }
+
+      console.log('🔍 useCardHandlers: Team ID resolved:', {
+        playerTeam: player.team,
+        teamId,
+        homeTeam: props.selectedFixtureData.home_team?.name,
+        awayTeam: props.selectedFixtureData.away_team?.name
+      });
 
       // Use the simplified card service directly
       const cardResult = await assignCardToPlayer({

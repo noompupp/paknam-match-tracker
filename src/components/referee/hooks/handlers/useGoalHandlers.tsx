@@ -64,6 +64,13 @@ export const useGoalHandlers = (props: UseGoalHandlersProps) => {
         throw new Error(`Cannot determine team ID for player ${player.name} on team ${player.team}`);
       }
 
+      console.log('🔍 useGoalHandlers: Team ID resolved:', {
+        playerTeam: player.team,
+        teamId,
+        homeTeam: props.selectedFixtureData.home_team?.name,
+        awayTeam: props.selectedFixtureData.away_team?.name
+      });
+
       const result = await assignGoalToPlayer({
         fixtureId: props.selectedFixtureData.id,
         playerId: player.id,

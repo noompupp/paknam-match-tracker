@@ -20,6 +20,9 @@ export const assignCardToPlayer = async (data: CardAssignmentData) => {
       throw new Error('Missing required data for card assignment');
     }
 
+    // Ensure teamId is a string and handle numeric values
+    const teamIdString = String(data.teamId);
+
     // Check for existing yellow cards if this is a yellow card
     let isSecondYellow = false;
     if (data.cardType === 'yellow') {
@@ -47,7 +50,7 @@ export const assignCardToPlayer = async (data: CardAssignmentData) => {
         fixture_id: data.fixtureId,
         event_type: eventType,
         player_name: data.playerName,
-        team_id: data.teamId,
+        team_id: teamIdString,
         event_time: data.eventTime,
         card_type: data.cardType,
         description: `${data.cardType} card for ${data.playerName}`
@@ -73,7 +76,7 @@ export const assignCardToPlayer = async (data: CardAssignmentData) => {
           fixture_id: data.fixtureId,
           event_type: 'red_card',
           player_name: data.playerName,
-          team_id: data.teamId,
+          team_id: teamIdString,
           event_time: data.eventTime,
           card_type: 'red',
           description: `Automatic red card for ${data.playerName} (second yellow)`
