@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Timer, UserPlus, UserMinus, AlertTriangle, Clock } from "lucide-react";
 import { PlayerTime, Member } from "@/types/database";
 import { SEVEN_A_SIDE_CONSTANTS, isSecondHalf, getCurrentHalfTime } from "@/utils/timeUtils";
+import { debugPlayerDropdownData } from "@/utils/refereeDataProcessor";
 
 interface PlayerTimeTrackerProps {
   trackedPlayers: PlayerTime[];
@@ -31,6 +32,13 @@ const PlayerTimeTracker = ({
   formatTime,
   matchTime = 0
 }: PlayerTimeTrackerProps) => {
+  console.log('⏱️ PlayerTimeTracker Debug:');
+  console.log('  - All players available:', allPlayers.length);
+  console.log('  - Tracked players:', trackedPlayers.length);
+  
+  // Debug player data for time tracking
+  debugPlayerDropdownData(allPlayers, "Player Time Tracker");
+
   // 7-a-side role-based constraints
   const getRoleConstraints = (role: string) => {
     switch (role) {
@@ -148,34 +156,51 @@ const PlayerTimeTracker = ({
             <div>
               <Label htmlFor="playerSelect">Select Player</Label>
               <Select value={selectedPlayer} onValueChange={onPlayerSelect}>
-                <SelectTrigger className="bg-background border-input">
-                  <SelectValue placeholder="Choose a player" />
+                <SelectTrigger className="bg-white border-input relative z-50">
+                  <SelectValue placeholder={allPlayers.length > 0 ? "Choose a player" : "No players available"} />
                 </SelectTrigger>
-                <SelectContent className="bg-popover border border-border shadow-lg max-h-60 z-50">
-                  {allPlayers.map((player) => {
-                    const constraints = getRoleConstraints(player.position);
-                    return (
-                      <SelectItem 
-                        key={player.id} 
-                        value={player.id.toString()}
-                        className="hover:bg-accent focus:bg-accent cursor-pointer"
-                      >
-                        <div className="flex items-center justify-between w-full">
-                          <span>#{player.number} {player.name} ({player.team})</span>
-                          <Badge variant="outline" className={`ml-2 ${constraints.color}`}>
-                            {player.position}
-                          </Badge>
-                        </div>
-                      </SelectItem>
-                    );
-                  })}
+                <SelectContent className="bg-white border border-border shadow-lg max-h-60 z-[100]">
+                  {allPlayers.length === 0 ? (
+                    <SelectItem value="no-players" disabled className="text-muted-foreground">
+                      No players available - check fixture selection
+                    </SelectItem>
+                  ) : (
+                    allPlayers.map((player) => {
+                      const constraints = getRoleConstraints(player.position);
+                      return (
+                        <SelectItem 
+                          key={`time-player-${player.id}`}
+                          value={player.id.toString()}
+                          className="hover:bg-accent focus:bg-accent cursor-pointer py-3"
+                        >
+                          <div className="flex items-center justify-between w-full">
+                            <div className="flex items-center gap-2">
+                              <div className="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center text-xs font-bold text-primary">
+                                {player.number || '?'}
+                              </div>
+                              <span className="font-medium">{player.name}</span>
+                              <span className="text-xs text-muted-foreground">({player.team})</span>
+                            </div>
+                            <Badge variant="outline" className={`ml-2 ${constraints.color}`}>
+                              {player.position}
+                            </Badge>
+                          </div>
+                        </SelectItem>
+                      );
+                    })
+                  )}
                 </SelectContent>
               </Select>
+              {allPlayers.length === 0 && (
+                <p className="text-xs text-red-500 mt-1">
+                  ⚠️ No players found. Please ensure a fixture is selected.
+                </p>
+              )}
             </div>
             <div className="flex items-end">
               <Button
                 onClick={onAddPlayer}
-                disabled={!selectedPlayer}
+                disabled={!selectedPlayer || allPlayers.length === 0}
                 className="w-full"
               >
                 <UserPlus className="h-4 w-4 mr-2" />

@@ -1,5 +1,6 @@
 
 import { usePlayerManagement } from "@/hooks/usePlayerManagement";
+import { debugPlayerDropdownData } from "@/utils/refereeDataProcessor";
 
 interface Player {
   id: number;
@@ -39,5 +40,18 @@ interface PlayerManagementProps {
 }
 
 export const PlayerManagement = (props: PlayerManagementProps) => {
+  console.log('🎮 PlayerManagement Component Debug:');
+  console.log('  - Selected fixture:', props.selectedFixtureData?.id);
+  console.log('  - All players count:', props.allPlayers.length);
+  
+  // Debug the player data being passed to dropdowns
+  debugPlayerDropdownData(props.allPlayers, "PlayerManagement Component");
+  
+  if (props.allPlayers.length === 0) {
+    console.warn('⚠️ PlayerManagement: No players available for dropdowns!');
+    console.log('  - Members data:', props.members?.length || 0);
+    console.log('  - Selected fixture data:', !!props.selectedFixtureData);
+  }
+  
   return usePlayerManagement(props);
 };

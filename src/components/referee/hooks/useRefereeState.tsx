@@ -10,6 +10,8 @@ import { usePlayerTracking } from "@/hooks/usePlayerTracking";
 import { useGoalManagement } from "@/hooks/useGoalManagement";
 import { useLocalMatchEvents } from "@/hooks/useMatchEvents";
 import { useCardManagementImproved } from "@/hooks/useCardManagementImproved";
+import { processFixtureAndPlayers, debugPlayerDropdownData, type ProcessedPlayer } from "@/utils/refereeDataProcessor";
+import { debugRefereeToolsData } from "@/utils/refereeToolsDebug";
 
 // Define consistent Player interface for this component
 interface ComponentPlayer {
@@ -43,6 +45,16 @@ export const useRefereeState = () => {
 
   const selectedFixtureData = fixtures?.find(f => f.id.toString() === selectedFixture);
 
+  // Debug data when fixture is selected
+  if (selectedFixture && selectedFixtureData && members) {
+    debugRefereeToolsData(fixtures, members, selectedFixture);
+  }
+
+  // Process fixture and player data using the new utility
+  const processedData = selectedFixtureData && members 
+    ? processFixtureAndPlayers(selectedFixtureData, members)
+    : null;
+
   // Custom hooks
   const { matchTime, isRunning, toggleTimer, resetTimer, formatTime } = useMatchTimer();
   const { homeScore, awayScore, addGoal, removeGoal, resetScore } = useScoreManagement();
@@ -73,19 +85,13 @@ export const useRefereeState = () => {
     checkForSecondYellow 
   } = useCardManagementImproved({ selectedFixtureData });
   
-  // Get all players from both teams of the selected fixture
-  const allPlayers: ComponentPlayer[] = members?.filter(member => 
-    selectedFixtureData && (
-      member.team_id === selectedFixtureData.home_team_id || 
-      member.team_id === selectedFixtureData.away_team_id
-    )
-  ).map(member => ({
-    id: member.id,
-    name: member.name,
-    team: member.team?.name || '',
-    number: typeof member.number === 'number' ? member.number : parseInt(String(member.number || '0')),
-    position: member.position || 'Player'
-  })) || [];
+  // Get all players from processed data
+  const allPlayers: ComponentPlayer[] = processedData?.allPlayers || [];
+
+  // Debug player dropdown data
+  if (processedData) {
+    debugPlayerDropdownData(allPlayers, "All Players for Dropdowns");
+  }
 
   // Create players specifically for PlayerTimeTracker with extended properties
   const playersForTimeTracker: PlayerTimeTrackerPlayer[] = trackedPlayers.map(trackedPlayer => ({
@@ -102,6 +108,15 @@ export const useRefereeState = () => {
   // Check for players needing attention
   const playersNeedingAttention = getPlayersNeedingAttention(playersForTimeTracker, matchTime);
 
+  console.log('🎯 useRefereeState Summary:', {
+    selectedFixture,
+    hasSelectedFixtureData: !!selectedFixtureData,
+    totalMembers: members?.length || 0,
+    processedPlayers: allPlayers.length,
+    homeTeamPlayers: processedData?.homeTeamPlayers.length || 0,
+    awayTeamPlayers: processedData?.awayTeamPlayers.length || 0
+  });
+
   return {
     // Data
     fixtures,
@@ -115,6 +130,7 @@ export const useRefereeState = () => {
     playersNeedingAttention,
     saveAttempts,
     setSaveAttempts,
+    processedData, // Add processed data for debugging
     
     // Mutation hooks
     updateFixtureScore,

@@ -1,9 +1,11 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Fixture } from "@/types/database";
+import { debugPlayerDropdownData } from "@/utils/refereeDataProcessor";
 
 // Define the Player interface to match what's used in the container
 interface Player {
@@ -49,14 +51,29 @@ const CardManagementDropdown = ({
   onAddCard,
   formatTime
 }: CardManagementDropdownProps) => {
-  // Filter players by selected team
-  const teamPlayers = allPlayers.filter(player => {
-    if (selectedTeam === 'home') {
-      return player.team === selectedFixtureData.home_team?.name;
-    } else {
-      return player.team === selectedFixtureData.away_team?.name;
-    }
-  });
+  console.log('🟨 CardManagementDropdown Debug:');
+  console.log('  - All players available:', allPlayers.length);
+  console.log('  - Selected team:', selectedTeam);
+  console.log('  - Home team name:', selectedFixtureData.home_team?.name);
+  console.log('  - Away team name:', selectedFixtureData.away_team?.name);
+  
+  // Filter players by selected team with improved logic
+  let teamPlayers: Player[] = [];
+  
+  if (selectedTeam === 'home') {
+    teamPlayers = allPlayers.filter(player => 
+      player.team === selectedFixtureData.home_team?.name
+    );
+    console.log(`  - Home team (${selectedFixtureData.home_team?.name}) players:`, teamPlayers.length);
+  } else if (selectedTeam === 'away') {
+    teamPlayers = allPlayers.filter(player => 
+      player.team === selectedFixtureData.away_team?.name
+    );
+    console.log(`  - Away team (${selectedFixtureData.away_team?.name}) players:`, teamPlayers.length);
+  }
+  
+  // Debug filtered players
+  debugPlayerDropdownData(teamPlayers, `Card Management - ${selectedTeam} team`);
 
   const selectedPlayerData = allPlayers.find(p => p.id.toString() === selectedPlayer);
 
@@ -74,15 +91,23 @@ const CardManagementDropdown = ({
                 size="sm"
                 variant={selectedTeam === 'home' ? 'default' : 'outline'}
                 onClick={() => onTeamChange('home')}
+                className="flex-1"
               >
-                {selectedFixtureData.home_team?.name}
+                {selectedFixtureData.home_team?.name || 'Home Team'}
+                <span className="ml-2 text-xs">
+                  ({allPlayers.filter(p => p.team === selectedFixtureData.home_team?.name).length})
+                </span>
               </Button>
               <Button
                 size="sm"
                 variant={selectedTeam === 'away' ? 'default' : 'outline'}
                 onClick={() => onTeamChange('away')}
+                className="flex-1"
               >
-                {selectedFixtureData.away_team?.name}
+                {selectedFixtureData.away_team?.name || 'Away Team'}
+                <span className="ml-2 text-xs">
+                  ({allPlayers.filter(p => p.team === selectedFixtureData.away_team?.name).length})
+                </span>
               </Button>
             </div>
           </div>
@@ -90,17 +115,48 @@ const CardManagementDropdown = ({
           <div>
             <Label htmlFor="player">Select Player</Label>
             <Select value={selectedPlayer} onValueChange={onPlayerSelect}>
-              <SelectTrigger>
-                <SelectValue placeholder="Choose a player" />
+              <SelectTrigger className="bg-white border-input relative z-50">
+                <SelectValue placeholder={
+                  !selectedTeam 
+                    ? "Select a team first" 
+                    : teamPlayers.length > 0 
+                      ? "Choose a player" 
+                      : "No players in selected team"
+                } />
               </SelectTrigger>
-              <SelectContent>
-                {teamPlayers.map((player) => (
-                  <SelectItem key={player.id} value={player.id.toString()}>
-                    {player.name} {player.number ? `(#${player.number})` : ''} - {player.position}
+              <SelectContent className="bg-white border border-border shadow-lg z-[100] max-h-60">
+                {!selectedTeam ? (
+                  <SelectItem value="no-team" disabled className="text-muted-foreground">
+                    Please select a team first
                   </SelectItem>
-                ))}
+                ) : teamPlayers.length === 0 ? (
+                  <SelectItem value="no-players" disabled className="text-muted-foreground">
+                    No players found for {selectedTeam} team
+                  </SelectItem>
+                ) : (
+                  teamPlayers.map((player) => (
+                    <SelectItem 
+                      key={`card-player-${player.id}`} 
+                      value={player.id.toString()}
+                      className="hover:bg-accent focus:bg-accent cursor-pointer py-3"
+                    >
+                      <div className="flex items-center gap-2 w-full">
+                        <div className="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center text-xs font-bold text-primary">
+                          {player.number || '?'}
+                        </div>
+                        <span className="font-medium">{player.name}</span>
+                        <span className="text-xs text-muted-foreground">({player.position})</span>
+                      </div>
+                    </SelectItem>
+                  ))
+                )}
               </SelectContent>
             </Select>
+            {selectedTeam && teamPlayers.length === 0 && (
+              <p className="text-xs text-red-500 mt-1">
+                ⚠️ No players found for {selectedTeam} team. Check team data.
+              </p>
+            )}
           </div>
 
           <div>
@@ -109,7 +165,7 @@ const CardManagementDropdown = ({
               <Button
                 size="sm"
                 variant={selectedCardType === 'yellow' ? 'default' : 'outline'}
-                className={selectedCardType === 'yellow' ? 'bg-yellow-500 hover:bg-yellow-600' : ''}
+                className={selectedCardType === 'yellow' ? 'bg-yellow-500 hover:bg-yellow-600 text-white' : 'hover:bg-yellow-50'}
                 onClick={() => onCardTypeChange('yellow')}
               >
                 Yellow Card
@@ -117,7 +173,7 @@ const CardManagementDropdown = ({
               <Button
                 size="sm"
                 variant={selectedCardType === 'red' ? 'default' : 'outline'}
-                className={selectedCardType === 'red' ? 'bg-red-500 hover:bg-red-600' : ''}
+                className={selectedCardType === 'red' ? 'bg-red-500 hover:bg-red-600 text-white' : 'hover:bg-red-50'}
                 onClick={() => onCardTypeChange('red')}
               >
                 Red Card
@@ -128,7 +184,7 @@ const CardManagementDropdown = ({
           <Button
             onClick={onAddCard}
             className="w-full"
-            disabled={!selectedPlayer}
+            disabled={!selectedPlayer || !selectedTeam}
           >
             Issue {selectedCardType === 'yellow' ? 'Yellow' : 'Red'} Card
             {selectedPlayerData && ` to ${selectedPlayerData.name}`}

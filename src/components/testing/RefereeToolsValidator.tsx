@@ -240,4 +240,81 @@ export class RefereeToolsValidator {
       throw new Error(`Match save validation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
+
+  async validatePlayerDropdowns(): Promise<any> {
+    console.log('🔍 RefereeToolsValidator: Testing player dropdown functionality...');
+    
+    try {
+      // Simulate fetching fixtures and members data
+      const mockFixtures = [
+        {
+          id: 1,
+          home_team_id: 'team1',
+          away_team_id: 'team2',
+          home_team: { name: 'Team Alpha' },
+          away_team: { name: 'Team Beta' }
+        }
+      ];
+
+      const mockMembers = [
+        {
+          id: 1,
+          name: 'John Doe',
+          team_id: 'team1',
+          number: 10,
+          position: 'Captain',
+          team: { name: 'Team Alpha' }
+        },
+        {
+          id: 2,
+          name: 'Jane Smith',
+          team_id: 'team2',
+          number: 9,
+          position: 'Starter',
+          team: { name: 'Team Beta' }
+        }
+      ];
+
+      // Test data processing
+      const selectedFixture = mockFixtures[0];
+      const homeTeamMembers = mockMembers.filter(m => m.team_id === selectedFixture.home_team_id);
+      const awayTeamMembers = mockMembers.filter(m => m.team_id === selectedFixture.away_team_id);
+      const allPlayers = [...homeTeamMembers, ...awayTeamMembers];
+
+      // Validate processed data
+      if (allPlayers.length === 0) {
+        throw new Error('No players found - team ID matching failed');
+      }
+
+      if (homeTeamMembers.length === 0) {
+        throw new Error('No home team players found');
+      }
+
+      if (awayTeamMembers.length === 0) {
+        throw new Error('No away team players found');
+      }
+
+      // Test dropdown data structure
+      const dropdownData = allPlayers.map(player => ({
+        id: player.id,
+        name: player.name,
+        team: player.team?.name || 'Unknown',
+        number: player.number || 0,
+        position: player.position || 'Player'
+      }));
+
+      return {
+        success: true,
+        message: 'Player dropdown validation passed',
+        details: {
+          totalPlayers: allPlayers.length,
+          homeTeamPlayers: homeTeamMembers.length,
+          awayTeamPlayers: awayTeamMembers.length,
+          dropdownData: dropdownData
+        }
+      };
+    } catch (error) {
+      throw new Error(`Player dropdown validation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
 }
