@@ -54,9 +54,11 @@ export const useGoalHandlers = (props: UseGoalHandlersProps) => {
         fixture: props.selectedFixtureData.id
       });
 
-      // Determine team ID based on player's team
+      // Determine team ID using the player's teamId or derive from fixture
       let teamId: string;
-      if (player.team === props.selectedFixtureData.home_team?.name) {
+      if (player.teamId) {
+        teamId = player.teamId;
+      } else if (player.team === props.selectedFixtureData.home_team?.name) {
         teamId = props.selectedFixtureData.home_team.__id__ || props.selectedFixtureData.home_team_id;
       } else if (player.team === props.selectedFixtureData.away_team?.name) {
         teamId = props.selectedFixtureData.away_team.__id__ || props.selectedFixtureData.away_team_id;
@@ -82,7 +84,7 @@ export const useGoalHandlers = (props: UseGoalHandlersProps) => {
 
         toast({
           title: `${props.selectedGoalType === 'goal' ? 'Goal' : 'Assist'} Assigned!`,
-          description: `${props.selectedGoalType === 'goal' ? 'Goal' : 'Assist'} assigned to ${player.name} and member stats updated`,
+          description: `${props.selectedGoalType === 'goal' ? 'Goal' : 'Assist'} assigned to ${player.name} and stats updated`,
         });
       }
     } catch (error) {

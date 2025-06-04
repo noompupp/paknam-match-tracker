@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { MatchEvent } from '@/types/database';
 
 interface TeamInfo {
-  id: string; // Changed from number to string to match standardized IDs
+  id: string;
   name: string;
 }
 
@@ -36,7 +36,7 @@ export const createGoalEventsWithDuplicateCheck = async (
           .select('id')
           .eq('fixture_id', fixtureId)
           .eq('event_type', 'goal')
-          .eq('team_id', homeTeam.id) // Now expects string, no need to convert
+          .eq('team_id', homeTeam.id)
           .eq('player_name', 'Unknown Player');
 
         const existingCount = existingGoals?.length || 0;
@@ -46,8 +46,8 @@ export const createGoalEventsWithDuplicateCheck = async (
             fixture_id: fixtureId,
             event_type: 'goal',
             player_name: 'Unknown Player',
-            team_id: homeTeam.id, // Now string, no need to convert
-            event_time: 0, // Default time, can be updated later
+            team_id: homeTeam.id,
+            event_time: 0,
             description: `Goal by Unknown Player (${homeTeam.name})`
           });
         }
@@ -64,7 +64,7 @@ export const createGoalEventsWithDuplicateCheck = async (
           .select('id')
           .eq('fixture_id', fixtureId)
           .eq('event_type', 'goal')
-          .eq('team_id', awayTeam.id) // Now expects string, no need to convert
+          .eq('team_id', awayTeam.id)
           .eq('player_name', 'Unknown Player');
 
         const existingCount = existingGoals?.length || 0;
@@ -74,8 +74,8 @@ export const createGoalEventsWithDuplicateCheck = async (
             fixture_id: fixtureId,
             event_type: 'goal',
             player_name: 'Unknown Player',
-            team_id: awayTeam.id, // Now string, no need to convert
-            event_time: 0, // Default time, can be updated later
+            team_id: awayTeam.id,
+            event_time: 0,
             description: `Goal by Unknown Player (${awayTeam.name})`
           });
         }
@@ -108,7 +108,7 @@ export const createCardEvent = async (
   fixtureId: number,
   playerId: number,
   playerName: string,
-  teamId: string, // Changed from number to string
+  teamId: string,
   cardType: 'yellow' | 'red',
   eventTime: number
 ): Promise<void> => {
@@ -120,11 +120,14 @@ export const createCardEvent = async (
   });
 
   try {
+    // Use consistent event types
+    const eventType = cardType === 'yellow' ? 'yellow_card' : 'red_card';
+    
     const event: Omit<MatchEvent, 'id' | 'created_at'> = {
       fixture_id: fixtureId,
-      event_type: cardType === 'yellow' ? 'yellow_card' : 'red_card',
+      event_type: eventType,
       player_name: playerName,
-      team_id: teamId, // Now string
+      team_id: teamId,
       event_time: eventTime,
       description: `${cardType} card for ${playerName}`,
       card_type: cardType

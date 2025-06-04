@@ -32,13 +32,21 @@ export const useCardHandlers = (props: UseCardHandlersProps) => {
         time
       });
 
-      // For now, we'll need the fixture data to get team ID - this should be passed in
-      // This is a temporary implementation until we refactor the card system completely
-      const cardResult = await props.addCard(player, team, props.matchTime, cardType);
-      props.addEvent('Card', `${cardType} card for ${playerName} (${team})`, props.matchTime);
+      // Use the simplified card service directly
+      const cardResult = await assignCardToPlayer({
+        fixtureId: props.allPlayers[0]?.fixtureId || 0, // Get fixture ID from player context
+        playerId: player.id,
+        playerName: player.name,
+        teamId: player.teamId || team, // Use player's team ID or fallback to team name
+        cardType,
+        eventTime: time
+      });
+
+      // Add local event for immediate UI feedback
+      props.addEvent('Card', `${cardType} card for ${playerName} (${team})`, time);
       
       if (cardResult && cardResult.isSecondYellow) {
-        props.addEvent('Red Card', `Second yellow card - automatic red for ${playerName}`, props.matchTime);
+        props.addEvent('Red Card', `Second yellow card - automatic red for ${playerName}`, time);
         toast({
           title: "Second Yellow Card",
           description: `${playerName} receives automatic red card for second yellow`,
@@ -47,7 +55,7 @@ export const useCardHandlers = (props: UseCardHandlersProps) => {
       } else {
         toast({
           title: "Card Issued",
-          description: `${cardType} card given to ${playerName} and member stats updated`,
+          description: `${cardType} card given to ${playerName} and stats updated`,
         });
       }
     } catch (error) {

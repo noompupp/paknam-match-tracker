@@ -38,12 +38,14 @@ export const assignCardToPlayer = async (data: CardAssignmentData) => {
       }
     }
 
-    // Create match event for the card
+    // Create match event for the card using consistent event types
+    const eventType = data.cardType === 'yellow' ? 'yellow_card' : 'red_card';
+    
     const { data: matchEvent, error: eventError } = await supabase
       .from('match_events')
       .insert({
         fixture_id: data.fixtureId,
-        event_type: data.cardType === 'yellow' ? 'yellow_card' : 'red_card',
+        event_type: eventType,
         player_name: data.playerName,
         team_id: data.teamId,
         event_time: data.eventTime,

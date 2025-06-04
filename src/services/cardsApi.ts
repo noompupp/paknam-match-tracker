@@ -6,7 +6,7 @@ export interface Card {
   fixture_id: number;
   player_id: number;
   player_name: string;
-  team_id: string; // Updated to string to match match_events table
+  team_id: string;
   card_type: 'yellow' | 'red';
   event_time: number;
   created_at: string;
@@ -26,12 +26,15 @@ export const cardsApi = {
       throw new Error('Invalid card type. Must be "yellow" or "red"');
     }
 
+    // Use consistent event types
+    const eventType = cardData.card_type === 'yellow' ? 'yellow_card' : 'red_card';
+
     // Create match event for card
     const { data, error } = await supabase
       .from('match_events')
       .insert([{
         fixture_id: cardData.fixture_id,
-        event_type: cardData.card_type,
+        event_type: eventType,
         player_name: cardData.player_name,
         team_id: cardData.team_id,
         event_time: cardData.event_time,
@@ -52,7 +55,7 @@ export const cardsApi = {
     return {
       id: data.id,
       fixture_id: data.fixture_id,
-      player_id: cardData.player_id, // Use original player_id
+      player_id: cardData.player_id,
       player_name: data.player_name,
       team_id: data.team_id,
       card_type: data.card_type as 'yellow' | 'red',
@@ -73,7 +76,7 @@ export const cardsApi = {
       .from('match_events')
       .select('*')
       .eq('fixture_id', fixtureId)
-      .in('event_type', ['yellow', 'red'])
+      .in('event_type', ['yellow_card', 'red_card'])
       .order('event_time', { ascending: true });
 
     if (error) {
@@ -90,7 +93,7 @@ export const cardsApi = {
       player_id: 0, // We don't store player_id in match_events, would need to lookup
       player_name: event.player_name,
       team_id: event.team_id,
-      card_type: event.event_type as 'yellow' | 'red',
+      card_type: event.card_type as 'yellow' | 'red',
       event_time: event.event_time,
       created_at: event.created_at,
       description: event.description
@@ -119,7 +122,7 @@ export const cardsApi = {
       .from('match_events')
       .select('*')
       .eq('player_name', member.name)
-      .in('event_type', ['yellow', 'red'])
+      .in('event_type', ['yellow_card', 'red_card'])
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -134,7 +137,7 @@ export const cardsApi = {
       player_id: playerId,
       player_name: event.player_name,
       team_id: event.team_id,
-      card_type: event.event_type as 'yellow' | 'red',
+      card_type: event.card_type as 'yellow' | 'red',
       event_time: event.event_time,
       created_at: event.created_at,
       description: event.description
@@ -152,7 +155,7 @@ export const cardsApi = {
       .from('match_events')
       .delete()
       .eq('id', cardId)
-      .in('event_type', ['yellow', 'red']);
+      .in('event_type', ['yellow_card', 'red_card']);
 
     if (error) {
       console.error('❌ CardsAPI: Error deleting card:', error);
@@ -182,7 +185,7 @@ export const cardsApi = {
       .select('id')
       .eq('player_name', member.name)
       .eq('fixture_id', fixtureId)
-      .eq('event_type', 'yellow');
+      .eq('event_type', 'yellow_card');
 
     if (error) {
       console.error('❌ CardsAPI: Error checking for yellow cards:', error);
