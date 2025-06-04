@@ -130,7 +130,7 @@ export const unifiedRefereeService = {
             fixture_id: matchData.fixtureId,
             player_id: card.playerId,
             player_name: card.playerName,
-            team_id: teamId, // Already string
+            team_id: parseInt(teamId) || 0, // Convert string to number for database
             card_type: card.type,
             event_time: card.time,
             description: `${card.type} card for ${card.playerName}`
@@ -155,7 +155,7 @@ export const unifiedRefereeService = {
             fixture_id: matchData.fixtureId,
             player_id: playerTime.playerId,
             player_name: playerTime.playerName,
-            team_id: teamId, // Already string
+            team_id: parseInt(teamId) || 0, // Convert string to number for database
             total_minutes: playerTime.totalTime,
             periods: playerTime.periods
           });

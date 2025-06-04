@@ -12,7 +12,7 @@ interface CardData {
   type: 'yellow' | 'red';
   time: number;
   playerId: number;
-  teamId: string; // Already correct as string
+  teamId: string; // Keep as string for local state
 }
 
 interface UseCardManagementImprovedProps {
@@ -79,12 +79,12 @@ export const useCardManagementImproved = ({ selectedFixtureData }: UseCardManage
       const playerId = typeof player === 'object' ? player.id : 0;
       const playerName = typeof player === 'object' ? player.name : player;
 
-      // Save to database
+      // Save to database - convert teamId to number for database compatibility
       const savedCard = await createCard.mutateAsync({
         fixture_id: selectedFixtureData.id,
         player_id: playerId,
         player_name: playerName,
-        team_id: teamId, // This is now a string
+        team_id: parseInt(teamId) || 0, // Convert string to number for database
         card_type: cardType,
         event_time: matchTime,
         description: `${cardType} card for ${playerName} (${team})`
@@ -98,7 +98,7 @@ export const useCardManagementImproved = ({ selectedFixtureData }: UseCardManage
         type: cardType,
         time: matchTime,
         playerId,
-        teamId // This is now a string
+        teamId // Keep as string in local state
       };
 
       setCards(prev => [...prev, newCard]);
@@ -112,7 +112,7 @@ export const useCardManagementImproved = ({ selectedFixtureData }: UseCardManage
           fixture_id: selectedFixtureData.id,
           player_id: playerId,
           player_name: playerName,
-          team_id: teamId, // This is now a string
+          team_id: parseInt(teamId) || 0, // Convert string to number for database
           card_type: 'red',
           event_time: matchTime,
           description: `Automatic red card for ${playerName} (second yellow)`
@@ -125,7 +125,7 @@ export const useCardManagementImproved = ({ selectedFixtureData }: UseCardManage
           type: 'red',
           time: matchTime,
           playerId,
-          teamId // This is now a string
+          teamId // Keep as string in local state
         };
 
         setCards(prev => [...prev, autoRedCard]);
