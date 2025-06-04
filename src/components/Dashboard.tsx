@@ -37,11 +37,13 @@ const Dashboard = () => {
         <div className="grid md:grid-cols-2 gap-8">
           <TopScorersCard 
             topScorers={topScorers} 
-            isLoading={scorersLoading || !topScorers} 
+            isLoading={scorersLoading} 
+            error={scorersError}
           />
           <TopAssistsCard 
             topAssists={topAssists} 
-            isLoading={assistsLoading || !topAssists} 
+            isLoading={assistsLoading} 
+            error={assistsError}
           />
           <RecentResultsCard recentFixtures={recentFixtures} isLoading={recentLoading} />
         </div>

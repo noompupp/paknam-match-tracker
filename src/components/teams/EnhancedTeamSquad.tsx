@@ -85,14 +85,14 @@ const EnhancedTeamSquad = ({ teamId, teamName }: EnhancedTeamSquadProps) => {
                     </Badge>
                   </div>
 
-                  {(player.yellow_cards > 0 || player.red_cards > 0) && (
+                  {((player.yellow_cards && player.yellow_cards > 0) || (player.red_cards && player.red_cards > 0)) && (
                     <div className="flex gap-1">
-                      {player.yellow_cards > 0 && (
+                      {player.yellow_cards && player.yellow_cards > 0 && (
                         <Badge variant="outline" className="bg-yellow-50 text-yellow-700">
                           {player.yellow_cards}Y
                         </Badge>
                       )}
-                      {player.red_cards > 0 && (
+                      {player.red_cards && player.red_cards > 0 && (
                         <Badge variant="outline" className="bg-red-50 text-red-700">
                           {player.red_cards}R
                         </Badge>
@@ -100,7 +100,7 @@ const EnhancedTeamSquad = ({ teamId, teamName }: EnhancedTeamSquadProps) => {
                     </div>
                   )}
 
-                  {player.total_minutes_played > 0 && (
+                  {player.total_minutes_played && player.total_minutes_played > 0 && (
                     <div className="flex items-center gap-1">
                       <Clock className="h-4 w-4 text-gray-600" />
                       <Badge variant="outline" className="bg-gray-50 text-gray-700">

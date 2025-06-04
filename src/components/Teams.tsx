@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useTeams } from "@/hooks/useTeams";
 import { useTeamMembers } from "@/hooks/useMembers";
 import TeamsGrid from "./teams/TeamsGrid";
-import TeamSquad from "./teams/TeamSquad";
+import EnhancedTeamSquad from "./teams/EnhancedTeamSquad";
 import TournamentLogo from "./TournamentLogo";
 
 const Teams = () => {
@@ -58,13 +58,14 @@ const Teams = () => {
           onViewSquad={handleViewSquad}
         />
 
-        {/* Team Squad (showing selected team's squad with enhanced data) */}
+        {/* Enhanced Team Squad (showing selected team's squad with enhanced data) */}
         {selectedTeam && (
-          <TeamSquad
-            team={selectedTeam}
-            members={teamMembers}
-            isLoading={membersLoading}
-          />
+          <div id="team-squad">
+            <EnhancedTeamSquad
+              teamId={selectedTeam.__id__}
+              teamName={selectedTeam.name || 'Unknown Team'}
+            />
+          </div>
         )}
       </div>
     </div>
