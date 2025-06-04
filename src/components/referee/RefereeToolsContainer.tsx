@@ -5,18 +5,15 @@ import RefereeMatchControls from "./components/RefereeMatchControls";
 import { useRefereeState } from "./hooks/useRefereeState";
 import { useRefereeHandlers } from "./hooks/useRefereeHandlers";
 import { useUpdateMemberStatsFromMatch } from "@/hooks/useEnhancedMatchSummary";
-import { playerTimeAggregationService } from "@/services/playerTimeAggregationService";
 import { Button } from "@/components/ui/button";
-import { Save, Database, RotateCcw, Trash2, TrendingUp, Clock } from "lucide-react";
+import { Save, Database, RotateCcw, Trash2, TrendingUp } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useState } from "react";
 
 const RefereeToolsContainer = () => {
   const state = useRefereeState();
   const handlers = useRefereeHandlers(state);
   const updateMemberStats = useUpdateMemberStatsFromMatch();
   const { toast } = useToast();
-  const [isAggregating, setIsAggregating] = useState(false);
 
   const handleUpdateMemberStats = async () => {
     if (!state.selectedFixtureData) {
@@ -50,35 +47,6 @@ const RefereeToolsContainer = () => {
         description: "Failed to update member stats. Please try again.",
         variant: "destructive"
       });
-    }
-  };
-
-  const handleAggregateAllPlayerTimes = async () => {
-    setIsAggregating(true);
-    try {
-      const result = await playerTimeAggregationService.aggregatePlayerTimesToMembers();
-      
-      if (result.success) {
-        toast({
-          title: "Time Aggregation Complete!",
-          description: `${result.message}. Now playtime stats should appear in Team Squad.`,
-        });
-      } else {
-        toast({
-          title: "Aggregation Issues",
-          description: `${result.message}. ${result.errors.length} errors occurred.`,
-          variant: "destructive"
-        });
-      }
-    } catch (error) {
-      console.error('❌ RefereeToolsContainer: Error aggregating player times:', error);
-      toast({
-        title: "Aggregation Failed",
-        description: "Failed to aggregate player times. Please try again.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsAggregating(false);
     }
   };
 
@@ -151,8 +119,8 @@ const RefereeToolsContainer = () => {
               onExportSummary={handlers.handleExportSummary}
             />
 
-            {/* Enhanced Controls for Comprehensive Data Management */}
-            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            {/* Enhanced Controls for Database Integration */}
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
               <Button 
                 onClick={handlers.handleSaveAllPlayerTimes}
                 variant="outline"
@@ -161,17 +129,6 @@ const RefereeToolsContainer = () => {
                 <Database className="h-4 w-4" />
                 Save Player Times
               </Button>
-              
-              <Button 
-                onClick={handleAggregateAllPlayerTimes}
-                disabled={isAggregating}
-                variant="secondary"
-                className="flex items-center gap-2"
-              >
-                <Clock className={`h-4 w-4 ${isAggregating ? 'animate-spin' : ''}`} />
-                {isAggregating ? 'Aggregating...' : 'Aggregate Playtime'}
-              </Button>
-              
               <Button 
                 onClick={handlers.handleSaveMatch}
                 className="flex items-center gap-2"
@@ -179,7 +136,6 @@ const RefereeToolsContainer = () => {
                 <Save className="h-4 w-4" />
                 Save Match
               </Button>
-              
               <Button 
                 onClick={handleUpdateMemberStats}
                 variant="secondary"
@@ -188,7 +144,6 @@ const RefereeToolsContainer = () => {
                 <TrendingUp className="h-4 w-4" />
                 Update Member Stats
               </Button>
-              
               <Button 
                 onClick={handlers.handleCleanupDuplicates}
                 variant="outline"
@@ -197,7 +152,6 @@ const RefereeToolsContainer = () => {
                 <RotateCcw className="h-4 w-4" />
                 Cleanup Duplicates
               </Button>
-              
               <Button 
                 onClick={handlers.handleResetMatchData}
                 variant="destructive"
@@ -206,16 +160,6 @@ const RefereeToolsContainer = () => {
                 <Trash2 className="h-4 w-4" />
                 Reset Match Data
               </Button>
-            </div>
-
-            {/* Instructions for fixing the two main issues */}
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <h4 className="font-semibold text-blue-800 mb-2">Issue Resolution Steps:</h4>
-              <ol className="text-blue-700 text-sm space-y-1">
-                <li><strong>1. Playtime Stats in Team Squad:</strong> Click "Aggregate Playtime" to update member records with time tracking data</li>
-                <li><strong>2. Match Summary Event Details:</strong> Enhanced data integration now provides comprehensive event information</li>
-                <li><strong>3. Data Sync:</strong> Use "Update Member Stats" to sync goals/assists from match events</li>
-              </ol>
             </div>
           </>
         )}

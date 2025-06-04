@@ -13,7 +13,7 @@ export const useEnhancedTopScorers = (limit: number = 10) => {
     refetchOnWindowFocus: true,
     refetchInterval: 60 * 1000, // Refetch every minute
     select: (data) => {
-      console.log('✅ useEnhancedTopScorers: Query successful, scorers:', data?.length || 0);
+      console.log('✅ useEnhancedTopScorers: Query successful, scorers:', data);
       return data?.map(player => ({
         name: player.name,
         team: player.team_name,
@@ -34,7 +34,7 @@ export const useEnhancedTopAssists = (limit: number = 10) => {
     refetchOnWindowFocus: true,
     refetchInterval: 60 * 1000, // Refetch every minute
     select: (data) => {
-      console.log('✅ useEnhancedTopAssists: Query successful, assists:', data?.length || 0);
+      console.log('✅ useEnhancedTopAssists: Query successful, assists:', data);
       return data?.map(player => ({
         name: player.name,
         team: player.team_name,
@@ -56,7 +56,7 @@ export const useEnhancedTeamPlayerStats = (teamId: string) => {
     refetchOnWindowFocus: true,
     refetchInterval: 60 * 1000,
     select: (data) => {
-      console.log('📊 useEnhancedTeamPlayerStats: Processing team player data:', data?.length || 0);
+      console.log('📊 useEnhancedTeamPlayerStats: Processing team player data:', data);
       
       return data?.map(player => {
         // Enhanced role mapping logic based on position field
@@ -83,10 +83,6 @@ export const useEnhancedTeamPlayerStats = (teamId: string) => {
           number: player.number || '',
           goals: player.goals || 0,
           assists: player.assists || 0,
-          totalMinutesPlayed: player.total_minutes_played || 0,
-          matchesPlayed: player.matches_played || 0,
-          yellowCards: player.yellow_cards || 0,
-          redCards: player.red_cards || 0,
           role: role // This will be Captain, S-class, Starter, or undefined
         };
       }) || [];

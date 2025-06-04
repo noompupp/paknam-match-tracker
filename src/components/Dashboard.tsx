@@ -8,7 +8,6 @@ import TopScorersCard from "./dashboard/TopScorersCard";
 import TopAssistsCard from "./dashboard/TopAssistsCard";
 import RecentResultsCard from "./dashboard/RecentResultsCard";
 import UpcomingFixturesCard from "./dashboard/UpcomingFixturesCard";
-import DataSyncButton from "./dashboard/DataSyncButton";
 
 const Dashboard = () => {
   const { data: teams, isLoading: teamsLoading, error: teamsError } = useTeams();
@@ -33,17 +32,6 @@ const Dashboard = () => {
       <DashboardHeader />
 
       <div className="max-w-7xl mx-auto px-4 py-8 space-y-8">
-        {/* Data Sync Controls */}
-        <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-white font-semibold">Data Management</h3>
-              <p className="text-white/70 text-sm">Sync match events with player stats and ensure data consistency</p>
-            </div>
-            <DataSyncButton />
-          </div>
-        </div>
-
         <LeagueTable teams={teams} isLoading={teamsLoading} />
 
         <div className="grid md:grid-cols-2 gap-8">
