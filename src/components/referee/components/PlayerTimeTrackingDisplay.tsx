@@ -83,10 +83,10 @@ const PlayerTimeTrackingDisplay = ({
         {Object.entries(playersByTeam).map(([teamName, players]) => (
           <div key={teamName} className="space-y-2">
             <h4 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
-              {teamName} ({players.length} players)
+              {teamName} ({Array.isArray(players) ? players.length : 0} players)
             </h4>
             <div className="space-y-2">
-              {players.map(renderPlayerTime)}
+              {Array.isArray(players) && players.map(renderPlayerTime)}
             </div>
           </div>
         ))}

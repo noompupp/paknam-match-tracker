@@ -67,7 +67,8 @@ export const useRefereeHandlers = (props: UseRefereeHandlersProps) => {
     addGoal: props.addGoal,
     removeGoal: props.removeGoal,
     addEvent: props.addEvent,
-    assignGoal: props.assignGoal
+    assignGoal: props.assignGoal,
+    updateFixtureScore: props.updateFixtureScore
   });
 
   // Card handlers
