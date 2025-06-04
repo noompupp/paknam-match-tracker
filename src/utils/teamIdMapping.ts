@@ -1,75 +1,34 @@
 
-import { supabase } from '@/integrations/supabase/client';
+/**
+ * Utility functions for mapping between text team IDs and numeric team IDs
+ */
 
-interface TeamIdMapping {
-  stringId: string;
-  numericId: number;
-  teamName: string;
-}
-
-let teamMappingCache: TeamIdMapping[] | null = null;
-
-export const getTeamIdMapping = async (): Promise<TeamIdMapping[]> => {
-  console.log('🔄 TeamIdMapping: Getting team ID mapping...');
-  
-  if (teamMappingCache) {
-    console.log('✅ TeamIdMapping: Using cached mapping:', teamMappingCache);
-    return teamMappingCache;
-  }
-
-  try {
-    const { data: teams, error } = await supabase
-      .from('teams')
-      .select('id, __id__, name');
-
-    if (error) {
-      console.error('❌ TeamIdMapping: Error fetching teams:', error);
-      throw error;
-    }
-
-    teamMappingCache = (teams || []).map(team => ({
-      stringId: team.__id__,
-      numericId: team.id,
-      teamName: team.name
-    }));
-
-    console.log('✅ TeamIdMapping: Created mapping cache:', teamMappingCache);
-    return teamMappingCache;
-  } catch (error) {
-    console.error('❌ TeamIdMapping: Failed to create mapping:', error);
-    throw error;
-  }
-};
-
-export const getNumericTeamId = async (stringTeamId: string): Promise<number> => {
-  console.log('🔍 TeamIdMapping: Converting string ID to numeric:', stringTeamId);
-  
-  const mapping = await getTeamIdMapping();
-  const team = mapping.find(t => t.stringId === stringTeamId);
-  
+export const getNumericTeamId = (textTeamId: string, teams: any[]): number => {
+  const team = teams?.find(t => t.__id__ === textTeamId || t.name === textTeamId);
   if (!team) {
-    throw new Error(`Team with string ID ${stringTeamId} not found in mapping`);
+    throw new Error(`Cannot find numeric team ID for text ID: ${textTeamId}`);
   }
-  
-  console.log(`✅ TeamIdMapping: ${stringTeamId} → ${team.numericId} (${team.teamName})`);
-  return team.numericId;
+  return team.id;
 };
 
-export const getStringTeamId = async (numericTeamId: number): Promise<string> => {
-  console.log('🔍 TeamIdMapping: Converting numeric ID to string:', numericTeamId);
-  
-  const mapping = await getTeamIdMapping();
-  const team = mapping.find(t => t.numericId === numericTeamId);
-  
+export const getTextTeamId = (numericTeamId: number, teams: any[]): string => {
+  const team = teams?.find(t => t.id === numericTeamId);
   if (!team) {
-    throw new Error(`Team with numeric ID ${numericTeamId} not found in mapping`);
+    throw new Error(`Cannot find text team ID for numeric ID: ${numericTeamId}`);
   }
-  
-  console.log(`✅ TeamIdMapping: ${numericTeamId} → ${team.stringId} (${team.teamName})`);
-  return team.stringId;
+  return team.__id__ || team.name;
 };
 
-export const clearTeamMappingCache = (): void => {
-  console.log('🗑️ TeamIdMapping: Clearing cache');
-  teamMappingCache = null;
+export const resolveTeamIdForMatchEvent = (
+  playerTeamName: string,
+  homeTeam: { id: number; name: string },
+  awayTeam: { id: number; name: string }
+): number => {
+  if (playerTeamName === homeTeam.name) {
+    return homeTeam.id;
+  } else if (playerTeamName === awayTeam.name) {
+    return awayTeam.id;
+  } else {
+    throw new Error(`Cannot resolve team ID for player team: ${playerTeamName}. Available teams: ${homeTeam.name}, ${awayTeam.name}`);
+  }
 };

@@ -1,4 +1,3 @@
-
 import { useToast } from "@/hooks/use-toast";
 import { ComponentPlayer, PlayerTimeTrackerPlayer } from "./useRefereeState";
 import { playerTimeTrackingService } from "@/services/fixtures/playerTimeTrackingService";
@@ -30,7 +29,7 @@ interface UseRefereeHandlersProps {
   resetTracking: () => void;
   resetGoals: () => void;
   addEvent: (type: string, description: string, time: number) => void;
-  assignGoal: (player: ComponentPlayer, matchTime: number, fixtureId: number, teamId: number) => any;
+  assignGoal: (player: ComponentPlayer, matchTime: number, fixtureId: number, homeTeam: any, awayTeam: any) => any;
   addCard: (player: ComponentPlayer, team: string, matchTime: number, cardType: 'yellow' | 'red') => any;
   addPlayer: (player: ComponentPlayer, matchTime: number) => any;
   removePlayer: (playerId: number) => void;
@@ -102,27 +101,66 @@ export const useRefereeHandlers = (props: UseRefereeHandlersProps) => {
   };
 
   const handleAssignGoal = async (player: ComponentPlayer) => {
-    if (!props.selectedFixtureData) return;
+    if (!props.selectedFixtureData) {
+      toast({
+        title: "Error",
+        description: "No fixture selected. Please select a match first.",
+        variant: "destructive",
+      });
+      return;
+    }
     
     try {
+      console.log('⚽ useRefereeHandlers: Starting improved goal assignment:', {
+        player: player.name,
+        team: player.team,
+        type: props.selectedGoalType,
+        fixture: props.selectedFixtureData.id
+      });
+
+      // Prepare proper team data for assignment
+      const homeTeam = {
+        id: props.selectedFixtureData.home_team_id,
+        name: props.selectedFixtureData.home_team?.name
+      };
+      
+      const awayTeam = {
+        id: props.selectedFixtureData.away_team_id,
+        name: props.selectedFixtureData.away_team?.name
+      };
+
+      // Validate team data
+      if (!homeTeam.id || !homeTeam.name || !awayTeam.id || !awayTeam.name) {
+        throw new Error('Invalid fixture team data');
+      }
+
       const newGoal = await props.assignGoal(
         player, 
         props.matchTime, 
         props.selectedFixtureData.id, 
-        player.team === props.selectedFixtureData.home_team?.name ? props.selectedFixtureData.home_team_id : props.selectedFixtureData.away_team_id
+        homeTeam,
+        awayTeam
       );
+      
       if (newGoal) {
         props.addEvent('Goal Assignment', `${props.selectedGoalType} assigned to ${player.name}`, props.matchTime);
         toast({
-          title: "Goal Assigned",
-          description: `${props.selectedGoalType} assigned to ${player.name}`,
+          title: "Goal Assigned Successfully",
+          description: `${props.selectedGoalType} assigned to ${player.name} and saved to database`,
         });
+        console.log('✅ useRefereeHandlers: Goal assignment completed successfully');
       }
     } catch (error) {
-      console.error('Failed to assign goal:', error);
+      console.error('❌ useRefereeHandlers: Failed to assign goal:', error);
+      
+      let errorMessage = 'Failed to assign goal';
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      
       toast({
         title: "Assignment Failed",
-        description: "Failed to assign goal. Please try again.",
+        description: errorMessage,
         variant: "destructive"
       });
     }
