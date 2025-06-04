@@ -11,6 +11,7 @@ import PlayerPerformanceHighlights from "./components/PlayerPerformanceHighlight
 import DisciplinaryActionsSection from "./components/DisciplinaryActionsSection";
 import EnhancedPlayerTimeSummary from "./components/EnhancedPlayerTimeSummary";
 import MatchEventsTimeline from "./components/MatchEventsTimeline";
+import EnhancedMatchEventsTimeline from "./components/EnhancedMatchEventsTimeline";
 import { useEnhancedMatchSummary } from '@/hooks/useEnhancedMatchSummary';
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
@@ -51,13 +52,15 @@ const EnhancedMatchSummary = ({
     cards: enhancedData.cards,
     trackedPlayers: enhancedData.playerTimes,
     homeScore: enhancedData.summary.homeTeamGoals,
-    awayScore: enhancedData.summary.awayTeamGoals
+    awayScore: enhancedData.summary.awayTeamGoals,
+    timelineEvents: enhancedData.timelineEvents || []
   } : {
     goals,
     cards,
     trackedPlayers,
     homeScore,
-    awayScore
+    awayScore,
+    timelineEvents: []
   };
 
   return (
@@ -141,11 +144,18 @@ const EnhancedMatchSummary = ({
 
         <Separator />
 
-        {/* Match Events Timeline */}
-        <MatchEventsTimeline
-          events={events}
-          formatTime={formatTime}
-        />
+        {/* Enhanced Match Events Timeline */}
+        {isSuccess && enhancedData && enhancedData.timelineEvents && enhancedData.timelineEvents.length > 0 ? (
+          <EnhancedMatchEventsTimeline
+            timelineEvents={enhancedData.timelineEvents}
+            formatTime={formatTime}
+          />
+        ) : (
+          <MatchEventsTimeline
+            events={events}
+            formatTime={formatTime}
+          />
+        )}
 
         {/* Export Button */}
         <Button onClick={onExportSummary} className="w-full" variant="outline">

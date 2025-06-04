@@ -5,6 +5,7 @@ import {
   processGoalsAndAssists, 
   processCards, 
   processPlayerTimes, 
+  processTimelineEvents,
   calculateSummaryStats,
   processEnhancedFunctionData
 } from './utils';
@@ -39,12 +40,14 @@ export const enhancedMatchSummaryService = {
       const goals = processGoalsAndAssists(matchEvents);
       const cards = processCards(matchEvents);
       const playerTimes = processPlayerTimes(playerTimeData);
+      const timelineEvents = processTimelineEvents(matchEvents);
       const summary = calculateSummaryStats(goals, cards, playerTimes, fixture);
 
       console.log('✅ EnhancedMatchSummaryService: Successfully processed enhanced match summary with fallback:', {
         goalsCount: goals.length,
         cardsCount: cards.length,
         playersWithTime: playerTimes.length,
+        timelineEventsCount: timelineEvents.length,
         summary
       });
 
@@ -52,6 +55,7 @@ export const enhancedMatchSummaryService = {
         goals,
         cards,
         playerTimes,
+        timelineEvents,
         summary
       };
 

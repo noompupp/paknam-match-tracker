@@ -13,7 +13,9 @@ export const processGoalsAndAssists = (matchEvents: any[]) => {
       teamId: event.team_id,
       type: event.event_type as 'goal' | 'assist',
       time: event.event_time,
-      timestamp: event.created_at
+      timestamp: event.created_at,
+      assistPlayerName: event.assist_player_name,
+      assistTeamId: event.assist_team_id
     }));
 };
 
@@ -46,6 +48,26 @@ export const processPlayerTimes = (playerTimeData: any[]) => {
   }));
 };
 
+// Process timeline events from match events
+export const processTimelineEvents = (matchEvents: any[]) => {
+  return matchEvents
+    .filter(event => ['goal', 'assist', 'yellow_card', 'red_card'].includes(event.event_type))
+    .map(event => ({
+      id: event.id,
+      type: event.event_type,
+      time: event.event_time,
+      playerName: event.player_name,
+      teamId: event.team_id,
+      teamName: event.team_name || event.team_id,
+      cardType: event.card_type,
+      assistPlayerName: event.assist_player_name,
+      assistTeamId: event.assist_team_id,
+      description: event.description,
+      timestamp: event.created_at
+    }))
+    .sort((a, b) => a.time - b.time);
+};
+
 // Calculate summary statistics
 export const calculateSummaryStats = (goals: any[], cards: any[], playerTimes: any[], fixture: any) => {
   const homeTeamGoals = goals.filter(goal => goal.teamId === fixture.home_team_id && goal.type === 'goal').length;
@@ -72,11 +94,13 @@ export const processEnhancedFunctionData = (functionResult: any): EnhancedMatchS
   const goals = Array.isArray(functionResult.goals) ? functionResult.goals : [];
   const cards = Array.isArray(functionResult.cards) ? functionResult.cards : [];
   const playerTimes = Array.isArray(functionResult.player_times) ? functionResult.player_times : [];
+  const timelineEvents = Array.isArray(functionResult.timeline_events) ? functionResult.timeline_events : [];
 
   return {
     goals,
     cards,
     playerTimes,
+    timelineEvents,
     summary: functionResult.summary_stats || {
       totalGoals: 0,
       totalAssists: 0,

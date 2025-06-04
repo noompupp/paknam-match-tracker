@@ -389,6 +389,7 @@ export type Database = {
           cards: Json
           player_times: Json
           summary_stats: Json
+          timeline_events: Json
         }[]
       }
       log_operation: {

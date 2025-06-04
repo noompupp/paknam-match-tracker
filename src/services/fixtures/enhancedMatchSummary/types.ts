@@ -9,6 +9,8 @@ export interface EnhancedMatchSummaryData {
     type: 'goal' | 'assist';
     time: number;
     timestamp: string;
+    assistPlayerName?: string;
+    assistTeamId?: string;
   }>;
   cards: Array<{
     id: number;
@@ -43,6 +45,19 @@ export interface EnhancedMatchSummaryData {
     homeTeamCards: number;
     awayTeamCards: number;
   };
+  timelineEvents?: Array<{
+    id: number;
+    type: string;
+    time: number;
+    playerName: string;
+    teamId: string;
+    teamName: string;
+    cardType?: string;
+    assistPlayerName?: string;
+    assistTeamId?: string;
+    description: string;
+    timestamp: string;
+  }>;
 }
 
 export interface EnhancedMatchSummaryWithTeams extends EnhancedMatchSummaryData {
