@@ -103,7 +103,8 @@ export const useMatchDataHandlers = (props: UseMatchDataHandlersProps) => {
       return;
     }
 
-    const safetyCheck = await matchResetService.confirmResetSafety(props.selectedFixtureData.id);
+    // Use the correct method name from matchResetService
+    const safetyCheck = await matchResetService.validateResetOperation(props.selectedFixtureData.id);
     
     if (!safetyCheck.canReset) {
       toast({
@@ -116,10 +117,7 @@ export const useMatchDataHandlers = (props: UseMatchDataHandlersProps) => {
 
     const confirmReset = window.confirm(
       `Are you sure you want to reset all match data for this fixture?\n\n` +
-      `This will delete:\n` +
-      `- ${safetyCheck.info.eventsToDelete} match events\n` +
-      `- ${safetyCheck.info.cardsToDelete} cards\n` +
-      `- ${safetyCheck.info.playerTimesToDelete} player time records\n\n` +
+      `This will delete match events and player time records.\n\n` +
       `This action cannot be undone.`
     );
 
