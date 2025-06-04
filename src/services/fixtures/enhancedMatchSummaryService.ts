@@ -47,6 +47,21 @@ export interface EnhancedMatchSummaryData {
   };
 }
 
+// Helper function to safely cast periods from JSON
+const safeCastPeriods = (periods: any): Array<{ start_time: number; end_time: number; duration: number; }> => {
+  if (!periods || !Array.isArray(periods)) {
+    return [];
+  }
+  
+  return periods.filter((period: any) => 
+    period && 
+    typeof period === 'object' && 
+    typeof period.start_time === 'number' && 
+    typeof period.end_time === 'number' && 
+    typeof period.duration === 'number'
+  );
+};
+
 export const enhancedMatchSummaryService = {
   async getEnhancedMatchSummary(fixtureId: number): Promise<EnhancedMatchSummaryData> {
     console.log('🎯 EnhancedMatchSummaryService: Fetching comprehensive match data for fixture:', fixtureId);
@@ -141,14 +156,14 @@ export const enhancedMatchSummaryService = {
           };
         }) || [];
 
-      // Process player time data with enhanced structure
+      // Process player time data with enhanced structure and proper type casting
       const playerTimes = playerTimeData?.map(timeRecord => ({
         playerId: timeRecord.player_id,
         playerName: timeRecord.player_name,
         team: timeRecord.team_id.toString(),
         teamId: timeRecord.team_id.toString(),
         totalMinutes: timeRecord.total_minutes,
-        periods: timeRecord.periods || []
+        periods: safeCastPeriods(timeRecord.periods)
       })) || [];
 
       // Calculate enhanced summary statistics
