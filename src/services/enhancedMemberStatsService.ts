@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { operationLoggingService } from './operationLoggingService';
 
@@ -17,6 +18,16 @@ interface SafeUpdateResponse {
   error?: string;
   member_id?: number;
   updated_at?: string;
+}
+
+// Type guard to check if the result matches our expected response structure
+function isSafeUpdateResponse(obj: any): obj is SafeUpdateResponse {
+  return (
+    obj &&
+    typeof obj === 'object' &&
+    !Array.isArray(obj) &&
+    typeof obj.success === 'boolean'
+  );
 }
 
 export const enhancedMemberStatsService = {
@@ -57,9 +68,9 @@ export const enhancedMemberStatsService = {
         };
       }
 
-      // Type guard to ensure result has the expected structure
-      if (!result || typeof result !== 'object' || result === null) {
-        const errorMsg = 'Invalid response from safe_update_member_stats';
+      // Use type guard to validate the response structure
+      if (!isSafeUpdateResponse(result)) {
+        const errorMsg = 'Invalid response format from safe_update_member_stats';
         console.error('❌ EnhancedMemberStatsService: Invalid response:', result);
         logData.error_message = errorMsg;
         logData.success = false;
@@ -71,11 +82,9 @@ export const enhancedMemberStatsService = {
         };
       }
 
-      // Cast to expected type after validation
-      const safeResult = result as SafeUpdateResponse;
-
-      if (!safeResult.success) {
-        const errorMsg = safeResult.error || 'Unknown error from safe_update_member_stats';
+      // Now result is properly typed as SafeUpdateResponse
+      if (!result.success) {
+        const errorMsg = result.error || 'Unknown error from safe_update_member_stats';
         console.error('❌ EnhancedMemberStatsService: Function error:', errorMsg);
         logData.error_message = errorMsg;
         logData.success = false;
@@ -87,16 +96,16 @@ export const enhancedMemberStatsService = {
         };
       }
 
-      logData.result = safeResult;
+      logData.result = result;
       logData.success = true;
       await operationLoggingService.logOperation(logData);
 
-      console.log('✅ EnhancedMemberStatsService: Member stats updated successfully:', safeResult);
+      console.log('✅ EnhancedMemberStatsService: Member stats updated successfully:', result);
       
       return {
         success: true,
         message: `Member ${update.memberId} stats updated successfully`,
-        data: safeResult
+        data: result
       };
 
     } catch (error) {
