@@ -122,13 +122,13 @@ export const enhancedMatchSummaryService = {
         }
       });
 
-      // Process player time data
+      // Process player time data with proper type handling
       const playerTimes: EnhancedPlayerTime[] = playerTimeData?.map(timeRecord => ({
         playerId: timeRecord.player_id,
         playerName: timeRecord.player_name,
         team: timeRecord.team_id.toString(),
         totalMinutes: timeRecord.total_minutes,
-        periods: timeRecord.periods || []
+        periods: Array.isArray(timeRecord.periods) ? timeRecord.periods : []
       })) || [];
 
       // Calculate enhanced statistics

@@ -5,6 +5,8 @@ export interface PlayerStatsData {
   id: number;
   name: string;
   team_name: string;
+  position?: string;
+  number?: string;
   goals: number;
   assists: number;
   yellow_cards: number;
@@ -14,6 +16,53 @@ export interface PlayerStatsData {
 }
 
 export const playerStatsApi = {
+  async getAll(): Promise<PlayerStatsData[]> {
+    console.log('📊 PlayerStatsAPI: Fetching all player stats...');
+    
+    try {
+      // Get all members with basic stats
+      const { data: allMembers, error: membersError } = await supabase
+        .from('members')
+        .select('*')
+        .order('goals', { ascending: false });
+
+      if (membersError) {
+        throw membersError;
+      }
+
+      const { data: allTeams, error: teamsError } = await supabase
+        .from('teams')
+        .select('id, __id__, name');
+
+      if (teamsError) {
+        throw teamsError;
+      }
+
+      console.log('✅ PlayerStatsAPI: All player stats fetched:', allMembers?.length || 0);
+
+      return (allMembers || []).map(player => {
+        const team = allTeams?.find(t => t.__id__ === player.team_id || t.id.toString() === player.team_id);
+        return {
+          id: player.id,
+          name: player.name || 'Unknown Player',
+          team_name: team?.name || 'Unknown Team',
+          position: player.position,
+          number: player.number,
+          goals: player.goals || 0,
+          assists: player.assists || 0,
+          yellow_cards: player.yellow_cards || 0,
+          red_cards: player.red_cards || 0,
+          total_minutes_played: player.total_minutes_played || 0,
+          matches_played: player.matches_played || 0
+        };
+      });
+
+    } catch (error) {
+      console.error('❌ PlayerStatsAPI: Error fetching all player stats:', error);
+      throw error;
+    }
+  },
+
   async getTopScorers(limit: number = 10): Promise<PlayerStatsData[]> {
     console.log('🏆 PlayerStatsAPI: Fetching top scorers with fallback strategy...');
     
@@ -24,6 +73,8 @@ export const playerStatsApi = {
         .select(`
           id,
           name,
+          position,
+          number,
           goals,
           assists,
           yellow_cards,
@@ -41,7 +92,9 @@ export const playerStatsApi = {
         return primaryData.map(player => ({
           id: player.id,
           name: player.name || 'Unknown Player',
-          team_name: player.teams?.name || 'Unknown Team',
+          team_name: (player.teams as any)?.name || 'Unknown Team',
+          position: player.position,
+          number: player.number,
           goals: player.goals || 0,
           assists: player.assists || 0,
           yellow_cards: player.yellow_cards || 0,
@@ -82,6 +135,8 @@ export const playerStatsApi = {
           id: player.id,
           name: player.name || 'Unknown Player',
           team_name: team?.name || 'Unknown Team',
+          position: player.position,
+          number: player.number,
           goals: player.goals || 0,
           assists: player.assists || 0,
           yellow_cards: player.yellow_cards || 0,
@@ -107,6 +162,8 @@ export const playerStatsApi = {
         .select(`
           id,
           name,
+          position,
+          number,
           goals,
           assists,
           yellow_cards,
@@ -124,7 +181,9 @@ export const playerStatsApi = {
         return primaryData.map(player => ({
           id: player.id,
           name: player.name || 'Unknown Player',
-          team_name: player.teams?.name || 'Unknown Team',
+          team_name: (player.teams as any)?.name || 'Unknown Team',
+          position: player.position,
+          number: player.number,
           goals: player.goals || 0,
           assists: player.assists || 0,
           yellow_cards: player.yellow_cards || 0,
@@ -165,6 +224,8 @@ export const playerStatsApi = {
           id: player.id,
           name: player.name || 'Unknown Player',
           team_name: team?.name || 'Unknown Team',
+          position: player.position,
+          number: player.number,
           goals: player.goals || 0,
           assists: player.assists || 0,
           yellow_cards: player.yellow_cards || 0,
@@ -215,6 +276,8 @@ export const playerStatsApi = {
         id: player.id,
         name: player.name || 'Unknown Player',
         team_name: team.name,
+        position: player.position,
+        number: player.number,
         goals: player.goals || 0,
         assists: player.assists || 0,
         yellow_cards: player.yellow_cards || 0,
