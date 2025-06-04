@@ -25,13 +25,22 @@ const TimeTab = ({
   formatTime,
   matchTime
 }: TimeTabProps) => {
+  const handleAddPlayer = () => {
+    if (!selectedPlayer) return;
+    
+    const player = allPlayers.find(p => p.id.toString() === selectedPlayer);
+    if (!player) return;
+    
+    onAddPlayer(player);
+  };
+
   return (
     <PlayerTimeTracker
       allPlayers={allPlayers}
       trackedPlayers={trackedPlayers}
       selectedPlayer={selectedPlayer}
       onPlayerSelect={onPlayerSelect}
-      onAddPlayer={onAddPlayer}
+      onAddPlayer={handleAddPlayer}
       onRemovePlayer={onRemovePlayer}
       onTogglePlayerTime={onTogglePlayerTime}
       formatTime={formatTime}

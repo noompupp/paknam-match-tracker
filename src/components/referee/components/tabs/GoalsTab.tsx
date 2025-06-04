@@ -31,6 +31,15 @@ const GoalsTab = ({
   awayScore,
   selectedFixtureData
 }: GoalsTabProps) => {
+  const handleAssignGoal = () => {
+    if (!selectedPlayer) return;
+    
+    const player = allPlayers.find(p => p.id.toString() === selectedPlayer);
+    if (!player) return;
+    
+    onAssignGoal(player);
+  };
+
   return (
     <GoalAssignment
       allPlayers={allPlayers}
@@ -40,7 +49,7 @@ const GoalsTab = ({
       matchTime={matchTime}
       onPlayerSelect={onPlayerSelect}
       onGoalTypeChange={onGoalTypeChange}
-      onAssignGoal={onAssignGoal}
+      onAssignGoal={handleAssignGoal}
       formatTime={formatTime}
       homeScore={homeScore}
       awayScore={awayScore}

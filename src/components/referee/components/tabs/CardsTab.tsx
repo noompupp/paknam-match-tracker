@@ -29,6 +29,15 @@ const CardsTab = ({
   onAddCard,
   formatTime
 }: CardsTabProps) => {
+  const handleAddCard = () => {
+    if (!selectedPlayer || !selectedTeam) return;
+    
+    const player = allPlayers.find(p => p.id.toString() === selectedPlayer);
+    if (!player) return;
+    
+    onAddCard(player.name, selectedTeam, selectedCardType, matchTime);
+  };
+
   return (
     <CardManagementDropdown
       selectedFixtureData={null}
@@ -40,7 +49,7 @@ const CardsTab = ({
       onPlayerSelect={onPlayerSelect}
       onTeamChange={onTeamSelect}
       onCardTypeChange={onCardTypeChange}
-      onAddCard={onAddCard}
+      onAddCard={handleAddCard}
       formatTime={formatTime}
     />
   );
