@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 
 interface DuplicateCheckParams {
@@ -68,8 +69,11 @@ export const enhancedDuplicatePreventionService = {
     };
 
     try {
-      // Find exact duplicates
-      const { data: duplicates, error: findError } = await supabase.rpc('find_duplicate_events');
+      // Find duplicates using a direct query instead of RPC
+      const { data: allEvents, error: findError } = await supabase
+        .from('match_events')
+        .select('*')
+        .order('fixture_id, team_id, player_name, event_type, event_time, created_at');
       
       if (findError) {
         console.error('❌ EnhancedDuplicatePreventionService: Error finding duplicates:', findError);
@@ -77,19 +81,19 @@ export const enhancedDuplicatePreventionService = {
         return result;
       }
 
-      if (!duplicates || duplicates.length === 0) {
-        console.log('✅ EnhancedDuplicatePreventionService: No duplicates found');
+      if (!allEvents || allEvents.length === 0) {
+        console.log('✅ EnhancedDuplicatePreventionService: No events found');
         return result;
       }
 
-      // Group duplicates and keep only the first occurrence
-      const duplicateGroups = new Map();
-      duplicates.forEach((event: any) => {
+      // Group events and find duplicates
+      const duplicateGroups = new Map<string, any[]>();
+      allEvents.forEach((event: any) => {
         const key = `${event.fixture_id}-${event.team_id}-${event.player_name}-${event.event_type}-${event.event_time}`;
         if (!duplicateGroups.has(key)) {
           duplicateGroups.set(key, []);
         }
-        duplicateGroups.get(key).push(event);
+        duplicateGroups.get(key)!.push(event);
       });
 
       // Remove duplicates (keep first, remove rest)

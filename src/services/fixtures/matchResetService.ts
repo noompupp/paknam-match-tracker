@@ -161,28 +161,32 @@ export const matchResetService = {
       const draw = homeScore === awayScore;
 
       // Home team adjustments
+      const homeGoalsFor = Math.max(0, homeTeam.goals_for - homeScore);
+      const homeGoalsAgainst = Math.max(0, homeTeam.goals_against - awayScore);
       const homeAdjustments = {
         played: Math.max(0, homeTeam.played - 1),
         won: Math.max(0, homeTeam.won - (homeWin ? 1 : 0)),
         drawn: Math.max(0, homeTeam.drawn - (draw ? 1 : 0)),
         lost: Math.max(0, homeTeam.lost - (awayWin ? 1 : 0)),
-        goals_for: Math.max(0, homeTeam.goals_for - homeScore),
-        goals_against: Math.max(0, homeTeam.goals_against - awayScore),
+        goals_for: homeGoalsFor,
+        goals_against: homeGoalsAgainst,
+        goal_difference: homeGoalsFor - homeGoalsAgainst,
         points: Math.max(0, homeTeam.points - (homeWin ? 3 : draw ? 1 : 0))
       };
-      homeAdjustments.goal_difference = homeAdjustments.goals_for - homeAdjustments.goals_against;
 
       // Away team adjustments
+      const awayGoalsFor = Math.max(0, awayTeam.goals_for - awayScore);
+      const awayGoalsAgainst = Math.max(0, awayTeam.goals_against - homeScore);
       const awayAdjustments = {
         played: Math.max(0, awayTeam.played - 1),
         won: Math.max(0, awayTeam.won - (awayWin ? 1 : 0)),
         drawn: Math.max(0, awayTeam.drawn - (draw ? 1 : 0)),
         lost: Math.max(0, awayTeam.lost - (homeWin ? 1 : 0)),
-        goals_for: Math.max(0, awayTeam.goals_for - awayScore),
-        goals_against: Math.max(0, awayTeam.goals_against - homeScore),
+        goals_for: awayGoalsFor,
+        goals_against: awayGoalsAgainst,
+        goal_difference: awayGoalsFor - awayGoalsAgainst,
         points: Math.max(0, awayTeam.points - (awayWin ? 3 : draw ? 1 : 0))
       };
-      awayAdjustments.goal_difference = awayAdjustments.goals_for - awayAdjustments.goals_against;
 
       // Update home team
       await supabase

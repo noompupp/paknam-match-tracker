@@ -39,7 +39,7 @@ export const playerTimeTrackingService = {
           .from('player_time_tracking')
           .update({
             total_minutes: data.total_minutes,
-            periods: data.periods,
+            periods: data.periods as any, // Cast to any for JSON compatibility
             updated_at: new Date().toISOString()
           })
           .eq('id', existing.id);
@@ -53,14 +53,14 @@ export const playerTimeTrackingService = {
         // Insert new record
         const { error: insertError } = await supabase
           .from('player_time_tracking')
-          .insert([{
+          .insert({
             fixture_id: data.fixture_id,
             player_id: data.player_id,
             player_name: data.player_name,
             team_id: data.team_id,
             total_minutes: data.total_minutes,
-            periods: data.periods
-          }]);
+            periods: data.periods as any // Cast to any for JSON compatibility
+          });
 
         if (insertError) {
           throw insertError;
@@ -87,7 +87,15 @@ export const playerTimeTrackingService = {
         throw error;
       }
 
-      return data || [];
+      // Transform the data to match our interface
+      return (data || []).map(item => ({
+        fixture_id: item.fixture_id,
+        player_id: item.player_id,
+        player_name: item.player_name,
+        team_id: item.team_id,
+        total_minutes: item.total_minutes,
+        periods: (item.periods as any) || [] // Cast from Json to our type
+      }));
     } catch (error) {
       console.error('❌ PlayerTimeTrackingService: Error fetching player times:', error);
       throw error;
