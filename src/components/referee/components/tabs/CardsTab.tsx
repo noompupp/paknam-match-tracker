@@ -3,42 +3,42 @@ import CardManagementDropdown from "../../CardManagementDropdown";
 import { ComponentPlayer } from "../../hooks/useRefereeState";
 
 interface CardsTabProps {
-  selectedFixtureData: any;
   allPlayers: ComponentPlayer[];
+  cards: any[];
   selectedPlayer: string;
   selectedTeam: string;
   selectedCardType: 'yellow' | 'red';
-  cards: any[];
-  onPlayerSelect: (playerId: string) => void;
-  onTeamChange: (team: string) => void;
-  onCardTypeChange: (cardType: 'yellow' | 'red') => void;
+  matchTime: number;
+  onPlayerSelect: (value: string) => void;
+  onTeamSelect: (value: string) => void;
+  onCardTypeChange: (value: 'yellow' | 'red') => void;
   onAddCard: () => void;
   formatTime: (seconds: number) => string;
 }
 
 const CardsTab = ({
-  selectedFixtureData,
   allPlayers,
+  cards,
   selectedPlayer,
   selectedTeam,
   selectedCardType,
-  cards,
+  matchTime,
   onPlayerSelect,
-  onTeamChange,
+  onTeamSelect,
   onCardTypeChange,
   onAddCard,
   formatTime
 }: CardsTabProps) => {
   return (
     <CardManagementDropdown
-      selectedFixtureData={selectedFixtureData}
+      selectedFixtureData={null}
       allPlayers={allPlayers}
       selectedPlayer={selectedPlayer}
       selectedTeam={selectedTeam}
       selectedCardType={selectedCardType}
       cards={cards}
       onPlayerSelect={onPlayerSelect}
-      onTeamChange={onTeamChange}
+      onTeamChange={onTeamSelect}
       onCardTypeChange={onCardTypeChange}
       onAddCard={onAddCard}
       formatTime={formatTime}

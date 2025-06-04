@@ -6,12 +6,12 @@ interface TimeTabProps {
   allPlayers: ComponentPlayer[];
   trackedPlayers: any[];
   selectedPlayer: string;
+  matchTime: number;
   onPlayerSelect: (value: string) => void;
   onAddPlayer: () => void;
   onRemovePlayer: (playerId: number) => void;
   onTogglePlayerTime: (playerId: number) => void;
   formatTime: (seconds: number) => string;
-  matchTime: number;
 }
 
 const TimeTab = ({
