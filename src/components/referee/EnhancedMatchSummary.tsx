@@ -67,7 +67,7 @@ const EnhancedMatchSummary = ({
           <Trophy className="h-5 w-5" />
           Enhanced Match Summary
           {isSuccess && enhancedData && (
-            <Database className="h-4 w-4 text-green-600" title="Powered by enhanced database service" />
+            <Database className="h-4 w-4 text-green-600" />
           )}
         </CardTitle>
       </CardHeader>
