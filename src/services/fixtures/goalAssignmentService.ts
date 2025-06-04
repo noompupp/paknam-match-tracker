@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { incrementPlayerGoals, incrementPlayerAssists } from './playerStatsUpdateService';
 
@@ -53,7 +52,7 @@ export const assignGoalToPlayer = async (assignment: GoalAssignment): Promise<vo
 
     console.log('✅ GoalAssignmentService: Fixture validation passed:', fixture);
 
-    // Verify player exists and get current stats - Fixed query without join
+    // Verify player exists and get current stats
     const { data: player, error: playerError } = await supabase
       .from('members')
       .select('id, name, team_id, goals, assists')

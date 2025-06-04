@@ -1,58 +1,64 @@
 
+interface TeamInfo {
+  id: number;
+  name: string;
+}
+
 export const resolveTeamIdForMatchEvent = (
-  teamName: string,
-  homeTeam: { id: number; name: string },
-  awayTeam: { id: number; name: string }
+  playerTeamName: string,
+  homeTeam: TeamInfo,
+  awayTeam: TeamInfo
 ): number => {
-  console.log('🔍 TeamIdMapping: Resolving team ID for:', {
-    teamName,
+  console.log('🔍 TeamIdMapping: Resolving team ID for player team:', {
+    playerTeamName,
     homeTeam: homeTeam.name,
     awayTeam: awayTeam.name
   });
 
-  // Direct name matching first
-  if (teamName === homeTeam.name) {
-    console.log('✅ TeamIdMapping: Matched home team');
+  // Direct team name matching
+  if (playerTeamName === homeTeam.name) {
+    console.log('✅ TeamIdMapping: Matched home team:', homeTeam.id);
     return homeTeam.id;
   }
   
-  if (teamName === awayTeam.name) {
-    console.log('✅ TeamIdMapping: Matched away team');
+  if (playerTeamName === awayTeam.name) {
+    console.log('✅ TeamIdMapping: Matched away team:', awayTeam.id);
     return awayTeam.id;
   }
-  
-  // Fallback: case-insensitive partial matching
-  const lowerTeamName = teamName.toLowerCase();
-  const lowerHomeName = homeTeam.name.toLowerCase();
-  const lowerAwayName = awayTeam.name.toLowerCase();
-  
-  if (lowerHomeName.includes(lowerTeamName) || lowerTeamName.includes(lowerHomeName)) {
-    console.log('✅ TeamIdMapping: Fuzzy matched home team');
+
+  // Fallback to case-insensitive matching
+  const normalizedPlayerTeam = playerTeamName.toLowerCase().trim();
+  const normalizedHomeTeam = homeTeam.name.toLowerCase().trim();
+  const normalizedAwayTeam = awayTeam.name.toLowerCase().trim();
+
+  if (normalizedPlayerTeam === normalizedHomeTeam) {
+    console.log('✅ TeamIdMapping: Matched home team (case-insensitive):', homeTeam.id);
     return homeTeam.id;
   }
   
-  if (lowerAwayName.includes(lowerTeamName) || lowerTeamName.includes(lowerAwayName)) {
-    console.log('✅ TeamIdMapping: Fuzzy matched away team');
+  if (normalizedPlayerTeam === normalizedAwayTeam) {
+    console.log('✅ TeamIdMapping: Matched away team (case-insensitive):', awayTeam.id);
     return awayTeam.id;
   }
+
+  // If no match found, throw error instead of defaulting
+  console.error('❌ TeamIdMapping: No team match found for:', {
+    playerTeamName,
+    availableTeams: [homeTeam.name, awayTeam.name]
+  });
   
-  console.error('❌ TeamIdMapping: No team match found, defaulting to home team');
-  return homeTeam.id; // Default fallback
+  throw new Error(`Cannot resolve team ID for player team "${playerTeamName}". Available teams: ${homeTeam.name}, ${awayTeam.name}`);
 };
 
-export const resolveTeamNameFromId = (
-  teamId: number,
-  homeTeam: { id: number; name: string },
-  awayTeam: { id: number; name: string }
-): string => {
-  if (teamId === homeTeam.id) {
-    return homeTeam.name;
-  }
+export const validateTeamData = (homeTeam: TeamInfo, awayTeam: TeamInfo): boolean => {
+  const isValid = !!(
+    homeTeam?.id && 
+    homeTeam?.name && 
+    awayTeam?.id && 
+    awayTeam?.name &&
+    homeTeam.id !== awayTeam.id
+  );
   
-  if (teamId === awayTeam.id) {
-    return awayTeam.name;
-  }
-  
-  console.warn('⚠️ TeamIdMapping: Unknown team ID, returning "Unknown Team"');
-  return 'Unknown Team';
+  console.log('🔍 TeamIdMapping: Team data validation:', { isValid, homeTeam, awayTeam });
+  return isValid;
 };

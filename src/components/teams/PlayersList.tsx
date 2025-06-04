@@ -53,21 +53,27 @@ const PlayersList = ({ players, isLoading }: PlayersListProps) => {
     );
   }
 
-  // Enhanced sorting: Captain → S-class → Starter → Others
+  // Enhanced sorting: Captain → S-class → Starter → Others (by name)
   const sortedPlayers = [...players].sort((a, b) => {
-    // Captain first
-    if (a.role === 'Captain' && b.role !== 'Captain') return -1;
-    if (b.role === 'Captain' && a.role !== 'Captain') return 1;
-    
-    // S-class second
-    if (a.role === 'S-class' && b.role !== 'S-class' && b.role !== 'Captain') return -1;
-    if (b.role === 'S-class' && a.role !== 'S-class' && a.role !== 'Captain') return 1;
-    
-    // Starter third
-    if (a.role === 'Starter' && !['Captain', 'S-class'].includes(b.role || '')) return -1;
-    if (b.role === 'Starter' && !['Captain', 'S-class'].includes(a.role || '')) return 1;
-    
-    // Then by name
+    // Define role hierarchy with explicit priority values
+    const getRolePriority = (role: string | undefined): number => {
+      switch (role) {
+        case 'Captain': return 1;
+        case 'S-class': return 2;
+        case 'Starter': return 3;
+        default: return 4;
+      }
+    };
+
+    const aPriority = getRolePriority(a.role);
+    const bPriority = getRolePriority(b.role);
+
+    // Sort by role priority first
+    if (aPriority !== bPriority) {
+      return aPriority - bPriority;
+    }
+
+    // If same role priority, sort by name alphabetically
     return a.name.localeCompare(b.name);
   });
 
