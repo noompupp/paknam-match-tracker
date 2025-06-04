@@ -34,9 +34,9 @@ interface RefereeMatchControlsContainerProps {
   onToggleTimer: () => void;
   onResetMatch: () => void;
   onSaveMatch: () => void;
-  onAssignGoal: (player: ComponentPlayer) => void;
-  onAddCard: (playerName: string, team: string, cardType: 'yellow' | 'red', time: number) => void;
-  onAddPlayer: (player: ComponentPlayer) => void;
+  onAssignGoal: () => void;
+  onAddCard: () => void;
+  onAddPlayer: () => void;
   onRemovePlayer: (playerId: number) => void;
   onTogglePlayerTime: (playerId: number) => void;
   onExportSummary: () => void;
