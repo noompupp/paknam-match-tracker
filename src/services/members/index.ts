@@ -46,11 +46,11 @@ export const membersApi = {
       filteredMembersCount: teamMembers.length
     });
     
-    // Ensure team has required timestamp properties
+    // Ensure team has required timestamp properties without accessing non-existent properties
     const enhancedTeam = {
       ...team,
-      created_at: team.created_at || new Date().toISOString(),
-      updated_at: team.updated_at || new Date().toISOString()
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
     };
     
     return processTeamMembersData(teamMembers, enhancedTeam, teamId);
