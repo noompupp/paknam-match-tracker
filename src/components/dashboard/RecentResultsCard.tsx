@@ -88,8 +88,8 @@ const RecentResultsCard = ({ recentFixtures, isLoading }: RecentResultsCardProps
       {selectedFixture && (
         <MatchSummaryDialog
           fixture={selectedFixture}
-          open={!!selectedFixture}
-          onOpenChange={handleCloseDialog}
+          isOpen={!!selectedFixture}
+          onClose={handleCloseDialog}
         />
       )}
     </>
