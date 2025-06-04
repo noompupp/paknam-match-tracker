@@ -5,129 +5,114 @@ interface DuplicateCheckParams {
   teamId: number;
   playerName: string;
   eventTime: number;
-  eventType: 'goal' | 'assist' | 'yellow_card' | 'red_card';
+  eventType: string;
 }
 
 interface DuplicateCheckResult {
   isDuplicate: boolean;
-  existingEventId?: number;
   message?: string;
-  duplicateCount?: number;
+  existingEvents?: any[];
+}
+
+interface CleanupResult {
+  removedCount: number;
+  errors: string[];
 }
 
 export const enhancedDuplicatePreventionService = {
   async checkForDuplicateEvent(params: DuplicateCheckParams): Promise<DuplicateCheckResult> {
-    console.log('🔍 EnhancedDuplicatePreventionService: Checking for duplicates:', params);
-
+    console.log('🔍 EnhancedDuplicatePreventionService: Checking for duplicate event:', params);
+    
     try {
+      const { fixtureId, teamId, playerName, eventTime, eventType } = params;
+      
+      // Check for exact duplicates within a 30-second window
+      const timeWindow = 30;
       const { data: existingEvents, error } = await supabase
         .from('match_events')
-        .select('id, player_name, event_time, created_at')
-        .eq('fixture_id', params.fixtureId)
-        .eq('team_id', params.teamId)
-        .eq('event_type', params.eventType)
-        .eq('player_name', params.playerName)
-        .eq('event_time', params.eventTime);
+        .select('*')
+        .eq('fixture_id', fixtureId)
+        .eq('team_id', teamId)
+        .eq('player_name', playerName)
+        .eq('event_type', eventType)
+        .gte('event_time', eventTime - timeWindow)
+        .lte('event_time', eventTime + timeWindow);
 
       if (error) {
         console.error('❌ EnhancedDuplicatePreventionService: Error checking duplicates:', error);
-        return { isDuplicate: false, message: 'Error checking for duplicates' };
+        return { isDuplicate: false };
       }
 
       if (existingEvents && existingEvents.length > 0) {
-        console.log('⚠️ EnhancedDuplicatePreventionService: Duplicate event found:', existingEvents);
+        console.warn('⚠️ EnhancedDuplicatePreventionService: Duplicate event detected:', existingEvents);
         return {
           isDuplicate: true,
-          existingEventId: existingEvents[0].id,
-          duplicateCount: existingEvents.length,
-          message: `${params.eventType} already assigned to ${params.playerName} at ${params.eventTime} seconds`
+          message: `Duplicate ${eventType} event for ${playerName} already exists within 30 seconds`,
+          existingEvents
         };
       }
 
-      console.log('✅ EnhancedDuplicatePreventionService: No duplicates found');
       return { isDuplicate: false };
-
     } catch (error) {
-      console.error('❌ EnhancedDuplicatePreventionService: Critical error:', error);
-      return { isDuplicate: false, message: 'Critical error checking duplicates' };
+      console.error('❌ EnhancedDuplicatePreventionService: Error in duplicate check:', error);
+      return { isDuplicate: false };
     }
   },
 
-  async cleanupAllDuplicateEvents(): Promise<{ removedCount: number; errors: string[]; summary: any }> {
+  async cleanupAllDuplicateEvents(): Promise<CleanupResult> {
     console.log('🧹 EnhancedDuplicatePreventionService: Starting comprehensive duplicate cleanup...');
     
-    const result = { removedCount: 0, errors: [], summary: {} };
+    const result: CleanupResult = {
+      removedCount: 0,
+      errors: []
+    };
 
     try {
-      // Get all match events grouped by potential duplicate keys
-      const { data: events, error } = await supabase
-        .from('match_events')
-        .select('*')
-        .order('fixture_id, event_type, team_id, player_name, event_time, created_at');
-
-      if (error) {
-        result.errors.push(`Error fetching events: ${error.message}`);
-        return result;
-      }
-
-      if (!events || events.length === 0) {
-        console.log('📊 EnhancedDuplicatePreventionService: No events found for cleanup');
-        return result;
-      }
-
-      // Group events by potential duplicate criteria
-      const eventGroups = new Map<string, any[]>();
+      // Find exact duplicates
+      const { data: duplicates, error: findError } = await supabase.rpc('find_duplicate_events');
       
-      for (const event of events) {
-        const key = `${event.fixture_id}-${event.event_type}-${event.team_id}-${event.player_name}-${event.event_time}`;
-        if (!eventGroups.has(key)) {
-          eventGroups.set(key, []);
-        }
-        eventGroups.get(key)!.push(event);
+      if (findError) {
+        console.error('❌ EnhancedDuplicatePreventionService: Error finding duplicates:', findError);
+        result.errors.push(`Failed to find duplicates: ${findError.message}`);
+        return result;
       }
 
-      console.log(`📊 EnhancedDuplicatePreventionService: Found ${eventGroups.size} unique event groups`);
+      if (!duplicates || duplicates.length === 0) {
+        console.log('✅ EnhancedDuplicatePreventionService: No duplicates found');
+        return result;
+      }
 
-      // Process each group for duplicates
-      for (const [key, groupEvents] of eventGroups) {
-        if (groupEvents.length > 1) {
-          console.log(`🗑️ EnhancedDuplicatePreventionService: Found ${groupEvents.length} duplicates for key: ${key}`);
-          
-          // Sort by created_at to keep the earliest entry
-          groupEvents.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
-          
-          // Keep the first event, remove the rest
-          const eventsToRemove = groupEvents.slice(1);
+      // Group duplicates and keep only the first occurrence
+      const duplicateGroups = new Map();
+      duplicates.forEach((event: any) => {
+        const key = `${event.fixture_id}-${event.team_id}-${event.player_name}-${event.event_type}-${event.event_time}`;
+        if (!duplicateGroups.has(key)) {
+          duplicateGroups.set(key, []);
+        }
+        duplicateGroups.get(key).push(event);
+      });
+
+      // Remove duplicates (keep first, remove rest)
+      for (const [key, events] of duplicateGroups) {
+        if (events.length > 1) {
+          const eventsToRemove = events.slice(1); // Keep first, remove rest
           
           for (const eventToRemove of eventsToRemove) {
-            try {
-              const { error: deleteError } = await supabase
-                .from('match_events')
-                .delete()
-                .eq('id', eventToRemove.id);
+            const { error: deleteError } = await supabase
+              .from('match_events')
+              .delete()
+              .eq('id', eventToRemove.id);
 
-              if (deleteError) {
-                result.errors.push(`Failed to delete event ${eventToRemove.id}: ${deleteError.message}`);
-              } else {
-                result.removedCount++;
-                console.log(`✅ EnhancedDuplicatePreventionService: Removed duplicate event:`, eventToRemove);
-              }
-            } catch (error) {
-              result.errors.push(`Error deleting event ${eventToRemove.id}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+            if (deleteError) {
+              result.errors.push(`Failed to delete event ${eventToRemove.id}: ${deleteError.message}`);
+            } else {
+              result.removedCount++;
             }
           }
         }
       }
 
-      // Generate summary
-      result.summary = {
-        totalEventsProcessed: events.length,
-        uniqueEventGroups: eventGroups.size,
-        duplicateGroupsFound: Array.from(eventGroups.values()).filter(group => group.length > 1).length,
-        duplicatesRemoved: result.removedCount
-      };
-
-      console.log('✅ EnhancedDuplicatePreventionService: Cleanup completed:', result);
+      console.log(`✅ EnhancedDuplicatePreventionService: Cleanup completed. Removed ${result.removedCount} duplicates`);
       return result;
 
     } catch (error) {
@@ -137,82 +122,34 @@ export const enhancedDuplicatePreventionService = {
     }
   },
 
-  async validateEventIntegrity(fixtureId?: number): Promise<{ isValid: boolean; issues: string[]; recommendations: string[] }> {
-    console.log('🔍 EnhancedDuplicatePreventionService: Validating event integrity');
+  async preventDuplicateGoalAssignment(fixtureId: number, playerName: string, eventType: 'goal' | 'assist', eventTime: number): Promise<boolean> {
+    console.log('⚽ EnhancedDuplicatePreventionService: Checking goal assignment duplication...');
     
-    const issues: string[] = [];
-    const recommendations: string[] = [];
-
     try {
-      let query = supabase.from('match_events').select('*');
-      
-      if (fixtureId) {
-        query = query.eq('fixture_id', fixtureId);
-      }
-
-      const { data: events, error } = await query;
+      const { data: existing, error } = await supabase
+        .from('match_events')
+        .select('id')
+        .eq('fixture_id', fixtureId)
+        .eq('player_name', playerName)
+        .eq('event_type', eventType)
+        .gte('event_time', eventTime - 10) // 10 second window
+        .lte('event_time', eventTime + 10);
 
       if (error) {
-        issues.push(`Error fetching events: ${error.message}`);
-        return { isValid: false, issues, recommendations };
+        console.error('❌ EnhancedDuplicatePreventionService: Error checking goal duplicates:', error);
+        return false;
       }
 
-      if (!events || events.length === 0) {
-        return { isValid: true, issues: [], recommendations: ['No events found to validate'] };
+      const isDuplicate = existing && existing.length > 0;
+      
+      if (isDuplicate) {
+        console.warn('⚠️ EnhancedDuplicatePreventionService: Duplicate goal assignment prevented');
       }
 
-      // Check for various integrity issues
-      const duplicateKeys = new Set<string>();
-      const eventsByFixture = new Map<number, any[]>();
-
-      events.forEach(event => {
-        // Check for exact duplicates
-        const duplicateKey = `${event.fixture_id}-${event.event_type}-${event.team_id}-${event.player_name}-${event.event_time}`;
-        if (duplicateKeys.has(duplicateKey)) {
-          issues.push(`Duplicate event found: ${event.event_type} for ${event.player_name} at time ${event.event_time}`);
-        } else {
-          duplicateKeys.add(duplicateKey);
-        }
-
-        // Group by fixture
-        if (!eventsByFixture.has(event.fixture_id)) {
-          eventsByFixture.set(event.fixture_id, []);
-        }
-        eventsByFixture.get(event.fixture_id)!.push(event);
-
-        // Check for data quality issues
-        if (!event.player_name || event.player_name.trim() === '') {
-          issues.push(`Event ${event.id} has empty player name`);
-        }
-
-        if (event.event_time < 0) {
-          issues.push(`Event ${event.id} has negative event time: ${event.event_time}`);
-        }
-
-        if (!['goal', 'assist', 'yellow_card', 'red_card'].includes(event.event_type)) {
-          issues.push(`Event ${event.id} has invalid event type: ${event.event_type}`);
-        }
-      });
-
-      // Generate recommendations
-      if (issues.length > 0) {
-        recommendations.push('Run duplicate cleanup to resolve duplicate events');
-        recommendations.push('Validate player names and event times');
-        recommendations.push('Consider implementing stricter validation before event creation');
-      }
-
-      const isValid = issues.length === 0;
-      console.log(`🔍 EnhancedDuplicatePreventionService: Validation ${isValid ? 'passed' : 'failed'}:`, { issues, recommendations });
-
-      return { isValid, issues, recommendations };
-
+      return isDuplicate;
     } catch (error) {
-      console.error('❌ EnhancedDuplicatePreventionService: Error during validation:', error);
-      return {
-        isValid: false,
-        issues: [`Validation error: ${error instanceof Error ? error.message : 'Unknown error'}`],
-        recommendations: ['Check database connectivity and try again']
-      };
+      console.error('❌ EnhancedDuplicatePreventionService: Error in goal duplicate check:', error);
+      return false;
     }
   }
 };

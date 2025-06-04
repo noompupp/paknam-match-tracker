@@ -1,364 +1,291 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { incrementPlayerGoals, incrementPlayerAssists } from './playerStatsUpdateService';
 
-interface PlayerStatsSyncResult {
+interface SyncResult {
   playersUpdated: number;
   goalsAdded: number;
   assistsAdded: number;
   errors: string[];
   warnings: string[];
-  details: {
-    goalEvents: number;
-    assistEvents: number;
-    playersWithoutMatch: string[];
-    duplicateEvents: number;
-  };
 }
 
-export const syncExistingMatchEvents = async (): Promise<PlayerStatsSyncResult> => {
+interface ValidationResult {
+  isValid: boolean;
+  issues: string[];
+}
+
+interface CleanupResult {
+  removedEvents: number;
+  errors: string[];
+}
+
+export const syncExistingMatchEvents = async (): Promise<SyncResult> => {
   console.log('🔄 PlayerStatsSyncService: Starting comprehensive sync of existing match events...');
   
-  const result: PlayerStatsSyncResult = {
+  const result: SyncResult = {
     playersUpdated: 0,
     goalsAdded: 0,
     assistsAdded: 0,
     errors: [],
-    warnings: [],
-    details: {
-      goalEvents: 0,
-      assistEvents: 0,
-      playersWithoutMatch: [],
-      duplicateEvents: 0
-    }
+    warnings: []
   };
 
   try {
-    // Get all match events with assigned players (not "Unknown Player")
-    const { data: matchEvents, error: eventsError } = await supabase
+    // Get all match events that affect player stats
+    const { data: events, error: eventsError } = await supabase
       .from('match_events')
-      .select('*')
-      .neq('player_name', 'Unknown Player')
+      .select(`
+        id,
+        fixture_id,
+        event_type,
+        player_name,
+        team_id,
+        event_time,
+        description
+      `)
       .in('event_type', ['goal', 'assist'])
-      .order('created_at', { ascending: true });
+      .order('fixture_id', { ascending: true })
+      .order('event_time', { ascending: true });
 
     if (eventsError) {
-      console.error('❌ PlayerStatsSyncService: Error fetching match events:', eventsError);
-      throw eventsError;
+      throw new Error(`Failed to fetch match events: ${eventsError.message}`);
     }
 
-    if (!matchEvents || matchEvents.length === 0) {
-      console.log('📊 PlayerStatsSyncService: No assigned match events found to sync');
+    if (!events || events.length === 0) {
+      console.log('✅ PlayerStatsSyncService: No match events found to sync');
       return result;
     }
 
-    console.log(`📊 PlayerStatsSyncService: Found ${matchEvents.length} assigned match events to sync`);
+    console.log(`📊 PlayerStatsSyncService: Found ${events.length} events to process`);
 
-    // Get all members to match by name
-    const { data: members, error: membersError } = await supabase
-      .from('members')
-      .select('id, name, goals, assists');
+    // Group events by player name to batch updates
+    const playerEvents = new Map<string, { goals: number; assists: number; playerId?: number }>();
 
-    if (membersError) {
-      console.error('❌ PlayerStatsSyncService: Error fetching members:', membersError);
-      throw membersError;
-    }
-
-    if (!members) {
-      throw new Error('No members found in database');
-    }
-
-    // Group events by player name and type, track duplicates
-    const playerStats = new Map<string, { 
-      goals: number; 
-      assists: number; 
-      playerId?: number;
-      goalEvents: any[];
-      assistEvents: any[];
-    }>();
-
-    for (const event of matchEvents) {
-      const playerName = event.player_name;
-      
-      if (!playerStats.has(playerName)) {
-        playerStats.set(playerName, { 
-          goals: 0, 
-          assists: 0,
-          goalEvents: [],
-          assistEvents: []
-        });
+    for (const event of events) {
+      if (!playerEvents.has(event.player_name)) {
+        playerEvents.set(event.player_name, { goals: 0, assists: 0 });
       }
 
-      const stats = playerStats.get(playerName)!;
+      const playerData = playerEvents.get(event.player_name)!;
       
       if (event.event_type === 'goal') {
-        stats.goals += 1;
-        stats.goalEvents.push(event);
-        result.details.goalEvents += 1;
+        playerData.goals++;
+        result.goalsAdded++;
       } else if (event.event_type === 'assist') {
-        stats.assists += 1;
-        stats.assistEvents.push(event);
-        result.details.assistEvents += 1;
-      }
-
-      // Find matching member by name (case-insensitive)
-      const member = members.find(m => 
-        m.name?.toLowerCase() === playerName.toLowerCase()
-      );
-      if (member) {
-        stats.playerId = member.id;
+        playerData.assists++;
+        result.assistsAdded++;
       }
     }
 
-    console.log('📊 PlayerStatsSyncService: Calculated stats from match events:', 
-      Array.from(playerStats.entries()).map(([name, stats]) => ({
-        name,
-        goals: stats.goals,
-        assists: stats.assists,
-        hasPlayerId: !!stats.playerId
-      }))
-    );
-
-    // Update each player's stats
-    for (const [playerName, stats] of playerStats) {
-      if (!stats.playerId) {
-        result.errors.push(`Player "${playerName}" not found in members table`);
-        result.details.playersWithoutMatch.push(playerName);
-        continue;
-      }
-
+    // Find player IDs and update stats
+    for (const [playerName, stats] of playerEvents) {
       try {
-        // Get current stats
-        const member = members.find(m => m.id === stats.playerId);
-        if (!member) continue;
+        // Find player in database
+        const { data: players, error: playerError } = await supabase
+          .from('members')
+          .select('id, name, goals, assists')
+          .ilike('name', playerName)
+          .limit(1);
 
-        const currentGoals = member.goals || 0;
-        const currentAssists = member.assists || 0;
-
-        // Calculate the difference (what we need to add)
-        const goalsToAdd = Math.max(0, stats.goals - currentGoals);
-        const assistsToAdd = Math.max(0, stats.assists - currentAssists);
-
-        // Check for potential issues
-        if (stats.goals < currentGoals) {
-          result.warnings.push(
-            `Player ${playerName} has more goals in database (${currentGoals}) than in match events (${stats.goals})`
-          );
-        }
-        
-        if (stats.assists < currentAssists) {
-          result.warnings.push(
-            `Player ${playerName} has more assists in database (${currentAssists}) than in match events (${stats.assists})`
-          );
+        if (playerError) {
+          result.errors.push(`Error finding player "${playerName}": ${playerError.message}`);
+          continue;
         }
 
-        if (goalsToAdd > 0) {
-          await incrementPlayerGoals(stats.playerId, goalsToAdd);
-          result.goalsAdded += goalsToAdd;
-          console.log(`✅ PlayerStatsSyncService: Added ${goalsToAdd} goals to ${playerName} (${currentGoals} → ${currentGoals + goalsToAdd})`);
+        if (!players || players.length === 0) {
+          result.warnings.push(`Player "${playerName}" not found in members table`);
+          continue;
         }
 
-        if (assistsToAdd > 0) {
-          await incrementPlayerAssists(stats.playerId, assistsToAdd);
-          result.assistsAdded += assistsToAdd;
-          console.log(`✅ PlayerStatsSyncService: Added ${assistsToAdd} assists to ${playerName} (${currentAssists} → ${currentAssists + assistsToAdd})`);
+        const player = players[0];
+        const currentGoals = player.goals || 0;
+        const currentAssists = player.assists || 0;
+
+        // Calculate expected totals based on events
+        const expectedGoals = stats.goals;
+        const expectedAssists = stats.assists;
+
+        // Only update if there's a difference
+        let needsUpdate = false;
+        let goalsDiff = 0;
+        let assistsDiff = 0;
+
+        if (currentGoals !== expectedGoals) {
+          goalsDiff = expectedGoals - currentGoals;
+          needsUpdate = true;
         }
 
-        if (goalsToAdd > 0 || assistsToAdd > 0) {
-          result.playersUpdated += 1;
+        if (currentAssists !== expectedAssists) {
+          assistsDiff = expectedAssists - currentAssists;
+          needsUpdate = true;
+        }
+
+        if (needsUpdate) {
+          // Update player stats to match events
+          const { error: updateError } = await supabase
+            .from('members')
+            .update({
+              goals: expectedGoals,
+              assists: expectedAssists
+            })
+            .eq('id', player.id);
+
+          if (updateError) {
+            result.errors.push(`Error updating player "${playerName}": ${updateError.message}`);
+          } else {
+            result.playersUpdated++;
+            console.log(`✅ PlayerStatsSyncService: Updated ${playerName}: goals ${currentGoals} → ${expectedGoals}, assists ${currentAssists} → ${expectedAssists}`);
+          }
+        } else {
+          console.log(`✅ PlayerStatsSyncService: Player "${playerName}" stats already correct`);
         }
 
       } catch (error) {
-        const errorMsg = `Failed to update stats for ${playerName}: ${error instanceof Error ? error.message : 'Unknown error'}`;
-        result.errors.push(errorMsg);
-        console.error('❌ PlayerStatsSyncService:', errorMsg);
+        result.errors.push(`Unexpected error processing player "${playerName}": ${error instanceof Error ? error.message : 'Unknown error'}`);
       }
     }
 
-    console.log('✅ PlayerStatsSyncService: Sync completed:', result);
+    console.log(`✅ PlayerStatsSyncService: Sync completed. Updated ${result.playersUpdated} players`);
     return result;
 
   } catch (error) {
     console.error('❌ PlayerStatsSyncService: Critical error during sync:', error);
-    throw error;
+    result.errors.push(`Critical sync error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    return result;
   }
 };
 
-export const validatePlayerStats = async (): Promise<{ isValid: boolean; issues: string[]; summary: any }> => {
+export const validatePlayerStats = async (): Promise<ValidationResult> => {
   console.log('🔍 PlayerStatsSyncService: Validating player stats consistency...');
   
-  const issues: string[] = [];
-  const summary = {
-    totalMembers: 0,
-    membersWithGoals: 0,
-    membersWithAssists: 0,
-    totalGoalEvents: 0,
-    totalAssistEvents: 0,
-    unassignedGoalEvents: 0,
-    unassignedAssistEvents: 0,
-    consistentPlayers: 0,
-    inconsistentPlayers: 0
+  const result: ValidationResult = {
+    isValid: true,
+    issues: []
   };
 
   try {
-    // Get all members with their current stats
-    const { data: members, error: membersError } = await supabase
+    // Get all players with their current stats
+    const { data: players, error: playersError } = await supabase
       .from('members')
       .select('id, name, goals, assists');
 
-    if (membersError) throw membersError;
-
-    // Get all match events
-    const { data: matchEvents, error: eventsError } = await supabase
-      .from('match_events')
-      .select('*')
-      .in('event_type', ['goal', 'assist']);
-
-    if (eventsError) throw eventsError;
-
-    if (!members || !matchEvents) {
-      return { isValid: true, issues: [], summary };
+    if (playersError) {
+      throw new Error(`Failed to fetch players: ${playersError.message}`);
     }
 
-    summary.totalMembers = members.length;
-    summary.membersWithGoals = members.filter(m => (m.goals || 0) > 0).length;
-    summary.membersWithAssists = members.filter(m => (m.assists || 0) > 0).length;
-    
-    const assignedEvents = matchEvents.filter(e => e.player_name !== 'Unknown Player');
-    const unassignedEvents = matchEvents.filter(e => e.player_name === 'Unknown Player');
-    
-    summary.totalGoalEvents = matchEvents.filter(e => e.event_type === 'goal').length;
-    summary.totalAssistEvents = matchEvents.filter(e => e.event_type === 'assist').length;
-    summary.unassignedGoalEvents = unassignedEvents.filter(e => e.event_type === 'goal').length;
-    summary.unassignedAssistEvents = unassignedEvents.filter(e => e.event_type === 'assist').length;
+    if (!players || players.length === 0) {
+      return result;
+    }
 
-    // Calculate expected stats from assigned match events only
-    const expectedStats = new Map<string, { goals: number; assists: number }>();
+    // For each player, count their events and compare
+    for (const player of players) {
+      const { data: playerEvents, error: eventsError } = await supabase
+        .from('match_events')
+        .select('event_type')
+        .eq('player_name', player.name)
+        .in('event_type', ['goal', 'assist']);
 
-    for (const event of assignedEvents) {
-      const playerName = event.player_name;
-      
-      if (!expectedStats.has(playerName)) {
-        expectedStats.set(playerName, { goals: 0, assists: 0 });
+      if (eventsError) {
+        result.issues.push(`Error fetching events for ${player.name}: ${eventsError.message}`);
+        result.isValid = false;
+        continue;
       }
 
-      const stats = expectedStats.get(playerName)!;
-      
-      if (event.event_type === 'goal') {
-        stats.goals += 1;
-      } else if (event.event_type === 'assist') {
-        stats.assists += 1;
+      const eventGoals = playerEvents?.filter(e => e.event_type === 'goal').length || 0;
+      const eventAssists = playerEvents?.filter(e => e.event_type === 'assist').length || 0;
+      const playerGoals = player.goals || 0;
+      const playerAssists = player.assists || 0;
+
+      if (eventGoals !== playerGoals) {
+        result.issues.push(`${player.name}: Goals mismatch - Events: ${eventGoals}, Profile: ${playerGoals}`);
+        result.isValid = false;
+      }
+
+      if (eventAssists !== playerAssists) {
+        result.issues.push(`${player.name}: Assists mismatch - Events: ${eventAssists}, Profile: ${playerAssists}`);
+        result.isValid = false;
       }
     }
 
-    // Compare with actual member stats
-    for (const member of members) {
-      const expected = expectedStats.get(member.name) || { goals: 0, assists: 0 };
-      const actual = { goals: member.goals || 0, assists: member.assists || 0 };
-
-      let isConsistent = true;
-
-      if (expected.goals !== actual.goals) {
-        issues.push(`${member.name}: Expected ${expected.goals} goals, has ${actual.goals}`);
-        isConsistent = false;
-      }
-
-      if (expected.assists !== actual.assists) {
-        issues.push(`${member.name}: Expected ${expected.assists} assists, has ${actual.assists}`);
-        isConsistent = false;
-      }
-
-      if (isConsistent && (expected.goals > 0 || expected.assists > 0)) {
-        summary.consistentPlayers += 1;
-      } else if (!isConsistent) {
-        summary.inconsistentPlayers += 1;
-      }
+    if (result.isValid) {
+      console.log('✅ PlayerStatsSyncService: All player stats are consistent');
+    } else {
+      console.warn(`⚠️ PlayerStatsSyncService: Found ${result.issues.length} consistency issues`);
     }
 
-    // Check for unassigned events
-    if (summary.unassignedGoalEvents > 0) {
-      issues.push(`${summary.unassignedGoalEvents} goal events are unassigned (marked as "Unknown Player")`);
-    }
-    
-    if (summary.unassignedAssistEvents > 0) {
-      issues.push(`${summary.unassignedAssistEvents} assist events are unassigned (marked as "Unknown Player")`);
-    }
-
-    const isValid = issues.length === 0;
-    console.log(`🔍 PlayerStatsSyncService: Validation ${isValid ? 'passed' : 'failed'}:`, { issues, summary });
-
-    return { isValid, issues, summary };
+    return result;
 
   } catch (error) {
     console.error('❌ PlayerStatsSyncService: Error during validation:', error);
-    return { 
-      isValid: false, 
-      issues: [`Validation error: ${error instanceof Error ? error.message : 'Unknown error'}`],
-      summary 
-    };
+    result.issues.push(`Validation error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    result.isValid = false;
+    return result;
   }
 };
 
-export const cleanupDuplicateEvents = async (): Promise<{ removedEvents: number; errors: string[] }> => {
-  console.log('🧹 PlayerStatsSyncService: Starting cleanup of duplicate events...');
+export const cleanupDuplicateEvents = async (): Promise<CleanupResult> => {
+  console.log('🧹 PlayerStatsSyncService: Cleaning up duplicate match events...');
   
-  const result = {
+  const result: CleanupResult = {
     removedEvents: 0,
     errors: []
   };
 
   try {
-    // Find potential duplicate events (same fixture, same event type, same time, different players)
-    const { data: events, error } = await supabase
+    // Find potential duplicates (same fixture, player, event type, within 30 seconds)
+    const { data: allEvents, error: fetchError } = await supabase
       .from('match_events')
       .select('*')
-      .in('event_type', ['goal', 'assist'])
-      .order('fixture_id, event_type, event_time, created_at');
+      .order('fixture_id', { ascending: true })
+      .order('event_time', { ascending: true });
 
-    if (error) throw error;
-    if (!events || events.length === 0) return result;
-
-    // Group events by fixture_id, event_type, and event_time
-    const eventGroups = new Map<string, any[]>();
-    
-    for (const event of events) {
-      const key = `${event.fixture_id}-${event.event_type}-${event.event_time}`;
-      if (!eventGroups.has(key)) {
-        eventGroups.set(key, []);
-      }
-      eventGroups.get(key)!.push(event);
+    if (fetchError) {
+      throw new Error(`Failed to fetch events: ${fetchError.message}`);
     }
 
-    // Find groups with both "Unknown Player" and assigned player events
-    for (const [key, groupEvents] of eventGroups) {
-      if (groupEvents.length <= 1) continue;
+    if (!allEvents || allEvents.length === 0) {
+      return result;
+    }
 
-      const unknownPlayerEvents = groupEvents.filter(e => e.player_name === 'Unknown Player');
-      const assignedPlayerEvents = groupEvents.filter(e => e.player_name !== 'Unknown Player');
+    // Group events and find duplicates
+    const duplicateGroups = new Map();
+    
+    for (const event of allEvents) {
+      const key = `${event.fixture_id}-${event.player_name}-${event.event_type}`;
+      
+      if (!duplicateGroups.has(key)) {
+        duplicateGroups.set(key, []);
+      }
+      
+      duplicateGroups.get(key).push(event);
+    }
 
-      // If we have both unknown and assigned events for the same fixture/type/time, remove the unknown ones
-      if (unknownPlayerEvents.length > 0 && assignedPlayerEvents.length > 0) {
-        for (const unknownEvent of unknownPlayerEvents) {
-          try {
-            const { error: deleteError } = await supabase
-              .from('match_events')
-              .delete()
-              .eq('id', unknownEvent.id);
+    // Process each group and remove duplicates
+    for (const [key, events] of duplicateGroups) {
+      if (events.length > 1) {
+        // Sort by creation time and keep the earliest
+        events.sort((a: any, b: any) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+        
+        // Remove all but the first
+        const eventsToRemove = events.slice(1);
+        
+        for (const eventToRemove of eventsToRemove) {
+          const { error: deleteError } = await supabase
+            .from('match_events')
+            .delete()
+            .eq('id', eventToRemove.id);
 
-            if (deleteError) {
-              result.errors.push(`Failed to delete duplicate event ${unknownEvent.id}: ${deleteError.message}`);
-            } else {
-              result.removedEvents += 1;
-              console.log(`🗑️ PlayerStatsSyncService: Removed duplicate unknown player event:`, unknownEvent);
-            }
-          } catch (error) {
-            result.errors.push(`Error deleting event ${unknownEvent.id}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+          if (deleteError) {
+            result.errors.push(`Failed to delete duplicate event ${eventToRemove.id}: ${deleteError.message}`);
+          } else {
+            result.removedEvents++;
+            console.log(`🗑️ PlayerStatsSyncService: Removed duplicate event for ${eventToRemove.player_name}`);
           }
         }
       }
     }
 
-    console.log('✅ PlayerStatsSyncService: Cleanup completed:', result);
+    console.log(`✅ PlayerStatsSyncService: Cleanup completed. Removed ${result.removedEvents} duplicate events`);
     return result;
 
   } catch (error) {
