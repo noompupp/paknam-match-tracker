@@ -12,8 +12,8 @@ interface RawFixture {
   id: number;
   home_team_id: string;
   away_team_id: string;
-  home_team?: { name: string };
-  away_team?: { name: string };
+  home_team?: { name: string; __id__?: string };
+  away_team?: { name: string; __id__?: string };
 }
 
 export interface ProcessedPlayer {
@@ -53,22 +53,15 @@ const findMembersByTeamId = (members: RawMember[], teamId: string): RawMember[] 
   
   console.log(`🔍 Finding members for team ID: ${teamId} (normalized: ${normalizedTargetId})`);
   
-  // Multiple matching strategies for robustness
-  const matchingStrategies = [
-    // Strategy 1: Exact match
-    (member: RawMember) => member.team_id === teamId,
-    // Strategy 2: Normalized string comparison
-    (member: RawMember) => normalizeTeamId(member.team_id) === normalizedTargetId,
-    // Strategy 3: Loose string comparison
-    (member: RawMember) => member.team_id.toString().toLowerCase().trim() === teamId.toString().toLowerCase().trim()
-  ];
+  // Strategy 1: Direct match with team.__id__ from fixture
+  const directMatches = members.filter(member => {
+    const memberTeamId = normalizeTeamId(member.team_id);
+    return memberTeamId === normalizedTargetId;
+  });
   
-  for (let i = 0; i < matchingStrategies.length; i++) {
-    const matches = members.filter(matchingStrategies[i]);
-    if (matches.length > 0) {
-      console.log(`✅ Found ${matches.length} members using strategy ${i + 1}`);
-      return matches;
-    }
+  if (directMatches.length > 0) {
+    console.log(`✅ Found ${directMatches.length} members using direct team ID match`);
+    return directMatches;
   }
   
   console.log(`❌ No members found for team ID: ${teamId}`);
@@ -95,23 +88,27 @@ export const processFixtureAndPlayers = (
   console.log('📋 Fixture:', selectedFixtureData);
   console.log('👥 Total members:', allMembers?.length || 0);
   
+  // Extract team IDs from fixture - use __id__ from team objects which contain the correct string IDs
+  const homeTeamId = selectedFixtureData.home_team?.__id__ || selectedFixtureData.home_team_id;
+  const awayTeamId = selectedFixtureData.away_team?.__id__ || selectedFixtureData.away_team_id;
+  
   // Process team information
   const homeTeam: ProcessedTeamInfo = {
-    id: normalizeTeamId(selectedFixtureData.home_team_id),
+    id: normalizeTeamId(homeTeamId),
     name: selectedFixtureData.home_team?.name || 'Home Team'
   };
   
   const awayTeam: ProcessedTeamInfo = {
-    id: normalizeTeamId(selectedFixtureData.away_team_id),
+    id: normalizeTeamId(awayTeamId),
     name: selectedFixtureData.away_team?.name || 'Away Team'
   };
   
   console.log('🏠 Home team:', homeTeam);
   console.log('✈️ Away team:', awayTeam);
   
-  // Find team members
-  const homeTeamMembers = findMembersByTeamId(allMembers, selectedFixtureData.home_team_id);
-  const awayTeamMembers = findMembersByTeamId(allMembers, selectedFixtureData.away_team_id);
+  // Find team members using the correct team IDs
+  const homeTeamMembers = findMembersByTeamId(allMembers, homeTeam.id);
+  const awayTeamMembers = findMembersByTeamId(allMembers, awayTeam.id);
   
   console.log(`👥 Found ${homeTeamMembers.length} home team members`);
   console.log(`👥 Found ${awayTeamMembers.length} away team members`);
@@ -127,8 +124,10 @@ export const processFixtureAndPlayers = (
   if (allPlayers.length === 0) {
     console.warn('⚠️ WARNING: No players found for this fixture!');
     console.log('Debug info:');
-    console.log('- Home team ID:', selectedFixtureData.home_team_id, typeof selectedFixtureData.home_team_id);
-    console.log('- Away team ID:', selectedFixtureData.away_team_id, typeof selectedFixtureData.away_team_id);
+    console.log('- Home team ID from fixture:', homeTeamId, typeof homeTeamId);
+    console.log('- Away team ID from fixture:', awayTeamId, typeof awayTeamId);
+    console.log('- Home team __id__:', selectedFixtureData.home_team?.__id__);
+    console.log('- Away team __id__:', selectedFixtureData.away_team?.__id__);
     console.log('- Available member team IDs:', [...new Set(allMembers.map(m => `${m.team_id} (${typeof m.team_id})`))]);
   }
   

@@ -6,7 +6,7 @@ import { calculateAndUpdatePositions } from './positionCalculationService';
 import { createGoalEventsWithDuplicateCheck } from './matchEventsCreationService';
 
 export const updateFixtureScore = async (id: number, homeScore: number, awayScore: number): Promise<Fixture> => {
-  console.log('🔍 ScoreUpdateService: Starting fixture score update with standardized team IDs:', { id, homeScore, awayScore });
+  console.log('🔍 ScoreUpdateService: Starting fixture score update with corrected team ID mapping:', { id, homeScore, awayScore });
   
   try {
     // Validate input parameters
@@ -27,11 +27,11 @@ export const updateFixtureScore = async (id: number, homeScore: number, awayScor
       throw new Error('Could not find both teams for this fixture');
     }
 
-    console.log('✅ ScoreUpdateService: Teams found with standardized IDs:', {
+    console.log('✅ ScoreUpdateService: Teams found with correct team IDs:', {
       home: homeTeam.name,
-      homeId: currentFixture.home_team_id,
+      homeTextId: homeTeam.__id__,
       away: awayTeam.name,
-      awayId: currentFixture.away_team_id,
+      awayTextId: awayTeam.__id__,
       currentScore: `${currentFixture.home_score || 0}-${currentFixture.away_score || 0}`,
       newScore: `${homeScore}-${awayScore}`
     });
@@ -52,12 +52,12 @@ export const updateFixtureScore = async (id: number, homeScore: number, awayScor
     console.log('🏆 ScoreUpdateService: Updating league table positions...');
     await calculateAndUpdatePositions();
 
-    // Create goal events for the score change with duplicate prevention
-    console.log('⚽ ScoreUpdateService: Creating goal events with duplicate prevention...');
+    // Create goal events for the score change with correct team IDs
+    console.log('⚽ ScoreUpdateService: Creating goal events with correct team IDs...');
     await createGoalEventsWithDuplicateCheck(
       id,
-      { id: homeTeam.__id__ || homeTeam.id.toString(), name: homeTeam.name }, // Use text ID for match events
-      { id: awayTeam.__id__ || awayTeam.id.toString(), name: awayTeam.name }, // Use text ID for match events
+      { id: homeTeam.__id__ || homeTeam.id.toString(), name: homeTeam.name },
+      { id: awayTeam.__id__ || awayTeam.id.toString(), name: awayTeam.name },
       homeScore,
       awayScore,
       currentHomeScore,
@@ -67,7 +67,7 @@ export const updateFixtureScore = async (id: number, homeScore: number, awayScor
     // Return simplified fixture object
     const result = createFixtureResult(updatedFixture, homeTeam, awayTeam);
     
-    console.log('✅ ScoreUpdateService: Successfully completed fixture score update with standardized team IDs');
+    console.log('✅ ScoreUpdateService: Successfully completed fixture score update with correct team IDs');
     return result;
 
   } catch (error) {

@@ -1,9 +1,7 @@
 
 import { useToast } from "@/hooks/use-toast";
 import { ComponentPlayer } from "../useRefereeState";
-import { unifiedGoalService } from "@/services/unifiedGoalService";
-import { resolveTeamIdForMatchEvent } from "@/utils/teamIdMapping";
-import { useDataRefresh } from "@/hooks/useDataRefresh";
+import { assignGoalToPlayer } from "@/services/fixtures/simplifiedGoalAssignmentService";
 
 interface UseGoalHandlersProps {
   selectedFixtureData: any;
@@ -17,124 +15,82 @@ interface UseGoalHandlersProps {
 
 export const useGoalHandlers = (props: UseGoalHandlersProps) => {
   const { toast } = useToast();
-  const { refreshPlayerStats, refreshFixtures } = useDataRefresh();
 
   const handleAddGoal = (team: 'home' | 'away') => {
     props.addGoal(team);
-    const goalText = team === 'home' 
-      ? `Goal for ${props.selectedFixtureData?.home_team?.name}`
-      : `Goal for ${props.selectedFixtureData?.away_team?.name}`;
-    props.addEvent('Goal', goalText, props.matchTime);
+    props.addEvent('Goal', `${team === 'home' ? 'Home' : 'Away'} team goal`, props.matchTime);
+    
+    toast({
+      title: "Goal Added",
+      description: `${team === 'home' ? 'Home' : 'Away'} team goal added`,
+    });
   };
 
   const handleRemoveGoal = (team: 'home' | 'away') => {
     props.removeGoal(team);
-    const goalText = team === 'home' 
-      ? `Goal removed for ${props.selectedFixtureData?.home_team?.name}`
-      : `Goal removed for ${props.selectedFixtureData?.away_team?.name}`;
-    props.addEvent('Goal Removed', goalText, props.matchTime);
+    props.addEvent('Goal Removed', `${team === 'home' ? 'Home' : 'Away'} team goal removed`, props.matchTime);
+    
+    toast({
+      title: "Goal Removed",
+      description: `${team === 'home' ? 'Home' : 'Away'} team goal removed`,
+    });
   };
 
   const handleAssignGoal = async (player: ComponentPlayer) => {
     if (!props.selectedFixtureData) {
       toast({
         title: "Error",
-        description: "No fixture selected. Please select a match first.",
-        variant: "destructive",
+        description: "No fixture selected",
+        variant: "destructive"
       });
       return;
     }
-    
+
     try {
-      console.log('⚽ useGoalHandlers: Starting improved goal assignment with auto-score update:', {
+      console.log('⚽ useGoalHandlers: Assigning goal with simplified service:', {
         player: player.name,
         team: player.team,
         type: props.selectedGoalType,
         fixture: props.selectedFixtureData.id
       });
 
-      // Prepare proper team data for assignment
-      const homeTeam = {
-        id: props.selectedFixtureData.home_team_id,
-        name: props.selectedFixtureData.home_team?.name,
-        __id__: props.selectedFixtureData.home_team_id // Use text ID
-      };
-      
-      const awayTeam = {
-        id: props.selectedFixtureData.away_team_id,
-        name: props.selectedFixtureData.away_team?.name,
-        __id__: props.selectedFixtureData.away_team_id // Use text ID
-      };
-
-      // Validate team data
-      if (!homeTeam.id || !homeTeam.name || !awayTeam.id || !awayTeam.name) {
-        throw new Error('Invalid fixture team data');
+      // Determine team ID based on player's team
+      let teamId: string;
+      if (player.team === props.selectedFixtureData.home_team?.name) {
+        teamId = props.selectedFixtureData.home_team.__id__ || props.selectedFixtureData.home_team_id;
+      } else if (player.team === props.selectedFixtureData.away_team?.name) {
+        teamId = props.selectedFixtureData.away_team.__id__ || props.selectedFixtureData.away_team_id;
+      } else {
+        throw new Error(`Cannot determine team ID for player ${player.name} on team ${player.team}`);
       }
 
-      // Resolve team ID for the player
-      const teamId = resolveTeamIdForMatchEvent(player.team, homeTeam, awayTeam);
-
-      // Use the improved unified goal service
-      const result = await unifiedGoalService.assignGoalWithScoreUpdate({
+      const result = await assignGoalToPlayer({
         fixtureId: props.selectedFixtureData.id,
         playerId: player.id,
         playerName: player.name,
-        teamId, // This is now a string
-        teamName: player.team,
-        goalType: props.selectedGoalType,
+        teamId,
         eventTime: props.matchTime,
-        homeTeam,
-        awayTeam
+        type: props.selectedGoalType
       });
-      
-      if (result.success) {
-        props.addEvent('Goal Assignment', `${props.selectedGoalType} assigned to ${player.name}`, props.matchTime);
-        
-        // If this is a goal assignment and auto-score was updated, update local UI
-        if (props.selectedGoalType === 'goal' && result.autoScoreUpdated) {
-          const teamName = player.team;
-          if (teamName === homeTeam.name) {
-            props.addGoal('home');
-          } else if (teamName === awayTeam.name) {
-            props.addGoal('away');
-          }
-          
-          toast({
-            title: "Goal Assigned & Score Updated!",
-            description: `Goal assigned to ${player.name} and score automatically updated.`,
-          });
-        } else {
-          toast({
-            title: `${props.selectedGoalType === 'goal' ? 'Goal' : 'Assist'} Assigned!`,
-            description: `${props.selectedGoalType} assigned to ${player.name} and saved to database.`,
-          });
-        }
 
-        // Refresh dashboard data after successful assignment
-        refreshPlayerStats();
-        refreshFixtures();
-        
-        console.log('✅ useGoalHandlers: Goal assignment completed successfully with auto-score update');
-      } else if (result.duplicatePrevented) {
+      if (result) {
+        props.addEvent(
+          props.selectedGoalType,
+          `${props.selectedGoalType === 'goal' ? 'Goal' : 'Assist'} assigned to ${player.name} (${player.team})`,
+          props.matchTime
+        );
+
         toast({
-          title: "Duplicate Prevented",
-          description: result.message || "This goal/assist has already been assigned",
-          variant: "destructive"
+          title: `${props.selectedGoalType === 'goal' ? 'Goal' : 'Assist'} Assigned!`,
+          description: `${props.selectedGoalType === 'goal' ? 'Goal' : 'Assist'} assigned to ${player.name} and member stats updated`,
         });
-      } else {
-        throw new Error(result.message || 'Failed to assign goal');
       }
     } catch (error) {
-      console.error('❌ useGoalHandlers: Failed to assign goal:', error);
-      
-      let errorMessage = 'Failed to assign goal';
-      if (error instanceof Error) {
-        errorMessage = error.message;
-      }
+      console.error('❌ useGoalHandlers: Error assigning goal:', error);
       
       toast({
         title: "Assignment Failed",
-        description: errorMessage,
+        description: error instanceof Error ? error.message : 'Failed to assign goal/assist',
         variant: "destructive"
       });
     }

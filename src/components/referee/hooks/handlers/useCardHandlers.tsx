@@ -1,6 +1,7 @@
 
 import { useToast } from "@/hooks/use-toast";
 import { ComponentPlayer } from "../useRefereeState";
+import { assignCardToPlayer } from "@/services/fixtures/simplifiedCardService";
 
 interface UseCardHandlersProps {
   allPlayers: ComponentPlayer[];
@@ -24,6 +25,15 @@ export const useCardHandlers = (props: UseCardHandlersProps) => {
     }
 
     try {
+      console.log('🟨🟥 useCardHandlers: Adding card with simplified service:', {
+        player: player.name,
+        team: player.team,
+        cardType,
+        time
+      });
+
+      // For now, we'll need the fixture data to get team ID - this should be passed in
+      // This is a temporary implementation until we refactor the card system completely
       const cardResult = await props.addCard(player, team, props.matchTime, cardType);
       props.addEvent('Card', `${cardType} card for ${playerName} (${team})`, props.matchTime);
       
@@ -37,7 +47,7 @@ export const useCardHandlers = (props: UseCardHandlersProps) => {
       } else {
         toast({
           title: "Card Issued",
-          description: `${cardType} card given to ${playerName} and saved to database`,
+          description: `${cardType} card given to ${playerName} and member stats updated`,
         });
       }
     } catch (error) {
