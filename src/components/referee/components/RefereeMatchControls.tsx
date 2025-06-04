@@ -63,8 +63,10 @@ const RefereeMatchControls = ({
   setSelectedGoalType,
   selectedPlayer,
   selectedTeam,
+  selectedCardType,
   setSelectedPlayer,
   setSelectedTeam,
+  setSelectedCardType,
   cards,
   trackedPlayers,
   selectedTimePlayer,
@@ -147,13 +149,19 @@ const RefereeMatchControls = ({
         <TabsContent value="cards">
           <CardsTab
             selectedFixtureData={selectedFixtureData}
-            playerName={selectedPlayer}
+            allPlayers={allPlayers}
+            selectedPlayer={selectedPlayer}
             selectedTeam={selectedTeam}
+            selectedCardType={selectedCardType}
             cards={cards}
-            onPlayerNameChange={setSelectedPlayer}
+            onPlayerSelect={setSelectedPlayer}
             onTeamChange={setSelectedTeam}
-            onAddCard={(type: 'yellow' | 'red') => {
-              onAddCard(selectedPlayer, selectedTeam, type, matchTime);
+            onCardTypeChange={setSelectedCardType}
+            onAddCard={() => {
+              const player = allPlayers.find(p => p.id.toString() === selectedPlayer);
+              if (player) {
+                onAddCard(player.name, selectedTeam, selectedCardType, matchTime);
+              }
             }}
             formatTime={formatTime}
           />
