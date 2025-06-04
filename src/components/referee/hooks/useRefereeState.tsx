@@ -13,14 +13,8 @@ import { useCardManagementImproved } from "@/hooks/useCardManagementImproved";
 import { processFixtureAndPlayers, debugPlayerDropdownData, type ProcessedPlayer } from "@/utils/refereeDataProcessor";
 import { debugRefereeToolsData } from "@/utils/refereeToolsDebug";
 
-// Define consistent Player interface for this component
-interface ComponentPlayer {
-  id: number;
-  name: string;
-  team: string;
-  number: number;
-  position: string;
-}
+// Use the ProcessedPlayer from refereeDataProcessor for consistency
+interface ComponentPlayer extends ProcessedPlayer {}
 
 interface PlayerTimeTrackerPlayer {
   id: number;
@@ -85,7 +79,7 @@ export const useRefereeState = () => {
     checkForSecondYellow 
   } = useCardManagementImproved({ selectedFixtureData });
   
-  // Get all players from processed data
+  // Get all players from processed data - these are already ProcessedPlayer type
   const allPlayers: ComponentPlayer[] = processedData?.allPlayers || [];
 
   // Debug player dropdown data

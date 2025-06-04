@@ -5,16 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Fixture } from "@/types/database";
-import { debugPlayerDropdownData } from "@/utils/refereeDataProcessor";
-
-// Define the Player interface to match what's used in the container
-interface Player {
-  id: number;
-  name: string;
-  team: string;
-  number?: number;
-  position?: string;
-}
+import { debugPlayerDropdownData, ProcessedPlayer } from "@/utils/refereeDataProcessor";
 
 interface CardData {
   id: number;
@@ -26,7 +17,7 @@ interface CardData {
 
 interface CardManagementDropdownProps {
   selectedFixtureData: Fixture;
-  allPlayers: Player[];
+  allPlayers: ProcessedPlayer[];
   selectedPlayer: string;
   selectedTeam: string;
   selectedCardType: 'yellow' | 'red';
@@ -58,7 +49,7 @@ const CardManagementDropdown = ({
   console.log('  - Away team name:', selectedFixtureData.away_team?.name);
   
   // Filter players by selected team with improved logic
-  let teamPlayers: Player[] = [];
+  let teamPlayers: ProcessedPlayer[] = [];
   
   if (selectedTeam === 'home') {
     teamPlayers = allPlayers.filter(player => 
@@ -72,7 +63,7 @@ const CardManagementDropdown = ({
     console.log(`  - Away team (${selectedFixtureData.away_team?.name}) players:`, teamPlayers.length);
   }
   
-  // Debug filtered players
+  // Debug filtered players - now the types match
   debugPlayerDropdownData(teamPlayers, `Card Management - ${selectedTeam} team`);
 
   const selectedPlayerData = allPlayers.find(p => p.id.toString() === selectedPlayer);

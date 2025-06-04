@@ -1,9 +1,9 @@
 
 import CardManagementDropdown from "../../CardManagementDropdown";
-import { ComponentPlayer } from "../../hooks/useRefereeState";
+import { ProcessedPlayer } from "@/utils/refereeDataProcessor";
 
 interface CardsTabProps {
-  allPlayers: ComponentPlayer[];
+  allPlayers: ProcessedPlayer[];
   cards: any[];
   selectedPlayer: string;
   selectedTeam: string;
