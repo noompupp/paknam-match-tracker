@@ -51,7 +51,7 @@ const EnhancedMatchSummaryDisplay = ({
 
   const totalAssists = goals.filter(goal => goal.type === 'assist');
 
-  console.log('📊 EnhancedMatchSummaryDisplay: Rendering with enhanced data:', {
+  console.log('📊 EnhancedMatchSummaryDisplay: Rendering with enhanced data and database integration:', {
     fixture: selectedFixtureData.id,
     homeScore,
     awayScore,
@@ -59,7 +59,8 @@ const EnhancedMatchSummaryDisplay = ({
     awayGoalsCount: awayTeamGoals.length,
     assistsCount: totalAssists.length,
     cardsCount: cards.length,
-    trackedPlayersCount: trackedPlayers.length
+    trackedPlayersCount: trackedPlayers.length,
+    fixtureId: selectedFixtureData.id
   });
 
   return (
@@ -73,21 +74,23 @@ const EnhancedMatchSummaryDisplay = ({
         formatTime={formatTimeInMinutes}
       />
 
-      {/* Goals Summary with Enhanced Display */}
+      {/* Goals Summary with Enhanced Display and Database Integration */}
       <GoalsSummaryDisplay
         selectedFixtureData={selectedFixtureData}
         goals={goals}
         formatTime={formatTimeInMinutes}
+        fixtureId={selectedFixtureData.id}
       />
 
-      {/* Cards Summary */}
+      {/* Cards Summary with Database Integration */}
       <CardsSummaryDisplay
         selectedFixtureData={selectedFixtureData}
         cards={cards}
         formatTime={formatTimeInMinutes}
+        fixtureId={selectedFixtureData.id}
       />
 
-      {/* Player Time Tracking with Minutes Conversion */}
+      {/* Player Time Tracking with Minutes Conversion and Database Integration */}
       <PlayerTimeTrackingDisplay
         trackedPlayers={trackedPlayers.map(player => ({
           ...player,
@@ -95,6 +98,7 @@ const EnhancedMatchSummaryDisplay = ({
           displayTime: formatTimeInMinutes(player.totalTime) // Add formatted display time
         }))}
         formatTime={formatTimeInMinutes}
+        fixtureId={selectedFixtureData.id}
       />
     </div>
   );

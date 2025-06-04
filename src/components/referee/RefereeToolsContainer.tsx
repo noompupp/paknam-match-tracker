@@ -4,12 +4,51 @@ import RefereeHeader from "./components/RefereeHeader";
 import RefereeMatchControls from "./components/RefereeMatchControls";
 import { useRefereeState } from "./hooks/useRefereeState";
 import { useRefereeHandlers } from "./hooks/useRefereeHandlers";
+import { useUpdateMemberStatsFromMatch } from "@/hooks/useEnhancedMatchSummary";
 import { Button } from "@/components/ui/button";
-import { Save, Database, RotateCcw, Trash2 } from "lucide-react";
+import { Save, Database, RotateCcw, Trash2, TrendingUp } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 const RefereeToolsContainer = () => {
   const state = useRefereeState();
   const handlers = useRefereeHandlers(state);
+  const updateMemberStats = useUpdateMemberStatsFromMatch();
+  const { toast } = useToast();
+
+  const handleUpdateMemberStats = async () => {
+    if (!state.selectedFixtureData) {
+      toast({
+        title: "Error",
+        description: "No fixture selected for stats update",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      const result = await updateMemberStats(state.selectedFixtureData.id);
+      
+      if (result.success) {
+        toast({
+          title: "Stats Updated Successfully!",
+          description: result.message,
+        });
+      } else {
+        toast({
+          title: "Stats Update Failed",
+          description: result.message,
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.error('❌ RefereeToolsContainer: Error updating member stats:', error);
+      toast({
+        title: "Update Failed",
+        description: "Failed to update member stats. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
 
   if (state.fixturesLoading) {
     return (
@@ -81,7 +120,7 @@ const RefereeToolsContainer = () => {
             />
 
             {/* Enhanced Controls for Database Integration */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
               <Button 
                 onClick={handlers.handleSaveAllPlayerTimes}
                 variant="outline"
@@ -96,6 +135,14 @@ const RefereeToolsContainer = () => {
               >
                 <Save className="h-4 w-4" />
                 Save Match
+              </Button>
+              <Button 
+                onClick={handleUpdateMemberStats}
+                variant="secondary"
+                className="flex items-center gap-2"
+              >
+                <TrendingUp className="h-4 w-4" />
+                Update Member Stats
               </Button>
               <Button 
                 onClick={handlers.handleCleanupDuplicates}
