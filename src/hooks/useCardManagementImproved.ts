@@ -12,7 +12,7 @@ interface CardData {
   type: 'yellow' | 'red';
   time: number;
   playerId: number;
-  teamId: string; // Changed to string
+  teamId: string; // Already correct as string
 }
 
 interface UseCardManagementImprovedProps {

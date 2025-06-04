@@ -1,6 +1,6 @@
 
 interface TeamInfo {
-  id: number;
+  id: string; // Changed from number to string
   name: string;
   __id__?: string; // Add the text ID field
 }
@@ -20,13 +20,13 @@ export const resolveTeamIdForMatchEvent = (
 
   // Direct team name matching - return text ID
   if (playerTeamName === homeTeam.name) {
-    const textId = homeTeam.__id__ || `team_${homeTeam.id}`;
+    const textId = homeTeam.__id__ || homeTeam.id;
     console.log('✅ TeamIdMapping: Matched home team:', textId);
     return textId;
   }
   
   if (playerTeamName === awayTeam.name) {
-    const textId = awayTeam.__id__ || `team_${awayTeam.id}`;
+    const textId = awayTeam.__id__ || awayTeam.id;
     console.log('✅ TeamIdMapping: Matched away team:', textId);
     return textId;
   }
@@ -37,13 +37,13 @@ export const resolveTeamIdForMatchEvent = (
   const normalizedAwayTeam = awayTeam.name.toLowerCase().trim();
 
   if (normalizedPlayerTeam === normalizedHomeTeam) {
-    const textId = homeTeam.__id__ || `team_${homeTeam.id}`;
+    const textId = homeTeam.__id__ || homeTeam.id;
     console.log('✅ TeamIdMapping: Matched home team (case-insensitive):', textId);
     return textId;
   }
   
   if (normalizedPlayerTeam === normalizedAwayTeam) {
-    const textId = awayTeam.__id__ || `team_${awayTeam.id}`;
+    const textId = awayTeam.__id__ || awayTeam.id;
     console.log('✅ TeamIdMapping: Matched away team (case-insensitive):', textId);
     return textId;
   }
@@ -61,10 +61,8 @@ export const validateTeamData = (homeTeam: TeamInfo, awayTeam: TeamInfo): boolea
   const isValid = !!(
     homeTeam?.id && 
     homeTeam?.name && 
-    homeTeam?.__id__ &&
     awayTeam?.id && 
     awayTeam?.name &&
-    awayTeam?.__id__ &&
     homeTeam.id !== awayTeam.id
   );
   

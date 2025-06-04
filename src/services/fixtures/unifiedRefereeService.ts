@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { updateFixtureScore } from './scoreUpdateService';
 import { assignGoalToPlayer } from './goalAssignmentService';
@@ -46,8 +47,8 @@ export interface MatchDataToSave {
       duration: number;
     }>;
   }>;
-  homeTeam: { id: string; name: string }; // Changed to string
-  awayTeam: { id: string; name: string }; // Changed to string
+  homeTeam: { id: string; name: string }; // Already correct as string
+  awayTeam: { id: string; name: string }; // Already correct as string
 }
 
 export const unifiedRefereeService = {
@@ -93,7 +94,7 @@ export const unifiedRefereeService = {
           const teamId = goal.team === matchData.homeTeam.name ? matchData.homeTeam.id : matchData.awayTeam.id;
           const canCreate = await enhancedDuplicatePreventionService.preventDuplicateGoalEvent(
             matchData.fixtureId,
-            teamId, // Now string
+            teamId, // Already string
             goal.playerName
           );
 
@@ -102,7 +103,7 @@ export const unifiedRefereeService = {
               fixtureId: matchData.fixtureId,
               playerId: goal.playerId,
               playerName: goal.playerName,
-              teamId, // Now string
+              teamId, // Already string
               eventTime: goal.time,
               type: goal.type
             });
@@ -129,7 +130,7 @@ export const unifiedRefereeService = {
             fixture_id: matchData.fixtureId,
             player_id: card.playerId,
             player_name: card.playerName,
-            team_id: teamId,
+            team_id: teamId, // Already string
             card_type: card.type,
             event_time: card.time,
             description: `${card.type} card for ${card.playerName}`
@@ -154,7 +155,7 @@ export const unifiedRefereeService = {
             fixture_id: matchData.fixtureId,
             player_id: playerTime.playerId,
             player_name: playerTime.playerName,
-            team_id: teamId,
+            team_id: teamId, // Already string
             total_minutes: playerTime.totalTime,
             periods: playerTime.periods
           });

@@ -12,6 +12,13 @@ interface GoalData {
   id?: string; // Add unique identifier for better deduplication
 }
 
+// Update TeamInfo interface to use string for id
+interface TeamInfo {
+  id: string; // Changed from number to string
+  name: string;
+  __id__?: string;
+}
+
 export const useGoalManagement = () => {
   const [goals, setGoals] = useState<GoalData[]>([]);
   const [selectedGoalPlayer, setSelectedGoalPlayer] = useState("");
@@ -36,8 +43,8 @@ export const useGoalManagement = () => {
     player: any, 
     matchTime: number, 
     fixtureId: number, 
-    homeTeam: { id: string; name: string }, // Changed to string
-    awayTeam: { id: string; name: string }  // Changed to string
+    homeTeam: TeamInfo, // Updated type
+    awayTeam: TeamInfo  // Updated type
   ) => {
     if (!player) {
       throw new Error('Player is required for goal assignment');
