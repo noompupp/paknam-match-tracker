@@ -27,7 +27,7 @@ export const useGoalManagement = () => {
       throw new Error('Player is required for goal assignment');
     }
 
-    console.log('⚽ useGoalManagement: Starting unified goal assignment:', {
+    console.log('⚽ useGoalManagement: Starting unified goal assignment with auto-score update:', {
       player: player.name,
       team: player.team,
       type: selectedGoalType,
@@ -53,7 +53,7 @@ export const useGoalManagement = () => {
         awayTeam: awayTeam.name
       });
 
-      // Use the unified goal service
+      // Use the unified goal service with automatic score update
       const result = await unifiedGoalService.assignGoalWithScoreUpdate({
         fixtureId,
         playerId: player.id,
@@ -82,11 +82,12 @@ export const useGoalManagement = () => {
       setGoals(prev => [...prev, newGoal]);
       setSelectedGoalPlayer("");
       
-      console.log('✅ useGoalManagement: Goal successfully assigned with unified service');
+      console.log('✅ useGoalManagement: Goal successfully assigned with unified service and auto-score update');
       
       return {
         ...result.goalData,
-        shouldUpdateScore: result.shouldUpdateScore
+        shouldUpdateScore: result.shouldUpdateScore,
+        autoScoreUpdated: selectedGoalType === 'goal' // Indicate that score should be automatically updated for goals
       };
 
     } catch (error) {

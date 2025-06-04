@@ -119,33 +119,26 @@ const RefereeTabsContent = ({
           matchTime={matchTime}
           onPlayerSelect={setSelectedGoalPlayer}
           onGoalTypeChange={setSelectedGoalType}
-          onAssignGoal={() => {
-            const player = allPlayers.find(p => p.id.toString() === selectedGoalPlayer);
-            if (player) {
-              onAssignGoal(player);
-            }
-          }}
+          onAssignGoal={onAssignGoal}
           formatTime={formatTime}
+          homeScore={homeScore}
+          awayScore={awayScore}
+          selectedFixtureData={selectedFixtureData}
         />
       </TabsContent>
 
       <TabsContent value="cards">
         <CardsTab
-          selectedFixtureData={selectedFixtureData}
           allPlayers={allPlayers}
+          cards={cards}
           selectedPlayer={selectedPlayer}
           selectedTeam={selectedTeam}
           selectedCardType={selectedCardType}
-          cards={cards}
+          matchTime={matchTime}
           onPlayerSelect={setSelectedPlayer}
-          onTeamChange={setSelectedTeam}
+          onTeamSelect={setSelectedTeam}
           onCardTypeChange={setSelectedCardType}
-          onAddCard={() => {
-            const player = allPlayers.find(p => p.id.toString() === selectedPlayer);
-            if (player) {
-              onAddCard(player.name, selectedTeam, selectedCardType, matchTime);
-            }
-          }}
+          onAddCard={onAddCard}
           formatTime={formatTime}
         />
       </TabsContent>
@@ -155,17 +148,12 @@ const RefereeTabsContent = ({
           allPlayers={allPlayers}
           trackedPlayers={trackedPlayers}
           selectedPlayer={selectedTimePlayer}
+          matchTime={matchTime}
           onPlayerSelect={setSelectedTimePlayer}
-          onAddPlayer={() => {
-            const player = allPlayers.find(p => p.id.toString() === selectedTimePlayer);
-            if (player) {
-              onAddPlayer(player);
-            }
-          }}
+          onAddPlayer={onAddPlayer}
           onRemovePlayer={onRemovePlayer}
           onTogglePlayerTime={onTogglePlayerTime}
           formatTime={formatTime}
-          matchTime={matchTime}
         />
       </TabsContent>
 
@@ -175,11 +163,10 @@ const RefereeTabsContent = ({
           homeScore={homeScore}
           awayScore={awayScore}
           matchTime={matchTime}
-          events={events}
           goals={goals}
           cards={cards}
           trackedPlayers={trackedPlayers}
-          allPlayers={allPlayers}
+          events={events}
           onExportSummary={onExportSummary}
           formatTime={formatTime}
         />

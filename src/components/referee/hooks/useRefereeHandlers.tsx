@@ -111,7 +111,7 @@ export const useRefereeHandlers = (props: UseRefereeHandlersProps) => {
     }
     
     try {
-      console.log('⚽ useRefereeHandlers: Starting improved goal assignment:', {
+      console.log('⚽ useRefereeHandlers: Starting improved goal assignment with auto-score update:', {
         player: player.name,
         team: player.team,
         type: props.selectedGoalType,
@@ -145,20 +145,27 @@ export const useRefereeHandlers = (props: UseRefereeHandlersProps) => {
       if (goalResult) {
         props.addEvent('Goal Assignment', `${props.selectedGoalType} assigned to ${player.name}`, props.matchTime);
         
-        // If this is a goal and should update score, suggest updating the match score
-        if (goalResult.shouldUpdateScore && props.selectedGoalType === 'goal') {
+        // If this is a goal assignment, automatically update the local score
+        if (props.selectedGoalType === 'goal' && goalResult.autoScoreUpdated) {
+          const teamName = player.team;
+          if (teamName === homeTeam.name) {
+            props.addGoal('home');
+          } else if (teamName === awayTeam.name) {
+            props.addGoal('away');
+          }
+          
           toast({
-            title: "Goal Assigned & Score Update Needed",
-            description: `${props.selectedGoalType} assigned to ${player.name}. Consider updating the match score to reflect all goals.`,
+            title: "Goal Assigned & Score Updated!",
+            description: `Goal assigned to ${player.name} and score automatically updated in the UI.`,
           });
         } else {
           toast({
-            title: "Goal Assigned Successfully",
-            description: `${props.selectedGoalType} assigned to ${player.name} and saved to database`,
+            title: `${props.selectedGoalType === 'goal' ? 'Goal' : 'Assist'} Assigned!`,
+            description: `${props.selectedGoalType} assigned to ${player.name} and saved to database.`,
           });
         }
         
-        console.log('✅ useRefereeHandlers: Goal assignment completed successfully');
+        console.log('✅ useRefereeHandlers: Goal assignment completed successfully with auto-score update');
       }
     } catch (error) {
       console.error('❌ useRefereeHandlers: Failed to assign goal:', error);

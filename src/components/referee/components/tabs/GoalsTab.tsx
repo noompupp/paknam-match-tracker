@@ -12,6 +12,9 @@ interface GoalsTabProps {
   onGoalTypeChange: (value: 'goal' | 'assist') => void;
   onAssignGoal: () => void;
   formatTime: (seconds: number) => string;
+  homeScore: number;
+  awayScore: number;
+  selectedFixtureData: any;
 }
 
 const GoalsTab = ({
@@ -23,7 +26,10 @@ const GoalsTab = ({
   onPlayerSelect,
   onGoalTypeChange,
   onAssignGoal,
-  formatTime
+  formatTime,
+  homeScore,
+  awayScore,
+  selectedFixtureData
 }: GoalsTabProps) => {
   return (
     <GoalAssignment
@@ -36,6 +42,9 @@ const GoalsTab = ({
       onGoalTypeChange={onGoalTypeChange}
       onAssignGoal={onAssignGoal}
       formatTime={formatTime}
+      homeScore={homeScore}
+      awayScore={awayScore}
+      selectedFixtureData={selectedFixtureData}
     />
   );
 };
