@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { assignGoalToPlayer } from "@/services/fixtures/goalAssignmentService";
+import { unifiedGoalService } from "@/services/unifiedGoalService";
 import { resolveTeamIdForMatchEvent } from "@/utils/teamIdMapping";
 
 interface GoalData {
@@ -27,7 +27,7 @@ export const useGoalManagement = () => {
       throw new Error('Player is required for goal assignment');
     }
 
-    console.log('⚽ useGoalManagement: Starting goal assignment:', {
+    console.log('⚽ useGoalManagement: Starting unified goal assignment:', {
       player: player.name,
       team: player.team,
       type: selectedGoalType,
@@ -37,63 +37,62 @@ export const useGoalManagement = () => {
       awayTeam: awayTeam?.name
     });
 
-    const newGoal: GoalData = {
-      playerId: player.id,
-      playerName: player.name,
-      team: player.team,
-      time: matchTime,
-      type: selectedGoalType
-    };
-
-    // Always add to local state first
-    setGoals(prev => [...prev, newGoal]);
-    setSelectedGoalPlayer("");
-
-    // If we have all required data, also save to database
-    if (fixtureId && homeTeam && awayTeam) {
-      try {
-        console.log('💾 useGoalManagement: Resolving team ID for database save...');
-        
-        // Resolve the numeric team ID for the match events table
-        const teamId = resolveTeamIdForMatchEvent(player.team, homeTeam, awayTeam);
-        
-        console.log('✅ useGoalManagement: Team ID resolved:', {
-          playerTeam: player.team,
-          resolvedTeamId: teamId,
-          homeTeam: homeTeam.name,
-          awayTeam: awayTeam.name
-        });
-
-        await assignGoalToPlayer({
-          fixtureId,
-          playerId: player.id,
-          playerName: player.name,
-          teamId,
-          eventTime: matchTime,
-          type: selectedGoalType
-        });
-        
-        console.log('✅ useGoalManagement: Goal successfully assigned to database');
-      } catch (error) {
-        console.error('❌ useGoalManagement: Failed to assign goal to database:', error);
-        
-        // Remove from local state if database save failed
-        setGoals(prev => prev.filter(g => 
-          !(g.playerId === player.id && g.time === matchTime && g.type === selectedGoalType)
-        ));
-        
-        // Re-throw the error so the calling component can handle it
-        throw error;
-      }
-    } else {
-      console.warn('⚠️ useGoalManagement: Missing required data for database save:', {
-        hasFixtureId: !!fixtureId,
-        hasHomeTeam: !!homeTeam,
-        hasAwayTeam: !!awayTeam
-      });
+    // Validate that we have all required data
+    if (!fixtureId || !homeTeam || !awayTeam) {
+      throw new Error('Missing required data for goal assignment');
     }
 
-    return newGoal;
+    try {
+      // Resolve the numeric team ID for the database
+      const teamId = resolveTeamIdForMatchEvent(player.team, homeTeam, awayTeam);
+      
+      console.log('✅ useGoalManagement: Team ID resolved:', {
+        playerTeam: player.team,
+        resolvedTeamId: teamId,
+        homeTeam: homeTeam.name,
+        awayTeam: awayTeam.name
+      });
+
+      // Use the unified goal service
+      const result = await unifiedGoalService.assignGoalWithScoreUpdate({
+        fixtureId,
+        playerId: player.id,
+        playerName: player.name,
+        teamId,
+        teamName: player.team,
+        goalType: selectedGoalType,
+        eventTime: matchTime,
+        homeTeam,
+        awayTeam
+      });
+
+      if (!result.success) {
+        throw new Error(result.message || 'Failed to assign goal');
+      }
+
+      // Add to local state only if successful
+      const newGoal: GoalData = {
+        playerId: player.id,
+        playerName: player.name,
+        team: player.team,
+        time: matchTime,
+        type: selectedGoalType
+      };
+
+      setGoals(prev => [...prev, newGoal]);
+      setSelectedGoalPlayer("");
+      
+      console.log('✅ useGoalManagement: Goal successfully assigned with unified service');
+      
+      return {
+        ...result.goalData,
+        shouldUpdateScore: result.shouldUpdateScore
+      };
+
+    } catch (error) {
+      console.error('❌ useGoalManagement: Failed to assign goal:', error);
+      throw error;
+    }
   };
 
   const resetGoals = () => {

@@ -34,7 +34,7 @@ interface UseRefereeHandlersProps {
   addPlayer: (player: ComponentPlayer, matchTime: number) => any;
   removePlayer: (playerId: number) => void;
   togglePlayerTime: (playerId: number, matchTime: number) => any;
-  checkForSecondYellow: (playerName: string, teamName: string) => boolean;
+  checkForSecondYellow: (playerName: string) => boolean;
   removeGoal: (team: 'home' | 'away') => void;
 }
 
@@ -134,7 +134,7 @@ export const useRefereeHandlers = (props: UseRefereeHandlersProps) => {
         throw new Error('Invalid fixture team data');
       }
 
-      const newGoal = await props.assignGoal(
+      const goalResult = await props.assignGoal(
         player, 
         props.matchTime, 
         props.selectedFixtureData.id, 
@@ -142,12 +142,22 @@ export const useRefereeHandlers = (props: UseRefereeHandlersProps) => {
         awayTeam
       );
       
-      if (newGoal) {
+      if (goalResult) {
         props.addEvent('Goal Assignment', `${props.selectedGoalType} assigned to ${player.name}`, props.matchTime);
-        toast({
-          title: "Goal Assigned Successfully",
-          description: `${props.selectedGoalType} assigned to ${player.name} and saved to database`,
-        });
+        
+        // If this is a goal and should update score, suggest updating the match score
+        if (goalResult.shouldUpdateScore && props.selectedGoalType === 'goal') {
+          toast({
+            title: "Goal Assigned & Score Update Needed",
+            description: `${props.selectedGoalType} assigned to ${player.name}. Consider updating the match score to reflect all goals.`,
+          });
+        } else {
+          toast({
+            title: "Goal Assigned Successfully",
+            description: `${props.selectedGoalType} assigned to ${player.name} and saved to database`,
+          });
+        }
+        
         console.log('✅ useRefereeHandlers: Goal assignment completed successfully');
       }
     } catch (error) {
@@ -166,18 +176,45 @@ export const useRefereeHandlers = (props: UseRefereeHandlersProps) => {
     }
   };
 
-  const handleAddCard = (playerName: string, team: string, cardType: "yellow" | "red", time: number) => {
+  const handleAddCard = async (playerName: string, team: string, cardType: "yellow" | "red", time: number) => {
     const player = props.allPlayers.find(p => p.name === playerName);
-    if (!player) return;
-
-    const cardResult = props.addCard(player, team, props.matchTime, cardType);
-    props.addEvent('Card', `${cardType} card for ${playerName} (${team})`, props.matchTime);
-    
-    if (cardResult && cardResult.isSecondYellow) {
-      props.addEvent('Red Card', `Second yellow card - automatic red for ${playerName}`, props.matchTime);
+    if (!player) {
       toast({
-        title: "Second Yellow Card",
-        description: `${playerName} receives automatic red card for second yellow`,
+        title: "Error",
+        description: "Player not found",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      const cardResult = await props.addCard(player, team, props.matchTime, cardType);
+      props.addEvent('Card', `${cardType} card for ${playerName} (${team})`, props.matchTime);
+      
+      if (cardResult && cardResult.isSecondYellow) {
+        props.addEvent('Red Card', `Second yellow card - automatic red for ${playerName}`, props.matchTime);
+        toast({
+          title: "Second Yellow Card",
+          description: `${playerName} receives automatic red card for second yellow`,
+          variant: "destructive"
+        });
+      } else {
+        toast({
+          title: "Card Issued",
+          description: `${cardType} card given to ${playerName} and saved to database`,
+        });
+      }
+    } catch (error) {
+      console.error('❌ useRefereeHandlers: Failed to add card:', error);
+      
+      let errorMessage = 'Failed to add card';
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      
+      toast({
+        title: "Card Failed",
+        description: errorMessage,
         variant: "destructive"
       });
     }

@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useFixtures } from "@/hooks/useFixtures";
 import { useMembers } from "@/hooks/useMembers";
@@ -5,10 +6,10 @@ import { useUpdateFixtureScore } from "@/hooks/useFixtures";
 import { useCreateMatchEvent, useUpdatePlayerStats } from "@/hooks/useMatchEvents";
 import { useMatchTimer } from "@/hooks/useMatchTimer";
 import { useScoreManagement } from "@/hooks/useScoreManagement";
-import { useCardManagementDropdown } from "@/hooks/useCardManagementDropdown";
 import { usePlayerTracking } from "@/hooks/usePlayerTracking";
 import { useGoalManagement } from "@/hooks/useGoalManagement";
 import { useLocalMatchEvents } from "@/hooks/useMatchEvents";
+import { useCardManagementImproved } from "@/hooks/useCardManagementImproved";
 
 // Define consistent Player interface for this component
 interface ComponentPlayer {
@@ -40,21 +41,11 @@ export const useRefereeState = () => {
   const [selectedFixture, setSelectedFixture] = useState("");
   const [saveAttempts, setSaveAttempts] = useState(0);
 
+  const selectedFixtureData = fixtures?.find(f => f.id.toString() === selectedFixture);
+
   // Custom hooks
   const { matchTime, isRunning, toggleTimer, resetTimer, formatTime } = useMatchTimer();
   const { homeScore, awayScore, addGoal, removeGoal, resetScore } = useScoreManagement();
-  const { 
-    cards, 
-    selectedPlayer, 
-    selectedTeam, 
-    selectedCardType,
-    setSelectedPlayer, 
-    setSelectedTeam, 
-    setSelectedCardType,
-    addCard, 
-    resetCards,
-    checkForSecondYellow 
-  } = useCardManagementDropdown();
   const { 
     trackedPlayers, 
     selectedPlayer: selectedTimePlayer, 
@@ -67,8 +58,20 @@ export const useRefereeState = () => {
   } = usePlayerTracking(isRunning);
   const { goals, selectedGoalPlayer, selectedGoalType, setSelectedGoalPlayer, setSelectedGoalType, assignGoal, resetGoals } = useGoalManagement();
   const { events, addEvent, resetEvents } = useLocalMatchEvents();
-
-  const selectedFixtureData = fixtures?.find(f => f.id.toString() === selectedFixture);
+  
+  // Use the improved card management hook
+  const { 
+    cards, 
+    selectedPlayer, 
+    selectedTeam, 
+    selectedCardType,
+    setSelectedPlayer, 
+    setSelectedTeam, 
+    setSelectedCardType,
+    addCard, 
+    resetCards,
+    checkForSecondYellow 
+  } = useCardManagementImproved({ selectedFixtureData });
   
   // Get all players from both teams of the selected fixture
   const allPlayers: ComponentPlayer[] = members?.filter(member => 
@@ -132,7 +135,7 @@ export const useRefereeState = () => {
     removeGoal,
     resetScore,
     
-    // Card state
+    // Improved card state
     cards,
     selectedPlayer,
     selectedTeam,
