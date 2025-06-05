@@ -18,6 +18,53 @@ interface MatchSummaryDialogProps {
   onClose: () => void;
 }
 
+// Type guards and helper functions
+const isEnhancedGoal = (goal: any): goal is { id: number; playerId: number; playerName: string; team: string; teamId: string; type: "assist" | "goal"; time: number; timestamp: string; assistPlayerName?: string; assistTeamId?: string; } => {
+  return 'teamId' in goal && 'playerName' in goal && 'time' in goal;
+};
+
+const isEnhancedCard = (card: any): card is { id: number; playerId: number; playerName: string; team: string; teamId: string; cardType: "yellow" | "red"; type: "yellow" | "red"; time: number; timestamp: string; } => {
+  return 'teamId' in card && 'playerName' in card && 'time' in card && 'type' in card;
+};
+
+const getGoalTeamId = (goal: any): string => {
+  return isEnhancedGoal(goal) ? goal.teamId : goal.team_id;
+};
+
+const getGoalPlayerName = (goal: any): string => {
+  return isEnhancedGoal(goal) ? goal.playerName : goal.player_name;
+};
+
+const getGoalTime = (goal: any): number => {
+  return isEnhancedGoal(goal) ? goal.time : goal.event_time;
+};
+
+const getCardTeamId = (card: any): string => {
+  return isEnhancedCard(card) ? card.teamId : card.team_id;
+};
+
+const getCardPlayerName = (card: any): string => {
+  return isEnhancedCard(card) ? card.playerName : card.player_name;
+};
+
+const getCardTime = (card: any): number => {
+  return isEnhancedCard(card) ? card.time : card.event_time;
+};
+
+const getCardType = (card: any): string => {
+  if (isEnhancedCard(card)) {
+    return card.type === 'red' ? 'red card' : 'yellow card';
+  }
+  return card.event_type.replace('_', ' ');
+};
+
+const isCardRed = (card: any): boolean => {
+  if (isEnhancedCard(card)) {
+    return card.type === 'red';
+  }
+  return card.event_type === 'red_card';
+};
+
 const MatchSummaryDialog = ({ fixture, isOpen, onClose }: MatchSummaryDialogProps) => {
   const { data: matchEvents, isLoading } = useMatchEvents(fixture?.id);
   const { data: enhancedData, isSuccess: enhancedSuccess } = useEnhancedMatchSummary(fixture?.id);
@@ -56,26 +103,10 @@ const MatchSummaryDialog = ({ fixture, isOpen, onClose }: MatchSummaryDialogProp
         event.event_type === 'yellow_card' || event.event_type === 'red_card'
       );
 
-  const homeGoals = goals.filter(g => 
-    shouldUseEnhancedData 
-      ? g.teamId === fixture?.home_team_id
-      : g.team_id === fixture?.home_team_id
-  );
-  const awayGoals = goals.filter(g => 
-    shouldUseEnhancedData 
-      ? g.teamId === fixture?.away_team_id
-      : g.team_id === fixture?.away_team_id
-  );
-  const homeCards = cards.filter(c => 
-    shouldUseEnhancedData 
-      ? c.teamId === fixture?.home_team_id
-      : c.team_id === fixture?.home_team_id
-  );
-  const awayCards = cards.filter(c => 
-    shouldUseEnhancedData 
-      ? c.teamId === fixture?.away_team_id
-      : c.team_id === fixture?.away_team_id
-  );
+  const homeGoals = goals.filter(g => getGoalTeamId(g) === fixture?.home_team_id);
+  const awayGoals = goals.filter(g => getGoalTeamId(g) === fixture?.away_team_id);
+  const homeCards = cards.filter(c => getCardTeamId(c) === fixture?.home_team_id);
+  const awayCards = cards.filter(c => getCardTeamId(c) === fixture?.away_team_id);
 
   const handleExportJSON = () => {
     const summaryData = {
@@ -136,24 +167,18 @@ const MatchSummaryDialog = ({ fixture, isOpen, onClose }: MatchSummaryDialogProp
         // Goals
         ...goals.map(goal => ({
           Type: 'Goal',
-          Team: shouldUseEnhancedData 
-            ? (goal.teamId === fixture?.home_team_id ? fixture?.home_team?.name : fixture?.away_team?.name)
-            : (goal.team_id === fixture?.home_team_id ? fixture?.home_team?.name : fixture?.away_team?.name),
-          Player: shouldUseEnhancedData ? goal.playerName : goal.player_name,
-          Time: formatTime(shouldUseEnhancedData ? goal.time : goal.event_time),
-          Description: shouldUseEnhancedData ? '' : goal.description
+          Team: getGoalTeamId(goal) === fixture?.home_team_id ? fixture?.home_team?.name : fixture?.away_team?.name,
+          Player: getGoalPlayerName(goal),
+          Time: formatTime(getGoalTime(goal)),
+          Description: isEnhancedGoal(goal) ? '' : goal.description
         })),
         // Cards
         ...cards.map(card => ({
-          Type: shouldUseEnhancedData 
-            ? (card.type === 'yellow' ? 'Yellow Card' : 'Red Card')
-            : (card.event_type === 'yellow_card' ? 'Yellow Card' : 'Red Card'),
-          Team: shouldUseEnhancedData 
-            ? (card.teamId === fixture?.home_team_id ? fixture?.home_team?.name : fixture?.away_team?.name)
-            : (card.team_id === fixture?.home_team_id ? fixture?.home_team?.name : fixture?.away_team?.name),
-          Player: shouldUseEnhancedData ? card.playerName : card.player_name,
-          Time: formatTime(shouldUseEnhancedData ? card.time : card.event_time),
-          Description: shouldUseEnhancedData ? '' : card.description
+          Type: getCardType(card),
+          Team: getCardTeamId(card) === fixture?.home_team_id ? fixture?.home_team?.name : fixture?.away_team?.name,
+          Player: getCardPlayerName(card),
+          Time: formatTime(getCardTime(card)),
+          Description: isEnhancedCard(card) ? '' : card.description
         }))
       ];
 
@@ -256,15 +281,15 @@ const MatchSummaryDialog = ({ fixture, isOpen, onClose }: MatchSummaryDialogProp
                     <h5 className="font-medium text-sm mb-2">{fixture.home_team?.name}</h5>
                     <div className="space-y-1">
                       {homeGoals.map((event, index) => (
-                        <div key={shouldUseEnhancedData ? event.id : event.id} className="text-sm flex items-center justify-between p-2 bg-green-50 rounded">
+                        <div key={`home-goal-${event.id}-${index}`} className="text-sm flex items-center justify-between p-2 bg-green-50 rounded">
                           <div>
                             <Badge variant="default" className="mr-2">
                               goal
                             </Badge>
-                            <span>{shouldUseEnhancedData ? event.playerName : event.player_name}</span>
+                            <span>{getGoalPlayerName(event)}</span>
                           </div>
                           <span className="text-xs text-muted-foreground">
-                            {formatTime(shouldUseEnhancedData ? event.time : event.event_time)}
+                            {formatTime(getGoalTime(event))}
                           </span>
                         </div>
                       ))}
@@ -279,15 +304,15 @@ const MatchSummaryDialog = ({ fixture, isOpen, onClose }: MatchSummaryDialogProp
                     <h5 className="font-medium text-sm mb-2">{fixture.away_team?.name}</h5>
                     <div className="space-y-1">
                       {awayGoals.map((event, index) => (
-                        <div key={shouldUseEnhancedData ? event.id : event.id} className="text-sm flex items-center justify-between p-2 bg-blue-50 rounded">
+                        <div key={`away-goal-${event.id}-${index}`} className="text-sm flex items-center justify-between p-2 bg-blue-50 rounded">
                           <div>
                             <Badge variant="default" className="mr-2">
                               goal
                             </Badge>
-                            <span>{shouldUseEnhancedData ? event.playerName : event.player_name}</span>
+                            <span>{getGoalPlayerName(event)}</span>
                           </div>
                           <span className="text-xs text-muted-foreground">
-                            {formatTime(shouldUseEnhancedData ? event.time : event.event_time)}
+                            {formatTime(getGoalTime(event))}
                           </span>
                         </div>
                       ))}
@@ -318,22 +343,15 @@ const MatchSummaryDialog = ({ fixture, isOpen, onClose }: MatchSummaryDialogProp
                     <h5 className="font-medium text-sm mb-2">{fixture.home_team?.name}</h5>
                     <div className="space-y-1">
                       {homeCards.map((card, index) => (
-                        <div key={shouldUseEnhancedData ? card.id : card.id} className="text-sm flex items-center justify-between p-2 bg-red-50 rounded">
+                        <div key={`home-card-${card.id}-${index}`} className="text-sm flex items-center justify-between p-2 bg-red-50 rounded">
                           <div>
-                            <Badge variant={
-                              shouldUseEnhancedData 
-                                ? (card.type === 'red' ? 'destructive' : 'outline')
-                                : (card.event_type === 'red_card' ? 'destructive' : 'outline')
-                            } className="mr-2">
-                              {shouldUseEnhancedData 
-                                ? (card.type === 'red' ? 'red card' : 'yellow card')
-                                : card.event_type.replace('_', ' ')
-                              }
+                            <Badge variant={isCardRed(card) ? 'destructive' : 'outline'} className="mr-2">
+                              {getCardType(card)}
                             </Badge>
-                            <span>{shouldUseEnhancedData ? card.playerName : card.player_name}</span>
+                            <span>{getCardPlayerName(card)}</span>
                           </div>
                           <span className="text-xs text-muted-foreground">
-                            {formatTime(shouldUseEnhancedData ? card.time : card.event_time)}
+                            {formatTime(getCardTime(card))}
                           </span>
                         </div>
                       ))}
@@ -348,22 +366,15 @@ const MatchSummaryDialog = ({ fixture, isOpen, onClose }: MatchSummaryDialogProp
                     <h5 className="font-medium text-sm mb-2">{fixture.away_team?.name}</h5>
                     <div className="space-y-1">
                       {awayCards.map((card, index) => (
-                        <div key={shouldUseEnhancedData ? card.id : card.id} className="text-sm flex items-center justify-between p-2 bg-red-50 rounded">
+                        <div key={`away-card-${card.id}-${index}`} className="text-sm flex items-center justify-between p-2 bg-red-50 rounded">
                           <div>
-                            <Badge variant={
-                              shouldUseEnhancedData 
-                                ? (card.type === 'red' ? 'destructive' : 'outline')
-                                : (card.event_type === 'red_card' ? 'destructive' : 'outline')
-                            } className="mr-2">
-                              {shouldUseEnhancedData 
-                                ? (card.type === 'red' ? 'red card' : 'yellow card')
-                                : card.event_type.replace('_', ' ')
-                              }
+                            <Badge variant={isCardRed(card) ? 'destructive' : 'outline'} className="mr-2">
+                              {getCardType(card)}
                             </Badge>
-                            <span>{shouldUseEnhancedData ? card.playerName : card.player_name}</span>
+                            <span>{getCardPlayerName(card)}</span>
                           </div>
                           <span className="text-xs text-muted-foreground">
-                            {formatTime(shouldUseEnhancedData ? card.time : card.event_time)}
+                            {formatTime(getCardTime(card))}
                           </span>
                         </div>
                       ))}
