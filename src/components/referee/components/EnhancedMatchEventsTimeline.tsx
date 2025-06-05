@@ -42,7 +42,7 @@ const EnhancedMatchEventsTimeline = ({
     }
   };
 
-  const getEventEmoji = (eventType: string, cardType?: string) => {
+  const getEventEmoji = (eventType: string) => {
     switch (eventType) {
       case 'goal':
         return '⚽';
@@ -58,24 +58,30 @@ const EnhancedMatchEventsTimeline = ({
   };
 
   const formatEventDescription = (event: TimelineEvent) => {
-    const emoji = getEventEmoji(event.type, event.cardType);
-    const time = formatTime(event.time * 60); // Convert minutes to seconds for formatTime
+    const emoji = getEventEmoji(event.type);
+    // Use the passed formatTime function directly with the time value
+    const time = formatTime(event.time);
+    
+    // Use teamName with fallback to teamId only if teamName is empty or equals teamId
+    const displayTeamName = event.teamName && event.teamName !== event.teamId 
+      ? event.teamName 
+      : event.teamId;
     
     switch (event.type) {
       case 'goal':
         if (event.assistPlayerName) {
-          return `${emoji} ${time} - ${event.playerName} scores for ${event.teamName}! Assist by ${event.assistPlayerName}.`;
+          return `${emoji} ${time} - ${event.playerName} scores for ${displayTeamName}! Assist by ${event.assistPlayerName}.`;
         }
-        return `${emoji} ${time} - ${event.playerName} scores for ${event.teamName}!`;
+        return `${emoji} ${time} - ${event.playerName} scores for ${displayTeamName}!`;
       
       case 'assist':
-        return `${emoji} ${time} - ${event.playerName} (${event.teamName}) with the assist!`;
+        return `${emoji} ${time} - ${event.playerName} (${displayTeamName}) with the assist!`;
       
       case 'yellow_card':
-        return `${emoji} ${time} - Yellow card for ${event.playerName} (${event.teamName})`;
+        return `${emoji} ${time} - Yellow card for ${event.playerName} (${displayTeamName})`;
       
       case 'red_card':
-        return `${emoji} ${time} - Red card for ${event.playerName} (${event.teamName})`;
+        return `${emoji} ${time} - Red card for ${event.playerName} (${displayTeamName})`;
       
       default:
         return `${emoji} ${time} - ${event.description}`;
@@ -153,7 +159,7 @@ const EnhancedMatchEventsTimeline = ({
                         {getEventTypeLabel(event.type)}
                       </Badge>
                       <span className="text-xs text-muted-foreground font-mono">
-                        {formatTime(event.time * 60)}'
+                        {formatTime(event.time)}'
                       </span>
                     </div>
                   </div>

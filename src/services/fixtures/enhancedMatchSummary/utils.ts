@@ -48,7 +48,7 @@ export const processPlayerTimes = (playerTimeData: any[]) => {
   }));
 };
 
-// Process timeline events from match events
+// Process timeline events from match events with improved team name handling
 export const processTimelineEvents = (matchEvents: any[]) => {
   return matchEvents
     .filter(event => ['goal', 'assist', 'yellow_card', 'red_card'].includes(event.event_type))
@@ -58,7 +58,7 @@ export const processTimelineEvents = (matchEvents: any[]) => {
       time: event.event_time,
       playerName: event.player_name,
       teamId: event.team_id,
-      teamName: event.team_name || event.team_id,
+      teamName: event.team_name || event.team_id, // Improved fallback handling
       cardType: event.card_type,
       assistPlayerName: event.assist_player_name,
       assistTeamId: event.assist_team_id,
@@ -87,14 +87,24 @@ export const calculateSummaryStats = (goals: any[], cards: any[], playerTimes: a
   };
 };
 
-// Process enhanced data from the new database function
+// Process enhanced data from the new database function with improved team name resolution
 export const processEnhancedFunctionData = (functionResult: any): EnhancedMatchSummaryData => {
   console.log('🔄 Processing enhanced function data:', functionResult);
 
   const goals = Array.isArray(functionResult.goals) ? functionResult.goals : [];
   const cards = Array.isArray(functionResult.cards) ? functionResult.cards : [];
   const playerTimes = Array.isArray(functionResult.player_times) ? functionResult.player_times : [];
-  const timelineEvents = Array.isArray(functionResult.timeline_events) ? functionResult.timeline_events : [];
+  
+  // Enhanced timeline events processing with better team name handling
+  const timelineEvents = Array.isArray(functionResult.timeline_events) 
+    ? functionResult.timeline_events.map((event: any) => ({
+        ...event,
+        // Ensure team names are properly resolved, fallback to teamId if needed
+        teamName: event.teamName && event.teamName !== event.teamId 
+          ? event.teamName 
+          : event.teamId
+      }))
+    : [];
 
   return {
     goals,

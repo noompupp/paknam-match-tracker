@@ -1,7 +1,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 
-// Fetch match events with proper joins
+// Fetch match events with proper joins for team names
 export const fetchMatchEvents = async (fixtureId: number) => {
   console.log('🔍 Fetching match events for fixture:', fixtureId);
   
@@ -15,7 +15,9 @@ export const fetchMatchEvents = async (fixtureId: number) => {
       event_time,
       card_type,
       description,
-      created_at
+      created_at,
+      assist_player_name,
+      assist_team_id
     `)
     .eq('fixture_id', fixtureId)
     .order('event_time', { ascending: true });
@@ -25,7 +27,24 @@ export const fetchMatchEvents = async (fixtureId: number) => {
     throw error;
   }
 
-  return matchEvents;
+  // Enhance events with team names by fetching from teams table
+  if (matchEvents && matchEvents.length > 0) {
+    const teamIds = [...new Set(matchEvents.map(event => event.team_id))];
+    
+    const { data: teams } = await supabase
+      .from('teams')
+      .select('__id__, name')
+      .in('__id__', teamIds);
+
+    const teamMap = new Map(teams?.map(team => [team.__id__, team.name]) || []);
+
+    return matchEvents.map(event => ({
+      ...event,
+      team_name: teamMap.get(event.team_id) || event.team_id
+    }));
+  }
+
+  return matchEvents || [];
 };
 
 // Fetch player time tracking data

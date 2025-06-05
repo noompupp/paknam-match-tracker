@@ -56,6 +56,19 @@ export const secondsToMinutes = (seconds: number): number => {
   return Math.floor(seconds / 60);
 };
 
+// Standardized time formatting for match events (handles both seconds and minutes)
+export const formatEventTime = (timeValue: number, isSeconds: boolean = false): string => {
+  if (isSeconds) {
+    // Convert seconds to MM:SS format
+    const mins = Math.floor(timeValue / 60);
+    const secs = timeValue % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  } else {
+    // timeValue is already in minutes, format as MM'
+    return `${Math.floor(timeValue)}'`;
+  }
+};
+
 // 7-a-side specific constants
 export const SEVEN_A_SIDE_CONSTANTS = {
   STANDARD_MATCH_DURATION: 50 * 60, // 50 minutes total
