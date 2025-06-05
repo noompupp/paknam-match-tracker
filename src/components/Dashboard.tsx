@@ -45,8 +45,9 @@ const Dashboard = () => {
             isLoading={assistsLoading} 
             error={assistsError}
           />
-          <RecentResultsCard recentFixtures={recentFixtures} isLoading={recentLoading} />
         </div>
+
+        <RecentResultsCard recentFixtures={recentFixtures} isLoading={recentLoading} />
 
         <UpcomingFixturesCard upcomingFixtures={upcomingFixtures} isLoading={upcomingLoading} />
       </div>
