@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 
 // Fetch match events with proper joins for team names
@@ -15,9 +14,7 @@ export const fetchMatchEvents = async (fixtureId: number) => {
       event_time,
       card_type,
       description,
-      created_at,
-      assist_player_name,
-      assist_team_id
+      created_at
     `)
     .eq('fixture_id', fixtureId)
     .order('event_time', { ascending: true });
@@ -40,7 +37,10 @@ export const fetchMatchEvents = async (fixtureId: number) => {
 
     return matchEvents.map(event => ({
       ...event,
-      team_name: teamMap.get(event.team_id) || event.team_id
+      team_name: teamMap.get(event.team_id) || event.team_id,
+      // Add assist fields as null since they don't exist in the database yet
+      assist_player_name: null,
+      assist_team_id: null
     }));
   }
 
