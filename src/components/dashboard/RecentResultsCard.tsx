@@ -34,72 +34,67 @@ const RecentResultsCard = ({ recentFixtures, isLoading }: RecentResultsCardProps
         </CardHeader>
         <CardContent className="space-y-4">
           {isLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="space-y-3">
               {Array.from({ length: 6 }).map((_, index) => (
-                <div key={index} className="p-4 rounded-lg bg-muted/20">
-                  <Skeleton className="h-3 w-20 mb-3 mx-auto" />
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <Skeleton className="h-4 w-16" />
-                      <Skeleton className="h-4 w-4" />
+                <div key={index} className="p-4 rounded-lg bg-muted/20 flex items-center justify-center">
+                  <div className="flex items-center gap-8 w-full max-w-md">
+                    <div className="flex items-center gap-3">
+                      <Skeleton className="h-8 w-8 rounded-full" />
+                      <Skeleton className="h-4 w-20" />
                     </div>
-                    <Skeleton className="h-8 w-24 mx-auto" />
-                    <div className="flex items-center justify-between">
-                      <Skeleton className="h-4 w-16" />
-                      <Skeleton className="h-4 w-4" />
+                    <Skeleton className="h-8 w-16" />
+                    <div className="flex items-center gap-3">
+                      <Skeleton className="h-4 w-20" />
+                      <Skeleton className="h-8 w-8 rounded-full" />
                     </div>
+                  </div>
+                  <div className="absolute top-2 right-2">
+                    <Skeleton className="h-3 w-16" />
                   </div>
                 </div>
               ))}
             </div>
           ) : recentFixtures && recentFixtures.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="space-y-3">
               {recentFixtures.map((fixture) => (
                 <div 
                   key={fixture.id} 
-                  className="p-4 rounded-lg bg-muted/20 hover:bg-muted/40 transition-all duration-200 cursor-pointer group hover:shadow-md border border-transparent hover:border-muted-foreground/20"
+                  className="relative p-4 rounded-lg bg-muted/20 hover:bg-muted/40 transition-all duration-200 cursor-pointer group hover:shadow-md border border-transparent hover:border-muted-foreground/20"
                   onClick={() => handleFixtureClick(fixture)}
                 >
-                  <div className="text-center space-y-3">
-                    <div className="flex items-center justify-between">
-                      <div className="text-xs text-muted-foreground">
-                        {formatDateDisplay(fixture.match_date)}
-                      </div>
-                      <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Eye className="h-4 w-4 text-muted-foreground" />
-                      </div>
+                  {/* Match date - top right */}
+                  <div className="absolute top-3 right-3 text-xs text-muted-foreground">
+                    {formatDateDisplay(fixture.match_date)}
+                  </div>
+                  
+                  {/* Eye icon - top right, appears on hover */}
+                  <div className="absolute top-3 right-20 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Eye className="h-4 w-4 text-muted-foreground" />
+                  </div>
+                  
+                  {/* Main match content - centered */}
+                  <div className="flex items-center justify-center gap-8">
+                    {/* Home team */}
+                    <div className="flex items-center gap-3 min-w-0 flex-1 justify-end">
+                      <span className="font-medium text-sm truncate">
+                        {fixture.home_team?.name || 'TBD'}
+                      </span>
+                      <TeamLogo team={fixture.home_team} size="small" />
                     </div>
                     
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <TeamLogo team={fixture.home_team} size="small" />
-                          <span className="font-medium text-sm truncate max-w-[80px]">
-                            {fixture.home_team?.name || 'TBD'}
-                          </span>
-                        </div>
-                        <span className="text-lg font-bold text-muted-foreground">
-                          {fixture.home_score || 0}
-                        </span>
-                      </div>
-                      
-                      <div className="flex items-center justify-center">
-                        <Badge variant="outline" className="px-3 py-1 font-bold text-base">
-                          {fixture.home_score || 0} - {fixture.away_score || 0}
-                        </Badge>
-                      </div>
-                      
-                      <div className="flex items-center justify-between">
-                        <span className="text-lg font-bold text-muted-foreground">
-                          {fixture.away_score || 0}
-                        </span>
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium text-sm truncate max-w-[80px]">
-                            {fixture.away_team?.name || 'TBD'}
-                          </span>
-                          <TeamLogo team={fixture.away_team} size="small" />
-                        </div>
-                      </div>
+                    {/* Score */}
+                    <div className="flex items-center justify-center">
+                      <Badge variant="outline" className="px-4 py-2 font-bold text-lg min-w-[80px] text-center">
+                        {fixture.home_score || 0} - {fixture.away_score || 0}
+                      </Badge>
+                    </div>
+                    
+                    {/* Away team */}
+                    <div className="flex items-center gap-3 min-w-0 flex-1 justify-start">
+                      <TeamLogo team={fixture.away_team} size="small" />
+                      <span className="font-medium text-sm truncate">
+                        {fixture.away_team?.name || 'TBD'}
+                      </span>
                     </div>
                   </div>
                 </div>
