@@ -40,6 +40,9 @@
     /* Navigation height variables */
     --nav-height: 70px;
     --mobile-nav-total-height: calc(70px + var(--safe-area-inset-bottom));
+    
+    /* App gradient variables */
+    --app-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   }
 
   .dark {
@@ -96,12 +99,17 @@
     --is-pwa: 1;
   }
   
+  /* Fix white gap in PWA mode by using gradient background */
   body {
+    background: var(--app-gradient);
     /* Hide scrollbars in standalone mode for native feel */
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
     /* Disable pull-to-refresh */
     overscroll-behavior-y: contain;
+    /* Ensure full coverage including safe areas */
+    min-height: 100vh;
+    min-height: 100dvh;
   }
   
   /* Enhanced safe area for PWA mode */
@@ -117,6 +125,30 @@
     -ms-user-select: none;
     user-select: none;
     -webkit-touch-callout: none;
+  }
+}
+
+/* iOS specific fixes for standalone mode */
+@supports (-webkit-appearance: none) {
+  @media (display-mode: standalone) {
+    body {
+      /* iOS specific background fix */
+      background: var(--app-gradient);
+      background-attachment: fixed;
+    }
+    
+    /* Ensure gradient covers the notch area */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: var(--safe-area-inset-top);
+      background: var(--app-gradient);
+      z-index: 9999;
+      pointer-events: none;
+    }
   }
 }
 
@@ -186,11 +218,26 @@
   }
 }
 
-/* Gradient background with safe area support */
+/* Enhanced gradient background with safe area support */
 .gradient-bg {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--app-gradient);
   min-height: 100vh;
   min-height: 100dvh;
+  /* Ensure gradient extends to safe areas */
+  position: relative;
+}
+
+/* Additional safe area coverage for gradient backgrounds */
+.gradient-bg::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--safe-area-inset-top);
+  background: var(--app-gradient);
+  z-index: -1;
+  pointer-events: none;
 }
 
 /* Enhanced card shadows */
