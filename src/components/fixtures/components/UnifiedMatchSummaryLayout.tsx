@@ -9,6 +9,7 @@ import PremierLeagueMatchHeader from "./PremierLeagueMatchHeader";
 import MatchEventsSection from "./MatchEventsSection";
 import DisciplinarySection from "./DisciplinarySection";
 import MatchStatisticsSummary from "./MatchStatisticsSummary";
+import { useEffect, useState } from "react";
 
 interface UnifiedMatchSummaryLayoutProps {
   fixture: any;
@@ -42,6 +43,7 @@ const UnifiedMatchSummaryLayout = ({
   isCardRed
 }: UnifiedMatchSummaryLayoutProps) => {
   const isMobile = useIsMobile();
+  const [isExportMode, setIsExportMode] = useState(false);
   
   // Extract team data using the existing utility with enhanced color handling
   const teamData = extractTeamData(fixture);
@@ -62,11 +64,34 @@ const UnifiedMatchSummaryLayout = ({
 
   const processedEvents = processTeamEvents(goals, cards, enhancedTeamData, getCardTeamId);
 
-  // Check if we're in export mode on mobile
-  const isExportMode = isMobile && document.getElementById('match-summary-content')?.classList.contains('export-mode-mobile');
+  // Monitor export mode changes
+  useEffect(() => {
+    const checkExportMode = () => {
+      const element = document.getElementById('match-summary-content');
+      const hasExportMode = element?.classList.contains('export-mode-mobile') || 
+                           element?.getAttribute('data-export-mode') === 'true';
+      setIsExportMode(hasExportMode || false);
+    };
+
+    // Initial check
+    checkExportMode();
+
+    // Set up observer for class changes
+    const element = document.getElementById('match-summary-content');
+    if (element) {
+      const observer = new MutationObserver(checkExportMode);
+      observer.observe(element, { 
+        attributes: true, 
+        attributeFilter: ['class', 'data-export-mode'] 
+      });
+      
+      return () => observer.disconnect();
+    }
+  }, []);
 
   // Use iPhone story layout for mobile export mode
   if (isMobile && isExportMode) {
+    console.log('📱 Rendering iPhone story layout for export');
     return (
       <IPhoneStoryLayout
         fixture={fixture}
