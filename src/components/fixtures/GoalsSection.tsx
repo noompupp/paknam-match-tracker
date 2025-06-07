@@ -82,12 +82,12 @@ const GoalsSection = ({
 
   return (
     <Card>
-      <CardContent className="pt-6">
+      <CardContent className="pt-4 md:pt-6 px-3 md:px-6">
         <GoalsSectionHeader totalGoals={goals.length} />
         
-        <div className="flex justify-between items-start">
+        <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4 md:gap-0">
           {/* Home Team Goals */}
-          <div className="flex-1 pr-6">
+          <div className="flex-1 md:pr-6">
             <GoalsList
               goals={homeGoals}
               teamType="home"
@@ -95,13 +95,13 @@ const GoalsSection = ({
             />
           </div>
 
-          {/* Enhanced Center Divider */}
-          <div className="px-6">
+          {/* Enhanced Center Divider - Hidden on mobile */}
+          <div className="hidden md:block px-6">
             <div className="w-0.5 h-full bg-gradient-to-b from-gray-200 via-gray-400 to-gray-200 min-h-[80px] rounded-full"></div>
           </div>
 
           {/* Away Team Goals */}
-          <div className="flex-1 pl-6">
+          <div className="flex-1 md:pl-6">
             <GoalsList
               goals={awayGoals}
               teamType="away"

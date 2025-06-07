@@ -1,6 +1,6 @@
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Trophy, Database } from "lucide-react";
+import { Trophy } from "lucide-react";
 import { useMatchEvents } from "@/hooks/useMatchEvents";
 import { useEnhancedMatchSummary } from "@/hooks/useEnhancedMatchSummary";
 import { useState } from "react";
@@ -59,15 +59,12 @@ const MatchSummaryDialog = ({ fixture, isOpen, onClose }: MatchSummaryDialogProp
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="w-[95vw] max-w-[95vw] md:max-w-4xl max-h-[90vh] overflow-y-auto p-4 md:p-6">
         <DialogHeader>
-          <DialogTitle className="flex items-center justify-between">
+          <DialogTitle className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
             <div className="flex items-center gap-2">
               <Trophy className="h-5 w-5" />
-              Match Summary
-              {enhancedSuccess && enhancedData?.timelineEvents?.length > 0 && (
-                <Database className="h-4 w-4 text-green-600" />
-              )}
+              <span className="text-lg md:text-xl">Match Summary</span>
             </div>
             <MatchSummaryViewToggle 
               viewStyle={viewStyle} 
