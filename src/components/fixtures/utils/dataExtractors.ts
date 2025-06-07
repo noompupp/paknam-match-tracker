@@ -1,0 +1,132 @@
+
+// Data extraction utilities for goals and cards
+
+export const getGoalTeamId = (goal: any): string => {
+  // Try multiple possible team ID fields with enhanced debugging
+  const possibleTeamIds = [
+    goal.teamId,
+    goal.team_id, 
+    goal.team,
+    goal.teamName,
+    goal.player?.team_id,
+    goal.player?.teamId
+  ];
+  
+  console.log('🔍 getGoalTeamId - Analyzing goal:', {
+    goalId: goal.id,
+    possibleTeamIds,
+    selectedTeamId: possibleTeamIds.find(id => id !== undefined && id !== null) || ''
+  });
+  
+  const teamId = possibleTeamIds.find(id => id !== undefined && id !== null) || '';
+  return normalizeTeamId(teamId);
+};
+
+export const getGoalPlayerName = (goal: any): string => {
+  // Try multiple possible player name fields
+  const possibleNames = [
+    goal.playerName,
+    goal.player_name,
+    goal.player?.name,
+    goal.scorer,
+    goal.name
+  ];
+  
+  const playerName = possibleNames.find(name => name && name.trim() !== '') || '';
+  
+  console.log('🔍 getGoalPlayerName - Analyzing goal:', {
+    goalId: goal.id,
+    possibleNames,
+    selectedName: playerName
+  });
+  
+  return playerName;
+};
+
+export const getGoalAssistPlayerName = (goal: any): string => {
+  // Try multiple possible assist player name fields
+  const possibleAssistNames = [
+    goal.assistPlayerName,
+    goal.assist_player_name,
+    goal.assistPlayer?.name,
+    goal.assist?.player_name,
+    goal.assist?.name
+  ];
+  
+  const assistPlayerName = possibleAssistNames.find(name => name && name.trim() !== '') || '';
+  
+  console.log('🅰️ getGoalAssistPlayerName - Analyzing goal:', {
+    goalId: goal.id,
+    possibleAssistNames,
+    selectedAssistName: assistPlayerName,
+    hasAssist: !!assistPlayerName
+  });
+  
+  return assistPlayerName;
+};
+
+export const getGoalTime = (goal: any): number => {
+  // Try multiple possible time fields
+  const possibleTimes = [
+    goal.time,
+    goal.event_time,
+    goal.minute,
+    goal.matchTime
+  ];
+  
+  const time = possibleTimes.find(t => t !== undefined && t !== null) || 0;
+  return Number(time);
+};
+
+export const getCardTeamId = (card: any): string => {
+  const possibleTeamIds = [
+    card.teamId,
+    card.team_id,
+    card.team,
+    card.teamName,
+    card.player?.team_id,
+    card.player?.teamId
+  ];
+  
+  const teamId = possibleTeamIds.find(id => id !== undefined && id !== null) || '';
+  return normalizeTeamId(teamId);
+};
+
+export const getCardPlayerName = (card: any): string => {
+  const possibleNames = [
+    card.playerName,
+    card.player_name,
+    card.player?.name,
+    card.name
+  ];
+  
+  return possibleNames.find(name => name && name.trim() !== '') || '';
+};
+
+export const getCardTime = (card: any): number => {
+  const possibleTimes = [
+    card.time,
+    card.event_time,
+    card.minute,
+    card.matchTime
+  ];
+  
+  const time = possibleTimes.find(t => t !== undefined && t !== null) || 0;
+  return Number(time);
+};
+
+export const getCardType = (card: any): string => {
+  const type = card.type || card.cardType || card.event_type || '';
+  return type.includes('red') ? 'red card' : 'yellow card';
+};
+
+export const isCardRed = (card: any): boolean => {
+  const type = card.type || card.cardType || card.event_type || '';
+  return type.includes('red');
+};
+
+// Import normalization function to avoid circular dependency
+const normalizeTeamId = (teamId: any): string => {
+  if (!teamId) return '';
+  return String(teamId).trim();
+};
