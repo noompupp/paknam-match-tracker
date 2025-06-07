@@ -8,6 +8,7 @@
   /* Fix white gap in PWA mode by using gradient background */
   body {
     background: var(--app-gradient);
+    background-attachment: fixed;
     /* Hide scrollbars in standalone mode for native feel */
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
@@ -16,6 +17,9 @@
     /* Ensure full coverage including safe areas */
     min-height: 100vh;
     min-height: 100dvh;
+    /* Remove any padding that might cause white gaps */
+    padding-top: 0;
+    padding-bottom: 0;
   }
   
   /* Enhanced safe area for PWA mode */
@@ -43,7 +47,7 @@
       background-attachment: fixed;
     }
     
-    /* Ensure gradient covers the notch area */
+    /* Single pseudo-element to cover the top safe area */
     body::before {
       content: '';
       position: fixed;

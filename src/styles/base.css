@@ -87,9 +87,9 @@
   
   body {
     @apply bg-background text-foreground;
-    /* Enhanced safe area support */
-    padding-top: var(--safe-area-inset-top);
+    /* Only apply horizontal safe area padding */
     padding-left: var(--safe-area-inset-left);
     padding-right: var(--safe-area-inset-right);
+    /* Remove top and bottom padding to avoid conflicts */
   }
 }

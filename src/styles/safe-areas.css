@@ -74,15 +74,4 @@
   position: relative;
 }
 
-/* Additional safe area coverage for gradient backgrounds */
-.gradient-bg::before {
-  content: '';
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: var(--safe-area-inset-top);
-  background: var(--app-gradient);
-  z-index: -1;
-  pointer-events: none;
-}
+/* Remove the conflicting pseudo-element - PWA mode handles this */
