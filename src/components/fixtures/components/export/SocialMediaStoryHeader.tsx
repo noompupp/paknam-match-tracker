@@ -8,17 +8,29 @@ interface SocialMediaStoryHeaderProps {
 
 const SocialMediaStoryHeader = ({ fixture }: SocialMediaStoryHeaderProps) => {
   return (
-    <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white p-4 text-center">
-      <div className="flex items-center justify-center gap-2 mb-2">
-        <Trophy className="h-5 w-5 text-amber-400" />
-        <h1 className="text-lg font-bold tracking-wide">PREMIER LEAGUE</h1>
+    <div className="relative z-20 bg-gradient-to-r from-purple-900/90 via-indigo-900/90 to-purple-900/90 backdrop-blur-sm text-white p-6 text-center border-b border-white/10">
+      {/* Tournament Header */}
+      <div className="flex items-center justify-center gap-3 mb-4">
+        <div className="p-2 bg-gradient-to-br from-amber-400 to-amber-600 rounded-full shadow-lg">
+          <Trophy className="h-6 w-6 text-white" />
+        </div>
+        <h1 className="text-2xl font-black tracking-wider text-white drop-shadow-lg">
+          PREMIER LEAGUE
+        </h1>
       </div>
+      
+      {/* Match Status Badge */}
       <Badge 
         variant="outline" 
-        className="bg-white/10 border-white/20 text-white text-sm font-semibold px-3 py-1"
+        className="bg-white/20 border-white/30 text-white text-lg font-bold px-6 py-3 backdrop-blur-sm shadow-lg hover:bg-white/25 transition-all"
       >
         {fixture.status === 'completed' ? 'FULL TIME' : 'LIVE'}
       </Badge>
+      
+      {/* Decorative Elements */}
+      <div className="absolute top-2 left-2 w-3 h-3 bg-gradient-to-br from-amber-400 to-amber-600 rounded-full opacity-60" />
+      <div className="absolute top-4 right-4 w-2 h-2 bg-gradient-to-br from-white to-gray-200 rounded-full opacity-40" />
+      <div className="absolute bottom-3 left-6 w-1.5 h-1.5 bg-gradient-to-br from-purple-300 to-purple-500 rounded-full opacity-50" />
     </div>
   );
 };

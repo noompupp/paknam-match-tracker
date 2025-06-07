@@ -1,4 +1,3 @@
-
 import html2canvas from 'html2canvas';
 
 export interface CaptureOptions {
@@ -37,7 +36,7 @@ export const createCanvasFromElement = async (elementId: string, options: Captur
 
 export const getInstagramStoryOptimizedOptions = (): CaptureOptions => {
   // Instagram Story format: 9:16 aspect ratio (1080x1920px)
-  // Optimized for high quality social media sharing
+  // Using 540x960 for optimal rendering performance
   
   return {
     scale: 2, // High quality for story sharing
@@ -103,8 +102,8 @@ export const captureImageForSharing = async (elementId: string): Promise<Blob> =
     exportModeClass = 'export-mode-mobile';
     element.classList.add(exportModeClass);
     
-    // Wait for layout to settle
-    await new Promise(resolve => setTimeout(resolve, 200));
+    // Wait longer for layout to settle with new enhanced design
+    await new Promise(resolve => setTimeout(resolve, 500));
   }
 
   try {
