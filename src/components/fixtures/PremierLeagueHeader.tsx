@@ -21,14 +21,15 @@ const PremierLeagueHeader = ({ fixture, homeTeamColor, awayTeamColor }: PremierL
       />
       <CardContent className="pt-8 pb-8">
         <div className="flex items-center justify-between mb-8">
-          {/* Home Team - Enhanced Logo Display */}
-          <div className="flex flex-col items-center min-w-[160px]">
+          {/* Home Team - Enhanced Logo Display with Gradient Background */}
+          <div className="flex flex-col items-center min-w-[200px]">
             <TeamLogoDisplay 
               teamName={fixture.home_team?.name || 'Home Team'}
               teamLogo={fixture.home_team?.logoURL}
               teamColor={homeTeamColor}
               size="lg"
               showName={true}
+              isPremierLeagueStyle={true}
             />
             <div className="text-6xl font-bold mt-4 mb-2" style={{ color: homeTeamColor }}>
               {fixture.home_score || 0}
@@ -54,14 +55,15 @@ const PremierLeagueHeader = ({ fixture, homeTeamColor, awayTeamColor }: PremierL
             )}
           </div>
           
-          {/* Away Team - Enhanced Logo Display */}
-          <div className="flex flex-col items-center min-w-[160px]">
+          {/* Away Team - Enhanced Logo Display with Gradient Background */}
+          <div className="flex flex-col items-center min-w-[200px]">
             <TeamLogoDisplay 
               teamName={fixture.away_team?.name || 'Away Team'}
               teamLogo={fixture.away_team?.logoURL}
               teamColor={awayTeamColor}
               size="lg"
               showName={true}
+              isPremierLeagueStyle={true}
             />
             <div className="text-6xl font-bold mt-4 mb-2" style={{ color: awayTeamColor }}>
               {fixture.away_score || 0}

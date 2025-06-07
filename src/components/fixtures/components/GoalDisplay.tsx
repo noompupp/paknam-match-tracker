@@ -70,10 +70,7 @@ const GoalDisplay = ({ goal, index, teamType, teamColor }: GoalDisplayProps) => 
       <div key={goalId} className={teamType === 'home' ? "text-left" : "text-right"}>
         <div className={`flex items-center gap-3 ${teamType === 'away' ? 'justify-end' : ''}`}>
           {teamType === 'home' && (
-            <div 
-              className="w-3 h-3 rounded-full shadow-md"
-              style={{ backgroundColor: teamColor }}
-            />
+            <div className="text-xl">⚽</div>
           )}
           
           <span className="font-semibold text-base">{displayName}</span>
@@ -83,16 +80,13 @@ const GoalDisplay = ({ goal, index, teamType, teamColor }: GoalDisplayProps) => 
           </Badge>
 
           {teamType === 'away' && (
-            <div 
-              className="w-3 h-3 rounded-full shadow-md"
-              style={{ backgroundColor: teamColor }}
-            />
+            <div className="text-xl">⚽</div>
           )}
         </div>
         
         {/* Enhanced Premier League Style Assist Display with Comprehensive Data Checking */}
         {assistPlayerName && (
-          <div className={`text-sm text-muted-foreground mt-1 font-medium ${teamType === 'away' ? 'text-right mr-6' : 'ml-6'}`}>
+          <div className={`text-sm text-muted-foreground mt-1 font-medium ${teamType === 'away' ? 'text-right mr-8' : 'ml-8'}`}>
             <span className="inline-flex items-center gap-1">
               <span className="text-xs bg-muted px-1.5 py-0.5 rounded font-bold">A</span>
               {assistPlayerName}
