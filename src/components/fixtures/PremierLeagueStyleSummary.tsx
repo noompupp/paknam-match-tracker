@@ -1,9 +1,9 @@
 
-import PremierLeagueHeader from "./PremierLeagueHeader";
-import MatchEventsSection from "./MatchEventsSection";
-import MatchStatisticsFooter from "./MatchStatisticsFooter";
+import { getGoalAssistPlayerName } from "./utils/matchSummaryDataProcessor";
 import { extractTeamData, processTeamEvents } from "./utils/teamDataProcessor";
-import { useIsMobile } from "@/hooks/use-mobile";
+import PremierLeagueMatchContent from "./components/PremierLeagueMatchContent";
+import CollapsibleMatchDetails from "./components/CollapsibleMatchDetails";
+import MatchStatisticsFooter from "./MatchStatisticsFooter";
 
 interface PremierLeagueStyleSummaryProps {
   fixture: any;
@@ -36,60 +36,63 @@ const PremierLeagueStyleSummary = ({
   getCardType,
   isCardRed
 }: PremierLeagueStyleSummaryProps) => {
-  const isMobile = useIsMobile();
+  console.log('🎨 PremierLeagueStyleSummary: Enhanced processing with assist support:', {
+    fixtureId: fixture?.id,
+    homeTeamId: fixture?.home_team_id,
+    awayTeamId: fixture?.away_team_id,
+    homeTeamName: fixture?.home_team?.name,
+    awayTeamName: fixture?.away_team?.name,
+    totalGoals: goals.length,
+    totalCards: cards.length,
+    detailedGoalsWithAssists: goals.map(g => ({
+      id: g.id,
+      teamId: getGoalTeamId(g),
+      player: getGoalPlayerName(g),
+      assist: getGoalAssistPlayerName(g),
+      time: getGoalTime(g),
+      rawTeamData: {
+        teamId: g.teamId,
+        team_id: g.team_id,
+        team: g.team,
+        teamName: g.teamName
+      }
+    }))
+  });
 
+  // Extract team data using the new utility
   const teamData = extractTeamData(fixture);
-  const { homeGoals, awayGoals, homeCards, awayCards } = processTeamEvents(
-    goals, 
-    cards, 
-    teamData, 
-    getCardTeamId
-  );
 
-  // Enhanced assist extraction
-  const getGoalAssistPlayerName = (goal: any): string => {
-    const possibleAssistNames = [
-      goal.assistPlayerName,
-      goal.assist_player_name,
-      goal.assistPlayer?.name,
-      goal.assist?.player_name,
-      goal.assist?.name,
-      goal.assist?.playerName,
-      goal.assist_name,
-      goal.assistName
-    ];
-    
-    return possibleAssistNames.find(name => name && name.trim() !== '') || '';
-  };
+  // Process team events using the new utility
+  const processedEvents = processTeamEvents(goals, cards, teamData, getCardTeamId);
 
   return (
-    <div className={`space-y-4 w-full ${isMobile ? 'max-w-[375px] mx-auto' : 'max-w-[768px] mx-auto'}`}>
-      {/* Enhanced Header with improved mobile layout */}
-      <PremierLeagueHeader
+    <div className="space-y-6">
+      {/* Main content sections */}
+      <PremierLeagueMatchContent
         fixture={fixture}
-        homeGoals={homeGoals}
-        awayGoals={awayGoals}
-      />
-
-      {/* Enhanced Match Events Section with left/right alignment */}
-      <MatchEventsSection
-        homeGoals={homeGoals}
-        awayGoals={awayGoals}
-        homeTeamId={teamData.homeTeamId}
-        awayTeamId={teamData.awayTeamId}
-        homeTeamName={teamData.homeTeamName}
-        awayTeamName={teamData.awayTeamName}
-        formatTime={formatTime}
+        goals={goals}
+        cards={cards}
+        teamData={teamData}
+        processedEvents={processedEvents}
         getGoalPlayerName={getGoalPlayerName}
-        getGoalAssistPlayerName={getGoalAssistPlayerName}
         getGoalTime={getGoalTime}
-        getGoalTeamId={getGoalTeamId}
+        getCardPlayerName={getCardPlayerName}
+        getCardTime={getCardTime}
+        getCardType={getCardType}
+        isCardRed={isCardRed}
       />
 
-      {/* Enhanced Statistics Footer */}
-      <MatchStatisticsFooter
-        homeGoals={homeGoals}
-        awayGoals={awayGoals}
+      {/* Enhanced Match Details */}
+      <CollapsibleMatchDetails
+        fixture={fixture}
+        timelineEvents={timelineEvents}
+        formatTime={formatTime}
+      />
+
+      {/* Enhanced Match Statistics Footer */}
+      <MatchStatisticsFooter 
+        homeGoals={processedEvents.homeGoals}
+        awayGoals={processedEvents.awayGoals}
         cards={cards}
         timelineEvents={timelineEvents}
         homeTeamColor={teamData.homeTeamColor}

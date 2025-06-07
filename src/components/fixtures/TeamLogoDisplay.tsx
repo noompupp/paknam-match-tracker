@@ -20,9 +20,9 @@ const TeamLogoDisplay = ({
   const isMobile = useIsMobile();
 
   const sizeClasses = {
-    sm: 'h-12 w-12',
-    md: isMobile ? 'h-16 w-16' : 'h-18 w-18',
-    lg: isMobile ? 'h-20 w-20' : 'h-24 w-24'
+    sm: 'h-10 w-10',
+    md: isMobile ? 'h-14 w-14' : 'h-16 w-16',
+    lg: isMobile ? 'h-18 w-18' : 'h-20 w-20'
   };
 
   const textSizeClasses = {
@@ -33,33 +33,13 @@ const TeamLogoDisplay = ({
 
   const fallbackTextSize = {
     sm: 'text-xs',
-    md: isMobile ? 'text-sm' : 'text-base',
+    md: isMobile ? 'text-sm' : 'text-sm',
     lg: isMobile ? 'text-base' : 'text-lg'
   };
 
   const gapSize = isMobile ? 'gap-3' : 'gap-3';
 
-  // Enhanced team logo source handling with logoURL priority
-  const getTeamLogoSource = () => {
-    if (teamLogo && typeof teamLogo === 'string' && teamLogo.trim() !== '') {
-      console.log('🖼️ TeamLogoDisplay - Using logo source:', {
-        teamName,
-        logoSource: teamLogo,
-        size
-      });
-      return teamLogo;
-    }
-    console.log('🖼️ TeamLogoDisplay - No valid logo source found:', {
-      teamName,
-      teamLogo,
-      size
-    });
-    return null;
-  };
-
-  const logoSource = getTeamLogoSource();
-
-  // Break long team names into multiple lines on mobile if needed
+  // Break long team names into multiple lines on mobile
   const formatTeamName = (name: string) => {
     if (!isMobile || name.length <= 12) return name;
     
@@ -80,44 +60,37 @@ const TeamLogoDisplay = ({
   return (
     <div className={`flex flex-col items-center ${gapSize}`}>
       <Avatar 
-        className={`${sizeClasses[size]} shadow-lg ring-2 ring-offset-2 ring-white/20 bg-white`}
+        className={`${sizeClasses[size]} shadow-lg ring-2 ring-offset-2 ring-gray-200`} 
+        style={{ 
+          borderColor: teamColor
+        }}
       >
-        {logoSource && (
+        {teamLogo && (
           <AvatarImage 
-            src={logoSource} 
+            src={teamLogo} 
             alt={teamName} 
-            className="object-contain p-1"
-            onError={(e) => {
-              console.log('🖼️ TeamLogoDisplay - Logo failed to load:', {
-                teamName,
-                logoSource,
-                error: 'Image load failed'
-              });
-              e.currentTarget.style.display = 'none';
-            }}
-            onLoad={() => {
-              console.log('🖼️ TeamLogoDisplay - Logo loaded successfully:', {
-                teamName,
-                logoSource
-              });
-            }}
+            className="object-cover"
           />
         )}
         <AvatarFallback 
-          className={`font-bold text-slate-700 shadow-inner ${fallbackTextSize[size]} bg-white`}
+          className={`font-bold text-white shadow-inner ${fallbackTextSize[size]}`}
+          style={{ 
+            backgroundColor: teamColor,
+            background: `linear-gradient(135deg, ${teamColor} 0%, ${teamColor}dd 100%)`
+          }}
         >
-          ⚽
+          {teamName.slice(0, 2).toUpperCase()}
         </AvatarFallback>
       </Avatar>
       {showName && (
         <div className="text-center max-w-[120px]">
           {isMultiLine ? (
-            <div className={`${textSizeClasses[size]} font-semibold leading-tight text-center`}>
+            <div className={`${textSizeClasses[size]} font-semibold leading-tight`}>
               <div className="break-words">{formattedName.firstLine}</div>
               <div className="break-words">{formattedName.secondLine}</div>
             </div>
           ) : (
-            <span className={`${textSizeClasses[size]} font-semibold leading-tight break-words text-center block`}>
+            <span className={`${textSizeClasses[size]} font-semibold leading-tight break-words`}>
               {formattedName}
             </span>
           )}

@@ -1,136 +1,160 @@
 
+import { Card, CardContent } from "@/components/ui/card";
+import { getGoalPlayerName, getGoalTime, getGoalAssistPlayerName } from "./utils/matchSummaryDataProcessor";
+import GoalsSectionHeader from "./components/GoalsSectionHeader";
+import GoalsList from "./components/GoalsList";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { formatTimeForSummary } from "@/utils/timeFormatting";
 
 interface GoalsSectionProps {
+  goals: any[];
   homeGoals: any[];
   awayGoals: any[];
   homeTeamColor: string;
   awayTeamColor: string;
-  formatTime: (seconds: number) => string;
   getGoalPlayerName: (goal: any) => string;
-  getGoalAssistPlayerName: (goal: any) => string;
   getGoalTime: (goal: any) => number;
 }
 
 const GoalsSection = ({
+  goals,
   homeGoals,
   awayGoals,
   homeTeamColor,
   awayTeamColor,
-  formatTime,
   getGoalPlayerName,
-  getGoalAssistPlayerName,
   getGoalTime
 }: GoalsSectionProps) => {
   const isMobile = useIsMobile();
 
-  const renderGoal = (goal: any, teamColor: string, index: number) => {
-    const playerName = getGoalPlayerName(goal);
-    const assistPlayerName = getGoalAssistPlayerName(goal);
-    const time = getGoalTime(goal);
-
-    return (
-      <div 
-        key={`${goal.id || 'goal'}-${index}`}
-        className={`flex items-start gap-3 py-2 ${isMobile ? 'text-sm' : 'text-base'}`}
-      >
-        <div 
-          className="w-3 h-3 rounded-full flex-shrink-0 mt-1 shadow-sm"
-          style={{ backgroundColor: teamColor }}
-        />
-        <div className="flex-1 min-w-0 space-y-1">
-          <div className="font-semibold text-slate-900 leading-tight">{playerName}</div>
-          {assistPlayerName && (
-            <div className={`text-slate-600 ${isMobile ? 'text-xs' : 'text-sm'} leading-tight`}>
-              Assist: <span className="font-medium">{assistPlayerName}</span>
-            </div>
-          )}
-        </div>
-        <div className={`font-bold ${isMobile ? 'text-sm' : 'text-base'} text-slate-700 flex-shrink-0 min-w-[40px] text-right`}>
-          {formatTimeForSummary(time)}
-        </div>
-      </div>
-    );
-  };
-
-  const renderTeamGoals = (goals: any[], teamName: string, teamColor: string) => {
-    if (goals.length === 0) {
-      return (
-        <div className={`text-center text-slate-500 ${isMobile ? 'text-sm' : 'text-base'} py-6`}>
-          No goals scored
-        </div>
-      );
+  console.log('⚽ GoalsSection: Comprehensive assist information analysis with enhanced debugging:', {
+    totalGoals: goals.length,
+    homeGoals: homeGoals.length,
+    awayGoals: awayGoals.length,
+    totalGoalsWithAssists: goals.filter(g => getGoalAssistPlayerName(g)).length,
+    comprehensiveAssistAnalysis: goals.map(g => ({
+      id: g.id,
+      type: g.type,
+      playerName: getGoalPlayerName(g),
+      assistPlayerName: getGoalAssistPlayerName(g),
+      hasAssist: !!getGoalAssistPlayerName(g),
+      time: getGoalTime(g),
+      rawAssistFields: {
+        assistPlayerName: g.assistPlayerName,
+        assist_player_name: g.assist_player_name,
+        assistTeamId: g.assistTeamId,
+        assist_team_id: g.assist_team_id,
+        assistName: g.assistName,
+        assist_name: g.assist_name
+      },
+      extractorResult: getGoalAssistPlayerName(g)
+    })),
+    homeGoalsWithAssistDetails: homeGoals.map(g => ({
+      id: g.id,
+      player: getGoalPlayerName(g),
+      assist: getGoalAssistPlayerName(g),
+      hasAssist: !!getGoalAssistPlayerName(g),
+      time: getGoalTime(g),
+      rawData: {
+        assistPlayerName: g.assistPlayerName,
+        assist_player_name: g.assist_player_name
+      }
+    })),
+    awayGoalsWithAssistDetails: awayGoals.map(g => ({
+      id: g.id,
+      player: getGoalPlayerName(g),
+      assist: getGoalAssistPlayerName(g),
+      hasAssist: !!getGoalAssistPlayerName(g),
+      time: getGoalTime(g),
+      rawData: {
+        assistPlayerName: g.assistPlayerName,
+        assist_player_name: g.assist_player_name
+      }
+    })),
+    assistCorrelationSummary: {
+      totalGoalsWithRawAssistData: goals.filter(g => g.assistPlayerName || g.assist_player_name).length,
+      totalGoalsWithExtractedAssists: goals.filter(g => getGoalAssistPlayerName(g)).length,
+      homeGoalsWithAssists: homeGoals.filter(g => getGoalAssistPlayerName(g)).length,
+      awayGoalsWithAssists: awayGoals.filter(g => getGoalAssistPlayerName(g)).length
     }
+  });
 
-    return (
-      <div className="space-y-1">
-        {goals.map((goal, index) => renderGoal(goal, teamColor, index))}
-      </div>
-    );
-  };
-
-  if (homeGoals.length === 0 && awayGoals.length === 0) {
-    return (
-      <div className={`bg-slate-50 rounded-xl border border-slate-200 ${isMobile ? 'p-5' : 'p-6'}`}>
-        <div className="text-center text-slate-500">
-          <div className="text-4xl mb-3">⚽</div>
-          <div className={`font-medium ${isMobile ? 'text-base' : 'text-lg'}`}>No goals scored in this match</div>
-        </div>
-      </div>
-    );
+  if (goals.length === 0) {
+    console.log('⚽ GoalsSection: No goals to display');
+    return null;
   }
 
   return (
-    <div className={`bg-white rounded-xl border border-slate-200 shadow-sm ${isMobile ? 'p-5' : 'p-6'}`}>
-      <div className={`flex items-center gap-3 mb-5 ${isMobile ? 'text-base' : 'text-lg'}`}>
-        <div className="text-2xl">⚽</div>
-        <div className="font-bold text-slate-900">Goals</div>
-        <div className={`ml-auto text-slate-500 font-medium ${isMobile ? 'text-sm' : 'text-base'}`}>
-          {homeGoals.length + awayGoals.length} total
-        </div>
-      </div>
+    <Card>
+      <CardContent className={`${isMobile ? 'pt-4 pb-4' : 'pt-6'}`}>
+        <GoalsSectionHeader totalGoals={goals.length} />
+        
+        {/* Mobile: Compact vertical layout optimized for export */}
+        {isMobile ? (
+          <div className="w-full space-y-4">
+            {/* Home Team Goals */}
+            {homeGoals.length > 0 && (
+              <div className="w-full">
+                <div className="text-center mb-3">
+                  <h4 className="text-sm font-semibold text-muted-foreground">Home Team Goals</h4>
+                </div>
+                <GoalsList
+                  goals={homeGoals}
+                  teamType="home"
+                  teamColor={homeTeamColor}
+                />
+              </div>
+            )}
 
-      {/* Mobile: Enhanced single column layout */}
-      {isMobile ? (
-        <div className="space-y-6">
-          {homeGoals.length > 0 && (
-            <div>
-              <div className="font-bold mb-3 text-sm text-slate-700 uppercase tracking-wide">
-                HOME GOALS ({homeGoals.length})
+            {/* Compact Divider */}
+            {homeGoals.length > 0 && awayGoals.length > 0 && (
+              <div className="w-full px-4">
+                <div className="h-0.5 bg-gradient-to-r from-gray-200 via-gray-400 to-gray-200 rounded-full"></div>
               </div>
-              {renderTeamGoals(homeGoals, 'Home', homeTeamColor)}
-            </div>
-          )}
-          
-          {awayGoals.length > 0 && (
-            <div>
-              <div className="font-bold mb-3 text-sm text-slate-700 uppercase tracking-wide">
-                AWAY GOALS ({awayGoals.length})
+            )}
+
+            {/* Away Team Goals */}
+            {awayGoals.length > 0 && (
+              <div className="w-full">
+                <div className="text-center mb-3">
+                  <h4 className="text-sm font-semibold text-muted-foreground">Away Team Goals</h4>
+                </div>
+                <GoalsList
+                  goals={awayGoals}
+                  teamType="away"
+                  teamColor={awayTeamColor}
+                />
               </div>
-              {renderTeamGoals(awayGoals, 'Away', awayTeamColor)}
-            </div>
-          )}
-        </div>
-      ) : (
-        /* Desktop: Enhanced two column layout */
-        <div className="grid grid-cols-2 gap-8">
-          <div>
-            <div className="font-bold mb-4 text-sm text-slate-700 uppercase tracking-wide">
-              HOME GOALS ({homeGoals.length})
-            </div>
-            {renderTeamGoals(homeGoals, 'Home', homeTeamColor)}
+            )}
           </div>
-          
-          <div>
-            <div className="font-bold mb-4 text-sm text-slate-700 uppercase tracking-wide">
-              AWAY GOALS ({awayGoals.length})
+        ) : (
+          /* Desktop: Horizontal layout */
+          <div className="flex justify-between items-start">
+            {/* Home Team Goals */}
+            <div className="flex-1 pr-6">
+              <GoalsList
+                goals={homeGoals}
+                teamType="home"
+                teamColor={homeTeamColor}
+              />
             </div>
-            {renderTeamGoals(awayGoals, 'Away', awayTeamColor)}
+
+            {/* Center Divider */}
+            <div className="px-6">
+              <div className="w-0.5 h-full bg-gradient-to-b from-gray-200 via-gray-400 to-gray-200 min-h-[80px] rounded-full"></div>
+            </div>
+
+            {/* Away Team Goals */}
+            <div className="flex-1 pl-6">
+              <GoalsList
+                goals={awayGoals}
+                teamType="away"
+                teamColor={awayTeamColor}
+              />
+            </div>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+      </CardContent>
+    </Card>
   );
 };
 
