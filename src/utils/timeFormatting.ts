@@ -7,13 +7,10 @@ export const formatTimeForSummary = (seconds: number): string => {
   const mins = Math.floor(seconds / 60);
   const remainingSeconds = seconds % 60;
   
-  // For exact minutes, show as "45'"
-  if (remainingSeconds === 0) {
-    return `${mins}'`;
-  }
+  // Round up to the nearest minute for goal times
+  const roundedMins = remainingSeconds > 0 ? mins + 1 : mins;
   
-  // For times with seconds, show as "45+2'" (overtime format)
-  return `${mins}+${remainingSeconds}'`;
+  return `${roundedMins}'`;
 };
 
 export const formatTimeCompact = (seconds: number): string => {

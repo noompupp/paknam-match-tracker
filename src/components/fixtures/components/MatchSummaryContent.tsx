@@ -105,7 +105,7 @@ const MatchSummaryContent = ({
         
         .export-mode-mobile {
           font-size: 14px !important;
-          line-height: 1.5 !important;
+          line-height: 1.4 !important;
           letter-spacing: 0.01em !important;
         }
         
@@ -116,38 +116,38 @@ const MatchSummaryContent = ({
         }
         
         .export-mode-mobile .text-xs {
-          font-size: 12px !important;
-          line-height: 1.4 !important;
+          font-size: 11px !important;
+          line-height: 1.3 !important;
         }
         
         .export-mode-mobile .text-sm {
-          font-size: 13px !important;
-          line-height: 1.4 !important;
+          font-size: 12px !important;
+          line-height: 1.3 !important;
         }
         
         .export-mode-mobile .text-base {
           font-size: 14px !important;
-          line-height: 1.5 !important;
+          line-height: 1.4 !important;
         }
         
         .export-mode-mobile .text-lg {
           font-size: 16px !important;
-          line-height: 1.5 !important;
+          line-height: 1.4 !important;
         }
         
         .export-mode-mobile .text-xl {
           font-size: 18px !important;
-          line-height: 1.4 !important;
+          line-height: 1.3 !important;
         }
         
         .export-mode-mobile .text-2xl {
           font-size: 20px !important;
-          line-height: 1.3 !important;
+          line-height: 1.2 !important;
         }
         
         .export-mode-mobile .text-3xl {
           font-size: 24px !important;
-          line-height: 1.2 !important;
+          line-height: 1.1 !important;
         }
         
         .export-mode-mobile .text-4xl {
@@ -166,11 +166,11 @@ const MatchSummaryContent = ({
         }
         
         .export-mode-mobile .shadow-lg {
-          box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+          box-shadow: 0 8px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
         }
         
         .export-mode-mobile .shadow-xl {
-          box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+          box-shadow: 0 15px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -5px rgba(0, 0, 0, 0.04) !important;
         }
         `}
       </style>

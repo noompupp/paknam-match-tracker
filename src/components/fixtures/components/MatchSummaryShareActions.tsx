@@ -1,6 +1,5 @@
 
 import { Button } from "@/components/ui/button";
-import { Download, Share } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { captureImageForSharing, saveImageToDevice, shareImage } from "@/utils/exportUtils";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -20,14 +19,14 @@ const MatchSummaryShareActions = ({ fixture, goals = [], cards = [] }: MatchSumm
   const getMatchTitle = () => {
     const homeTeam = fixture?.home_team?.name || 'Home';
     const awayTeam = fixture?.away_team?.name || 'Away';
-    const homeScore = fixture?.home_score || 0;
-    const awayScore = fixture?.away_score || 0;
+    const homeScore = fixture?.home_score || goals.filter(g => g.team_id === fixture?.home_team_id).length;
+    const awayScore = fixture?.away_score || goals.filter(g => g.team_id === fixture?.away_team_id).length;
     return `${homeTeam} ${homeScore}-${awayScore} ${awayTeam}`;
   };
 
   const getShareText = () => {
     const matchTitle = getMatchTitle();
-    const date = fixture?.match_date || new Date().toLocaleDateString();
+    const date = fixture?.match_date ? new Date(fixture.match_date).toLocaleDateString() : new Date().toLocaleDateString();
     return `Match Summary: ${matchTitle} - ${date}`;
   };
 
@@ -56,21 +55,21 @@ const MatchSummaryShareActions = ({ fixture, goals = [], cards = [] }: MatchSumm
       enableExportMode();
       
       // Wait for layout to settle
-      await new Promise(resolve => setTimeout(resolve, 150));
+      await new Promise(resolve => setTimeout(resolve, 200));
 
-      const filename = `match-summary-${getMatchTitle().replace(/\s+/g, '-').toLowerCase()}-${fixture?.match_date || 'today'}.jpg`;
+      const filename = `match-summary-${getMatchTitle().replace(/[^a-zA-Z0-9]/g, '-').toLowerCase()}-${fixture?.match_date?.split('T')[0] || 'today'}.jpg`;
       
       const imageBlob = await captureImageForSharing('match-summary-content');
       await saveImageToDevice(imageBlob, filename);
       
       toast({
-        title: "📥 Saved to Device",
-        description: "Match summary has been saved to your camera roll.",
+        title: "✅ Saved Successfully",
+        description: "Match summary has been saved to your device.",
       });
     } catch (error) {
       console.error('Save failed:', error);
       toast({
-        title: "Save Failed",
+        title: "❌ Save Failed",
         description: "Unable to save image. Please try again.",
         variant: "destructive",
       });
@@ -89,7 +88,7 @@ const MatchSummaryShareActions = ({ fixture, goals = [], cards = [] }: MatchSumm
       enableExportMode();
       
       // Wait for layout to settle
-      await new Promise(resolve => setTimeout(resolve, 150));
+      await new Promise(resolve => setTimeout(resolve, 200));
 
       const title = getMatchTitle();
       const text = getShareText();
@@ -98,17 +97,18 @@ const MatchSummaryShareActions = ({ fixture, goals = [], cards = [] }: MatchSumm
       await shareImage(imageBlob, title, text);
       
       toast({
-        title: "📤 Share Successful",
-        description: "Match summary ready to share!",
+        title: "📤 Ready to Share",
+        description: "Opening share dialog...",
       });
     } catch (error) {
       console.error('Share failed:', error);
       toast({
-        title: "Share Failed",
-        description: "Unable to share image. Saving to device instead.",
+        title: "⚠️ Share Unavailable",
+        description: "Saving to device instead.",
         variant: "destructive",
       });
       
+      // Fallback to save
       try {
         await handleSaveToCameraRoll();
       } catch (saveError) {
@@ -126,10 +126,10 @@ const MatchSummaryShareActions = ({ fixture, goals = [], cards = [] }: MatchSumm
         onClick={handleSaveToCameraRoll} 
         variant="outline" 
         disabled={isProcessing}
-        className={`${isMobile ? 'h-14 text-base' : 'h-12'} flex items-center justify-center gap-3 font-medium transition-all hover:scale-105`}
+        className={`${isMobile ? 'h-14 text-base' : 'h-12'} flex items-center justify-center gap-3 font-medium transition-all hover:scale-105 bg-blue-50 hover:bg-blue-100 border-blue-200`}
       >
-        <Download className={`${isMobile ? 'h-5 w-5' : 'h-4 w-4'}`} />
-        <span>📥 Save to Camera Roll</span>
+        <span className={`${isMobile ? 'text-xl' : 'text-lg'}`}>💾</span>
+        <span>Save to Camera Roll</span>
       </Button>
       
       <Button 
@@ -138,8 +138,8 @@ const MatchSummaryShareActions = ({ fixture, goals = [], cards = [] }: MatchSumm
         disabled={isProcessing}
         className={`${isMobile ? 'h-14 text-base' : 'h-12'} flex items-center justify-center gap-3 font-medium transition-all hover:scale-105 bg-gradient-to-r from-purple-50 to-pink-50 hover:from-purple-100 hover:to-pink-100 border-purple-200`}
       >
-        <Share className={`${isMobile ? 'h-5 w-5' : 'h-4 w-4'}`} />
-        <span>📤 Share to Story</span>
+        <span className={`${isMobile ? 'text-xl' : 'text-lg'}`}>📱</span>
+        <span>Share to Story</span>
       </Button>
       
       {isProcessing && (

@@ -29,9 +29,9 @@ const PremierLeagueHeader = ({ fixture, homeGoals, awayGoals }: PremierLeagueHea
     <div className={`bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white rounded-xl ${isMobile ? 'p-5' : 'p-6'} shadow-xl`}>
       {/* Mobile: Enhanced compact layout */}
       {isMobile ? (
-        <div className="w-full space-y-4">
+        <div className="w-full space-y-5">
           {/* Match Date with better spacing */}
-          <div className="text-center">
+          <div className="text-center pt-1">
             <div className="text-sm text-slate-300 font-medium tracking-wide">{getMatchDate()}</div>
           </div>
           
@@ -45,15 +45,15 @@ const PremierLeagueHeader = ({ fixture, homeGoals, awayGoals }: PremierLeagueHea
                 teamColor={fixture?.home_team?.color || "#1f2937"}
                 size="sm"
               />
-              <div className="mt-2 text-center">
-                <div className="font-bold text-base leading-tight break-words">
+              <div className="mt-3 text-center">
+                <div className="font-bold text-base leading-tight break-words text-center">
                   {homeTeamName}
                 </div>
               </div>
             </div>
             
-            {/* Enhanced Score Area with gradient and shadow */}
-            <div className="px-6">
+            {/* Enhanced Score Area - positioned to align with logos */}
+            <div className="px-6 flex items-center">
               <div className="bg-gradient-to-br from-white/20 to-white/10 rounded-xl px-4 py-3 backdrop-blur-sm shadow-lg border border-white/20">
                 <div className="text-center">
                   <div className="text-3xl font-bold tracking-tight">
@@ -72,8 +72,8 @@ const PremierLeagueHeader = ({ fixture, homeGoals, awayGoals }: PremierLeagueHea
                 teamColor={fixture?.away_team?.color || "#7c3aed"}
                 size="sm"
               />
-              <div className="mt-2 text-center">
-                <div className="font-bold text-base leading-tight break-words">
+              <div className="mt-3 text-center">
+                <div className="font-bold text-base leading-tight break-words text-center">
                   {awayTeamName}
                 </div>
               </div>
@@ -82,9 +82,9 @@ const PremierLeagueHeader = ({ fixture, homeGoals, awayGoals }: PremierLeagueHea
         </div>
       ) : (
         /* Desktop layout with enhanced styling */
-        <div className="space-y-5">
+        <div className="space-y-6">
           {/* Match Info */}
-          <div className="text-center">
+          <div className="text-center pt-2">
             <div className="text-base text-slate-300 font-medium">{getMatchDate()}</div>
           </div>
           
@@ -99,7 +99,7 @@ const PremierLeagueHeader = ({ fixture, homeGoals, awayGoals }: PremierLeagueHea
                   teamColor={fixture?.home_team?.color || "#1f2937"}
                   size="md"
                 />
-                <div className="mt-3 text-2xl font-bold">{homeTeamName}</div>
+                <div className="mt-4 text-2xl font-bold text-center">{homeTeamName}</div>
               </div>
             </div>
             
@@ -124,7 +124,7 @@ const PremierLeagueHeader = ({ fixture, homeGoals, awayGoals }: PremierLeagueHea
                   teamColor={fixture?.away_team?.color || "#7c3aed"}
                   size="md"
                 />
-                <div className="mt-3 text-2xl font-bold">{awayTeamName}</div>
+                <div className="mt-4 text-2xl font-bold text-center">{awayTeamName}</div>
               </div>
             </div>
           </div>
