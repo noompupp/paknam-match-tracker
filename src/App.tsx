@@ -1,5 +1,6 @@
 
 import { useState, useEffect } from "react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { SecureAuthProvider, useSecureAuth } from "@/contexts/SecureAuthContext";
 import { AuthProvider } from "@/contexts/AuthContext"; // Keep for backward compatibility
@@ -11,6 +12,16 @@ import Fixtures from "@/components/Fixtures";
 import ProtectedTabWrapper from "@/components/auth/ProtectedTabWrapper";
 import RefereeToolsContainer from "@/components/referee/RefereeToolsContainer";
 import Notifications from "@/components/Notifications";
+
+// Create a client
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      retry: 1,
+    },
+  },
+});
 
 const AppContent = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -77,12 +88,14 @@ const AppContent = () => {
 
 function App() {
   return (
-    <SecureAuthProvider>
-      <AuthProvider>
-        <AppContent />
-        <Toaster />
-      </AuthProvider>
-    </SecureAuthProvider>
+    <QueryClientProvider client={queryClient}>
+      <SecureAuthProvider>
+        <AuthProvider>
+          <AppContent />
+          <Toaster />
+        </AuthProvider>
+      </SecureAuthProvider>
+    </QueryClientProvider>
   );
 }
 
