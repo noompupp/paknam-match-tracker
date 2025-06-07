@@ -1,13 +1,9 @@
-import { Button } from "@/components/ui/button";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { ChevronDown, ChevronUp } from "lucide-react";
-import { useState } from "react";
-import EnhancedMatchDetails from "./EnhancedMatchDetails";
-import PremierLeagueHeader from "./PremierLeagueHeader";
-import GoalsSection from "./GoalsSection";
-import CardsSection from "./CardsSection";
+
+import { getGoalAssistPlayerName } from "./utils/matchSummaryDataProcessor";
+import { extractTeamData, processTeamEvents } from "./utils/teamDataProcessor";
+import PremierLeagueMatchContent from "./components/PremierLeagueMatchContent";
+import CollapsibleMatchDetails from "./components/CollapsibleMatchDetails";
 import MatchStatisticsFooter from "./MatchStatisticsFooter";
-import { filterGoalsByTeam, normalizeTeamId, getGoalAssistPlayerName } from "./utils/matchSummaryDataProcessor";
 
 interface PremierLeagueStyleSummaryProps {
   fixture: any;
@@ -40,8 +36,6 @@ const PremierLeagueStyleSummary = ({
   getCardType,
   isCardRed
 }: PremierLeagueStyleSummaryProps) => {
-  const [detailsExpanded, setDetailsExpanded] = useState(true);
-
   console.log('🎨 PremierLeagueStyleSummary: Enhanced processing with assist support:', {
     fixtureId: fixture?.id,
     homeTeamId: fixture?.home_team_id,
@@ -65,111 +59,23 @@ const PremierLeagueStyleSummary = ({
     }))
   });
 
-  // Enhanced team identification with multiple fallbacks
-  const homeTeamId = normalizeTeamId(fixture?.home_team_id);
-  const awayTeamId = normalizeTeamId(fixture?.away_team_id);
-  const homeTeamName = fixture?.home_team?.name;
-  const awayTeamName = fixture?.away_team?.name;
+  // Extract team data using the new utility
+  const teamData = extractTeamData(fixture);
 
-  console.log('🎨 PremierLeagueStyleSummary: Enhanced team identification:', {
-    homeTeamId,
-    awayTeamId,
-    homeTeamName,
-    awayTeamName,
-    fixtureHomeTeam: fixture?.home_team,
-    fixtureAwayTeam: fixture?.away_team
-  });
-
-  // Use enhanced filtering function with comprehensive debugging
-  console.log('🎨 PremierLeagueStyleSummary: About to filter goals with enhanced logic');
-  const homeGoals = filterGoalsByTeam(goals, homeTeamId, homeTeamName);
-  const awayGoals = filterGoalsByTeam(goals, awayTeamId, awayTeamName);
-
-  // Enhanced cards filtering with same logic
-  const homeCards = cards.filter(c => {
-    const cardTeamId = getCardTeamId(c);
-    const normalizedCardTeamId = normalizeTeamId(cardTeamId);
-    const matches = normalizedCardTeamId === homeTeamId;
-    
-    console.log('🟨 Home card filtering:', {
-      cardId: c.id,
-      cardTeamId,
-      normalizedCardTeamId,
-      homeTeamId,
-      matches
-    });
-    
-    return matches;
-  });
-  
-  const awayCards = cards.filter(c => {
-    const cardTeamId = getCardTeamId(c);
-    const normalizedCardTeamId = normalizeTeamId(cardTeamId);
-    const matches = normalizedCardTeamId === awayTeamId;
-    
-    console.log('🟨 Away card filtering:', {
-      cardId: c.id,
-      cardTeamId,
-      normalizedCardTeamId,
-      awayTeamId,
-      matches
-    });
-    
-    return matches;
-  });
-
-  console.log('🎨 PremierLeagueStyleSummary: Enhanced final team data analysis with assists:', {
-    homeGoals: homeGoals.length,
-    awayGoals: awayGoals.length,
-    homeCards: homeCards.length,
-    awayCards: awayCards.length,
-    homeGoalsDetailed: homeGoals.map(g => ({
-      id: g.id,
-      player: getGoalPlayerName(g),
-      assist: getGoalAssistPlayerName(g),
-      teamId: getGoalTeamId(g)
-    })),
-    awayGoalsDetailed: awayGoals.map(g => ({
-      id: g.id,
-      player: getGoalPlayerName(g),
-      assist: getGoalAssistPlayerName(g),
-      teamId: getGoalTeamId(g)
-    })),
-    totalGoalsBeforeFiltering: goals.length,
-    totalGoalsAfterFiltering: homeGoals.length + awayGoals.length
-  });
-
-  // Enhanced team colors with better defaults
-  const homeTeamColor = fixture.home_team?.color || "#1f2937"; // Dark gray default
-  const awayTeamColor = fixture.away_team?.color || "#7c3aed"; // Purple default
+  // Process team events using the new utility
+  const processedEvents = processTeamEvents(goals, cards, teamData, getCardTeamId);
 
   return (
     <div className="space-y-6">
-      {/* Premier League Style Header with Enhanced Team Logos */}
-      <PremierLeagueHeader 
+      {/* Main content sections */}
+      <PremierLeagueMatchContent
         fixture={fixture}
-        homeTeamColor={homeTeamColor}
-        awayTeamColor={awayTeamColor}
-      />
-
-      {/* Enhanced Goals Section with Assist Support */}
-      <GoalsSection 
         goals={goals}
-        homeGoals={homeGoals}
-        awayGoals={awayGoals}
-        homeTeamColor={homeTeamColor}
-        awayTeamColor={awayTeamColor}
+        cards={cards}
+        teamData={teamData}
+        processedEvents={processedEvents}
         getGoalPlayerName={getGoalPlayerName}
         getGoalTime={getGoalTime}
-      />
-
-      {/* Enhanced Collapsible Cards Section */}
-      <CardsSection 
-        cards={cards}
-        homeCards={homeCards}
-        awayCards={awayCards}
-        homeTeamColor={homeTeamColor}
-        awayTeamColor={awayTeamColor}
         getCardPlayerName={getCardPlayerName}
         getCardTime={getCardTime}
         getCardType={getCardType}
@@ -177,32 +83,20 @@ const PremierLeagueStyleSummary = ({
       />
 
       {/* Enhanced Match Details */}
-      <Collapsible open={detailsExpanded} onOpenChange={setDetailsExpanded}>
-        <CollapsibleTrigger asChild>
-          <Button variant="outline" className="w-full justify-between hover:bg-muted/50">
-            <span>Match Details</span>
-            {detailsExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-          </Button>
-        </CollapsibleTrigger>
-        <CollapsibleContent>
-          <div className="mt-2">
-            <EnhancedMatchDetails 
-              fixture={fixture}
-              timelineEvents={timelineEvents}
-              formatTime={formatTime}
-            />
-          </div>
-        </CollapsibleContent>
-      </Collapsible>
+      <CollapsibleMatchDetails
+        fixture={fixture}
+        timelineEvents={timelineEvents}
+        formatTime={formatTime}
+      />
 
       {/* Enhanced Match Statistics Footer */}
       <MatchStatisticsFooter 
-        homeGoals={homeGoals}
-        awayGoals={awayGoals}
+        homeGoals={processedEvents.homeGoals}
+        awayGoals={processedEvents.awayGoals}
         cards={cards}
         timelineEvents={timelineEvents}
-        homeTeamColor={homeTeamColor}
-        awayTeamColor={awayTeamColor}
+        homeTeamColor={teamData.homeTeamColor}
+        awayTeamColor={teamData.awayTeamColor}
         fixture={fixture}
       />
     </div>
