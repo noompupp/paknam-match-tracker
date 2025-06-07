@@ -31,36 +31,37 @@ const EnhancedRecentResultsCard = ({ recentFixtures, isLoading, onViewAll }: Enh
   return (
     <>
       <Card className="card-shadow-lg animate-fade-in">
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-xl font-bold">Recent Results</CardTitle>
+        <CardHeader className="flex flex-row items-center justify-between pb-3 sm:pb-4">
+          <CardTitle className="text-lg sm:text-xl font-bold">Recent Results</CardTitle>
           <Button
             variant="ghost"
             size="sm"
             onClick={onViewAll}
-            className="text-muted-foreground hover:text-foreground"
+            className="text-muted-foreground hover:text-foreground px-2 sm:px-3"
           >
-            View All
-            <ArrowRight className="h-4 w-4 ml-1" />
+            <span className="hidden sm:inline mr-1">View All</span>
+            <span className="sm:hidden text-xs mr-1">All</span>
+            <ArrowRight className="h-3 w-3 sm:h-4 sm:w-4" />
           </Button>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-3 sm:space-y-4 px-3 sm:px-6">
           {isLoading ? (
             <div className="space-y-3">
               {Array.from({ length: 3 }).map((_, index) => (
-                <div key={index} className="p-4 rounded-lg bg-muted/20 flex items-center justify-center">
-                  <div className="flex items-center gap-8 w-full max-w-md">
-                    <div className="flex items-center gap-3">
-                      <Skeleton className="h-8 w-8 rounded-full" />
-                      <Skeleton className="h-4 w-20" />
+                <div key={index} className="p-3 sm:p-4 rounded-lg bg-muted/20 relative">
+                  <div className="flex items-center justify-center gap-3 sm:gap-6 md:gap-8">
+                    <div className="flex items-center gap-2 sm:gap-3 flex-1 justify-end">
+                      <Skeleton className="h-3 w-12 sm:h-4 sm:w-20" />
+                      <Skeleton className="h-6 w-6 sm:h-8 sm:w-8 rounded-full flex-shrink-0" />
                     </div>
-                    <Skeleton className="h-8 w-16" />
-                    <div className="flex items-center gap-3">
-                      <Skeleton className="h-4 w-20" />
-                      <Skeleton className="h-8 w-8 rounded-full" />
+                    <Skeleton className="h-6 w-12 sm:h-8 sm:w-16 flex-shrink-0" />
+                    <div className="flex items-center gap-2 sm:gap-3 flex-1 justify-start">
+                      <Skeleton className="h-6 w-6 sm:h-8 sm:w-8 rounded-full flex-shrink-0" />
+                      <Skeleton className="h-3 w-12 sm:h-4 sm:w-20" />
                     </div>
                   </div>
-                  <div className="absolute top-2 right-2">
-                    <Skeleton className="h-3 w-16" />
+                  <div className="absolute top-2 right-2 sm:top-2 sm:right-2">
+                    <Skeleton className="h-3 w-10 sm:w-16" />
                   </div>
                 </div>
               ))}
@@ -76,18 +77,18 @@ const EnhancedRecentResultsCard = ({ recentFixtures, isLoading, onViewAll }: Enh
               ))}
             </div>
           ) : (
-            <div className="text-center text-muted-foreground py-8">
+            <div className="text-center text-muted-foreground py-6 sm:py-8">
               <div className="space-y-2">
-                <div className="text-4xl">⚽</div>
-                <p className="text-lg font-medium">No recent results available</p>
-                <p className="text-sm">Check back after matches have been played</p>
+                <div className="text-3xl sm:text-4xl">⚽</div>
+                <p className="text-base sm:text-lg font-medium">No recent results available</p>
+                <p className="text-xs sm:text-sm">Check back after matches have been played</p>
               </div>
             </div>
           )}
         </CardContent>
       </Card>
 
-      {/* Match Summary Dialog */}
+      {/* Match Summary Dialog - Mobile optimized */}
       {selectedFixture && (
         <MatchSummaryDialog
           fixture={selectedFixture}
