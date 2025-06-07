@@ -4,9 +4,8 @@ import { Clock } from "lucide-react";
 import EnhancedMatchEventsTimeline from "../../referee/components/EnhancedMatchEventsTimeline";
 import { extractTeamData, processTeamEvents } from "../utils/teamDataProcessor";
 import IPhoneStoryLayout from "./export/IPhoneStoryLayout";
-import PremierLeagueCardsSection from "./PremierLeagueCardsSection";
 import MatchHeaderSection from "./MatchHeaderSection";
-import GoalsSection from "./GoalsSection";
+import MatchEventsSection from "./MatchEventsSection";
 import MatchStatisticsSummary from "./MatchStatisticsSummary";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -72,21 +71,28 @@ const UnifiedMatchSummaryLayout = ({
 
   return (
     <div className="space-y-6">
-      {/* Header Section */}
+      {/* Header Section with Premier League styling */}
       <MatchHeaderSection
         fixture={fixture}
         homeTeamColor={teamData.homeTeamColor}
         awayTeamColor={teamData.awayTeamColor}
       />
 
-      {/* Goals Section */}
-      <GoalsSection
+      {/* Match Events Section (replaces Goals Section) */}
+      <MatchEventsSection
         goals={goals}
+        cards={cards}
         processedEvents={processedEvents}
         homeTeamColor={teamData.homeTeamColor}
         awayTeamColor={teamData.awayTeamColor}
         getGoalPlayerName={getGoalPlayerName}
         getGoalTime={getGoalTime}
+        getCardTeamId={getCardTeamId}
+        getCardPlayerName={getCardPlayerName}
+        getCardTime={getCardTime}
+        getCardType={getCardType}
+        isCardRed={isCardRed}
+        fixture={fixture}
       />
 
       {/* Summary Statistics Box */}
@@ -115,19 +121,6 @@ const UnifiedMatchSummaryLayout = ({
           </CardContent>
         </Card>
       )}
-
-      {/* Cards Section - Moved to bottom as collapsible */}
-      <PremierLeagueCardsSection
-        cards={cards}
-        homeTeamColor={teamData.homeTeamColor}
-        awayTeamColor={teamData.awayTeamColor}
-        getCardTeamId={getCardTeamId}
-        getCardPlayerName={getCardPlayerName}
-        getCardTime={getCardTime}
-        getCardType={getCardType}
-        isCardRed={isCardRed}
-        fixture={fixture}
-      />
     </div>
   );
 };

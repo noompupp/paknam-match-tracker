@@ -34,27 +34,6 @@ const MatchHeaderSection = ({
   return (
     <Card className="overflow-hidden">
       <CardContent className="p-6">
-        {/* Match Info Bar */}
-        <div className="flex items-center justify-center gap-4 text-sm text-muted-foreground mb-6">
-          <div className="flex items-center gap-1">
-            <Calendar className="h-4 w-4" />
-            <span>{fixture.match_date}</span>
-          </div>
-          {fixture.venue && (
-            <>
-              <span>•</span>
-              <div className="flex items-center gap-1">
-                <MapPin className="h-4 w-4" />
-                <span>{fixture.venue}</span>
-              </div>
-            </>
-          )}
-          <span>•</span>
-          <Badge variant={fixture.status === 'completed' ? 'default' : 'outline'}>
-            {fixture.status === 'completed' ? 'FULL TIME' : fixture.status}
-          </Badge>
-        </div>
-
         {/* Teams and Score */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4 flex-1">
@@ -78,7 +57,14 @@ const MatchHeaderSection = ({
             </div>
           </div>
 
+          {/* Center Section with FULL TIME status */}
           <div className="text-center px-8">
+            <Badge 
+              variant={fixture.status === 'completed' ? 'default' : 'outline'}
+              className="mb-3 text-sm px-4 py-1 font-bold"
+            >
+              {fixture.status === 'completed' ? 'FULL TIME' : fixture.status?.toUpperCase() || 'MATCH'}
+            </Badge>
             <div className="text-3xl font-light text-muted-foreground mb-2">VS</div>
             <Badge variant="outline" className={getResultColor()}>
               {getResult()}
@@ -105,6 +91,29 @@ const MatchHeaderSection = ({
               showName={false}
             />
           </div>
+        </div>
+
+        {/* Match Info Bar - Now positioned after teams */}
+        <div className="flex items-center justify-center gap-4 text-sm text-muted-foreground mt-6 pt-4 border-t">
+          <div className="flex items-center gap-1">
+            <Calendar className="h-4 w-4" />
+            <span>{fixture.match_date}</span>
+          </div>
+          {fixture.kick_off_time && (
+            <>
+              <span>•</span>
+              <span>Kick-off: {fixture.kick_off_time}</span>
+            </>
+          )}
+          {fixture.venue && (
+            <>
+              <span>•</span>
+              <div className="flex items-center gap-1">
+                <MapPin className="h-4 w-4" />
+                <span>{fixture.venue}</span>
+              </div>
+            </>
+          )}
         </div>
       </CardContent>
     </Card>

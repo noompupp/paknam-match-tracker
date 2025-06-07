@@ -1,6 +1,6 @@
 
 import { Badge } from "@/components/ui/badge";
-import { Trophy, Calendar, MapPin } from "lucide-react";
+import { Calendar, MapPin } from "lucide-react";
 import TeamLogoDisplay from "../../TeamLogoDisplay";
 
 interface IPhoneStoryHeaderProps {
@@ -12,18 +12,8 @@ interface IPhoneStoryHeaderProps {
 const IPhoneStoryHeader = ({ fixture, homeTeamColor, awayTeamColor }: IPhoneStoryHeaderProps) => {
   return (
     <div className="bg-gradient-to-br from-slate-50 via-white to-slate-50 border-b-2 border-gray-100">
-      {/* Status Badge */}
-      <div className="flex items-center justify-center pt-4 pb-3">
-        <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-full shadow-sm border">
-          <Trophy className="h-3 w-3 text-amber-500" />
-          <Badge variant="outline" className="text-xs font-semibold border-0 bg-transparent">
-            {fixture.status === 'completed' ? 'FULL TIME' : 'LIVE MATCH'}
-          </Badge>
-        </div>
-      </div>
-      
       {/* Teams Layout - Optimized for iPhone */}
-      <div className="flex items-center justify-between px-4 pb-3">
+      <div className="flex items-center justify-between px-4 pt-4 pb-3">
         {/* Home Team */}
         <div className="flex items-center gap-2 flex-1 min-w-0">
           <TeamLogoDisplay 
@@ -46,9 +36,15 @@ const IPhoneStoryHeader = ({ fixture, homeTeamColor, awayTeamColor }: IPhoneStor
           </div>
         </div>
 
-        {/* Score Separator */}
-        <div className="px-3 flex items-center">
-          <div className="text-xl font-light text-slate-400">—</div>
+        {/* Center with FULL TIME badge */}
+        <div className="px-3 flex flex-col items-center">
+          <Badge 
+            variant={fixture.status === 'completed' ? 'default' : 'outline'} 
+            className="text-xs font-semibold mb-2 px-2 py-1"
+          >
+            {fixture.status === 'completed' ? 'FULL TIME' : 'LIVE'}
+          </Badge>
+          <div className="text-lg font-light text-slate-400">VS</div>
         </div>
 
         {/* Away Team */}
@@ -74,16 +70,22 @@ const IPhoneStoryHeader = ({ fixture, homeTeamColor, awayTeamColor }: IPhoneStor
         </div>
       </div>
 
-      {/* Match Info Row - Optimized spacing */}
+      {/* Match Info Row - Enhanced with kick-off time */}
       <div className="flex items-center justify-center gap-3 text-xs text-slate-500 pb-3 border-t border-slate-100 pt-2 mx-4">
         <div className="flex items-center gap-1">
           <Calendar className="h-3 w-3" />
           <span className="font-medium">{fixture.match_date}</span>
         </div>
+        {fixture.kick_off_time && (
+          <>
+            <span>•</span>
+            <span className="font-medium">KO: {fixture.kick_off_time}</span>
+          </>
+        )}
         {fixture.venue && (
           <>
             <span>•</span>
-            <div className="flex items-center gap-1 truncate max-w-[120px]">
+            <div className="flex items-center gap-1 truncate max-w-[100px]">
               <MapPin className="h-3 w-3 flex-shrink-0" />
               <span className="truncate font-medium">{fixture.venue}</span>
             </div>

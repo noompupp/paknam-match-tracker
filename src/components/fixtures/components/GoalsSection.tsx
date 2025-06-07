@@ -1,7 +1,7 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Target } from "lucide-react";
+import { Activity } from "lucide-react";
 import { getGoalAssistPlayerName } from "../utils/matchSummaryDataProcessor";
 
 interface GoalsSectionProps {
@@ -16,6 +16,8 @@ interface GoalsSectionProps {
   getGoalTime: (goal: any) => number;
 }
 
+// DEPRECATED: This component has been replaced by MatchEventsSection
+// This is kept for backward compatibility but should be migrated to MatchEventsSection
 const GoalsSection = ({
   goals,
   processedEvents,
@@ -28,7 +30,7 @@ const GoalsSection = ({
     <Card>
       <CardContent className="pt-6">
         <h4 className="font-semibold flex items-center gap-2 mb-4">
-          <Target className="h-4 w-4" />
+          <Activity className="h-4 w-4" />
           Goals ({goals.length})
         </h4>
         
