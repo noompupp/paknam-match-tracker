@@ -14,8 +14,8 @@ export const processGoalsAndAssists = (matchEvents: any[]) => {
       type: event.event_type as 'goal' | 'assist',
       time: event.event_time,
       timestamp: event.created_at,
-      assistPlayerName: event.assist_player_name,
-      assistTeamId: event.assist_team_id
+      assistPlayerName: event.assist_player_name || null,
+      assistTeamId: event.assist_team_id || null
     }));
 };
 
@@ -48,9 +48,9 @@ export const processPlayerTimes = (playerTimeData: any[]) => {
   }));
 };
 
-// Process timeline events from match events with improved team name handling
+// Enhanced timeline events processing with better assist handling
 export const processTimelineEvents = (matchEvents: any[]) => {
-  return matchEvents
+  const events = matchEvents
     .filter(event => ['goal', 'assist', 'yellow_card', 'red_card'].includes(event.event_type))
     .map(event => ({
       id: event.id,
@@ -58,7 +58,7 @@ export const processTimelineEvents = (matchEvents: any[]) => {
       time: event.event_time,
       playerName: event.player_name,
       teamId: event.team_id,
-      teamName: event.team_name || event.team_id, // Improved fallback handling
+      teamName: event.team_name || event.team_id,
       cardType: event.card_type,
       assistPlayerName: event.assist_player_name,
       assistTeamId: event.assist_team_id,
@@ -66,6 +66,28 @@ export const processTimelineEvents = (matchEvents: any[]) => {
       timestamp: event.created_at
     }))
     .sort((a, b) => a.time - b.time);
+
+  // Enhance goals with assist information
+  return events.map(event => {
+    if (event.type === 'goal') {
+      // Find corresponding assist for this goal (same time, different player)
+      const correspondingAssist = events.find(e => 
+        e.type === 'assist' && 
+        Math.abs(e.time - event.time) <= 5 && // Within 5 seconds
+        e.teamId === event.teamId &&
+        e.playerName !== event.playerName
+      );
+      
+      if (correspondingAssist) {
+        return {
+          ...event,
+          assistPlayerName: correspondingAssist.playerName,
+          assistTeamId: correspondingAssist.teamId
+        };
+      }
+    }
+    return event;
+  });
 };
 
 // Calculate summary statistics
@@ -87,24 +109,45 @@ export const calculateSummaryStats = (goals: any[], cards: any[], playerTimes: a
   };
 };
 
-// Process enhanced data from the new database function with improved team name resolution
+// Process enhanced data from database function with improved assist handling
 export const processEnhancedFunctionData = (functionResult: any): EnhancedMatchSummaryData => {
-  console.log('🔄 Processing enhanced function data:', functionResult);
+  console.log('🔄 Processing enhanced function data with improved assist handling:', functionResult);
 
   const goals = Array.isArray(functionResult.goals) ? functionResult.goals : [];
   const cards = Array.isArray(functionResult.cards) ? functionResult.cards : [];
   const playerTimes = Array.isArray(functionResult.player_times) ? functionResult.player_times : [];
   
-  // Enhanced timeline events processing with better team name handling
-  const timelineEvents = Array.isArray(functionResult.timeline_events) 
+  // Enhanced timeline events processing with assist correlation
+  let timelineEvents = Array.isArray(functionResult.timeline_events) 
     ? functionResult.timeline_events.map((event: any) => ({
         ...event,
-        // Ensure team names are properly resolved, fallback to teamId if needed
         teamName: event.teamName && event.teamName !== event.teamId 
           ? event.teamName 
           : event.teamId
       }))
     : [];
+
+  // Correlate goals with assists in timeline events
+  timelineEvents = timelineEvents.map((event: any) => {
+    if (event.type === 'goal' && !event.assistPlayerName) {
+      // Look for assist events at similar time for the same team
+      const assist = timelineEvents.find((e: any) => 
+        e.type === 'assist' && 
+        Math.abs(e.time - event.time) <= 10 && // Within 10 seconds
+        e.teamId === event.teamId &&
+        e.playerName !== event.playerName
+      );
+      
+      if (assist) {
+        return {
+          ...event,
+          assistPlayerName: assist.playerName,
+          assistTeamId: assist.teamId
+        };
+      }
+    }
+    return event;
+  });
 
   return {
     goals,

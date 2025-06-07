@@ -19,81 +19,44 @@ interface MatchSummaryDialogProps {
   onClose: () => void;
 }
 
-// Enhanced data processing utilities for unified timeline data
-const processTimelineDataForDisplay = (timelineEvents: any[]) => {
-  const goals = timelineEvents.filter(event => event.type === 'goal');
-  const cards = timelineEvents.filter(event => event.type === 'yellow_card' || event.type === 'red_card');
+// Unified data processing - using Enhanced Timeline as primary source
+const processUnifiedMatchData = (enhancedData: any) => {
+  if (!enhancedData?.timelineEvents) {
+    return { goals: [], cards: [], timelineEvents: [] };
+  }
+
+  const timelineEvents = enhancedData.timelineEvents;
   
-  return { goals, cards };
+  // Extract goals and cards from timeline events
+  const goals = timelineEvents.filter((event: any) => event.type === 'goal');
+  const cards = timelineEvents.filter((event: any) => 
+    event.type === 'yellow_card' || event.type === 'red_card'
+  );
+
+  console.log('📊 Unified data processing:', {
+    timelineEvents: timelineEvents.length,
+    goals: goals.length,
+    cards: cards.length
+  });
+
+  return { goals, cards, timelineEvents };
 };
 
-// Type guards and helper functions for unified data handling
-const isEnhancedGoal = (goal: any): goal is { id: number; playerId: number; playerName: string; team: string; teamId: string; type: "assist" | "goal"; time: number; timestamp: string; assistPlayerName?: string; assistTeamId?: string; } => {
-  return 'teamId' in goal && 'playerName' in goal && 'time' in goal;
-};
+// Unified helper functions for both data sources
+const getGoalTeamId = (goal: any): string => goal.teamId || goal.team_id || '';
+const getGoalPlayerName = (goal: any): string => goal.playerName || goal.player_name || '';
+const getGoalTime = (goal: any): number => goal.time || goal.event_time || 0;
 
-const isEnhancedCard = (card: any): card is { id: number; playerId: number; playerName: string; team: string; teamId: string; cardType: "yellow" | "red"; type: "yellow" | "red"; time: number; timestamp: string; } => {
-  return 'teamId' in card && 'playerName' in card && 'time' in card && 'type' in card;
-};
-
-const isTimelineGoal = (goal: any): goal is { id: number; type: string; time: number; playerName: string; teamId: string; teamName: string; description: string; timestamp: string; } => {
-  return 'teamName' in goal && 'playerName' in goal && 'time' in goal && goal.type === 'goal';
-};
-
-const isTimelineCard = (card: any): card is { id: number; type: string; time: number; playerName: string; teamId: string; teamName: string; cardType?: string; description: string; timestamp: string; } => {
-  return 'teamName' in card && 'playerName' in card && 'time' in card && (card.type === 'yellow_card' || card.type === 'red_card');
-};
-
-const getGoalTeamId = (goal: any): string => {
-  if (isTimelineGoal(goal)) return goal.teamId;
-  if (isEnhancedGoal(goal)) return goal.teamId;
-  return goal.team_id;
-};
-
-const getGoalPlayerName = (goal: any): string => {
-  if (isTimelineGoal(goal)) return goal.playerName;
-  if (isEnhancedGoal(goal)) return goal.playerName;
-  return goal.player_name;
-};
-
-const getGoalTime = (goal: any): number => {
-  if (isTimelineGoal(goal)) return goal.time;
-  if (isEnhancedGoal(goal)) return goal.time;
-  return goal.event_time;
-};
-
-const getCardTeamId = (card: any): string => {
-  if (isTimelineCard(card)) return card.teamId;
-  if (isEnhancedCard(card)) return card.teamId;
-  return card.team_id;
-};
-
-const getCardPlayerName = (card: any): string => {
-  if (isTimelineCard(card)) return card.playerName;
-  if (isEnhancedCard(card)) return card.playerName;
-  return card.player_name;
-};
-
-const getCardTime = (card: any): number => {
-  if (isTimelineCard(card)) return card.time;
-  if (isEnhancedCard(card)) return card.time;
-  return card.event_time;
-};
-
+const getCardTeamId = (card: any): string => card.teamId || card.team_id || '';
+const getCardPlayerName = (card: any): string => card.playerName || card.player_name || '';
+const getCardTime = (card: any): number => card.time || card.event_time || 0;
 const getCardType = (card: any): string => {
-  if (isTimelineCard(card)) {
-    return card.type === 'red_card' ? 'red card' : 'yellow card';
-  }
-  if (isEnhancedCard(card)) {
-    return card.type === 'red' ? 'red card' : 'yellow card';
-  }
-  return card.event_type.replace('_', ' ');
+  const type = card.type || card.cardType || card.event_type || '';
+  return type.includes('red') ? 'red card' : 'yellow card';
 };
-
 const isCardRed = (card: any): boolean => {
-  if (isTimelineCard(card)) return card.type === 'red_card';
-  if (isEnhancedCard(card)) return card.type === 'red';
-  return card.event_type === 'red_card';
+  const type = card.type || card.cardType || card.event_type || '';
+  return type.includes('red');
 };
 
 const MatchSummaryDialog = ({ fixture, isOpen, onClose }: MatchSummaryDialogProps) => {
@@ -124,42 +87,23 @@ const MatchSummaryDialog = ({ fixture, isOpen, onClose }: MatchSummaryDialogProp
     return 'text-yellow-600';
   };
 
-  // Enhanced data source logic - prioritize enhanced timeline data
-  const shouldUseEnhancedTimeline = enhancedSuccess && enhancedData?.timelineEvents && enhancedData.timelineEvents.length > 0;
-  const shouldUseEnhancedData = enhancedSuccess && enhancedData;
-
+  // Use Enhanced Timeline as primary data source
   let goals, cards, timelineEvents = [];
 
-  if (shouldUseEnhancedTimeline) {
-    // Use timeline data as primary source for unified display
-    timelineEvents = enhancedData.timelineEvents;
-    const processedData = processTimelineDataForDisplay(enhancedData.timelineEvents);
-    goals = processedData.goals;
-    cards = processedData.cards;
-    console.log('📊 MatchSummaryDialog: Using enhanced timeline data as primary source:', {
-      timelineEvents: timelineEvents.length,
-      goals: goals.length,
-      cards: cards.length
-    });
-  } else if (shouldUseEnhancedData) {
-    // Fallback to enhanced goals/cards data
-    goals = enhancedData.goals.filter(g => g.type === 'goal');
-    cards = enhancedData.cards;
-    timelineEvents = enhancedData.timelineEvents || [];
-    console.log('📊 MatchSummaryDialog: Using enhanced goals/cards data as fallback:', {
-      goals: goals.length,
-      cards: cards.length
-    });
+  if (enhancedSuccess && enhancedData?.timelineEvents?.length > 0) {
+    const unifiedData = processUnifiedMatchData(enhancedData);
+    goals = unifiedData.goals;
+    cards = unifiedData.cards;
+    timelineEvents = unifiedData.timelineEvents;
+    console.log('✅ Using Enhanced Timeline data:', { goals: goals.length, cards: cards.length });
   } else {
-    // Final fallback to match events
+    // Fallback to match events
     goals = (matchEvents || []).filter(event => event.event_type === 'goal');
     cards = (matchEvents || []).filter(event => 
       event.event_type === 'yellow_card' || event.event_type === 'red_card'
     );
-    console.log('📊 MatchSummaryDialog: Using match events as final fallback:', {
-      goals: goals.length,
-      cards: cards.length
-    });
+    timelineEvents = matchEvents || [];
+    console.log('⚠️ Using fallback match events data:', { goals: goals.length, cards: cards.length });
   }
 
   const homeGoals = goals.filter(g => getGoalTeamId(g) === fixture?.home_team_id);
@@ -180,7 +124,7 @@ const MatchSummaryDialog = ({ fixture, isOpen, onClose }: MatchSummaryDialogProp
       events: matchEvents || [],
       goals,
       cards,
-      enhancedData: shouldUseEnhancedData ? enhancedData : null
+      enhancedData: enhancedSuccess ? enhancedData : null
     };
     
     const dataStr = JSON.stringify(summaryData, null, 2);
@@ -218,26 +162,22 @@ const MatchSummaryDialog = ({ fixture, isOpen, onClose }: MatchSummaryDialogProp
 
   const handleExportCSV = () => {
     try {
-      // Prepare CSV data
       const csvData = [
-        // Match info
         { Type: 'Match', Team: fixture?.home_team?.name, Score: fixture?.home_score || 0, Result: getResult() },
         { Type: 'Match', Team: fixture?.away_team?.name, Score: fixture?.away_score || 0, Result: getResult() },
-        // Goals
         ...goals.map(goal => ({
           Type: 'Goal',
           Team: getGoalTeamId(goal) === fixture?.home_team_id ? fixture?.home_team?.name : fixture?.away_team?.name,
           Player: getGoalPlayerName(goal),
           Time: formatTime(getGoalTime(goal)),
-          Description: isEnhancedGoal(goal) ? '' : goal.description
+          Description: goal.assistPlayerName ? `Assist: ${goal.assistPlayerName}` : ''
         })),
-        // Cards
         ...cards.map(card => ({
           Type: getCardType(card),
           Team: getCardTeamId(card) === fixture?.home_team_id ? fixture?.home_team?.name : fixture?.away_team?.name,
           Player: getCardPlayerName(card),
           Time: formatTime(getCardTime(card)),
-          Description: isEnhancedCard(card) ? '' : card.description
+          Description: ''
         }))
       ];
 
@@ -267,7 +207,7 @@ const MatchSummaryDialog = ({ fixture, isOpen, onClose }: MatchSummaryDialogProp
             <div className="flex items-center gap-2">
               <Trophy className="h-5 w-5" />
               Match Summary
-              {shouldUseEnhancedData && (
+              {enhancedSuccess && enhancedData?.timelineEvents?.length > 0 && (
                 <Database className="h-4 w-4 text-green-600" />
               )}
             </div>
@@ -284,17 +224,17 @@ const MatchSummaryDialog = ({ fixture, isOpen, onClose }: MatchSummaryDialogProp
         </DialogHeader>
 
         <div id="match-summary-content" className="space-y-6">
-          {/* Enhanced Data Status Indicator */}
-          {shouldUseEnhancedTimeline && (
+          {/* Enhanced Data Status */}
+          {enhancedSuccess && enhancedData?.timelineEvents?.length > 0 && (
             <Alert>
               <Database className="h-4 w-4" />
               <AlertDescription>
-                Enhanced timeline data active - displaying unified match events with comprehensive analytics from {timelineEvents.length} events.
+                Enhanced timeline active - displaying {timelineEvents.length} unified match events with {goals.length} goals and {cards.length} cards.
               </AlertDescription>
             </Alert>
           )}
 
-          {/* Render based on selected view style */}
+          {/* Render based on view style */}
           {viewStyle === 'compact' ? (
             <PremierLeagueStyleSummary
               fixture={fixture}
@@ -313,7 +253,7 @@ const MatchSummaryDialog = ({ fixture, isOpen, onClose }: MatchSummaryDialogProp
             />
           ) : (
             <>
-              {/* Full View - Traditional Match Result */}
+              {/* Traditional Full View */}
               <Card>
                 <CardContent className="pt-6">
                   <div className="text-center space-y-4">
@@ -342,8 +282,8 @@ const MatchSummaryDialog = ({ fixture, isOpen, onClose }: MatchSummaryDialogProp
                 </CardContent>
               </Card>
 
-              {/* Enhanced Timeline - Show if we have unified timeline data */}
-              {shouldUseEnhancedTimeline && (
+              {/* Enhanced Timeline */}
+              {enhancedSuccess && enhancedData?.timelineEvents?.length > 0 && (
                 <>
                   <EnhancedMatchEventsTimeline
                     timelineEvents={enhancedData.timelineEvents}
@@ -353,7 +293,7 @@ const MatchSummaryDialog = ({ fixture, isOpen, onClose }: MatchSummaryDialogProp
                 </>
               )}
 
-              {/* Traditional Goals */}
+              {/* Goals Section */}
               <Card>
                 <CardContent className="pt-6 space-y-4">
                   <h4 className="font-semibold flex items-center gap-2">
@@ -365,20 +305,22 @@ const MatchSummaryDialog = ({ fixture, isOpen, onClose }: MatchSummaryDialogProp
                     <p className="text-sm text-muted-foreground text-center py-4">No goals recorded</p>
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {/* Home Goals */}
                       <div>
                         <h5 className="font-medium text-sm mb-2">{fixture.home_team?.name}</h5>
                         <div className="space-y-1">
-                          {homeGoals.map((event, index) => (
-                            <div key={`home-goal-${event.id}-${index}`} className="text-sm flex items-center justify-between p-2 bg-green-50 rounded">
+                          {homeGoals.map((goal, index) => (
+                            <div key={`home-goal-${goal.id}-${index}`} className="text-sm flex items-center justify-between p-2 bg-green-50 rounded">
                               <div>
-                                <Badge variant="default" className="mr-2">
-                                  goal
-                                </Badge>
-                                <span>{getGoalPlayerName(event)}</span>
+                                <Badge variant="default" className="mr-2">goal</Badge>
+                                <span>{getGoalPlayerName(goal)}</span>
+                                {goal.assistPlayerName && (
+                                  <div className="text-xs text-muted-foreground mt-1">
+                                    Assist: {goal.assistPlayerName}
+                                  </div>
+                                )}
                               </div>
                               <span className="text-xs text-muted-foreground">
-                                {formatTime(getGoalTime(event))}
+                                {formatTime(getGoalTime(goal))}
                               </span>
                             </div>
                           ))}
@@ -388,20 +330,22 @@ const MatchSummaryDialog = ({ fixture, isOpen, onClose }: MatchSummaryDialogProp
                         </div>
                       </div>
 
-                      {/* Away Goals */}
                       <div>
                         <h5 className="font-medium text-sm mb-2">{fixture.away_team?.name}</h5>
                         <div className="space-y-1">
-                          {awayGoals.map((event, index) => (
-                            <div key={`away-goal-${event.id}-${index}`} className="text-sm flex items-center justify-between p-2 bg-blue-50 rounded">
+                          {awayGoals.map((goal, index) => (
+                            <div key={`away-goal-${goal.id}-${index}`} className="text-sm flex items-center justify-between p-2 bg-blue-50 rounded">
                               <div>
-                                <Badge variant="default" className="mr-2">
-                                  goal
-                                </Badge>
-                                <span>{getGoalPlayerName(event)}</span>
+                                <Badge variant="default" className="mr-2">goal</Badge>
+                                <span>{getGoalPlayerName(goal)}</span>
+                                {goal.assistPlayerName && (
+                                  <div className="text-xs text-muted-foreground mt-1">
+                                    Assist: {goal.assistPlayerName}
+                                  </div>
+                                )}
                               </div>
                               <span className="text-xs text-muted-foreground">
-                                {formatTime(getGoalTime(event))}
+                                {formatTime(getGoalTime(goal))}
                               </span>
                             </div>
                           ))}
@@ -415,7 +359,7 @@ const MatchSummaryDialog = ({ fixture, isOpen, onClose }: MatchSummaryDialogProp
                 </CardContent>
               </Card>
 
-              {/* Traditional Cards */}
+              {/* Cards Section */}
               <Card>
                 <CardContent className="pt-6 space-y-4">
                   <h4 className="font-semibold flex items-center gap-2">
@@ -427,7 +371,6 @@ const MatchSummaryDialog = ({ fixture, isOpen, onClose }: MatchSummaryDialogProp
                     <p className="text-sm text-muted-foreground text-center py-4">No cards issued</p>
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {/* Home Cards */}
                       <div>
                         <h5 className="font-medium text-sm mb-2">{fixture.home_team?.name}</h5>
                         <div className="space-y-1">
@@ -450,7 +393,6 @@ const MatchSummaryDialog = ({ fixture, isOpen, onClose }: MatchSummaryDialogProp
                         </div>
                       </div>
 
-                      {/* Away Cards */}
                       <div>
                         <h5 className="font-medium text-sm mb-2">{fixture.away_team?.name}</h5>
                         <div className="space-y-1">
@@ -476,36 +418,6 @@ const MatchSummaryDialog = ({ fixture, isOpen, onClose }: MatchSummaryDialogProp
                   )}
                 </CardContent>
               </Card>
-
-              {/* All Events - Only show if we don't have enhanced timeline or as fallback */}
-              {(!shouldUseEnhancedTimeline) && (
-                <Card>
-                  <CardContent className="pt-6 space-y-4">
-                    <h4 className="font-semibold">All Match Events ({(matchEvents || []).length})</h4>
-                    {isLoading ? (
-                      <p className="text-sm text-muted-foreground text-center py-4">Loading events...</p>
-                    ) : (matchEvents || []).length === 0 ? (
-                      <p className="text-sm text-muted-foreground text-center py-4">No events recorded</p>
-                    ) : (
-                      <div className="space-y-2 max-h-40 overflow-y-auto">
-                        {(matchEvents || []).map((event) => (
-                          <div key={event.id} className="text-sm p-2 bg-muted/10 rounded">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-2">
-                                <Badge variant="outline" className="text-xs">
-                                  {event.event_type.replace('_', ' ')}
-                                </Badge>
-                                <span>{event.description}</span>
-                              </div>
-                              <span className="text-xs text-muted-foreground">{formatTime(event.event_time)}</span>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              )}
             </>
           )}
         </div>

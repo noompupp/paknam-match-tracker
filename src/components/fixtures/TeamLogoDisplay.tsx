@@ -17,32 +17,55 @@ const TeamLogoDisplay = ({
   showName = false 
 }: TeamLogoDisplayProps) => {
   const sizeClasses = {
-    sm: 'h-8 w-8',
-    md: 'h-12 w-12',
-    lg: 'h-16 w-16'
+    sm: 'h-10 w-10',
+    md: 'h-16 w-16',
+    lg: 'h-20 w-20'
   };
 
   const textSizeClasses = {
+    sm: 'text-sm',
+    md: 'text-base',
+    lg: 'text-lg'
+  };
+
+  const fallbackTextSize = {
     sm: 'text-xs',
     md: 'text-sm',
-    lg: 'text-base'
+    lg: 'text-lg'
   };
 
   return (
-    <div className="flex flex-col items-center gap-2">
-      <Avatar className={sizeClasses[size]} style={{ borderColor: teamColor, borderWidth: '2px' }}>
-        {teamLogo && <AvatarImage src={teamLogo} alt={teamName} />}
+    <div className="flex flex-col items-center gap-3">
+      <Avatar 
+        className={`${sizeClasses[size]} shadow-lg ring-2 ring-offset-2`} 
+        style={{ 
+          borderColor: teamColor, 
+          ringColor: `${teamColor}20`
+        }}
+      >
+        {teamLogo && (
+          <AvatarImage 
+            src={teamLogo} 
+            alt={teamName} 
+            className="object-cover"
+          />
+        )}
         <AvatarFallback 
-          className="font-bold text-white"
-          style={{ backgroundColor: teamColor }}
+          className={`font-bold text-white shadow-inner ${fallbackTextSize[size]}`}
+          style={{ 
+            backgroundColor: teamColor,
+            background: `linear-gradient(135deg, ${teamColor} 0%, ${teamColor}dd 100%)`
+          }}
         >
           {teamName.slice(0, 2).toUpperCase()}
         </AvatarFallback>
       </Avatar>
       {showName && (
-        <span className={`${textSizeClasses[size]} font-medium text-center`}>
-          {teamName}
-        </span>
+        <div className="text-center">
+          <span className={`${textSizeClasses[size]} font-semibold leading-tight`}>
+            {teamName}
+          </span>
+        </div>
       )}
     </div>
   );
