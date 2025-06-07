@@ -29,10 +29,10 @@ const TopNotchBackground = () => {
     }
   }, [isDarkMode]);
 
-  // Enhanced dynamic background with better dark mode support
-  const dynamicBackground = isDarkMode 
-    ? `rgba(17, 24, 39, ${0.2 + (opacity * 0.8)})` // Dark mode: enhanced opacity range
-    : `rgba(255, 255, 255, ${0.1 + (opacity * 0.9)})`; // Light mode: maintained opacity
+  // Solid background colors that match navigation
+  const solidBackground = isDarkMode 
+    ? `rgba(17, 24, 39, ${0.9 + (opacity * 0.1)})` // Dark mode: solid dark background
+    : `rgba(255, 255, 255, ${0.9 + (opacity * 0.1)})`; // Light mode: solid white background
 
   // Enhanced border with better visibility in dark mode
   const borderColor = isDarkMode
@@ -44,7 +44,7 @@ const TopNotchBackground = () => {
       className="fixed top-0 left-0 right-0 z-40 pointer-events-none transition-all duration-300 ease-out"
       style={{
         height: 'var(--safe-area-inset-top)',
-        background: dynamicBackground,
+        background: solidBackground,
         backdropFilter: `blur(${6 + (opacity * 6)}px)`, // Enhanced blur range: 6px to 12px
         WebkitBackdropFilter: `blur(${6 + (opacity * 6)}px)`, // Safari support
         borderBottom: `1px solid ${borderColor}`,

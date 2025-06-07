@@ -44,10 +44,10 @@
     /* App gradient variables - Light mode */
     --app-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     
-    /* Header background for top notch - Light mode */
-    --header-background: rgba(255, 255, 255, 0.1);
+    /* Header background for top notch - Light mode - Solid white for consistency */
+    --header-background: rgba(255, 255, 255, 0.95);
     --header-backdrop-blur: blur(8px);
-    --header-border: rgba(255, 255, 255, 0.2);
+    --header-border: rgba(229, 231, 235, 0.4);
     
     /* Navigation active state - Light mode */
     --nav-active-bg: rgba(102, 126, 234, 0.15);
@@ -84,10 +84,10 @@
     /* App gradient variables - Dark mode */
     --app-gradient: linear-gradient(135deg, #2d1b69 0%, #11998e 100%);
     
-    /* Header background for top notch - Dark mode */
-    --header-background: rgba(0, 0, 0, 0.2);
+    /* Header background for top notch - Dark mode - Solid dark for consistency */
+    --header-background: rgba(17, 24, 39, 0.95);
     --header-backdrop-blur: blur(12px);
-    --header-border: rgba(255, 255, 255, 0.1);
+    --header-border: rgba(55, 65, 81, 0.6);
     
     /* Navigation active state - Dark mode */
     --nav-active-bg: rgba(17, 153, 142, 0.2);
@@ -125,9 +125,9 @@
       
       /* Dark mode gradients and headers */
       --app-gradient: linear-gradient(135deg, #2d1b69 0%, #11998e 100%);
-      --header-background: rgba(0, 0, 0, 0.2);
+      --header-background: rgba(17, 24, 39, 0.95);
       --header-backdrop-blur: blur(12px);
-      --header-border: rgba(255, 255, 255, 0.1);
+      --header-border: rgba(55, 65, 81, 0.6);
       
       /* Navigation active state - Dark mode */
       --nav-active-bg: rgba(17, 153, 142, 0.2);

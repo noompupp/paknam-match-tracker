@@ -1,17 +1,15 @@
 
 import { useState } from "react";
-import { useFixtures, useUpcomingFixtures, useRecentFixtures } from "@/hooks/useFixtures";
+import { useFixtures, useUpcomingFixtures } from "@/hooks/useFixtures";
 import { sortFixtures } from "@/utils/fixtureUtils";
 import FixturesHeader from "./fixtures/FixturesHeader";
 import UpcomingFixturesSection from "./fixtures/UpcomingFixturesSection";
-import RecentResultsSection from "./fixtures/RecentResultsSection";
 import AllFixturesSection from "./fixtures/AllFixturesSection";
 import MatchSummaryDialog from "./fixtures/MatchSummaryDialog";
 
 const Fixtures = () => {
   const { data: allFixtures, isLoading: allLoading, error } = useFixtures();
   const { data: upcomingFixtures, isLoading: upcomingLoading } = useUpcomingFixtures();
-  const { data: recentFixtures, isLoading: recentLoading } = useRecentFixtures();
   
   const [selectedFixture, setSelectedFixture] = useState<any>(null);
   const [showSummary, setShowSummary] = useState(false);
@@ -47,12 +45,6 @@ const Fixtures = () => {
           <UpcomingFixturesSection 
             upcomingFixtures={upcomingFixtures || []}
             isLoading={upcomingLoading}
-            onFixtureClick={handleFixtureClick}
-          />
-
-          <RecentResultsSection 
-            recentFixtures={recentFixtures || []}
-            isLoading={recentLoading}
             onFixtureClick={handleFixtureClick}
           />
 
