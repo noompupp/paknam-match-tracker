@@ -1,9 +1,8 @@
-
 import { Card, CardContent } from "@/components/ui/card";
 import { Clock } from "lucide-react";
 import EnhancedMatchEventsTimeline from "../../referee/components/EnhancedMatchEventsTimeline";
 import { extractTeamData, processTeamEvents } from "../utils/teamDataProcessor";
-import SocialMediaStoryLayout from "./export/SocialMediaStoryLayout";
+import InstagramStoryLayout from "./export/InstagramStoryLayout";
 import MatchHeaderSection from "./MatchHeaderSection";
 import MatchEventsSection from "./MatchEventsSection";
 import MatchStatisticsSummary from "./MatchStatisticsSummary";
@@ -49,10 +48,10 @@ const UnifiedMatchSummaryLayout = ({
   // Check if we're in export mode on mobile
   const isExportMode = isMobile && document.getElementById('match-summary-content')?.classList.contains('export-mode-mobile');
 
-  // Use social media story layout for mobile export mode
+  // Use Instagram story layout for mobile export mode
   if (isMobile && isExportMode) {
     return (
-      <SocialMediaStoryLayout
+      <InstagramStoryLayout
         fixture={fixture}
         goals={goals}
         cards={cards}

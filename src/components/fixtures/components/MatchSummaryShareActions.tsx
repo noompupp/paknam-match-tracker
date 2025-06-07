@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { Download, Share } from "lucide-react";
+import { Download, Share, Instagram } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { captureImageForSharing, saveImageToDevice, shareImage } from "@/utils/exportUtils";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -36,6 +36,8 @@ const MatchSummaryShareActions = ({ fixture, goals = [], cards = [] }: MatchSumm
     if (element && isMobile) {
       element.setAttribute('data-export-mode', 'true');
       element.classList.add('export-mode-mobile');
+      // Force a reflow
+      element.offsetHeight;
     }
   };
 
@@ -55,8 +57,8 @@ const MatchSummaryShareActions = ({ fixture, goals = [], cards = [] }: MatchSumm
     try {
       enableExportMode();
       
-      // Wait for layout to settle
-      await new Promise(resolve => setTimeout(resolve, 150));
+      // Wait longer for layout to settle with new design
+      await new Promise(resolve => setTimeout(resolve, 300));
 
       const filename = `match-summary-${getMatchTitle().replace(/\s+/g, '-').toLowerCase()}-${fixture?.match_date || 'today'}.jpg`;
       
@@ -65,7 +67,7 @@ const MatchSummaryShareActions = ({ fixture, goals = [], cards = [] }: MatchSumm
       
       toast({
         title: "📥 Saved to Device",
-        description: "Match summary has been saved to your camera roll.",
+        description: "Instagram Story format image saved to your camera roll!",
       });
     } catch (error) {
       console.error('Save failed:', error);
@@ -88,8 +90,8 @@ const MatchSummaryShareActions = ({ fixture, goals = [], cards = [] }: MatchSumm
     try {
       enableExportMode();
       
-      // Wait for layout to settle
-      await new Promise(resolve => setTimeout(resolve, 150));
+      // Wait longer for layout to settle with new design
+      await new Promise(resolve => setTimeout(resolve, 300));
 
       const title = getMatchTitle();
       const text = getShareText();
@@ -98,8 +100,8 @@ const MatchSummaryShareActions = ({ fixture, goals = [], cards = [] }: MatchSumm
       await shareImage(imageBlob, title, text);
       
       toast({
-        title: "📤 Share Successful",
-        description: "Match summary ready to share!",
+        title: "📤 Ready to Share!",
+        description: "Instagram Story format image ready for sharing!",
       });
     } catch (error) {
       console.error('Share failed:', error);
@@ -138,15 +140,15 @@ const MatchSummaryShareActions = ({ fixture, goals = [], cards = [] }: MatchSumm
         disabled={isProcessing}
         className={`${isMobile ? 'h-14 text-base' : 'h-12'} flex items-center justify-center gap-3 font-medium transition-all hover:scale-105 bg-gradient-to-r from-purple-50 to-pink-50 hover:from-purple-100 hover:to-pink-100 border-purple-200`}
       >
-        <Share className={`${isMobile ? 'h-5 w-5' : 'h-4 w-4'}`} />
-        <span>📤 Share to Story</span>
+        <Instagram className={`${isMobile ? 'h-5 w-5' : 'h-4 w-4'}`} />
+        <span>📱 Share to Story</span>
       </Button>
       
       {isProcessing && (
         <div className={`${isMobile ? 'col-span-1' : 'col-span-2'} text-center text-sm text-muted-foreground`}>
           <div className="flex items-center justify-center gap-2">
             <div className="animate-spin rounded-full h-4 w-4 border-2 border-purple-500 border-t-transparent"></div>
-            Processing image...
+            Optimizing for social media...
           </div>
         </div>
       )}
