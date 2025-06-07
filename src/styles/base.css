@@ -48,6 +48,11 @@
     --header-background: rgba(255, 255, 255, 0.1);
     --header-backdrop-blur: blur(8px);
     --header-border: rgba(255, 255, 255, 0.2);
+    
+    /* Navigation active state - Light mode */
+    --nav-active-bg: rgba(102, 126, 234, 0.15);
+    --nav-active-border: rgba(102, 126, 234, 0.3);
+    --nav-active-glow: 0 0 12px rgba(102, 126, 234, 0.3);
   }
 
   .dark {
@@ -83,6 +88,11 @@
     --header-background: rgba(0, 0, 0, 0.2);
     --header-backdrop-blur: blur(12px);
     --header-border: rgba(255, 255, 255, 0.1);
+    
+    /* Navigation active state - Dark mode */
+    --nav-active-bg: rgba(17, 153, 142, 0.2);
+    --nav-active-border: rgba(17, 153, 142, 0.4);
+    --nav-active-glow: 0 0 16px rgba(17, 153, 142, 0.4);
   }
 
   /* Auto dark mode based on system preference */
@@ -118,6 +128,11 @@
       --header-background: rgba(0, 0, 0, 0.2);
       --header-backdrop-blur: blur(12px);
       --header-border: rgba(255, 255, 255, 0.1);
+      
+      /* Navigation active state - Dark mode */
+      --nav-active-bg: rgba(17, 153, 142, 0.2);
+      --nav-active-border: rgba(17, 153, 142, 0.4);
+      --nav-active-glow: 0 0 16px rgba(17, 153, 142, 0.4);
     }
   }
 }
