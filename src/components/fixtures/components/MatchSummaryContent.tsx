@@ -1,7 +1,6 @@
 
 import PremierLeagueStyleSummary from "../PremierLeagueStyleSummary";
 import TraditionalMatchSummaryView from "./TraditionalMatchSummaryView";
-import MobileExportLayout from "./MobileExportLayout";
 import { extractTeamData, processTeamEvents } from "../utils/teamDataProcessor";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -46,30 +45,20 @@ const MatchSummaryContent = ({
 }: MatchSummaryContentProps) => {
   const isMobile = useIsMobile();
 
-  // Extract team data for mobile export layout
-  const teamData = extractTeamData(fixture);
-  const processedEvents = processTeamEvents(goals, cards, teamData, getCardTeamId);
-
-  // Use mobile export layout when in export mode on mobile
-  if (isExportMode && isMobile) {
-    return (
-      <MobileExportLayout
-        fixture={fixture}
-        goals={goals}
-        cards={cards}
-        homeGoals={processedEvents.homeGoals}
-        awayGoals={processedEvents.awayGoals}
-        homeTeamColor={teamData.homeTeamColor}
-        awayTeamColor={teamData.awayTeamColor}
-      />
-    );
-  }
-
   return (
-    <div id="match-summary-content" className="space-y-6 w-full">
-      {/* Mobile-optimized container with proper centering */}
-      <div className="w-full mx-auto" style={{ maxWidth: 'min(100%, 768px)' }}>
-        {/* Render based on view style */}
+    <div 
+      id="match-summary-content" 
+      className={`space-y-6 w-full ${isExportMode ? 'export-mode' : ''} ${isMobile && isExportMode ? 'export-mode-mobile' : ''}`}
+    >
+      {/* Unified responsive container with export optimization */}
+      <div className={`w-full mx-auto ${
+        isMobile 
+          ? isExportMode 
+            ? 'max-w-[375px] min-h-[600px] p-4 bg-white' 
+            : 'max-w-[375px]'
+          : 'max-w-[768px]'
+      }`}>
+        {/* Render based on view style with unified responsive design */}
         {viewStyle === 'compact' ? (
           <PremierLeagueStyleSummary
             fixture={fixture}
@@ -105,6 +94,50 @@ const MatchSummaryContent = ({
           />
         )}
       </div>
+
+      {/* Export mode specific styles */}
+      <style jsx>{`
+        .export-mode-mobile {
+          font-size: 14px;
+          line-height: 1.4;
+        }
+        
+        .export-mode-mobile .text-xs {
+          font-size: 12px;
+        }
+        
+        .export-mode-mobile .text-sm {
+          font-size: 13px;
+        }
+        
+        .export-mode-mobile .text-base {
+          font-size: 14px;
+        }
+        
+        .export-mode-mobile .text-lg {
+          font-size: 16px;
+        }
+        
+        .export-mode-mobile .text-xl {
+          font-size: 18px;
+        }
+        
+        .export-mode-mobile .text-2xl {
+          font-size: 20px;
+        }
+        
+        .export-mode-mobile .text-3xl {
+          font-size: 24px;
+        }
+        
+        .export-mode-mobile .text-4xl {
+          font-size: 28px;
+        }
+        
+        .export-mode-mobile .text-5xl {
+          font-size: 32px;
+        }
+      `}</style>
     </div>
   );
 };

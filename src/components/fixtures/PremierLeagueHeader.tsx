@@ -22,39 +22,39 @@ const PremierLeagueHeader = ({ fixture, homeTeamColor, awayTeamColor }: PremierL
           background: `linear-gradient(to right, ${homeTeamColor} 0%, ${homeTeamColor} 50%, ${awayTeamColor} 50%, ${awayTeamColor} 100%)`
         }}
       />
-      <CardContent className={`${isMobile ? 'pt-6 pb-6' : 'pt-8 pb-8'}`}>
-        {/* Mobile: Vertical Layout with Centered Content */}
+      <CardContent className={`${isMobile ? 'pt-4 pb-4' : 'pt-8 pb-8'}`}>
+        {/* Mobile: Vertical Layout with Export-Optimized Spacing */}
         {isMobile ? (
-          <div className="flex flex-col items-center w-full max-w-[375px] mx-auto space-y-6">
+          <div className="flex flex-col items-center w-full space-y-4">
             {/* Home Team */}
             <div className="flex flex-col items-center">
               <TeamLogoDisplay 
                 teamName={fixture.home_team?.name || 'Home Team'}
                 teamLogo={fixture.home_team?.logoURL}
                 teamColor={homeTeamColor}
-                size="lg"
+                size="md"
                 showName={true}
               />
-              <div className="font-bold text-5xl mt-3 mb-2" style={{ color: homeTeamColor }}>
+              <div className="font-bold text-3xl mt-2 mb-1" style={{ color: homeTeamColor }}>
                 {fixture.home_score || 0}
               </div>
             </div>
 
-            {/* Match Status - Centered */}
-            <div className="flex flex-col items-center px-4 w-full">
-              <div className="flex items-center gap-3 mb-3">
-                <Trophy className="h-5 w-5 text-yellow-600" />
-                <Badge variant="outline" className="text-lg px-4 py-2 font-bold bg-gradient-to-r from-blue-50 to-green-50">
+            {/* Match Status - Centered and Compact */}
+            <div className="flex flex-col items-center px-2 w-full">
+              <div className="flex items-center gap-2 mb-2">
+                <Trophy className="h-4 w-4 text-yellow-600" />
+                <Badge variant="outline" className="text-sm px-3 py-1 font-bold bg-gradient-to-r from-blue-50 to-green-50">
                   {fixture.status === 'completed' ? 'FULL TIME' : fixture.status?.toUpperCase() || 'MATCH'}
                 </Badge>
               </div>
-              <div className="w-16 h-1 bg-gradient-to-r from-gray-300 via-gray-500 to-gray-600 rounded-full"></div>
-              <div className="text-sm text-muted-foreground mt-3 text-center font-medium">
+              <div className="w-12 h-0.5 bg-gradient-to-r from-gray-300 via-gray-500 to-gray-600 rounded-full"></div>
+              <div className="text-xs text-muted-foreground mt-2 text-center font-medium">
                 {fixture.match_date}
               </div>
               {fixture.venue && (
-                <div className="text-sm text-muted-foreground text-center mt-1 px-2">
-                  <div className="break-words whitespace-break-spaces">
+                <div className="text-xs text-muted-foreground text-center mt-1 px-2">
+                  <div className="break-words max-w-[280px]">
                     📍 {fixture.venue}
                   </div>
                 </div>
@@ -67,10 +67,10 @@ const PremierLeagueHeader = ({ fixture, homeTeamColor, awayTeamColor }: PremierL
                 teamName={fixture.away_team?.name || 'Away Team'}
                 teamLogo={fixture.away_team?.logoURL}
                 teamColor={awayTeamColor}
-                size="lg"
+                size="md"
                 showName={true}
               />
-              <div className="font-bold text-5xl mt-3 mb-2" style={{ color: awayTeamColor }}>
+              <div className="font-bold text-3xl mt-2 mb-1" style={{ color: awayTeamColor }}>
                 {fixture.away_score || 0}
               </div>
             </div>

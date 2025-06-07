@@ -85,17 +85,17 @@ const GoalsSection = ({
 
   return (
     <Card>
-      <CardContent className={`${isMobile ? 'pt-6 pb-6' : 'pt-6'}`}>
+      <CardContent className={`${isMobile ? 'pt-4 pb-4' : 'pt-6'}`}>
         <GoalsSectionHeader totalGoals={goals.length} />
         
-        {/* Mobile: Centered vertical layout with proper spacing */}
+        {/* Mobile: Compact vertical layout optimized for export */}
         {isMobile ? (
-          <div className="w-full max-w-[375px] mx-auto space-y-6">
+          <div className="w-full space-y-4">
             {/* Home Team Goals */}
             {homeGoals.length > 0 && (
               <div className="w-full">
-                <div className="text-center mb-4">
-                  <h4 className="text-base font-semibold text-muted-foreground">Home Team Goals</h4>
+                <div className="text-center mb-3">
+                  <h4 className="text-sm font-semibold text-muted-foreground">Home Team Goals</h4>
                 </div>
                 <GoalsList
                   goals={homeGoals}
@@ -105,9 +105,9 @@ const GoalsSection = ({
               </div>
             )}
 
-            {/* Divider */}
+            {/* Compact Divider */}
             {homeGoals.length > 0 && awayGoals.length > 0 && (
-              <div className="w-full px-8">
+              <div className="w-full px-4">
                 <div className="h-0.5 bg-gradient-to-r from-gray-200 via-gray-400 to-gray-200 rounded-full"></div>
               </div>
             )}
@@ -115,8 +115,8 @@ const GoalsSection = ({
             {/* Away Team Goals */}
             {awayGoals.length > 0 && (
               <div className="w-full">
-                <div className="text-center mb-4">
-                  <h4 className="text-base font-semibold text-muted-foreground">Away Team Goals</h4>
+                <div className="text-center mb-3">
+                  <h4 className="text-sm font-semibold text-muted-foreground">Away Team Goals</h4>
                 </div>
                 <GoalsList
                   goals={awayGoals}

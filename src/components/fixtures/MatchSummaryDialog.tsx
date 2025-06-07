@@ -1,4 +1,3 @@
-
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Trophy, Database } from "lucide-react";
 import { useMatchEvents } from "@/hooks/useMatchEvents";
@@ -84,6 +83,7 @@ const MatchSummaryDialog = ({ fixture, isOpen, onClose }: MatchSummaryDialogProp
           enhancedSuccess={enhancedSuccess}
           enhancedData={enhancedData}
           viewStyle={viewStyle}
+          isExportMode={false}
           formatTime={formatTime}
           getGoalTeamId={getGoalTeamId}
           getGoalPlayerName={getGoalPlayerName}
