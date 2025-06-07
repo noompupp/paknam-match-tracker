@@ -11,12 +11,12 @@ interface IPhoneStoryHeaderProps {
 
 const IPhoneStoryHeader = ({ fixture, homeTeamColor, awayTeamColor }: IPhoneStoryHeaderProps) => {
   return (
-    <div className="bg-gradient-to-br from-purple-600 via-blue-600 to-purple-600 text-white">
+    <div className="bg-gradient-to-br from-slate-50 via-white to-slate-50 border-b-2 border-gray-100">
       {/* Status Badge */}
       <div className="flex items-center justify-center pt-4 pb-3">
-        <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm px-3 py-1.5 rounded-full border border-white/30">
-          <Trophy className="h-3 w-3 text-yellow-300" />
-          <Badge variant="outline" className="text-xs font-semibold border-0 bg-transparent text-white">
+        <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-full shadow-sm border">
+          <Trophy className="h-3 w-3 text-amber-500" />
+          <Badge variant="outline" className="text-xs font-semibold border-0 bg-transparent">
             {fixture.status === 'completed' ? 'FULL TIME' : 'LIVE MATCH'}
           </Badge>
         </div>
@@ -34,10 +34,13 @@ const IPhoneStoryHeader = ({ fixture, homeTeamColor, awayTeamColor }: IPhoneStor
             showName={false}
           />
           <div className="flex-1 min-w-0">
-            <div className="text-xs font-medium text-purple-100 mb-0.5 truncate text-center leading-tight">
+            <div className="text-xs font-medium text-slate-600 mb-0.5 truncate text-center leading-tight">
               {fixture.home_team?.name || 'Home'}
             </div>
-            <div className="text-3xl font-bold leading-none text-center text-white">
+            <div 
+              className="text-2xl font-bold leading-none text-center"
+              style={{ color: homeTeamColor }}
+            >
               {fixture.home_score || 0}
             </div>
           </div>
@@ -45,7 +48,7 @@ const IPhoneStoryHeader = ({ fixture, homeTeamColor, awayTeamColor }: IPhoneStor
 
         {/* Score Separator */}
         <div className="px-3 flex items-center">
-          <div className="text-xl font-light text-purple-200">—</div>
+          <div className="text-xl font-light text-slate-400">—</div>
         </div>
 
         {/* Away Team */}
@@ -58,10 +61,13 @@ const IPhoneStoryHeader = ({ fixture, homeTeamColor, awayTeamColor }: IPhoneStor
             showName={false}
           />
           <div className="flex-1 min-w-0">
-            <div className="text-xs font-medium text-purple-100 mb-0.5 truncate text-center leading-tight">
+            <div className="text-xs font-medium text-slate-600 mb-0.5 truncate text-center leading-tight">
               {fixture.away_team?.name || 'Away'}
             </div>
-            <div className="text-3xl font-bold leading-none text-center text-white">
+            <div 
+              className="text-2xl font-bold leading-none text-center"
+              style={{ color: awayTeamColor }}
+            >
               {fixture.away_score || 0}
             </div>
           </div>
@@ -69,7 +75,7 @@ const IPhoneStoryHeader = ({ fixture, homeTeamColor, awayTeamColor }: IPhoneStor
       </div>
 
       {/* Match Info Row - Optimized spacing */}
-      <div className="flex items-center justify-center gap-3 text-xs text-purple-100 pb-3 border-t border-purple-400/30 pt-2 mx-4">
+      <div className="flex items-center justify-center gap-3 text-xs text-slate-500 pb-3 border-t border-slate-100 pt-2 mx-4">
         <div className="flex items-center gap-1">
           <Calendar className="h-3 w-3" />
           <span className="font-medium">{fixture.match_date}</span>

@@ -32,6 +32,7 @@ const PremierLeagueStyleSummary = ({
   getCardType,
   isCardRed
 }: PremierLeagueStyleSummaryProps) => {
+  // Use the unified layout for all cases
   return (
     <UnifiedMatchSummaryLayout
       fixture={fixture}

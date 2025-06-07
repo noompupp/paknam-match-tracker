@@ -1,15 +1,13 @@
 
 import { Card, CardContent } from "@/components/ui/card";
-import { Clock } from "lucide-react";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { Badge } from "@/components/ui/badge";
+import { Trophy, Target, AlertTriangle, Clock, Calendar, MapPin } from "lucide-react";
+import TeamLogoDisplay from "../TeamLogoDisplay";
+import EnhancedMatchEventsTimeline from "../../referee/components/EnhancedMatchEventsTimeline";
+import { getGoalAssistPlayerName } from "../utils/matchSummaryDataProcessor";
 import { extractTeamData, processTeamEvents } from "../utils/teamDataProcessor";
 import IPhoneStoryLayout from "./export/IPhoneStoryLayout";
-import EnhancedMatchEventsTimeline from "../../referee/components/EnhancedMatchEventsTimeline";
-import PremierLeagueMatchHeader from "./PremierLeagueMatchHeader";
-import MatchEventsSection from "./MatchEventsSection";
-import DisciplinarySection from "./DisciplinarySection";
-import MatchStatisticsSummary from "./MatchStatisticsSummary";
-import { useEffect, useState } from "react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface UnifiedMatchSummaryLayoutProps {
   fixture: any;
@@ -43,55 +41,16 @@ const UnifiedMatchSummaryLayout = ({
   isCardRed
 }: UnifiedMatchSummaryLayoutProps) => {
   const isMobile = useIsMobile();
-  const [isExportMode, setIsExportMode] = useState(false);
   
-  // Extract team data using the existing utility with enhanced color handling
+  // Extract team data using the existing utility
   const teamData = extractTeamData(fixture);
-  
-  // Enhanced color fallback system
-  const getEnhancedTeamColor = (color: string, fallback: string) => {
-    if (!color || color === '#ffffff' || color === '#FFFFFF' || color === 'white') {
-      return fallback;
-    }
-    return color;
-  };
+  const processedEvents = processTeamEvents(goals, cards, teamData, getCardTeamId);
 
-  const enhancedTeamData = {
-    ...teamData,
-    homeTeamColor: getEnhancedTeamColor(teamData.homeTeamColor, '#1f2937'),
-    awayTeamColor: getEnhancedTeamColor(teamData.awayTeamColor, '#7c3aed')
-  };
-
-  const processedEvents = processTeamEvents(goals, cards, enhancedTeamData, getCardTeamId);
-
-  // Monitor export mode changes
-  useEffect(() => {
-    const checkExportMode = () => {
-      const element = document.getElementById('match-summary-content');
-      const hasExportMode = element?.classList.contains('export-mode-mobile') || 
-                           element?.getAttribute('data-export-mode') === 'true';
-      setIsExportMode(hasExportMode || false);
-    };
-
-    // Initial check
-    checkExportMode();
-
-    // Set up observer for class changes
-    const element = document.getElementById('match-summary-content');
-    if (element) {
-      const observer = new MutationObserver(checkExportMode);
-      observer.observe(element, { 
-        attributes: true, 
-        attributeFilter: ['class', 'data-export-mode'] 
-      });
-      
-      return () => observer.disconnect();
-    }
-  }, []);
+  // Check if we're in export mode on mobile
+  const isExportMode = isMobile && document.getElementById('match-summary-content')?.classList.contains('export-mode-mobile');
 
   // Use iPhone story layout for mobile export mode
   if (isMobile && isExportMode) {
-    console.log('📱 Rendering iPhone story layout for export');
     return (
       <IPhoneStoryLayout
         fixture={fixture}
@@ -99,8 +58,8 @@ const UnifiedMatchSummaryLayout = ({
         cards={cards}
         homeGoals={processedEvents.homeGoals}
         awayGoals={processedEvents.awayGoals}
-        homeTeamColor={enhancedTeamData.homeTeamColor}
-        awayTeamColor={enhancedTeamData.awayTeamColor}
+        homeTeamColor={teamData.homeTeamColor}
+        awayTeamColor={teamData.awayTeamColor}
         timelineEvents={timelineEvents}
         getCardPlayerName={getCardPlayerName}
         getCardTime={getCardTime}
@@ -110,64 +69,250 @@ const UnifiedMatchSummaryLayout = ({
     );
   }
 
+  const getResult = () => {
+    const homeScore = fixture?.home_score || 0;
+    const awayScore = fixture?.away_score || 0;
+    if (homeScore > awayScore) return 'Home Win';
+    if (awayScore > homeScore) return 'Away Win';
+    return 'Draw';
+  };
+
+  const getResultColor = () => {
+    const homeScore = fixture?.home_score || 0;
+    const awayScore = fixture?.away_score || 0;
+    if (homeScore > awayScore) return 'text-green-600';
+    if (awayScore > homeScore) return 'text-blue-600';
+    return 'text-yellow-600';
+  };
+
   return (
     <div className="space-y-6">
-      {/* Premier League Style Header */}
-      <PremierLeagueMatchHeader
-        fixture={fixture}
-        homeTeamColor={enhancedTeamData.homeTeamColor}
-        awayTeamColor={enhancedTeamData.awayTeamColor}
-      />
+      {/* Header Section */}
+      <Card className="overflow-hidden">
+        <CardContent className="p-6">
+          {/* Match Info Bar */}
+          <div className="flex items-center justify-center gap-4 text-sm text-muted-foreground mb-6">
+            <div className="flex items-center gap-1">
+              <Calendar className="h-4 w-4" />
+              <span>{fixture.match_date}</span>
+            </div>
+            {fixture.venue && (
+              <>
+                <span>•</span>
+                <div className="flex items-center gap-1">
+                  <MapPin className="h-4 w-4" />
+                  <span>{fixture.venue}</span>
+                </div>
+              </>
+            )}
+            <span>•</span>
+            <Badge variant={fixture.status === 'completed' ? 'default' : 'outline'}>
+              {fixture.status === 'completed' ? 'FULL TIME' : fixture.status}
+            </Badge>
+          </div>
 
-      {/* Match Events Section */}
-      <MatchEventsSection
-        goals={goals}
-        fixture={fixture}
-        processedEvents={processedEvents}
-        teamData={enhancedTeamData}
-        getGoalPlayerName={getGoalPlayerName}
-        getGoalTime={getGoalTime}
-      />
-
-      {/* Collapsible Cards Section */}
-      <DisciplinarySection
-        cards={cards}
-        fixture={fixture}
-        teamData={enhancedTeamData}
-        getCardTeamId={getCardTeamId}
-        getCardPlayerName={getCardPlayerName}
-        getCardTime={getCardTime}
-        getCardType={getCardType}
-        isCardRed={isCardRed}
-      />
-
-      {/* Enhanced Match Timeline Section */}
-      {timelineEvents.length > 0 && (
-        <Card className="border-2 animate-fade-in">
-          <CardContent className="pt-6">
-            <h4 className="font-bold flex items-center gap-3 mb-6 text-xl text-slate-700">
-              <div className="p-2 rounded-full bg-slate-100">
-                <Clock className="h-6 w-6" />
+          {/* Teams and Score */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4 flex-1">
+              <TeamLogoDisplay 
+                teamName={fixture.home_team?.name || 'Home'}
+                teamLogo={fixture.home_team?.logoURL}
+                teamColor={teamData.homeTeamColor}
+                size="lg"
+                showName={false}
+              />
+              <div className="text-center">
+                <div className="text-sm font-medium text-muted-foreground mb-1">
+                  {fixture.home_team?.name || 'Home'}
+                </div>
+                <div 
+                  className="text-4xl font-bold"
+                  style={{ color: teamData.homeTeamColor }}
+                >
+                  {fixture.home_score || 0}
+                </div>
               </div>
-              Match Timeline ({timelineEvents.length})
-            </h4>
-            <div className="bg-gradient-to-r from-slate-50 to-gray-50 rounded-xl p-6 border border-slate-200">
-              <EnhancedMatchEventsTimeline
-                timelineEvents={timelineEvents}
-                formatTime={formatTime}
+            </div>
+
+            <div className="text-center px-8">
+              <div className="text-3xl font-light text-muted-foreground mb-2">VS</div>
+              <Badge variant="outline" className={getResultColor()}>
+                {getResult()}
+              </Badge>
+            </div>
+
+            <div className="flex items-center gap-4 flex-1 justify-end">
+              <div className="text-center">
+                <div className="text-sm font-medium text-muted-foreground mb-1">
+                  {fixture.away_team?.name || 'Away'}
+                </div>
+                <div 
+                  className="text-4xl font-bold"
+                  style={{ color: teamData.awayTeamColor }}
+                >
+                  {fixture.away_score || 0}
+                </div>
+              </div>
+              <TeamLogoDisplay 
+                teamName={fixture.away_team?.name || 'Away'}
+                teamLogo={fixture.away_team?.logoURL}
+                teamColor={teamData.awayTeamColor}
+                size="lg"
+                showName={false}
               />
             </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Match Events Section */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Goals */}
+        <Card>
+          <CardContent className="pt-6">
+            <h4 className="font-semibold flex items-center gap-2 mb-4">
+              <Target className="h-4 w-4" />
+              Goals ({goals.length})
+            </h4>
+            
+            {goals.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-8">No goals recorded</p>
+            ) : (
+              <div className="space-y-3">
+                {goals.map((goal, index) => {
+                  const isHomeGoal = processedEvents.homeGoals.includes(goal);
+                  const teamColor = isHomeGoal ? teamData.homeTeamColor : teamData.awayTeamColor;
+                  const playerName = getGoalPlayerName(goal);
+                  const assistName = getGoalAssistPlayerName(goal);
+                  const time = getGoalTime(goal);
+                  
+                  return (
+                    <div 
+                      key={`goal-${goal.id}-${index}`} 
+                      className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
+                    >
+                      <div className="flex items-center gap-3 flex-1">
+                        <div 
+                          className="w-3 h-3 rounded-full"
+                          style={{ backgroundColor: teamColor }}
+                        />
+                        <div className="flex-1">
+                          <div className="font-medium text-sm">{playerName}</div>
+                          {assistName && (
+                            <div className="text-xs text-muted-foreground">
+                              Assist: {assistName}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      <Badge variant="outline" className="text-xs">
+                        {Math.floor(time / 60)}'
+                      </Badge>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Cards */}
+        <Card>
+          <CardContent className="pt-6">
+            <h4 className="font-semibold flex items-center gap-2 mb-4">
+              <AlertTriangle className="h-4 w-4" />
+              Cards ({cards.length})
+            </h4>
+            
+            {cards.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-8">No cards issued</p>
+            ) : (
+              <div className="space-y-3">
+                {cards.map((card, index) => {
+                  const isHomeCard = getCardTeamId(card) === fixture?.home_team_id;
+                  const teamColor = isHomeCard ? teamData.homeTeamColor : teamData.awayTeamColor;
+                  
+                  return (
+                    <div 
+                      key={`card-${card.id}-${index}`} 
+                      className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
+                    >
+                      <div className="flex items-center gap-3 flex-1">
+                        <div 
+                          className="w-3 h-3 rounded-full"
+                          style={{ backgroundColor: teamColor }}
+                        />
+                        <div className="font-medium text-sm">
+                          {getCardPlayerName(card)}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge variant={isCardRed(card) ? 'destructive' : 'outline'} className="text-xs">
+                          {getCardType(card)}
+                        </Badge>
+                        <span className="text-xs text-muted-foreground">
+                          {Math.floor(getCardTime(card) / 60)}'
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Summary Statistics Box */}
+      <Card className="bg-gradient-to-r from-muted/30 via-muted/20 to-muted/30">
+        <CardContent className="pt-6">
+          <div className="grid grid-cols-3 gap-6 text-center">
+            <div>
+              <div className="text-2xl font-bold mb-1" style={{ color: teamData.homeTeamColor }}>
+                {processedEvents.homeGoals.length}
+              </div>
+              <div className="text-sm text-muted-foreground mb-2">Goals</div>
+              <div className="text-xs text-muted-foreground truncate">
+                {fixture.home_team?.name || 'Home'}
+              </div>
+            </div>
+            <div>
+              <div className="text-2xl font-bold mb-1 text-amber-600">
+                {cards.length}
+              </div>
+              <div className="text-sm text-muted-foreground mb-2">Cards</div>
+              <div className="text-xs text-muted-foreground">
+                {timelineEvents.length} Events
+              </div>
+            </div>
+            <div>
+              <div className="text-2xl font-bold mb-1" style={{ color: teamData.awayTeamColor }}>
+                {processedEvents.awayGoals.length}
+              </div>
+              <div className="text-sm text-muted-foreground mb-2">Goals</div>
+              <div className="text-xs text-muted-foreground truncate">
+                {fixture.away_team?.name || 'Away'}
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Match Timeline Section */}
+      {timelineEvents.length > 0 && (
+        <Card>
+          <CardContent className="pt-6">
+            <h4 className="font-semibold flex items-center gap-2 mb-4">
+              <Clock className="h-4 w-4" />
+              Match Timeline ({timelineEvents.length})
+            </h4>
+            <EnhancedMatchEventsTimeline
+              timelineEvents={timelineEvents}
+              formatTime={formatTime}
+            />
           </CardContent>
         </Card>
       )}
-
-      {/* Enhanced Summary Statistics Box */}
-      <MatchStatisticsSummary
-        fixture={fixture}
-        processedEvents={processedEvents}
-        teamData={enhancedTeamData}
-        cards={cards}
-      />
     </div>
   );
 };
