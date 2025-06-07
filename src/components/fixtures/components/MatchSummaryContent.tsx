@@ -54,7 +54,7 @@ const MatchSummaryContent = ({
       <div className={`w-full mx-auto ${
         isMobile 
           ? isExportMode 
-            ? 'max-w-[375px] min-h-[600px] p-4 bg-white' 
+            ? 'max-w-[375px] min-h-[667px] aspect-[9/16] p-4 bg-white' 
             : 'max-w-[375px]'
           : 'max-w-[768px]'
       }`}>
@@ -96,7 +96,7 @@ const MatchSummaryContent = ({
       </div>
 
       {/* Export mode specific styles */}
-      <style jsx>{`
+      <style>{`
         .export-mode-mobile {
           font-size: 14px;
           line-height: 1.4;

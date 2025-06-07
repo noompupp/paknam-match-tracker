@@ -4,6 +4,8 @@ import { extractTeamData, processTeamEvents } from "./utils/teamDataProcessor";
 import PremierLeagueMatchContent from "./components/PremierLeagueMatchContent";
 import CollapsibleMatchDetails from "./components/CollapsibleMatchDetails";
 import MatchStatisticsFooter from "./MatchStatisticsFooter";
+import IPhoneStoryLayout from "./components/export/IPhoneStoryLayout";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface PremierLeagueStyleSummaryProps {
   fixture: any;
@@ -36,6 +38,8 @@ const PremierLeagueStyleSummary = ({
   getCardType,
   isCardRed
 }: PremierLeagueStyleSummaryProps) => {
+  const isMobile = useIsMobile();
+  
   console.log('🎨 PremierLeagueStyleSummary: Enhanced processing with assist support:', {
     fixtureId: fixture?.id,
     homeTeamId: fixture?.home_team_id,
@@ -64,6 +68,29 @@ const PremierLeagueStyleSummary = ({
 
   // Process team events using the new utility
   const processedEvents = processTeamEvents(goals, cards, teamData, getCardTeamId);
+
+  // Check if we're in export mode on mobile
+  const isExportMode = isMobile && document.getElementById('match-summary-content')?.classList.contains('export-mode-mobile');
+
+  // Use iPhone story layout for mobile export mode
+  if (isMobile && isExportMode) {
+    return (
+      <IPhoneStoryLayout
+        fixture={fixture}
+        goals={goals}
+        cards={cards}
+        homeGoals={processedEvents.homeGoals}
+        awayGoals={processedEvents.awayGoals}
+        homeTeamColor={teamData.homeTeamColor}
+        awayTeamColor={teamData.awayTeamColor}
+        timelineEvents={timelineEvents}
+        getCardPlayerName={getCardPlayerName}
+        getCardTime={getCardTime}
+        getCardType={getCardType}
+        isCardRed={isCardRed}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6">

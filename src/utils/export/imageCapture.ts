@@ -35,6 +35,25 @@ export const createCanvasFromElement = async (elementId: string, options: Captur
   return await html2canvas(element, defaultOptions);
 };
 
+export const getIPhoneStoryOptimizedOptions = (): CaptureOptions => {
+  // iPhone story format: 9:16 aspect ratio
+  // Standard iPhone screen widths: 375px, 414px, 428px
+  // Standard heights: 667px, 896px, 926px
+  
+  return {
+    scale: 2, // High quality for story sharing
+    width: 375,
+    height: 667,
+    x: 0,
+    y: 0,
+    windowWidth: 375,
+    windowHeight: 667,
+    backgroundColor: '#ffffff',
+    useCORS: true,
+    allowTaint: true
+  };
+};
+
 export const getMobileOptimizedCaptureOptions = (element: HTMLElement): CaptureOptions => {
   const isMobile = window.innerWidth < 768;
   
@@ -49,21 +68,8 @@ export const getMobileOptimizedCaptureOptions = (element: HTMLElement): CaptureO
     };
   }
 
-  // Get actual device dimensions for high-quality mobile export
-  const devicePixelRatio = window.devicePixelRatio || 1;
-  const actualWidth = window.screen.width * devicePixelRatio;
-  const actualHeight = window.screen.height * devicePixelRatio;
-  
-  // Use actual screen dimensions for mobile story format
-  return {
-    scale: devicePixelRatio,
-    width: Math.min(actualWidth, 1170), // Max width for story format
-    height: Math.min(actualHeight, 2532), // Max height for story format
-    x: 0,
-    y: 0,
-    windowWidth: actualWidth,
-    windowHeight: actualHeight,
-  };
+  // Use iPhone story optimized dimensions for mobile export
+  return getIPhoneStoryOptimizedOptions();
 };
 
 export const captureImageForSharing = async (elementId: string): Promise<Blob> => {
@@ -85,8 +91,12 @@ export const captureImageForSharing = async (elementId: string): Promise<Blob> =
   }
 
   try {
-    const mobileOptions = getMobileOptimizedCaptureOptions(element);
-    const canvas = await createCanvasFromElement(elementId, mobileOptions);
+    // Use iPhone story optimized options for mobile
+    const captureOptions = isMobile 
+      ? getIPhoneStoryOptimizedOptions()
+      : getMobileOptimizedCaptureOptions(element);
+      
+    const canvas = await createCanvasFromElement(elementId, captureOptions);
 
     return new Promise((resolve) => {
       canvas.toBlob((blob) => {
