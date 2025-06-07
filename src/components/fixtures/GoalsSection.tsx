@@ -23,7 +23,7 @@ const GoalsSection = ({
   getGoalPlayerName,
   getGoalTime
 }: GoalsSectionProps) => {
-  console.log('⚽ GoalsSection: Comprehensive assist information analysis with enhanced debugging:', {
+  console.log('⚽ GoalsSection: Enhanced mobile-first goals display:', {
     totalGoals: goals.length,
     homeGoals: homeGoals.length,
     awayGoals: awayGoals.length,
@@ -34,45 +34,8 @@ const GoalsSection = ({
       playerName: getGoalPlayerName(g),
       assistPlayerName: getGoalAssistPlayerName(g),
       hasAssist: !!getGoalAssistPlayerName(g),
-      time: getGoalTime(g),
-      rawAssistFields: {
-        assistPlayerName: g.assistPlayerName,
-        assist_player_name: g.assist_player_name,
-        assistTeamId: g.assistTeamId,
-        assist_team_id: g.assist_team_id,
-        assistName: g.assistName,
-        assist_name: g.assist_name
-      },
-      extractorResult: getGoalAssistPlayerName(g)
-    })),
-    homeGoalsWithAssistDetails: homeGoals.map(g => ({
-      id: g.id,
-      player: getGoalPlayerName(g),
-      assist: getGoalAssistPlayerName(g),
-      hasAssist: !!getGoalAssistPlayerName(g),
-      time: getGoalTime(g),
-      rawData: {
-        assistPlayerName: g.assistPlayerName,
-        assist_player_name: g.assist_player_name
-      }
-    })),
-    awayGoalsWithAssistDetails: awayGoals.map(g => ({
-      id: g.id,
-      player: getGoalPlayerName(g),
-      assist: getGoalAssistPlayerName(g),
-      hasAssist: !!getGoalAssistPlayerName(g),
-      time: getGoalTime(g),
-      rawData: {
-        assistPlayerName: g.assistPlayerName,
-        assist_player_name: g.assist_player_name
-      }
-    })),
-    assistCorrelationSummary: {
-      totalGoalsWithRawAssistData: goals.filter(g => g.assistPlayerName || g.assist_player_name).length,
-      totalGoalsWithExtractedAssists: goals.filter(g => getGoalAssistPlayerName(g)).length,
-      homeGoalsWithAssists: homeGoals.filter(g => getGoalAssistPlayerName(g)).length,
-      awayGoalsWithAssists: awayGoals.filter(g => getGoalAssistPlayerName(g)).length
-    }
+      time: getGoalTime(g)
+    }))
   });
 
   if (goals.length === 0) {
@@ -82,31 +45,80 @@ const GoalsSection = ({
 
   return (
     <Card className="max-w-4xl mx-auto">
-      <CardContent className="pt-3 md:pt-6 px-3 md:px-6">
+      <CardContent className="pt-3 md:pt-6 px-3 md:px-6 pb-3 md:pb-6">
         <GoalsSectionHeader totalGoals={goals.length} />
         
-        <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-3 md:gap-6">
-          {/* Home Team Goals */}
-          <div className="flex-1">
-            <GoalsList
-              goals={homeGoals}
-              teamType="home"
-              teamColor={homeTeamColor}
-            />
+        {/* Mobile-First Layout */}
+        <div className="space-y-4 md:space-y-0">
+          {/* Mobile Layout - Stacked with clear team separation */}
+          <div className="block md:hidden space-y-4">
+            {/* Home Team Goals */}
+            {homeGoals.length > 0 && (
+              <div className="space-y-2">
+                <div 
+                  className="text-sm font-bold px-3 py-1 rounded-md text-center"
+                  style={{ 
+                    backgroundColor: homeTeamColor + '15',
+                    color: homeTeamColor,
+                    border: `1px solid ${homeTeamColor}30`
+                  }}
+                >
+                  Home Goals ({homeGoals.length})
+                </div>
+                <GoalsList
+                  goals={homeGoals}
+                  teamType="home"
+                  teamColor={homeTeamColor}
+                />
+              </div>
+            )}
+
+            {/* Away Team Goals */}
+            {awayGoals.length > 0 && (
+              <div className="space-y-2">
+                <div 
+                  className="text-sm font-bold px-3 py-1 rounded-md text-center"
+                  style={{ 
+                    backgroundColor: awayTeamColor + '15',
+                    color: awayTeamColor,
+                    border: `1px solid ${awayTeamColor}30`
+                  }}
+                >
+                  Away Goals ({awayGoals.length})
+                </div>
+                <GoalsList
+                  goals={awayGoals}
+                  teamType="away"
+                  teamColor={awayTeamColor}
+                />
+              </div>
+            )}
           </div>
 
-          {/* Enhanced Center Divider - Hidden on mobile */}
-          <div className="hidden md:block px-3">
-            <div className="w-0.5 h-full bg-gradient-to-b from-gray-200 via-gray-400 to-gray-200 min-h-[60px] rounded-full"></div>
-          </div>
+          {/* Desktop Layout - Side by side */}
+          <div className="hidden md:flex md:justify-between md:items-start gap-6">
+            {/* Home Team Goals */}
+            <div className="flex-1">
+              <GoalsList
+                goals={homeGoals}
+                teamType="home"
+                teamColor={homeTeamColor}
+              />
+            </div>
 
-          {/* Away Team Goals */}
-          <div className="flex-1">
-            <GoalsList
-              goals={awayGoals}
-              teamType="away"
-              teamColor={awayTeamColor}
-            />
+            {/* Center Divider */}
+            <div className="px-3">
+              <div className="w-0.5 h-full bg-gradient-to-b from-gray-200 via-gray-400 to-gray-200 min-h-[60px] rounded-full"></div>
+            </div>
+
+            {/* Away Team Goals */}
+            <div className="flex-1">
+              <GoalsList
+                goals={awayGoals}
+                teamType="away"
+                teamColor={awayTeamColor}
+              />
+            </div>
           </div>
         </div>
       </CardContent>

@@ -19,9 +19,9 @@ const PremierLeagueHeader = ({ fixture, homeTeamColor, awayTeamColor }: PremierL
           background: `linear-gradient(to right, ${homeTeamColor} 0%, ${homeTeamColor} 50%, ${awayTeamColor} 50%, ${awayTeamColor} 100%)`
         }}
       />
-      <CardContent className="pt-4 pb-4 px-3 md:pt-6 md:pb-6 md:px-6">
-        {/* Match Status Header - Mobile First */}
-        <div className="flex flex-col items-center mb-4 md:mb-6">
+      <CardContent className="pt-3 pb-3 px-3 md:pt-6 md:pb-6 md:px-6">
+        {/* Match Status Header - Simplified for Mobile */}
+        <div className="flex flex-col items-center mb-3 md:mb-6">
           <div className="flex items-center gap-2 mb-2">
             <Trophy className="h-4 w-4 md:h-5 md:w-5 text-yellow-600" />
             <Badge variant="outline" className="text-xs md:text-sm px-2 md:px-4 py-1 font-bold bg-gradient-to-r from-blue-50 to-green-50">
@@ -29,8 +29,8 @@ const PremierLeagueHeader = ({ fixture, homeTeamColor, awayTeamColor }: PremierL
             </Badge>
           </div>
           
-          {/* Match Details Row */}
-          <div className="flex items-center gap-3 md:gap-4 text-xs md:text-sm text-muted-foreground">
+          {/* Match Details Row - Mobile Optimized */}
+          <div className="flex items-center gap-2 md:gap-4 text-xs md:text-sm text-muted-foreground">
             {fixture.match_date && (
               <div className="flex items-center gap-1">
                 <Calendar className="h-3 w-3 md:h-4 md:w-4" />
@@ -40,47 +40,94 @@ const PremierLeagueHeader = ({ fixture, homeTeamColor, awayTeamColor }: PremierL
             {fixture.venue && (
               <div className="flex items-center gap-1">
                 <MapPin className="h-3 w-3 md:h-4 md:w-4" />
-                <span className="font-medium truncate max-w-[120px] md:max-w-none">{fixture.venue}</span>
+                <span className="font-medium truncate max-w-[100px] md:max-w-none">{fixture.venue}</span>
               </div>
             )}
           </div>
         </div>
         
-        {/* Teams and Score Layout - Maintains side-by-side on mobile */}
-        <div className="flex items-center justify-between gap-2 md:gap-4">
-          {/* Home Team */}
-          <div className="flex-1 flex flex-col items-center min-w-0">
-            <TeamLogoDisplay 
-              teamName={fixture.home_team?.name || 'Home Team'}
-              teamLogo={fixture.home_team?.logoURL}
-              teamColor={homeTeamColor}
-              size="md"
-              showName={true}
-              isPremierLeagueStyle={true}
-            />
-          </div>
-          
-          {/* Score Display - Compact for mobile */}
-          <div className="flex items-center gap-2 md:gap-4 px-2 md:px-4">
-            <div className="text-2xl md:text-4xl lg:text-5xl font-bold text-center" style={{ color: homeTeamColor }}>
-              {fixture.home_score || 0}
+        {/* Mobile-First Teams and Score Layout */}
+        <div className="space-y-3 md:space-y-0">
+          {/* Mobile Layout - Stacked */}
+          <div className="block md:hidden">
+            {/* Home Team */}
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-3 flex-1 min-w-0">
+                <TeamLogoDisplay 
+                  teamName={fixture.home_team?.name || 'Home Team'}
+                  teamLogo={fixture.home_team?.logoURL}
+                  teamColor={homeTeamColor}
+                  size="sm"
+                  showName={true}
+                  isPremierLeagueStyle={true}
+                />
+              </div>
+              <div className="text-3xl font-bold px-4" style={{ color: homeTeamColor }}>
+                {fixture.home_score || 0}
+              </div>
             </div>
-            <div className="text-lg md:text-2xl font-bold text-muted-foreground">-</div>
-            <div className="text-2xl md:text-4xl lg:text-5xl font-bold text-center" style={{ color: awayTeamColor }}>
-              {fixture.away_score || 0}
+            
+            {/* Score Divider */}
+            <div className="flex justify-center mb-3">
+              <div className="text-lg font-bold text-muted-foreground bg-muted px-3 py-1 rounded-lg">
+                VS
+              </div>
+            </div>
+            
+            {/* Away Team */}
+            <div className="flex items-center justify-between">
+              <div className="text-3xl font-bold px-4" style={{ color: awayTeamColor }}>
+                {fixture.away_score || 0}
+              </div>
+              <div className="flex items-center gap-3 flex-1 min-w-0 justify-end">
+                <TeamLogoDisplay 
+                  teamName={fixture.away_team?.name || 'Away Team'}
+                  teamLogo={fixture.away_team?.logoURL}
+                  teamColor={awayTeamColor}
+                  size="sm"
+                  showName={true}
+                  isPremierLeagueStyle={true}
+                />
+              </div>
             </div>
           </div>
-          
-          {/* Away Team */}
-          <div className="flex-1 flex flex-col items-center min-w-0">
-            <TeamLogoDisplay 
-              teamName={fixture.away_team?.name || 'Away Team'}
-              teamLogo={fixture.away_team?.logoURL}
-              teamColor={awayTeamColor}
-              size="md"
-              showName={true}
-              isPremierLeagueStyle={true}
-            />
+
+          {/* Desktop Layout - Side by Side */}
+          <div className="hidden md:flex items-center justify-between gap-4">
+            {/* Home Team */}
+            <div className="flex-1 flex flex-col items-center min-w-0">
+              <TeamLogoDisplay 
+                teamName={fixture.home_team?.name || 'Home Team'}
+                teamLogo={fixture.home_team?.logoURL}
+                teamColor={homeTeamColor}
+                size="md"
+                showName={true}
+                isPremierLeagueStyle={true}
+              />
+            </div>
+            
+            {/* Score Display */}
+            <div className="flex items-center gap-4 px-4">
+              <div className="text-4xl lg:text-5xl font-bold text-center" style={{ color: homeTeamColor }}>
+                {fixture.home_score || 0}
+              </div>
+              <div className="text-2xl font-bold text-muted-foreground">-</div>
+              <div className="text-4xl lg:text-5xl font-bold text-center" style={{ color: awayTeamColor }}>
+                {fixture.away_score || 0}
+              </div>
+            </div>
+            
+            {/* Away Team */}
+            <div className="flex-1 flex flex-col items-center min-w-0">
+              <TeamLogoDisplay 
+                teamName={fixture.away_team?.name || 'Away Team'}
+                teamLogo={fixture.away_team?.logoURL}
+                teamColor={awayTeamColor}
+                size="md"
+                showName={true}
+                isPremierLeagueStyle={true}
+              />
+            </div>
           </div>
         </div>
       </CardContent>
