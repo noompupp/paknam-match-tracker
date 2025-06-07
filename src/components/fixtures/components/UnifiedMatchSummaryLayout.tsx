@@ -1,12 +1,11 @@
+
 import { Card, CardContent } from "@/components/ui/card";
 import { Clock } from "lucide-react";
 import EnhancedMatchEventsTimeline from "../../referee/components/EnhancedMatchEventsTimeline";
 import { extractTeamData, processTeamEvents } from "../utils/teamDataProcessor";
-import InstagramStoryLayout from "./export/InstagramStoryLayout";
 import MatchHeaderSection from "./MatchHeaderSection";
 import MatchEventsSection from "./MatchEventsSection";
 import MatchStatisticsSummary from "./MatchStatisticsSummary";
-import { useIsMobile } from "@/hooks/use-mobile";
 
 interface UnifiedMatchSummaryLayoutProps {
   fixture: any;
@@ -39,34 +38,9 @@ const UnifiedMatchSummaryLayout = ({
   getCardType,
   isCardRed
 }: UnifiedMatchSummaryLayoutProps) => {
-  const isMobile = useIsMobile();
-  
   // Extract team data using the existing utility
   const teamData = extractTeamData(fixture);
   const processedEvents = processTeamEvents(goals, cards, teamData, getCardTeamId);
-
-  // Check if we're in export mode on mobile
-  const isExportMode = isMobile && document.getElementById('match-summary-content')?.classList.contains('export-mode-mobile');
-
-  // Use Instagram story layout for mobile export mode
-  if (isMobile && isExportMode) {
-    return (
-      <InstagramStoryLayout
-        fixture={fixture}
-        goals={goals}
-        cards={cards}
-        homeGoals={processedEvents.homeGoals}
-        awayGoals={processedEvents.awayGoals}
-        homeTeamColor={teamData.homeTeamColor}
-        awayTeamColor={teamData.awayTeamColor}
-        timelineEvents={timelineEvents}
-        getCardPlayerName={getCardPlayerName}
-        getCardTime={getCardTime}
-        getCardType={getCardType}
-        isCardRed={isCardRed}
-      />
-    );
-  }
 
   return (
     <div className="space-y-6">
