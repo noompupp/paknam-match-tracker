@@ -21,21 +21,18 @@ const GoalDisplay = ({ goal, index, teamType, teamColor }: GoalDisplayProps) => 
     const goalTime = getGoalTime(goal);
     const goalId = goal.id || `${teamType}-goal-${index}`;
 
-    console.log(`⚽ GoalDisplay: Enhanced rendering ${teamType} goal with assist:`, {
+    console.log(`⚽ GoalDisplay: Enhanced rendering ${teamType} goal with assist data:`, {
       goalId,
       player: playerName,
       assist: assistPlayerName,
       time: goalTime,
-      teamData: {
-        teamId: goal.teamId,
-        team_id: goal.team_id,
-        team: goal.team,
-        teamName: goal.teamName
+      assistFound: !!assistPlayerName,
+      rawAssistData: {
+        assistPlayerName: goal.assistPlayerName,
+        assist_player_name: goal.assist_player_name,
+        assistTeamId: goal.assistTeamId
       },
-      fullGoalStructure: goal,
-      hasPlayerName: !!playerName,
-      hasAssist: !!assistPlayerName,
-      hasTime: !!goalTime
+      fullGoalStructure: goal
     });
 
     if (!playerName) {
@@ -91,10 +88,13 @@ const GoalDisplay = ({ goal, index, teamType, teamColor }: GoalDisplayProps) => 
           )}
         </div>
         
-        {/* Premier League Style Assist Display */}
+        {/* Enhanced Premier League Style Assist Display */}
         {assistPlayerName && (
           <div className={`text-sm text-muted-foreground mt-1 font-medium ${teamType === 'away' ? 'text-right mr-6' : 'ml-6'}`}>
-            🅰️ Assist: {assistPlayerName}
+            <span className="inline-flex items-center gap-1">
+              <span className="text-xs bg-muted px-1.5 py-0.5 rounded font-bold">A</span>
+              {assistPlayerName}
+            </span>
           </div>
         )}
       </div>

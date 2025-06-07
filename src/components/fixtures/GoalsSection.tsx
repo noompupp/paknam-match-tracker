@@ -23,32 +23,36 @@ const GoalsSection = ({
   getGoalPlayerName,
   getGoalTime
 }: GoalsSectionProps) => {
-  console.log('⚽ GoalsSection: Enhanced debugging with assist information:', {
+  console.log('⚽ GoalsSection: Enhanced assist information analysis:', {
     totalGoals: goals.length,
     homeGoals: homeGoals.length,
     awayGoals: awayGoals.length,
-    goalStructureAnalysis: goals.map(g => ({
+    totalGoalsWithAssists: goals.filter(g => getGoalAssistPlayerName(g)).length,
+    assistAnalysis: goals.map(g => ({
       id: g.id,
       type: g.type,
       playerName: getGoalPlayerName(g),
       assistPlayerName: getGoalAssistPlayerName(g),
+      hasAssist: !!getGoalAssistPlayerName(g),
       time: getGoalTime(g),
-      teamId: g.teamId,
-      team_id: g.team_id,
-      team: g.team,
-      teamName: g.teamName,
-      rawStructure: g
+      rawAssistFields: {
+        assistPlayerName: g.assistPlayerName,
+        assist_player_name: g.assist_player_name,
+        assistTeamId: g.assistTeamId
+      }
     })),
     homeGoalsWithAssists: homeGoals.map(g => ({
       id: g.id,
       player: getGoalPlayerName(g),
       assist: getGoalAssistPlayerName(g),
+      hasAssist: !!getGoalAssistPlayerName(g),
       time: getGoalTime(g)
     })),
     awayGoalsWithAssists: awayGoals.map(g => ({
       id: g.id,
       player: getGoalPlayerName(g),
       assist: getGoalAssistPlayerName(g),
+      hasAssist: !!getGoalAssistPlayerName(g),
       time: getGoalTime(g)
     }))
   });
