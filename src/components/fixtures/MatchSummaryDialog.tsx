@@ -17,7 +17,7 @@ import {
 } from "./utils/matchSummaryDataProcessor";
 import MatchSummaryViewToggle from "./components/MatchSummaryViewToggle";
 import MatchSummaryContent from "./components/MatchSummaryContent";
-import MatchSummaryExportActions from "./components/MatchSummaryExportActions";
+import MatchSummaryShareActions from "./components/MatchSummaryShareActions";
 
 interface MatchSummaryDialogProps {
   fixture: any;
@@ -95,22 +95,7 @@ const MatchSummaryDialog = ({ fixture, isOpen, onClose }: MatchSummaryDialogProp
           isCardRed={isCardRed}
         />
 
-        <MatchSummaryExportActions
-          fixture={fixture}
-          matchEvents={matchEvents || []}
-          goals={goals}
-          cards={cards}
-          enhancedSuccess={enhancedSuccess}
-          enhancedData={enhancedData}
-          formatTime={formatTime}
-          getGoalTeamId={getGoalTeamId}
-          getGoalPlayerName={getGoalPlayerName}
-          getGoalTime={getGoalTime}
-          getCardTeamId={getCardTeamId}
-          getCardPlayerName={getCardPlayerName}
-          getCardTime={getCardTime}
-          getCardType={getCardType}
-        />
+        <MatchSummaryShareActions fixture={fixture} />
       </DialogContent>
     </Dialog>
   );

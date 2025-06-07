@@ -1,3 +1,4 @@
+
 import html2canvas from 'html2canvas';
 
 export const exportToJPEG = async (elementId: string, filename: string) => {
@@ -54,6 +55,80 @@ export const exportToCSV = (data: any[], filename: string) => {
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
+};
+
+// Mobile-optimized image capture for sharing
+export const captureImageForSharing = async (elementId: string): Promise<Blob> => {
+  const element = document.getElementById(elementId);
+  if (!element) {
+    throw new Error('Element not found for capture');
+  }
+
+  // Mobile-optimized canvas settings
+  const canvas = await html2canvas(element, {
+    backgroundColor: '#ffffff',
+    scale: window.devicePixelRatio || 2, // Use device pixel ratio for optimal quality
+    useCORS: true,
+    allowTaint: true,
+    width: element.scrollWidth,
+    height: element.scrollHeight,
+    scrollX: 0,
+    scrollY: 0,
+  });
+
+  return new Promise((resolve) => {
+    canvas.toBlob((blob) => {
+      if (blob) {
+        resolve(blob);
+      } else {
+        throw new Error('Failed to create image blob');
+      }
+    }, 'image/jpeg', 0.9);
+  });
+};
+
+// Save image to device (mobile-optimized)
+export const saveImageToDevice = async (elementId: string, filename: string) => {
+  const imageBlob = await captureImageForSharing(elementId);
+  
+  // For mobile devices, use the download approach
+  const url = URL.createObjectURL(imageBlob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  link.style.position = 'fixed';
+  link.style.top = '-1000px';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+};
+
+// Share using Web Share API with fallback
+export const shareImage = async (elementId: string, title: string, text: string) => {
+  const imageBlob = await captureImageForSharing(elementId);
+  
+  // Check if Web Share API is supported and can share files
+  if (navigator.share && navigator.canShare) {
+    const shareData = {
+      title,
+      text,
+      files: [new File([imageBlob], 'match-summary.jpg', { type: 'image/jpeg' })]
+    };
+    
+    if (navigator.canShare(shareData)) {
+      try {
+        await navigator.share(shareData);
+        return;
+      } catch (error) {
+        console.log('Web Share API failed, falling back to download');
+      }
+    }
+  }
+  
+  // Fallback: Save to device
+  const filename = `${title.replace(/\s+/g, '-').toLowerCase()}.jpg`;
+  await saveImageToDevice(elementId, filename);
 };
 
 export const generateEnhancedMatchSummary = (
