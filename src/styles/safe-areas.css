@@ -1,0 +1,88 @@
+
+/* Comprehensive Safe Area Classes */
+.safe-top {
+  padding-top: var(--safe-area-inset-top);
+}
+
+.safe-bottom {
+  padding-bottom: var(--safe-area-inset-bottom);
+}
+
+.safe-left {
+  padding-left: var(--safe-area-inset-left);
+}
+
+.safe-right {
+  padding-right: var(--safe-area-inset-right);
+}
+
+.safe-x {
+  padding-left: var(--safe-area-inset-left);
+  padding-right: var(--safe-area-inset-right);
+}
+
+.safe-y {
+  padding-top: var(--safe-area-inset-top);
+  padding-bottom: var(--safe-area-inset-bottom);
+}
+
+.safe-all {
+  padding: var(--safe-area-inset-top) var(--safe-area-inset-right) var(--safe-area-inset-bottom) var(--safe-area-inset-left);
+}
+
+/* Enhanced Navigation Safe Area */
+.nav-safe-bottom {
+  padding-bottom: calc(var(--nav-height) + var(--safe-area-inset-bottom));
+}
+
+/* Content container with proper mobile spacing */
+.content-container {
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding-bottom: var(--mobile-nav-total-height);
+}
+
+/* Mobile-specific safe area utilities */
+@media (max-width: 768px) {
+  .mobile-safe-bottom {
+    padding-bottom: var(--mobile-nav-total-height);
+  }
+  
+  .mobile-content-spacing {
+    padding-bottom: calc(2rem + var(--mobile-nav-total-height));
+  }
+  
+  /* Scroll margin for mobile navigation */
+  .scroll-mt-nav {
+    scroll-margin-top: calc(var(--nav-height) + 1rem);
+  }
+}
+
+/* Desktop fallbacks */
+@media (min-width: 769px) {
+  .desktop-safe-bottom {
+    padding-bottom: 2rem;
+  }
+}
+
+/* Enhanced gradient background with safe area support */
+.gradient-bg {
+  background: var(--app-gradient);
+  min-height: 100vh;
+  min-height: 100dvh;
+  /* Ensure gradient extends to safe areas */
+  position: relative;
+}
+
+/* Additional safe area coverage for gradient backgrounds */
+.gradient-bg::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--safe-area-inset-top);
+  background: var(--app-gradient);
+  z-index: -1;
+  pointer-events: none;
+}
