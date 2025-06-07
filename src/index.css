@@ -96,112 +96,15 @@
 }
 
 @layer utilities {
-  /* Premier League Style Gradients */
   .gradient-bg {
     background: linear-gradient(135deg, #4b05ad 0%, #7916ff 50%, #9f75ff 100%);
   }
   
-  .premier-gradient-primary {
-    background: linear-gradient(135deg, #37003c 0%, #04083a 50%, #37003c 100%);
-  }
-  
-  .premier-gradient-secondary {
-    background: linear-gradient(135deg, #00ff87 0%, #00d4aa 50%, #00ff87 100%);
-  }
-  
-  .premier-team-gradient {
-    background: linear-gradient(135deg, var(--team-primary) 0%, var(--team-secondary, var(--team-primary)) 50%, var(--team-primary) 100%);
-  }
-  
-  /* Enhanced Card Shadows */
   .card-shadow {
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   }
   
   .card-shadow-lg {
-    box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  }
-  
-  .card-shadow-premier {
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1), 0 5px 15px rgba(0, 0, 0, 0.08);
-  }
-  
-  /* Premier League Table Gradients */
-  .pl-table-header {
-    background: linear-gradient(135deg, #37003c 0%, #04083a 30%, #37003c 100%);
-  }
-  
-  .pl-row-champions {
-    background: linear-gradient(135deg, #22c55e10 0%, #22c55e05 50%, #22c55e10 100%);
-  }
-  
-  .pl-row-europe {
-    background: linear-gradient(135deg, #3b82f610 0%, #3b82f605 50%, #3b82f610 100%);
-  }
-  
-  .pl-row-relegation {
-    background: linear-gradient(135deg, #ef444410 0%, #ef444405 50%, #ef444410 100%);
-  }
-  
-  /* Goal Display Gradients */
-  .goal-home-gradient {
-    background: linear-gradient(135deg, var(--home-color, #22c55e)15 0%, var(--home-color, #22c55e)08 50%, var(--home-color, #22c55e)15 100%);
-  }
-  
-  .goal-away-gradient {
-    background: linear-gradient(135deg, var(--away-color, #3b82f6)15 0%, var(--away-color, #3b82f6)08 50%, var(--away-color, #3b82f6)15 100%);
-  }
-  
-  /* Animation Enhancements */
-  .hover-lift {
-    @apply transition-all duration-300 hover:scale-105 hover:shadow-lg;
-  }
-  
-  .premier-pulse {
-    animation: premier-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-  }
-  
-  @keyframes premier-pulse {
-    0%, 100% {
-      opacity: 1;
-      transform: scale(1);
-    }
-    50% {
-      opacity: 0.8;
-      transform: scale(1.05);
-    }
-  }
-  
-  /* Typography Enhancements */
-  .premier-text-gradient {
-    background: linear-gradient(135deg, #37003c, #04083a, #37003c);
-    background-clip: text;
-    -webkit-background-clip: text;
-    color: transparent;
-  }
-  
-  .team-text-gradient {
-    background: linear-gradient(135deg, var(--team-color), var(--team-color-dark, var(--team-color)));
-    background-clip: text;
-    -webkit-background-clip: text;
-    color: transparent;
-  }
-  
-  /* Match Statistics Gradients */
-  .stat-card-gradient {
-    background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(248,250,252,0.8) 100%);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255,255,255,0.2);
-  }
-  
-  /* Team Color Variables for Dynamic Gradients */
-  .team-colors-home {
-    --team-primary: var(--home-team-color, #22c55e);
-    --team-secondary: var(--home-team-secondary, var(--home-team-color, #22c55e));
-  }
-  
-  .team-colors-away {
-    --team-primary: var(--away-team-color, #3b82f6);
-    --team-secondary: var(--away-team-secondary, var(--away-team-color, #3b82f6));
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
   }
 }

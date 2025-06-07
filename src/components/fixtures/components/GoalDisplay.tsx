@@ -21,16 +21,33 @@ const GoalDisplay = ({ goal, index, teamType, teamColor }: GoalDisplayProps) => 
     const goalTime = getGoalTime(goal);
     const goalId = goal.id || `${teamType}-goal-${index}`;
 
-    console.log(`⚽ GoalDisplay: Premier League style rendering ${teamType} goal:`, {
+    console.log(`⚽ GoalDisplay: Enhanced rendering ${teamType} goal with comprehensive assist analysis:`, {
       goalId,
       player: playerName,
       assist: assistPlayerName,
       time: goalTime,
-      teamColor
+      assistFound: !!assistPlayerName,
+      comprehensiveAssistCheck: {
+        assistPlayerName: goal.assistPlayerName,
+        assist_player_name: goal.assist_player_name,
+        assistTeamId: goal.assistTeamId,
+        assist_team_id: goal.assist_team_id,
+        extractorResult: getGoalAssistPlayerName(goal)
+      },
+      fullGoalStructure: goal
     });
 
     if (!playerName) {
-      console.warn(`⚠️ GoalDisplay: Missing player name for ${teamType} goal:`, goal);
+      console.warn(`⚠️ GoalDisplay: Missing player name for ${teamType} goal - attempting fallback:`, {
+        goal,
+        fallbackAttempts: {
+          playerName: goal.playerName,
+          player_name: goal.player_name,
+          player: goal.player,
+          scorer: goal.scorer,
+          name: goal.name
+        }
+      });
       
       const fallbackName = goal.scorer || goal.name || `Unknown Player (Goal ${goalId})`;
       
@@ -38,7 +55,7 @@ const GoalDisplay = ({ goal, index, teamType, teamColor }: GoalDisplayProps) => 
         console.error(`❌ GoalDisplay: Unable to extract player name for goal:`, goal);
         return (
           <div key={goalId} className={teamType === 'home' ? "text-left" : "text-right"}>
-            <div className="text-sm text-muted-foreground italic bg-slate-50 p-3 rounded-lg">
+            <div className="text-sm text-muted-foreground italic">
               Goal recorded but player name unavailable (ID: {goalId})
             </div>
           </div>
@@ -49,80 +66,39 @@ const GoalDisplay = ({ goal, index, teamType, teamColor }: GoalDisplayProps) => 
     const displayName = playerName || goal.scorer || goal.name || `Goal ${goalId}`;
     const displayTime = goalTime || goal.minute || 0;
 
-    const getTeamGradient = () => {
-      return {
-        background: `linear-gradient(135deg, ${teamColor}15, ${teamColor}08, ${teamColor}05)`,
-        borderLeft: teamType === 'home' ? `4px solid ${teamColor}` : 'none',
-        borderRight: teamType === 'away' ? `4px solid ${teamColor}` : 'none'
-      };
-    };
-
     return (
-      <div key={goalId} className={`${teamType === 'home' ? "text-left" : "text-right"} mb-4`}>
-        <div 
-          className={`p-4 rounded-xl shadow-sm transition-all duration-300 hover:shadow-md hover:scale-[1.02] ${
-            teamType === 'away' ? 'ml-8' : 'mr-8'
-          }`}
-          style={getTeamGradient()}
-        >
-          <div className={`flex items-center gap-4 ${teamType === 'away' ? 'justify-end' : ''}`}>
-            {teamType === 'home' && (
-              <div className="flex items-center gap-3">
-                <div 
-                  className="w-4 h-4 rounded-full shadow-md border-2 border-white"
-                  style={{ backgroundColor: teamColor }}
-                />
-                <div className="bg-white rounded-full p-1 shadow-sm">
-                  <div className="text-xs font-bold px-2 py-1" style={{ color: teamColor }}>⚽</div>
-                </div>
-              </div>
-            )}
-            
-            <div className={`flex-1 ${teamType === 'away' ? 'text-right' : ''}`}>
-              <div className="flex items-center gap-3 mb-1">
-                <span className="font-bold text-lg text-slate-800">{displayName}</span>
-                <Badge 
-                  variant="outline" 
-                  className="text-sm font-bold border-2 shadow-sm"
-                  style={{ 
-                    borderColor: teamColor, 
-                    color: teamColor,
-                    background: `${teamColor}10`
-                  }}
-                >
-                  {formatMatchTime(displayTime)}
-                </Badge>
-              </div>
+      <div key={goalId} className={teamType === 'home' ? "text-left" : "text-right"}>
+        <div className={`flex items-center gap-3 ${teamType === 'away' ? 'justify-end' : ''}`}>
+          {teamType === 'home' && (
+            <div 
+              className="w-3 h-3 rounded-full shadow-md"
+              style={{ backgroundColor: teamColor }}
+            />
+          )}
+          
+          <span className="font-semibold text-base">{displayName}</span>
+          
+          <Badge variant="outline" className="text-sm font-medium">
+            {formatMatchTime(displayTime)}
+          </Badge>
 
-              {/* Premier League Style Assist Display */}
-              {assistPlayerName && (
-                <div className={`text-sm mt-2 ${teamType === 'away' ? 'text-right' : ''}`}>
-                  <div className="inline-flex items-center gap-2 bg-white/70 px-3 py-1 rounded-full shadow-sm">
-                    <div 
-                      className="w-5 h-5 rounded-full flex items-center justify-center text-xs font-black text-white shadow-sm"
-                      style={{ backgroundColor: teamColor }}
-                    >
-                      A
-                    </div>
-                    <span className="font-semibold text-slate-700">{assistPlayerName}</span>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {teamType === 'away' && (
-              <div className="flex items-center gap-3">
-                <div className="bg-white rounded-full p-1 shadow-sm">
-                  <div className="text-xs font-bold px-2 py-1" style={{ color: teamColor }}>⚽</div>
-                </div>
-                <div 
-                  className="w-4 h-4 rounded-full shadow-md border-2 border-white"
-                  style={{ backgroundColor: teamColor }}
-                />
-              </div>
-            )}
-          </div>
+          {teamType === 'away' && (
+            <div 
+              className="w-3 h-3 rounded-full shadow-md"
+              style={{ backgroundColor: teamColor }}
+            />
+          )}
         </div>
+        
+        {/* Enhanced Premier League Style Assist Display with Comprehensive Data Checking */}
+        {assistPlayerName && (
+          <div className={`text-sm text-muted-foreground mt-1 font-medium ${teamType === 'away' ? 'text-right mr-6' : 'ml-6'}`}>
+            <span className="inline-flex items-center gap-1">
+              <span className="text-xs bg-muted px-1.5 py-0.5 rounded font-bold">A</span>
+              {assistPlayerName}
+            </span>
+          </div>
+        )}
       </div>
     );
   } catch (error) {
@@ -133,7 +109,7 @@ const GoalDisplay = ({ goal, index, teamType, teamColor }: GoalDisplayProps) => 
       index 
     });
     return (
-      <div key={`error-${teamType}-${index}`} className="text-sm text-destructive bg-red-50 p-3 rounded-lg border border-red-200">
+      <div key={`error-${teamType}-${index}`} className="text-sm text-destructive">
         Error displaying goal (ID: {goal?.id || index})
       </div>
     );
