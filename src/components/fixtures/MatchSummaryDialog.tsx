@@ -4,13 +4,15 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Card, CardContent } from "@/components/ui/card";
-import { Download, Trophy, Target, Timer, AlertTriangle, FileImage, FileText, Database } from "lucide-react";
+import { Download, Trophy, Target, Timer, AlertTriangle, FileImage, FileText, Database, Palette } from "lucide-react";
 import { useMatchEvents } from "@/hooks/useMatchEvents";
 import { useEnhancedMatchSummary } from "@/hooks/useEnhancedMatchSummary";
 import { useToast } from "@/hooks/use-toast";
 import { exportToJPEG, exportToCSV } from "@/utils/exportUtils";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useState } from "react";
 import EnhancedMatchEventsTimeline from "../referee/components/EnhancedMatchEventsTimeline";
+import PremierLeagueStyleSummary from "./PremierLeagueStyleSummary";
 
 interface MatchSummaryDialogProps {
   fixture: any;
@@ -69,6 +71,7 @@ const MatchSummaryDialog = ({ fixture, isOpen, onClose }: MatchSummaryDialogProp
   const { data: matchEvents, isLoading } = useMatchEvents(fixture?.id);
   const { data: enhancedData, isSuccess: enhancedSuccess } = useEnhancedMatchSummary(fixture?.id);
   const { toast } = useToast();
+  const [viewStyle, setViewStyle] = useState<'premier-league' | 'traditional'>('premier-league');
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -204,12 +207,23 @@ const MatchSummaryDialog = ({ fixture, isOpen, onClose }: MatchSummaryDialogProp
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Trophy className="h-5 w-5" />
-            Match Summary
-            {shouldUseEnhancedData && (
-              <Database className="h-4 w-4 text-green-600" />
-            )}
+          <DialogTitle className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Trophy className="h-5 w-5" />
+              Match Summary
+              {shouldUseEnhancedData && (
+                <Database className="h-4 w-4 text-green-600" />
+              )}
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setViewStyle(viewStyle === 'premier-league' ? 'traditional' : 'premier-league')}
+              className="flex items-center gap-2"
+            >
+              <Palette className="h-4 w-4" />
+              {viewStyle === 'premier-league' ? 'Traditional' : 'Premier League'}
+            </Button>
           </DialogTitle>
         </DialogHeader>
 
@@ -224,198 +238,218 @@ const MatchSummaryDialog = ({ fixture, isOpen, onClose }: MatchSummaryDialogProp
             </Alert>
           )}
 
-          {/* Match Result */}
-          <Card>
-            <CardContent className="pt-6">
-              <div className="text-center space-y-4">
-                <div className="flex items-center justify-center gap-8">
-                  <div className="text-center">
-                    <p className="font-bold text-lg">{fixture.home_team?.name}</p>
-                    <p className="text-3xl font-bold">{fixture.home_score || 0}</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-sm text-muted-foreground">VS</p>
-                    <Badge variant="outline" className={getResultColor()}>
-                      {getResult()}
-                    </Badge>
-                  </div>
-                  <div className="text-center">
-                    <p className="font-bold text-lg">{fixture.away_team?.name}</p>
-                    <p className="text-3xl font-bold">{fixture.away_score || 0}</p>
-                  </div>
-                </div>
-                <div className="flex items-center justify-center gap-4 text-sm text-muted-foreground">
-                  <span>📅 {fixture.match_date}</span>
-                  {fixture.venue && <span>📍 {fixture.venue}</span>}
-                  <span>🏆 {fixture.status}</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Enhanced Timeline - Only show if we have enhanced data with timeline events */}
-          {shouldUseEnhancedData && enhancedData.timelineEvents && enhancedData.timelineEvents.length > 0 && (
+          {/* Render based on selected view style */}
+          {viewStyle === 'premier-league' ? (
+            <PremierLeagueStyleSummary
+              fixture={fixture}
+              goals={goals}
+              cards={cards}
+              formatTime={formatTime}
+              getGoalTeamId={getGoalTeamId}
+              getGoalPlayerName={getGoalPlayerName}
+              getGoalTime={getGoalTime}
+              getCardTeamId={getCardTeamId}
+              getCardPlayerName={getCardPlayerName}
+              getCardTime={getCardTime}
+              getCardType={getCardType}
+              isCardRed={isCardRed}
+            />
+          ) : (
             <>
-              <EnhancedMatchEventsTimeline
-                timelineEvents={enhancedData.timelineEvents}
-                formatTime={formatTime}
-              />
-              <Separator />
-            </>
-          )}
-
-          {/* Goals */}
-          <Card>
-            <CardContent className="pt-6 space-y-4">
-              <h4 className="font-semibold flex items-center gap-2">
-                <Target className="h-4 w-4" />
-                Goals ({goals.length})
-              </h4>
-              
-              {goals.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-4">No goals recorded</p>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* Home Goals */}
-                  <div>
-                    <h5 className="font-medium text-sm mb-2">{fixture.home_team?.name}</h5>
-                    <div className="space-y-1">
-                      {homeGoals.map((event, index) => (
-                        <div key={`home-goal-${event.id}-${index}`} className="text-sm flex items-center justify-between p-2 bg-green-50 rounded">
-                          <div>
-                            <Badge variant="default" className="mr-2">
-                              goal
-                            </Badge>
-                            <span>{getGoalPlayerName(event)}</span>
-                          </div>
-                          <span className="text-xs text-muted-foreground">
-                            {formatTime(getGoalTime(event))}
-                          </span>
-                        </div>
-                      ))}
-                      {homeGoals.length === 0 && (
-                        <p className="text-xs text-muted-foreground">No goals</p>
-                      )}
+              {/* Traditional Match Result */}
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="text-center space-y-4">
+                    <div className="flex items-center justify-center gap-8">
+                      <div className="text-center">
+                        <p className="font-bold text-lg">{fixture.home_team?.name}</p>
+                        <p className="text-3xl font-bold">{fixture.home_score || 0}</p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-sm text-muted-foreground">VS</p>
+                        <Badge variant="outline" className={getResultColor()}>
+                          {getResult()}
+                        </Badge>
+                      </div>
+                      <div className="text-center">
+                        <p className="font-bold text-lg">{fixture.away_team?.name}</p>
+                        <p className="text-3xl font-bold">{fixture.away_score || 0}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-center gap-4 text-sm text-muted-foreground">
+                      <span>📅 {fixture.match_date}</span>
+                      {fixture.venue && <span>📍 {fixture.venue}</span>}
+                      <span>🏆 {fixture.status}</span>
                     </div>
                   </div>
+                </CardContent>
+              </Card>
 
-                  {/* Away Goals */}
-                  <div>
-                    <h5 className="font-medium text-sm mb-2">{fixture.away_team?.name}</h5>
-                    <div className="space-y-1">
-                      {awayGoals.map((event, index) => (
-                        <div key={`away-goal-${event.id}-${index}`} className="text-sm flex items-center justify-between p-2 bg-blue-50 rounded">
-                          <div>
-                            <Badge variant="default" className="mr-2">
-                              goal
-                            </Badge>
-                            <span>{getGoalPlayerName(event)}</span>
-                          </div>
-                          <span className="text-xs text-muted-foreground">
-                            {formatTime(getGoalTime(event))}
-                          </span>
-                        </div>
-                      ))}
-                      {awayGoals.length === 0 && (
-                        <p className="text-xs text-muted-foreground">No goals</p>
-                      )}
-                    </div>
-                  </div>
-                </div>
+              {/* Enhanced Timeline - Only show if we have enhanced data with timeline events */}
+              {shouldUseEnhancedData && enhancedData.timelineEvents && enhancedData.timelineEvents.length > 0 && (
+                <>
+                  <EnhancedMatchEventsTimeline
+                    timelineEvents={enhancedData.timelineEvents}
+                    formatTime={formatTime}
+                  />
+                  <Separator />
+                </>
               )}
-            </CardContent>
-          </Card>
 
-          {/* Cards */}
-          <Card>
-            <CardContent className="pt-6 space-y-4">
-              <h4 className="font-semibold flex items-center gap-2">
-                <AlertTriangle className="h-4 w-4" />
-                Cards ({cards.length})
-              </h4>
-              
-              {cards.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-4">No cards issued</p>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* Home Cards */}
-                  <div>
-                    <h5 className="font-medium text-sm mb-2">{fixture.home_team?.name}</h5>
-                    <div className="space-y-1">
-                      {homeCards.map((card, index) => (
-                        <div key={`home-card-${card.id}-${index}`} className="text-sm flex items-center justify-between p-2 bg-red-50 rounded">
-                          <div>
-                            <Badge variant={isCardRed(card) ? 'destructive' : 'outline'} className="mr-2">
-                              {getCardType(card)}
-                            </Badge>
-                            <span>{getCardPlayerName(card)}</span>
-                          </div>
-                          <span className="text-xs text-muted-foreground">
-                            {formatTime(getCardTime(card))}
-                          </span>
-                        </div>
-                      ))}
-                      {homeCards.length === 0 && (
-                        <p className="text-xs text-muted-foreground">No cards</p>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Away Cards */}
-                  <div>
-                    <h5 className="font-medium text-sm mb-2">{fixture.away_team?.name}</h5>
-                    <div className="space-y-1">
-                      {awayCards.map((card, index) => (
-                        <div key={`away-card-${card.id}-${index}`} className="text-sm flex items-center justify-between p-2 bg-red-50 rounded">
-                          <div>
-                            <Badge variant={isCardRed(card) ? 'destructive' : 'outline'} className="mr-2">
-                              {getCardType(card)}
-                            </Badge>
-                            <span>{getCardPlayerName(card)}</span>
-                          </div>
-                          <span className="text-xs text-muted-foreground">
-                            {formatTime(getCardTime(card))}
-                          </span>
-                        </div>
-                      ))}
-                      {awayCards.length === 0 && (
-                        <p className="text-xs text-muted-foreground">No cards</p>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* All Events - Only show if we don't have enhanced timeline or as fallback */}
-          {(!shouldUseEnhancedData || !enhancedData.timelineEvents || enhancedData.timelineEvents.length === 0) && (
-            <Card>
-              <CardContent className="pt-6 space-y-4">
-                <h4 className="font-semibold">All Match Events ({(matchEvents || []).length})</h4>
-                {isLoading ? (
-                  <p className="text-sm text-muted-foreground text-center py-4">Loading events...</p>
-                ) : (matchEvents || []).length === 0 ? (
-                  <p className="text-sm text-muted-foreground text-center py-4">No events recorded</p>
-                ) : (
-                  <div className="space-y-2 max-h-40 overflow-y-auto">
-                    {(matchEvents || []).map((event) => (
-                      <div key={event.id} className="text-sm p-2 bg-muted/10 rounded">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <Badge variant="outline" className="text-xs">
-                              {event.event_type.replace('_', ' ')}
-                            </Badge>
-                            <span>{event.description}</span>
-                          </div>
-                          <span className="text-xs text-muted-foreground">{formatTime(event.event_time)}</span>
+              {/* Traditional Goals */}
+              <Card>
+                <CardContent className="pt-6 space-y-4">
+                  <h4 className="font-semibold flex items-center gap-2">
+                    <Target className="h-4 w-4" />
+                    Goals ({goals.length})
+                  </h4>
+                  
+                  {goals.length === 0 ? (
+                    <p className="text-sm text-muted-foreground text-center py-4">No goals recorded</p>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* Home Goals */}
+                      <div>
+                        <h5 className="font-medium text-sm mb-2">{fixture.home_team?.name}</h5>
+                        <div className="space-y-1">
+                          {homeGoals.map((event, index) => (
+                            <div key={`home-goal-${event.id}-${index}`} className="text-sm flex items-center justify-between p-2 bg-green-50 rounded">
+                              <div>
+                                <Badge variant="default" className="mr-2">
+                                  goal
+                                </Badge>
+                                <span>{getGoalPlayerName(event)}</span>
+                              </div>
+                              <span className="text-xs text-muted-foreground">
+                                {formatTime(getGoalTime(event))}
+                              </span>
+                            </div>
+                          ))}
+                          {homeGoals.length === 0 && (
+                            <p className="text-xs text-muted-foreground">No goals</p>
+                          )}
                         </div>
                       </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+
+                      {/* Away Goals */}
+                      <div>
+                        <h5 className="font-medium text-sm mb-2">{fixture.away_team?.name}</h5>
+                        <div className="space-y-1">
+                          {awayGoals.map((event, index) => (
+                            <div key={`away-goal-${event.id}-${index}`} className="text-sm flex items-center justify-between p-2 bg-blue-50 rounded">
+                              <div>
+                                <Badge variant="default" className="mr-2">
+                                  goal
+                                </Badge>
+                                <span>{getGoalPlayerName(event)}</span>
+                              </div>
+                              <span className="text-xs text-muted-foreground">
+                                {formatTime(getGoalTime(event))}
+                              </span>
+                            </div>
+                          ))}
+                          {awayGoals.length === 0 && (
+                            <p className="text-xs text-muted-foreground">No goals</p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Traditional Cards */}
+              <Card>
+                <CardContent className="pt-6 space-y-4">
+                  <h4 className="font-semibold flex items-center gap-2">
+                    <AlertTriangle className="h-4 w-4" />
+                    Cards ({cards.length})
+                  </h4>
+                  
+                  {cards.length === 0 ? (
+                    <p className="text-sm text-muted-foreground text-center py-4">No cards issued</p>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* Home Cards */}
+                      <div>
+                        <h5 className="font-medium text-sm mb-2">{fixture.home_team?.name}</h5>
+                        <div className="space-y-1">
+                          {homeCards.map((card, index) => (
+                            <div key={`home-card-${card.id}-${index}`} className="text-sm flex items-center justify-between p-2 bg-red-50 rounded">
+                              <div>
+                                <Badge variant={isCardRed(card) ? 'destructive' : 'outline'} className="mr-2">
+                                  {getCardType(card)}
+                                </Badge>
+                                <span>{getCardPlayerName(card)}</span>
+                              </div>
+                              <span className="text-xs text-muted-foreground">
+                                {formatTime(getCardTime(card))}
+                              </span>
+                            </div>
+                          ))}
+                          {homeCards.length === 0 && (
+                            <p className="text-xs text-muted-foreground">No cards</p>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Away Cards */}
+                      <div>
+                        <h5 className="font-medium text-sm mb-2">{fixture.away_team?.name}</h5>
+                        <div className="space-y-1">
+                          {awayCards.map((card, index) => (
+                            <div key={`away-card-${card.id}-${index}`} className="text-sm flex items-center justify-between p-2 bg-red-50 rounded">
+                              <div>
+                                <Badge variant={isCardRed(card) ? 'destructive' : 'outline'} className="mr-2">
+                                  {getCardType(card)}
+                                </Badge>
+                                <span>{getCardPlayerName(card)}</span>
+                              </div>
+                              <span className="text-xs text-muted-foreground">
+                                {formatTime(getCardTime(card))}
+                              </span>
+                            </div>
+                          ))}
+                          {awayCards.length === 0 && (
+                            <p className="text-xs text-muted-foreground">No cards</p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* All Events - Only show if we don't have enhanced timeline or as fallback */}
+              {(!shouldUseEnhancedData || !enhancedData.timelineEvents || enhancedData.timelineEvents.length === 0) && (
+                <Card>
+                  <CardContent className="pt-6 space-y-4">
+                    <h4 className="font-semibold">All Match Events ({(matchEvents || []).length})</h4>
+                    {isLoading ? (
+                      <p className="text-sm text-muted-foreground text-center py-4">Loading events...</p>
+                    ) : (matchEvents || []).length === 0 ? (
+                      <p className="text-sm text-muted-foreground text-center py-4">No events recorded</p>
+                    ) : (
+                      <div className="space-y-2 max-h-40 overflow-y-auto">
+                        {(matchEvents || []).map((event) => (
+                          <div key={event.id} className="text-sm p-2 bg-muted/10 rounded">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <Badge variant="outline" className="text-xs">
+                                  {event.event_type.replace('_', ' ')}
+                                </Badge>
+                                <span>{event.description}</span>
+                              </div>
+                              <span className="text-xs text-muted-foreground">{formatTime(event.event_time)}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
+            </>
           )}
         </div>
 
