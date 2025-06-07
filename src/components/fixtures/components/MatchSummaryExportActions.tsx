@@ -134,17 +134,17 @@ const MatchSummaryExportActions = ({
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-3">
-      <Button onClick={handleExportJSON} variant="outline" className="text-xs md:text-sm">
-        <Download className="h-3 w-3 md:h-4 md:w-4 mr-1 md:mr-2" />
+    <div className="flex gap-2">
+      <Button onClick={handleExportJSON} variant="outline" className="flex-1">
+        <Download className="h-4 w-4 mr-2" />
         JSON
       </Button>
-      <Button onClick={handleExportJPEG} variant="outline" className="text-xs md:text-sm">
-        <FileImage className="h-3 w-3 md:h-4 md:w-4 mr-1 md:mr-2" />
+      <Button onClick={handleExportJPEG} variant="outline" className="flex-1">
+        <FileImage className="h-4 w-4 mr-2" />
         JPEG
       </Button>
-      <Button onClick={handleExportCSV} variant="outline" className="text-xs md:text-sm">
-        <FileText className="h-3 w-3 md:h-4 md:w-4 mr-1 md:mr-2" />
+      <Button onClick={handleExportCSV} variant="outline" className="flex-1">
+        <FileText className="h-4 w-4 mr-2" />
         CSV
       </Button>
     </div>

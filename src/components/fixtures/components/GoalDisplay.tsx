@@ -68,23 +68,33 @@ const GoalDisplay = ({ goal, index, teamType, teamColor }: GoalDisplayProps) => 
 
     return (
       <div key={goalId} className={teamType === 'home' ? "text-left" : "text-right"}>
-        <div className={`flex flex-col md:flex-row md:items-center gap-2 md:gap-3 ${teamType === 'away' ? 'md:justify-end' : ''}`}>
-          {/* Mobile: Stack vertically, Desktop: Row layout */}
-          <div className={`flex items-center gap-2 ${teamType === 'away' ? 'justify-end md:flex-row-reverse' : ''}`}>
-            <div className="text-lg md:text-xl">⚽</div>
-            <span className="font-semibold text-sm md:text-base">{displayName}</span>
-          </div>
+        <div className={`flex items-center gap-3 ${teamType === 'away' ? 'justify-end' : ''}`}>
+          {teamType === 'home' && (
+            <div 
+              className="w-3 h-3 rounded-full shadow-md"
+              style={{ backgroundColor: teamColor }}
+            />
+          )}
           
-          <Badge variant="outline" className="text-xs md:text-sm font-medium w-fit">
+          <span className="font-semibold text-base">{displayName}</span>
+          
+          <Badge variant="outline" className="text-sm font-medium">
             {formatMatchTime(displayTime)}
           </Badge>
+
+          {teamType === 'away' && (
+            <div 
+              className="w-3 h-3 rounded-full shadow-md"
+              style={{ backgroundColor: teamColor }}
+            />
+          )}
         </div>
         
-        {/* Enhanced Premier League Style Assist Display - Mobile Optimized */}
+        {/* Enhanced Premier League Style Assist Display with Comprehensive Data Checking */}
         {assistPlayerName && (
-          <div className={`text-xs md:text-sm text-muted-foreground mt-1 font-medium ${teamType === 'away' ? 'text-right' : 'text-left'} ${teamType === 'away' ? 'mr-0 md:mr-8' : 'ml-0 md:ml-8'}`}>
+          <div className={`text-sm text-muted-foreground mt-1 font-medium ${teamType === 'away' ? 'text-right mr-6' : 'ml-6'}`}>
             <span className="inline-flex items-center gap-1">
-              <span className="text-xs bg-muted px-1 py-0.5 rounded font-bold">A</span>
+              <span className="text-xs bg-muted px-1.5 py-0.5 rounded font-bold">A</span>
               {assistPlayerName}
             </span>
           </div>
