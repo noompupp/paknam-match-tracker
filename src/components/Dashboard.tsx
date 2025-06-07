@@ -10,10 +10,10 @@ import EnhancedRecentResultsCard from "./dashboard/EnhancedRecentResultsCard";
 import UpcomingFixturesCard from "./dashboard/UpcomingFixturesCard";
 
 interface DashboardProps {
-  onNavigateToFixtures?: () => void;
+  onNavigateToResults?: () => void;
 }
 
-const Dashboard = ({ onNavigateToFixtures }: DashboardProps) => {
+const Dashboard = ({ onNavigateToResults }: DashboardProps) => {
   const { data: teams, isLoading: teamsLoading, error: teamsError } = useTeams();
   const { data: topScorers, isLoading: scorersLoading, error: scorersError } = useEnhancedTopScorers(5);
   const { data: topAssists, isLoading: assistsLoading, error: assistsError } = useEnhancedTopAssists(5);
@@ -21,8 +21,8 @@ const Dashboard = ({ onNavigateToFixtures }: DashboardProps) => {
   const { data: upcomingFixtures, isLoading: upcomingLoading } = useUpcomingFixtures();
 
   const handleViewAllRecentResults = () => {
-    if (onNavigateToFixtures) {
-      onNavigateToFixtures();
+    if (onNavigateToResults) {
+      onNavigateToResults();
     }
   };
 

@@ -10,8 +10,8 @@ import RoleGuard from "@/components/auth/RoleGuard";
 import Dashboard from "@/components/Dashboard";
 import Teams from "@/components/Teams";
 import Fixtures from "@/components/Fixtures";
+import Results from "@/components/Results";
 import RefereeToolsContainer from "@/components/referee/RefereeToolsContainer";
-import Notifications from "@/components/Notifications";
 
 // Create a client
 const queryClient = new QueryClient({
@@ -50,11 +50,18 @@ const AppContent = () => {
     );
   }
 
+  // Navigation handlers
+  const handleNavigateToResults = () => {
+    setActiveTab("results");
+  };
+
   // Main application interface - enhanced for viewer experience
   const renderContent = () => {
     switch (activeTab) {
       case "teams":
         return <Teams />;
+      case "results":
+        return <Results />;
       case "fixtures":
         return <Fixtures />;
       case "referee":
@@ -63,14 +70,8 @@ const AppContent = () => {
             <RefereeToolsContainer />
           </RoleGuard>
         );
-      case "notifications":
-        return (
-          <RoleGuard requiredRole="referee">
-            <Notifications />
-          </RoleGuard>
-        );
       default:
-        return <Dashboard />;
+        return <Dashboard onNavigateToResults={handleNavigateToResults} />;
     }
   };
 

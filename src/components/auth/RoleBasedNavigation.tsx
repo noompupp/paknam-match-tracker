@@ -2,7 +2,7 @@
 import React from 'react';
 import { useSecureAuth } from "@/contexts/SecureAuthContext";
 import { Button } from "@/components/ui/button";
-import { Home, Calendar, Bell, BarChart3, Flag, LogOut, User, Lock } from "lucide-react";
+import { Home, Calendar, Trophy, Flag, LogOut, User, Lock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface RoleBasedNavigationProps {
@@ -51,7 +51,7 @@ const RoleBasedNavigation = ({ activeTab, onTabChange }: RoleBasedNavigationProp
   // Base navigation items available to all users (including non-authenticated)
   const baseNavItems = [
     { id: "dashboard", label: "Latest", icon: Home },
-    { id: "teams", label: "Teams", icon: BarChart3 },
+    { id: "results", label: "Results", icon: Trophy },
     { id: "fixtures", label: "Fixtures", icon: Calendar },
   ];
 
@@ -63,13 +63,6 @@ const RoleBasedNavigation = ({ activeTab, onTabChange }: RoleBasedNavigationProp
       icon: Flag, 
       requiredRole: "referee",
       description: "Access referee tools and match management"
-    },
-    { 
-      id: "notifications", 
-      label: "More", 
-      icon: Bell, 
-      requiredRole: "referee",
-      description: "View notifications and additional features"
     },
   ];
 
