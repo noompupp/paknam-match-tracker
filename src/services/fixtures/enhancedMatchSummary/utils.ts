@@ -48,7 +48,7 @@ export const processPlayerTimes = (playerTimeData: any[]) => {
   }));
 };
 
-// Enhanced timeline events processing with better assist handling
+// Enhanced timeline events processing with improved assist correlation
 export const processTimelineEvents = (matchEvents: any[]) => {
   const events = matchEvents
     .filter(event => ['goal', 'assist', 'yellow_card', 'red_card'].includes(event.event_type))
@@ -67,13 +67,13 @@ export const processTimelineEvents = (matchEvents: any[]) => {
     }))
     .sort((a, b) => a.time - b.time);
 
-  // Enhance goals with assist information
+  // Enhanced goal-assist correlation with better time and team matching
   return events.map(event => {
-    if (event.type === 'goal') {
-      // Find corresponding assist for this goal (same time, different player)
+    if (event.type === 'goal' && !event.assistPlayerName) {
+      // Find corresponding assist for this goal with improved matching logic
       const correspondingAssist = events.find(e => 
         e.type === 'assist' && 
-        Math.abs(e.time - event.time) <= 5 && // Within 5 seconds
+        Math.abs(e.time - event.time) <= 10 && // Within 10 seconds
         e.teamId === event.teamId &&
         e.playerName !== event.playerName
       );
@@ -109,15 +109,16 @@ export const calculateSummaryStats = (goals: any[], cards: any[], playerTimes: a
   };
 };
 
-// Process enhanced data from database function with improved assist handling
+// Process enhanced data from the fixed database function
 export const processEnhancedFunctionData = (functionResult: any): EnhancedMatchSummaryData => {
-  console.log('🔄 Processing enhanced function data with improved assist handling:', functionResult);
+  console.log('🔄 Processing enhanced function data from fixed database function:', functionResult);
 
+  // Extract data arrays from the function result
   const goals = Array.isArray(functionResult.goals) ? functionResult.goals : [];
   const cards = Array.isArray(functionResult.cards) ? functionResult.cards : [];
   const playerTimes = Array.isArray(functionResult.player_times) ? functionResult.player_times : [];
   
-  // Enhanced timeline events processing with assist correlation
+  // Process timeline events with improved assist correlation
   let timelineEvents = Array.isArray(functionResult.timeline_events) 
     ? functionResult.timeline_events.map((event: any) => ({
         ...event,
@@ -127,13 +128,47 @@ export const processEnhancedFunctionData = (functionResult: any): EnhancedMatchS
       }))
     : [];
 
-  // Correlate goals with assists in timeline events
-  timelineEvents = timelineEvents.map((event: any) => {
+  // Apply intelligent assist correlation to timeline events
+  timelineEvents = correlateGoalsWithAssists(timelineEvents);
+
+  // Also apply assist correlation to goals array for consistency
+  const enhancedGoals = correlateGoalsWithAssists(goals);
+
+  console.log('✅ Enhanced function data processed successfully:', {
+    goalsCount: enhancedGoals.length,
+    cardsCount: cards.length,
+    playerTimesCount: playerTimes.length,
+    timelineEventsCount: timelineEvents.length
+  });
+
+  return {
+    goals: enhancedGoals,
+    cards,
+    playerTimes,
+    timelineEvents,
+    summary: functionResult.summary_stats || {
+      totalGoals: enhancedGoals.filter(g => g.type === 'goal').length,
+      totalAssists: enhancedGoals.filter(g => g.type === 'assist').length,
+      totalCards: cards.length,
+      playersTracked: playerTimes.length,
+      homeTeamGoals: 0,
+      awayTeamGoals: 0,
+      homeTeamCards: 0,
+      awayTeamCards: 0
+    }
+  };
+};
+
+// Intelligent assist correlation function
+const correlateGoalsWithAssists = (events: any[]) => {
+  if (!Array.isArray(events)) return [];
+
+  return events.map((event: any) => {
     if (event.type === 'goal' && !event.assistPlayerName) {
       // Look for assist events at similar time for the same team
-      const assist = timelineEvents.find((e: any) => 
+      const assist = events.find((e: any) => 
         e.type === 'assist' && 
-        Math.abs(e.time - event.time) <= 10 && // Within 10 seconds
+        Math.abs(e.time - event.time) <= 15 && // Within 15 seconds
         e.teamId === event.teamId &&
         e.playerName !== event.playerName
       );
@@ -148,21 +183,4 @@ export const processEnhancedFunctionData = (functionResult: any): EnhancedMatchS
     }
     return event;
   });
-
-  return {
-    goals,
-    cards,
-    playerTimes,
-    timelineEvents,
-    summary: functionResult.summary_stats || {
-      totalGoals: 0,
-      totalAssists: 0,
-      totalCards: 0,
-      playersTracked: 0,
-      homeTeamGoals: 0,
-      awayTeamGoals: 0,
-      homeTeamCards: 0,
-      awayTeamCards: 0
-    }
-  };
 };

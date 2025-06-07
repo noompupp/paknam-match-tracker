@@ -16,20 +16,30 @@ export const enhancedMatchSummaryService = {
     console.log('🎯 EnhancedMatchSummaryService: Fetching comprehensive match data for fixture:', fixtureId);
     
     try {
-      // First try to use the new enhanced database function
-      console.log('📊 Attempting to use enhanced database function...');
+      // Use the fixed enhanced database function
+      console.log('📊 Using fixed enhanced database function...');
       
       const { data: functionResult, error: functionError } = await supabase
         .rpc('get_enhanced_match_summary', { p_fixture_id: fixtureId });
 
       if (!functionError && functionResult && functionResult.length > 0) {
-        console.log('✅ Enhanced database function returned data:', functionResult[0]);
-        return processEnhancedFunctionData(functionResult[0]);
+        console.log('✅ Fixed enhanced database function returned data:', functionResult[0]);
+        const processedData = processEnhancedFunctionData(functionResult[0]);
+        
+        console.log('🔄 Processed enhanced data:', {
+          goalsWithAssists: processedData.goals.filter(g => g.assistPlayerName).length,
+          totalGoals: processedData.goals.filter(g => g.type === 'goal').length,
+          totalAssists: processedData.goals.filter(g => g.type === 'assist').length,
+          totalCards: processedData.cards.length,
+          timelineEvents: processedData.timelineEvents.length
+        });
+
+        return processedData;
       }
 
       console.log('⚠️ Enhanced database function did not return data, falling back to individual queries');
 
-      // Fallback to individual data fetching
+      // Fallback to individual data fetching (shouldn't be needed now)
       const [matchEvents, playerTimeData, fixture] = await Promise.all([
         fetchMatchEvents(fixtureId),
         fetchPlayerTimeData(fixtureId),
