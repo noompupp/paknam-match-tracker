@@ -1,99 +1,28 @@
 
-/* Container Utilities */
-.container-responsive {
-  @apply px-4 sm:px-6 lg:px-8;
-}
-
-/* Theme Utilities */
-.theme-adaptive {
-  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
-}
-
-.theme-adaptive.theme-light {
-  background: var(--header-bg-light);
-  color: var(--header-text-light);
-  border-color: var(--notch-border-light);
-}
-
-.theme-adaptive.theme-dark {
-  background: var(--header-bg-dark);
-  color: var(--header-text-dark);
-  border-color: var(--notch-border-dark);
-}
-
-/* Instagram-like header styling */
-.instagram-header {
-  @apply theme-adaptive backdrop-blur-lg border-b;
-  -webkit-backdrop-filter: blur(20px);
-  backdrop-filter: blur(20px);
-}
-
-/* Enhanced notch-aware padding */
-.notch-safe-top {
-  padding-top: calc(var(--safe-area-inset-top, 0px) + 1rem);
-}
-
-.notch-safe-content {
-  margin-top: var(--safe-area-inset-top, 0px);
-}
-
-/* Touch target optimization */
-.touch-target {
-  min-height: 44px;
-  min-width: 44px;
-}
-
-/* Visual feedback utilities */
-.highlight-section {
-  @apply ring-2 ring-primary ring-opacity-50 bg-primary/5;
-  animation: highlight-pulse 2s ease-in-out;
-}
-
-@keyframes highlight-pulse {
-  0%, 100% {
-    @apply ring-opacity-50 bg-primary/5;
+/* Enhanced responsive utilities */
+@media (max-width: 640px) {
+  .text-responsive {
+    font-size: 0.875rem;
   }
-  50% {
-    @apply ring-opacity-80 bg-primary/10;
+  
+  .container-responsive {
+    padding-left: 1rem;
+    padding-right: 1rem;
   }
 }
 
-/* Enhanced blur utilities */
-.backdrop-blur-strong {
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+/* Enhanced focus styles for accessibility */
+.focus-visible:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
 }
 
-.backdrop-blur-subtle {
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-}
-
-/* Theme-aware text utilities */
-.text-theme-adaptive {
-  color: var(--header-text-light);
-}
-
-@media (prefers-color-scheme: dark) {
-  .text-theme-adaptive {
-    color: var(--header-text-dark);
+/* Better touch targets for mobile */
+@media (max-width: 768px) {
+  button, 
+  [role="button"],
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
   }
-}
-
-/* Enhanced spacing utilities for notch devices */
-.content-with-notch {
-  padding-top: calc(var(--safe-area-inset-top, 0px) + 2rem);
-}
-
-.header-with-notch {
-  padding-top: calc(var(--safe-area-inset-top, 0px) + 1rem);
-  padding-bottom: 1rem;
-}
-
-/* Status bar adaptation */
-.status-bar-adaptive {
-  height: var(--safe-area-inset-top, 44px);
-  background: var(--default-notch-bg, transparent);
-  backdrop-filter: var(--notch-blur);
-  -webkit-backdrop-filter: var(--notch-blur);
 }
