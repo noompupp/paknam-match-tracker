@@ -49,7 +49,7 @@ const TeamLogo = ({ team, size = 'medium', className = '', showColor = false }: 
     return (
       <div className={`flex items-center ${className}`}>
         <div 
-          className={`${sizeClasses.replace(/text-\w+/, '')} rounded-lg border-2 p-1 ${
+          className={`${sizeClasses.replace(/text-\w+/, '')} border-2 p-1 ${
             hasColor ? 'border-current' : 'border-gray-200'
           } overflow-hidden`}
           style={colorStyle}
@@ -81,7 +81,7 @@ const TeamLogo = ({ team, size = 'medium', className = '', showColor = false }: 
   return (
     <div className={`flex items-center ${className}`}>
       <div 
-        className={`${sizeClasses.replace(/text-\w+/, '')} rounded-lg border-2 flex items-center justify-center ${
+        className={`${sizeClasses.replace(/text-\w+/, '')} border-2 flex items-center justify-center ${
           hasColor ? 'border-current text-white' : 'border-gray-200'
         }`}
         style={colorStyle}

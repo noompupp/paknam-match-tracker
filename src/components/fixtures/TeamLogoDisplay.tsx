@@ -37,7 +37,7 @@ const TeamLogoDisplay = ({
   return (
     <div className="flex flex-col items-center gap-3">
       <Avatar 
-        className={`${sizeClasses[size]} shadow-lg ring-2 ring-offset-2 ring-gray-200`} 
+        className={`${sizeClasses[size]} rounded-lg ring-2 ring-offset-2 ring-gray-200`} 
         style={{ 
           borderColor: teamColor
         }}
@@ -50,7 +50,7 @@ const TeamLogoDisplay = ({
           />
         )}
         <AvatarFallback 
-          className={`font-bold text-white shadow-inner ${fallbackTextSize[size]}`}
+          className={`font-bold text-white rounded-lg ${fallbackTextSize[size]}`}
           style={{ 
             backgroundColor: teamColor,
             background: `linear-gradient(135deg, ${teamColor} 0%, ${teamColor}dd 100%)`
