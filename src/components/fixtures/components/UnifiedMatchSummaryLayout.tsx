@@ -43,9 +43,24 @@ const UnifiedMatchSummaryLayout = ({
 }: UnifiedMatchSummaryLayoutProps) => {
   const isMobile = useIsMobile();
   
-  // Extract team data using the existing utility
+  // Extract team data using the existing utility with enhanced color handling
   const teamData = extractTeamData(fixture);
-  const processedEvents = processTeamEvents(goals, cards, teamData, getCardTeamId);
+  
+  // Enhanced color fallback system
+  const getEnhancedTeamColor = (color: string, fallback: string) => {
+    if (!color || color === '#ffffff' || color === '#FFFFFF' || color === 'white') {
+      return fallback;
+    }
+    return color;
+  };
+
+  const enhancedTeamData = {
+    ...teamData,
+    homeTeamColor: getEnhancedTeamColor(teamData.homeTeamColor, '#1f2937'),
+    awayTeamColor: getEnhancedTeamColor(teamData.awayTeamColor, '#7c3aed')
+  };
+
+  const processedEvents = processTeamEvents(goals, cards, enhancedTeamData, getCardTeamId);
 
   // Check if we're in export mode on mobile
   const isExportMode = isMobile && document.getElementById('match-summary-content')?.classList.contains('export-mode-mobile');
@@ -59,8 +74,8 @@ const UnifiedMatchSummaryLayout = ({
         cards={cards}
         homeGoals={processedEvents.homeGoals}
         awayGoals={processedEvents.awayGoals}
-        homeTeamColor={teamData.homeTeamColor}
-        awayTeamColor={teamData.awayTeamColor}
+        homeTeamColor={enhancedTeamData.homeTeamColor}
+        awayTeamColor={enhancedTeamData.awayTeamColor}
         timelineEvents={timelineEvents}
         getCardPlayerName={getCardPlayerName}
         getCardTime={getCardTime}
@@ -75,8 +90,8 @@ const UnifiedMatchSummaryLayout = ({
       {/* Premier League Style Header */}
       <PremierLeagueMatchHeader
         fixture={fixture}
-        homeTeamColor={teamData.homeTeamColor}
-        awayTeamColor={teamData.awayTeamColor}
+        homeTeamColor={enhancedTeamData.homeTeamColor}
+        awayTeamColor={enhancedTeamData.awayTeamColor}
       />
 
       {/* Match Events Section */}
@@ -84,7 +99,7 @@ const UnifiedMatchSummaryLayout = ({
         goals={goals}
         fixture={fixture}
         processedEvents={processedEvents}
-        teamData={teamData}
+        teamData={enhancedTeamData}
         getGoalPlayerName={getGoalPlayerName}
         getGoalTime={getGoalTime}
       />
@@ -93,7 +108,7 @@ const UnifiedMatchSummaryLayout = ({
       <DisciplinarySection
         cards={cards}
         fixture={fixture}
-        teamData={teamData}
+        teamData={enhancedTeamData}
         getCardTeamId={getCardTeamId}
         getCardPlayerName={getCardPlayerName}
         getCardTime={getCardTime}
@@ -103,10 +118,12 @@ const UnifiedMatchSummaryLayout = ({
 
       {/* Enhanced Match Timeline Section */}
       {timelineEvents.length > 0 && (
-        <Card className="border-2">
+        <Card className="border-2 animate-fade-in">
           <CardContent className="pt-6">
             <h4 className="font-bold flex items-center gap-3 mb-6 text-xl text-slate-700">
-              <Clock className="h-6 w-6" />
+              <div className="p-2 rounded-full bg-slate-100">
+                <Clock className="h-6 w-6" />
+              </div>
               Match Timeline ({timelineEvents.length})
             </h4>
             <div className="bg-gradient-to-r from-slate-50 to-gray-50 rounded-xl p-6 border border-slate-200">
@@ -123,7 +140,7 @@ const UnifiedMatchSummaryLayout = ({
       <MatchStatisticsSummary
         fixture={fixture}
         processedEvents={processedEvents}
-        teamData={teamData}
+        teamData={enhancedTeamData}
         cards={cards}
       />
     </div>

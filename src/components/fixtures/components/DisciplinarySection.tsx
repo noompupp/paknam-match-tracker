@@ -35,80 +35,107 @@ const DisciplinarySection = ({
     return Math.floor(seconds / 60);
   };
 
+  // Enhanced color fallback system
+  const getEnhancedTeamColor = (color: string, fallback: string) => {
+    if (!color || color === '#ffffff' || color === '#FFFFFF' || color === 'white') {
+      return fallback;
+    }
+    return color;
+  };
+
+  const enhancedHomeColor = getEnhancedTeamColor(teamData.homeTeamColor, '#1f2937');
+  const enhancedAwayColor = getEnhancedTeamColor(teamData.awayTeamColor, '#7c3aed');
+
   return (
-    <Card className="border-2">
+    <Card className="border-2 animate-fade-in">
       <CardContent className="pt-6">
         <button 
           onClick={() => setCardsExpanded(!cardsExpanded)}
-          className="w-full flex items-center justify-between mb-6 text-xl font-bold text-yellow-700 hover:text-yellow-600 transition-colors"
+          className="w-full flex items-center justify-between mb-6 text-xl font-bold text-yellow-700 hover:text-yellow-600 transition-all duration-300 hover:scale-[1.02] group"
         >
           <div className="flex items-center gap-3">
-            <AlertTriangle className="h-6 w-6" />
+            <div className="p-2 rounded-full bg-yellow-100 group-hover:bg-yellow-200 transition-colors duration-300">
+              <AlertTriangle className="h-6 w-6" />
+            </div>
             Disciplinary ({cards.length})
           </div>
-          {cardsExpanded ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+          <div className="transition-transform duration-300 group-hover:scale-110">
+            {cardsExpanded ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+          </div>
         </button>
         
-        {cardsExpanded && (
-          <div className="space-y-4">
+        {/* Smooth accordion animation */}
+        <div className={`overflow-hidden transition-all duration-500 ease-in-out ${
+          cardsExpanded ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'
+        }`}>
+          <div className="space-y-4 pt-2">
             {cards.length === 0 ? (
-              <div className="text-center py-16 bg-gradient-to-r from-yellow-50 to-amber-50 rounded-xl border-2 border-dashed border-yellow-200">
-                <AlertTriangle className="h-12 w-12 text-yellow-300 mx-auto mb-4" />
-                <p className="text-lg font-medium text-yellow-600">No cards issued in this match</p>
+              <div className="text-center py-16 bg-gradient-to-r from-yellow-50 to-amber-50 rounded-xl border-2 border-dashed border-yellow-200 animate-fade-in">
+                <div className="animate-bounce mb-4">
+                  <AlertTriangle className="h-12 w-12 text-yellow-300 mx-auto" />
+                </div>
+                <p className="text-lg font-medium text-yellow-600 mb-2">No cards issued in this match</p>
                 <p className="text-sm text-yellow-500">Disciplinary actions will appear here</p>
               </div>
             ) : (
-              cards.map((card, index) => {
-                const isHomeCard = getCardTeamId(card) === fixture?.home_team_id;
-                const teamLogo = isHomeCard ? fixture.home_team?.logoURL : fixture.away_team?.logoURL;
-                const teamName = isHomeCard ? fixture.home_team?.name : fixture.away_team?.name;
-                const teamColor = isHomeCard ? teamData.homeTeamColor : teamData.awayTeamColor;
-                const cardType = getCardType(card);
-                const isRed = isCardRed(card);
-                
-                return (
-                  <div 
-                    key={`card-${card.id}-${index}`} 
-                    className={`flex items-center gap-6 p-6 rounded-xl border-2 shadow-sm hover:shadow-md transition-shadow ${
-                      isRed 
-                        ? 'bg-gradient-to-r from-red-50 via-pink-50 to-red-50 border-red-200' 
-                        : 'bg-gradient-to-r from-yellow-50 via-amber-50 to-yellow-50 border-yellow-200'
-                    }`}
-                  >
-                    <TeamLogoDisplay 
-                      teamName={teamName}
-                      teamLogo={teamLogo}
-                      teamColor={teamColor}
-                      size="md"
-                      showName={false}
-                    />
-                    
-                    <div className="flex-1 flex items-center gap-4">
-                      <span className="text-2xl">{isRed ? '🟥' : '🟨'}</span>
-                      <div className="font-bold text-xl">
-                        {getCardPlayerName(card)}
+              <div className="space-y-4">
+                {cards.map((card, index) => {
+                  const isHomeCard = getCardTeamId(card) === fixture?.home_team_id;
+                  const teamLogo = isHomeCard ? fixture.home_team?.logoURL : fixture.away_team?.logoURL;
+                  const teamName = isHomeCard ? fixture.home_team?.name : fixture.away_team?.name;
+                  const teamColor = isHomeCard ? enhancedHomeColor : enhancedAwayColor;
+                  const cardType = getCardType(card);
+                  const isRed = isCardRed(card);
+                  
+                  return (
+                    <div 
+                      key={`card-${card.id}-${index}`} 
+                      className={`flex items-center gap-6 p-6 rounded-xl border-2 shadow-sm transition-all duration-300 hover:shadow-lg hover:scale-[1.02] animate-fade-in ${
+                        isRed 
+                          ? 'bg-gradient-to-r from-red-50 via-pink-50 to-red-50 border-red-200 hover:border-red-300' 
+                          : 'bg-gradient-to-r from-yellow-50 via-amber-50 to-yellow-50 border-yellow-200 hover:border-yellow-300'
+                      }`}
+                      style={{
+                        animationDelay: `${index * 100}ms`
+                      }}
+                    >
+                      <div className="transition-transform duration-300 hover:scale-110">
+                        <TeamLogoDisplay 
+                          teamName={teamName}
+                          teamLogo={teamLogo}
+                          teamColor={teamColor}
+                          size="md"
+                          showName={false}
+                        />
+                      </div>
+                      
+                      <div className="flex-1 flex items-center gap-4">
+                        <span className="text-2xl animate-pulse">{isRed ? '🟥' : '🟨'}</span>
+                        <div className="font-bold text-xl text-gray-800 leading-tight">
+                          {getCardPlayerName(card)}
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center gap-4">
+                        <Badge 
+                          variant={isRed ? 'destructive' : 'outline'} 
+                          className={`font-bold text-lg px-4 py-2 transition-all duration-300 hover:scale-105 ${
+                            !isRed ? 'bg-yellow-500 text-white border-yellow-500 hover:bg-yellow-600' : 'hover:bg-red-600'
+                          }`}
+                        >
+                          {cardType.toUpperCase()}
+                        </Badge>
+                        <span className="text-base text-muted-foreground font-mono font-bold tabular-nums">
+                          {formatMinutes(getCardTime(card))}'
+                        </span>
                       </div>
                     </div>
-                    
-                    <div className="flex items-center gap-4">
-                      <Badge 
-                        variant={isRed ? 'destructive' : 'outline'} 
-                        className={`font-bold text-lg px-4 py-2 ${
-                          !isRed ? 'bg-yellow-500 text-white border-yellow-500' : ''
-                        }`}
-                      >
-                        {cardType.toUpperCase()}
-                      </Badge>
-                      <span className="text-base text-muted-foreground font-mono font-bold">
-                        {formatMinutes(getCardTime(card))}'
-                      </span>
-                    </div>
-                  </div>
-                );
-              })
+                  );
+                })}
+              </div>
             )}
           </div>
-        )}
+        </div>
       </CardContent>
     </Card>
   );
