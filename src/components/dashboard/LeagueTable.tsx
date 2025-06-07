@@ -40,7 +40,7 @@ const LeagueTable = ({ teams, isLoading }: LeagueTableProps) => {
                     <td className="p-3"><Skeleton className="h-4 w-6" /></td>
                     <td className="p-3">
                       <div className="flex items-center gap-3">
-                        <Skeleton className="w-8 h-8" />
+                        <Skeleton className="w-8 h-8 rounded-full" />
                         <Skeleton className="h-4 w-24" />
                       </div>
                     </td>
