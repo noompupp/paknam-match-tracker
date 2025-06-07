@@ -1,4 +1,3 @@
-
 import html2canvas from 'html2canvas';
 
 export const exportToJPEG = async (elementId: string, filename: string) => {
@@ -57,24 +56,36 @@ export const exportToCSV = (data: any[], filename: string) => {
   document.body.removeChild(link);
 };
 
-// Mobile-optimized image capture for sharing
+// Enhanced mobile-optimized image capture for sharing with improved centering
 export const captureImageForSharing = async (elementId: string): Promise<Blob> => {
   const element = document.getElementById(elementId);
   if (!element) {
     throw new Error('Element not found for capture');
   }
 
-  // Mobile-optimized canvas settings
-  const canvas = await html2canvas(element, {
+  // Detect mobile screen size
+  const isMobile = window.innerWidth < 768;
+  
+  // Mobile-optimized canvas settings with improved centering
+  const canvasOptions = {
     backgroundColor: '#ffffff',
-    scale: window.devicePixelRatio || 2, // Use device pixel ratio for optimal quality
+    scale: window.devicePixelRatio || 2,
     useCORS: true,
     allowTaint: true,
-    width: element.scrollWidth,
-    height: element.scrollHeight,
     scrollX: 0,
     scrollY: 0,
-  });
+    // Enhanced mobile centering options
+    width: isMobile ? Math.min(375, element.scrollWidth) : element.scrollWidth,
+    height: element.scrollHeight,
+    // Center content horizontally for mobile
+    x: isMobile ? Math.max(0, (element.scrollWidth - 375) / 2) : 0,
+    y: 0,
+    // Ensure proper scaling on mobile devices
+    windowWidth: isMobile ? 375 : window.innerWidth,
+    windowHeight: window.innerHeight,
+  };
+
+  const canvas = await html2canvas(element, canvasOptions);
 
   return new Promise((resolve) => {
     canvas.toBlob((blob) => {

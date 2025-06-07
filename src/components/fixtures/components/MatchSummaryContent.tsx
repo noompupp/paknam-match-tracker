@@ -40,42 +40,45 @@ const MatchSummaryContent = ({
   isCardRed
 }: MatchSummaryContentProps) => {
   return (
-    <div id="match-summary-content" className="space-y-6">
-      {/* Render based on view style */}
-      {viewStyle === 'compact' ? (
-        <PremierLeagueStyleSummary
-          fixture={fixture}
-          goals={goals}
-          cards={cards}
-          timelineEvents={timelineEvents}
-          formatTime={formatTime}
-          getGoalTeamId={getGoalTeamId}
-          getGoalPlayerName={getGoalPlayerName}
-          getGoalTime={getGoalTime}
-          getCardTeamId={getCardTeamId}
-          getCardPlayerName={getCardPlayerName}
-          getCardTime={getCardTime}
-          getCardType={getCardType}
-          isCardRed={isCardRed}
-        />
-      ) : (
-        <TraditionalMatchSummaryView
-          fixture={fixture}
-          goals={goals}
-          cards={cards}
-          enhancedSuccess={enhancedSuccess}
-          enhancedData={enhancedData}
-          formatTime={formatTime}
-          getGoalTeamId={getGoalTeamId}
-          getGoalPlayerName={getGoalPlayerName}
-          getGoalTime={getGoalTime}
-          getCardTeamId={getCardTeamId}
-          getCardPlayerName={getCardPlayerName}
-          getCardTime={getCardTime}
-          getCardType={getCardType}
-          isCardRed={isCardRed}
-        />
-      )}
+    <div id="match-summary-content" className="space-y-6 w-full">
+      {/* Mobile-optimized container with proper centering */}
+      <div className="w-full mx-auto" style={{ maxWidth: 'min(100%, 768px)' }}>
+        {/* Render based on view style */}
+        {viewStyle === 'compact' ? (
+          <PremierLeagueStyleSummary
+            fixture={fixture}
+            goals={goals}
+            cards={cards}
+            timelineEvents={timelineEvents}
+            formatTime={formatTime}
+            getGoalTeamId={getGoalTeamId}
+            getGoalPlayerName={getGoalPlayerName}
+            getGoalTime={getGoalTime}
+            getCardTeamId={getCardTeamId}
+            getCardPlayerName={getCardPlayerName}
+            getCardTime={getCardTime}
+            getCardType={getCardType}
+            isCardRed={isCardRed}
+          />
+        ) : (
+          <TraditionalMatchSummaryView
+            fixture={fixture}
+            goals={goals}
+            cards={cards}
+            enhancedSuccess={enhancedSuccess}
+            enhancedData={enhancedData}
+            formatTime={formatTime}
+            getGoalTeamId={getGoalTeamId}
+            getGoalPlayerName={getGoalPlayerName}
+            getGoalTime={getGoalTime}
+            getCardTeamId={getCardTeamId}
+            getCardPlayerName={getCardPlayerName}
+            getCardTime={getCardTime}
+            getCardType={getCardType}
+            isCardRed={isCardRed}
+          />
+        )}
+      </div>
     </div>
   );
 };

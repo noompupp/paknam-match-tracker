@@ -85,42 +85,74 @@ const GoalsSection = ({
 
   return (
     <Card>
-      <CardContent className={`${isMobile ? 'pt-4' : 'pt-6'}`}>
+      <CardContent className={`${isMobile ? 'pt-6 pb-6' : 'pt-6'}`}>
         <GoalsSectionHeader totalGoals={goals.length} />
         
-        <div className={`${isMobile ? 'flex flex-col space-y-4' : 'flex justify-between items-start'}`}>
-          {/* Home Team Goals */}
-          <div className={`${isMobile ? 'w-full' : 'flex-1 pr-6'}`}>
-            <GoalsList
-              goals={homeGoals}
-              teamType="home"
-              teamColor={homeTeamColor}
-            />
-          </div>
+        {/* Mobile: Centered vertical layout with proper spacing */}
+        {isMobile ? (
+          <div className="w-full max-w-[375px] mx-auto space-y-6">
+            {/* Home Team Goals */}
+            {homeGoals.length > 0 && (
+              <div className="w-full">
+                <div className="text-center mb-4">
+                  <h4 className="text-base font-semibold text-muted-foreground">Home Team Goals</h4>
+                </div>
+                <GoalsList
+                  goals={homeGoals}
+                  teamType="home"
+                  teamColor={homeTeamColor}
+                />
+              </div>
+            )}
 
-          {/* Enhanced Center Divider - Mobile Responsive */}
-          {!isMobile && (
+            {/* Divider */}
+            {homeGoals.length > 0 && awayGoals.length > 0 && (
+              <div className="w-full px-8">
+                <div className="h-0.5 bg-gradient-to-r from-gray-200 via-gray-400 to-gray-200 rounded-full"></div>
+              </div>
+            )}
+
+            {/* Away Team Goals */}
+            {awayGoals.length > 0 && (
+              <div className="w-full">
+                <div className="text-center mb-4">
+                  <h4 className="text-base font-semibold text-muted-foreground">Away Team Goals</h4>
+                </div>
+                <GoalsList
+                  goals={awayGoals}
+                  teamType="away"
+                  teamColor={awayTeamColor}
+                />
+              </div>
+            )}
+          </div>
+        ) : (
+          /* Desktop: Horizontal layout */
+          <div className="flex justify-between items-start">
+            {/* Home Team Goals */}
+            <div className="flex-1 pr-6">
+              <GoalsList
+                goals={homeGoals}
+                teamType="home"
+                teamColor={homeTeamColor}
+              />
+            </div>
+
+            {/* Center Divider */}
             <div className="px-6">
               <div className="w-0.5 h-full bg-gradient-to-b from-gray-200 via-gray-400 to-gray-200 min-h-[80px] rounded-full"></div>
             </div>
-          )}
 
-          {/* Mobile Divider */}
-          {isMobile && homeGoals.length > 0 && awayGoals.length > 0 && (
-            <div className="w-full px-4">
-              <div className="h-0.5 bg-gradient-to-r from-gray-200 via-gray-400 to-gray-200 rounded-full"></div>
+            {/* Away Team Goals */}
+            <div className="flex-1 pl-6">
+              <GoalsList
+                goals={awayGoals}
+                teamType="away"
+                teamColor={awayTeamColor}
+              />
             </div>
-          )}
-
-          {/* Away Team Goals */}
-          <div className={`${isMobile ? 'w-full' : 'flex-1 pl-6'}`}>
-            <GoalsList
-              goals={awayGoals}
-              teamType="away"
-              teamColor={awayTeamColor}
-            />
           </div>
-        </div>
+        )}
       </CardContent>
     </Card>
   );
