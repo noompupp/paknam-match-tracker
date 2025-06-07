@@ -32,7 +32,9 @@ export const teamsApi = {
         textId: team.__id__,
         normalizedTextId: normalizeId(team.__id__),
         logoURL: team.logoURL,
-        color: team.color
+        color: team.color,
+        position: team.position,
+        previousPosition: team.previous_position
       })) || []
     });
     
@@ -49,7 +51,9 @@ export const teamsApi = {
         rawTextId: team.__id__,
         normalizedTextId: normalizeId(team.__id__),
         logoURL: team.logoURL,
-        color: team.color
+        color: team.color,
+        position: team.position,
+        previousPosition: team.previous_position
       });
       
       const transformed = {
@@ -60,6 +64,7 @@ export const teamsApi = {
         founded: team.founded || '2020',
         captain: team.captain || '',
         position: team.position || 1,
+        previous_position: team.previous_position || null, // Include previous position
         points: team.points || 0,
         played: team.played || 0,
         won: team.won || 0,
@@ -110,6 +115,7 @@ export const teamsApi = {
       founded: data.founded || '2020',
       captain: data.captain || '',
       position: data.position || 1,
+      previous_position: data.previous_position || null, // Include previous position
       points: data.points || 0,
       played: data.played || 0,
       won: data.won || 0,
@@ -150,6 +156,7 @@ export const teamsApi = {
       founded: data.founded || '2020',
       captain: data.captain || '',
       position: data.position || 1,
+      previous_position: data.previous_position || null, // Include previous position
       points: data.points || 0,
       played: data.played || 0,
       won: data.won || 0,

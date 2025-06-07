@@ -4,6 +4,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowRight } from "lucide-react";
 import { Team } from "@/types/database";
 import TeamLogo from "../teams/TeamLogo";
+import RankChangeIndicator from "./RankChangeIndicator";
 
 interface LeagueTableProps {
   teams: Team[] | undefined;
@@ -54,7 +55,15 @@ const LeagueTable = ({ teams, isLoading }: LeagueTableProps) => {
               ) : teams && teams.length > 0 ? (
                 teams.map((team) => (
                   <tr key={team.id} className="border-b hover:bg-muted/30 transition-colors">
-                    <td className="p-3 font-bold">{team.position}</td>
+                    <td className="p-3">
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold">{team.position}</span>
+                        <RankChangeIndicator 
+                          currentPosition={team.position} 
+                          previousPosition={team.previous_position} 
+                        />
+                      </div>
+                    </td>
                     <td className="p-3">
                       <div className="flex items-center gap-3">
                         <TeamLogo team={team} size="small" showColor />

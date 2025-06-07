@@ -1,4 +1,3 @@
-
 export interface Team {
   id: number;
   name: string;
@@ -7,6 +6,7 @@ export interface Team {
   founded: string;
   captain: string;
   position: number;
+  previous_position?: number | null; // Add previous position for rank change tracking
   points: number;
   played: number;
   won: number;
