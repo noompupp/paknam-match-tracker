@@ -34,7 +34,7 @@ const SocialMediaStoryContent = ({
   formatTime
 }: SocialMediaStoryContentProps) => {
   return (
-    <div className="flex-1 flex flex-col p-6 space-y-6">
+    <div className="flex-1 flex flex-col p-5 space-y-4">
       {/* Main Scoreline - Enhanced and Prominent */}
       <SocialMediaStoryScoreline
         fixture={fixture}
@@ -42,12 +42,12 @@ const SocialMediaStoryContent = ({
         displayAwayColor={displayAwayColor}
       />
 
-      {/* Match Info */}
+      {/* Match Info - Compact */}
       <SocialMediaStoryMatchInfo fixture={fixture} />
 
-      {/* Match Events - Goals and Cards */}
+      {/* Match Events - Goals and Cards with optimized spacing */}
       {(goals.length > 0 || cards.length > 0) ? (
-        <div className="space-y-4">
+        <div className="space-y-3 flex-1">
           {/* Goal Scorers */}
           <SocialMediaStoryGoalsSection
             goals={goals}
@@ -70,7 +70,9 @@ const SocialMediaStoryContent = ({
         </div>
       ) : (
         /* No Events Placeholder */
-        <SocialMediaStoryNoEvents />
+        <div className="flex-1">
+          <SocialMediaStoryNoEvents />
+        </div>
       )}
     </div>
   );

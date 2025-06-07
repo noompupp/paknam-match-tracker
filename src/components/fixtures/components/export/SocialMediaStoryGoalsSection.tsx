@@ -23,21 +23,22 @@ const SocialMediaStoryGoalsSection = ({
   if (goals.length === 0) return null;
 
   return (
-    <div className="bg-green-500/20 backdrop-blur-md rounded-2xl p-6 border border-green-400/30 shadow-lg">
-      <div className="text-center mb-5">
-        <h2 className="text-xl font-bold text-white flex items-center justify-center gap-3">
-          <span className="text-2xl">⚽</span>
-          Goal Scorers ({goals.length})
+    <div className="bg-green-500/15 backdrop-blur-md rounded-2xl p-5 border border-green-400/25 shadow-lg">
+      {/* Compact Header */}
+      <div className="text-center mb-4">
+        <h2 className="text-lg font-bold text-white flex items-center justify-center gap-2">
+          <span className="text-xl">⚽</span>
+          Goal Scorers
         </h2>
       </div>
       
-      {/* Two Column Layout */}
-      <div className="grid grid-cols-2 gap-4">
+      {/* Optimized Two Column Layout */}
+      <div className="grid grid-cols-2 gap-3">
         {/* Home Goals */}
-        <div className="space-y-3">
+        <div className="space-y-2">
           <div className="text-center">
             <div 
-              className="text-lg font-bold mb-2 pb-2 border-b border-white/20"
+              className="text-base font-bold mb-2 pb-1 border-b border-white/15 truncate"
               style={{ color: displayHomeColor }}
             >
               {fixture.home_team?.name || 'Home'}
@@ -51,35 +52,35 @@ const SocialMediaStoryGoalsSection = ({
             return (
               <div 
                 key={`home-goal-${goal.id}-${index}`} 
-                className="p-3 bg-white/10 rounded-xl border border-white/20"
+                className="p-2.5 bg-white/8 rounded-xl border border-white/15"
               >
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-base font-bold text-white truncate flex-1">
+                  <span className="text-sm font-bold text-white truncate flex-1 mr-2">
                     {playerName}
                   </span>
-                  <span className="text-sm font-bold text-white/80 bg-white/20 px-2 py-1 rounded ml-2">
+                  <span className="text-xs font-bold text-white/90 bg-white/15 px-2 py-0.5 rounded-lg flex-shrink-0">
                     {formatTime(time)}
                   </span>
                 </div>
                 {assistName && (
-                  <div className="text-sm text-white/70 truncate">
+                  <div className="text-xs text-white/70 truncate">
                     Assist: {assistName}
                   </div>
                 )}
               </div>
             );
           }) : (
-            <div className="text-center p-4 text-white/60 text-sm">
+            <div className="text-center p-3 text-white/50 text-xs">
               No goals
             </div>
           )}
         </div>
 
         {/* Away Goals */}
-        <div className="space-y-3">
+        <div className="space-y-2">
           <div className="text-center">
             <div 
-              className="text-lg font-bold mb-2 pb-2 border-b border-white/20"
+              className="text-base font-bold mb-2 pb-1 border-b border-white/15 truncate"
               style={{ color: displayAwayColor }}
             >
               {fixture.away_team?.name || 'Away'}
@@ -93,25 +94,25 @@ const SocialMediaStoryGoalsSection = ({
             return (
               <div 
                 key={`away-goal-${goal.id}-${index}`} 
-                className="p-3 bg-white/10 rounded-xl border border-white/20"
+                className="p-2.5 bg-white/8 rounded-xl border border-white/15"
               >
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-base font-bold text-white truncate flex-1">
+                  <span className="text-sm font-bold text-white truncate flex-1 mr-2">
                     {playerName}
                   </span>
-                  <span className="text-sm font-bold text-white/80 bg-white/20 px-2 py-1 rounded ml-2">
+                  <span className="text-xs font-bold text-white/90 bg-white/15 px-2 py-0.5 rounded-lg flex-shrink-0">
                     {formatTime(time)}
                   </span>
                 </div>
                 {assistName && (
-                  <div className="text-sm text-white/70 truncate">
+                  <div className="text-xs text-white/70 truncate">
                     Assist: {assistName}
                   </div>
                 )}
               </div>
             );
           }) : (
-            <div className="text-center p-4 text-white/60 text-sm">
+            <div className="text-center p-3 text-white/50 text-xs">
               No goals
             </div>
           )}
