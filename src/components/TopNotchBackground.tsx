@@ -10,10 +10,10 @@ const TopNotchBackground = () => {
       style={{
         height: 'var(--safe-area-inset-top)',
         background: `var(--header-background)`,
-        backdropFilter: `blur(${6 + (opacity * 6)}px)`,
-        WebkitBackdropFilter: `blur(${6 + (opacity * 6)}px)`,
+        backdropFilter: `blur(${8 + (opacity * 4)}px)`,
+        WebkitBackdropFilter: `blur(${8 + (opacity * 4)}px)`,
         borderBottom: `1px solid var(--header-border)`,
-        boxShadow: `0 1px 3px var(--header-shadow, rgba(0, 0, 0, ${opacity * 0.1}))`
+        boxShadow: `0 1px 3px var(--header-shadow, rgba(0, 0, 0, ${0.15 + (opacity * 0.1)}))`
       }}
     />
   );

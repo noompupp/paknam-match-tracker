@@ -1,6 +1,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 import { ArrowRight, ChevronRight } from "lucide-react";
 import { Fixture } from "@/types/database";
 import { formatDateDisplay, formatTimeDisplay } from "@/utils/timeUtils";
@@ -9,14 +10,24 @@ import TeamLogo from "../teams/TeamLogo";
 interface UpcomingFixturesCardProps {
   upcomingFixtures: Fixture[] | undefined;
   isLoading: boolean;
+  onNavigateToFixtures?: () => void;
 }
 
-const UpcomingFixturesCard = ({ upcomingFixtures, isLoading }: UpcomingFixturesCardProps) => {
+const UpcomingFixturesCard = ({ upcomingFixtures, isLoading, onNavigateToFixtures }: UpcomingFixturesCardProps) => {
   return (
     <Card className="card-shadow-lg animate-fade-in">
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="text-xl font-bold">Upcoming Fixtures</CardTitle>
-        <ArrowRight className="h-5 w-5 text-muted-foreground" />
+        {onNavigateToFixtures && (
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={onNavigateToFixtures}
+            className="p-1 h-auto hover:bg-muted/50 transition-colors"
+          >
+            <ArrowRight className="h-5 w-5 text-muted-foreground hover:text-primary transition-colors" />
+          </Button>
+        )}
       </CardHeader>
       <CardContent className="space-y-4">
         {isLoading ? (

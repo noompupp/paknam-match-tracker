@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import Dashboard from "@/components/Dashboard";
 import Teams from "@/components/Teams";
@@ -63,7 +64,10 @@ const Index = () => {
       case "dashboard":
         return (
           <div className={baseClasses}>
-            <Dashboard onNavigateToResults={handleNavigateToRecentResults} />
+            <Dashboard 
+              onNavigateToResults={handleNavigateToRecentResults}
+              onNavigateToFixtures={handleNavigateToFixtures}
+            />
           </div>
         );
       case "teams":
@@ -105,7 +109,10 @@ const Index = () => {
       default:
         return (
           <div className={baseClasses}>
-            <Dashboard onNavigateToResults={handleNavigateToRecentResults} />
+            <Dashboard 
+              onNavigateToResults={handleNavigateToRecentResults}
+              onNavigateToFixtures={handleNavigateToFixtures}
+            />
           </div>
         );
     }

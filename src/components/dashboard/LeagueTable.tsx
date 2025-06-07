@@ -1,7 +1,6 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowRight } from "lucide-react";
 import { Team } from "@/types/database";
 import TeamLogo from "../teams/TeamLogo";
 import RankChangeIndicator from "./RankChangeIndicator";
@@ -14,9 +13,8 @@ interface LeagueTableProps {
 const LeagueTable = ({ teams, isLoading }: LeagueTableProps) => {
   return (
     <Card className="card-shadow-lg animate-fade-in">
-      <CardHeader className="flex flex-row items-center justify-between">
+      <CardHeader>
         <CardTitle className="text-2xl font-bold">League Table</CardTitle>
-        <ArrowRight className="h-5 w-5 text-muted-foreground" />
       </CardHeader>
       <CardContent className="p-0">
         <div className="overflow-x-auto">
