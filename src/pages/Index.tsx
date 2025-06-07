@@ -10,6 +10,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { NavigationProvider } from "@/contexts/NavigationContext";
 import ProtectedTabWrapper from "@/components/auth/ProtectedTabWrapper";
 import PWAInstallButton from "@/components/PWAInstallButton";
+import PWAPromptToast from "@/components/PWAPromptToast";
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -108,6 +109,7 @@ const Index = () => {
           {renderContent()}
           <Navigation activeTab={activeTab} onTabChange={setActiveTab} />
           <PWAInstallButton />
+          <PWAPromptToast />
         </div>
       </NavigationProvider>
     </AuthProvider>
