@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Card, CardContent } from "@/components/ui/card";
-import { Download, Trophy, Target, Timer, AlertTriangle, FileImage, FileText, Database, Palette } from "lucide-react";
+import { Download, Trophy, Target, Timer, AlertTriangle, FileImage, FileText, Database, Palette, Layout } from "lucide-react";
 import { useMatchEvents } from "@/hooks/useMatchEvents";
 import { useEnhancedMatchSummary } from "@/hooks/useEnhancedMatchSummary";
 import { useToast } from "@/hooks/use-toast";
@@ -124,19 +124,20 @@ const MatchSummaryDialog = ({ fixture, isOpen, onClose }: MatchSummaryDialogProp
     return 'text-yellow-600';
   };
 
-  // Unified data source logic - prioritize enhanced timeline data
+  // Enhanced data source logic - prioritize enhanced timeline data
   const shouldUseEnhancedTimeline = enhancedSuccess && enhancedData?.timelineEvents && enhancedData.timelineEvents.length > 0;
   const shouldUseEnhancedData = enhancedSuccess && enhancedData;
 
-  let goals, cards;
+  let goals, cards, timelineEvents = [];
 
   if (shouldUseEnhancedTimeline) {
     // Use timeline data as primary source for unified display
+    timelineEvents = enhancedData.timelineEvents;
     const processedData = processTimelineDataForDisplay(enhancedData.timelineEvents);
     goals = processedData.goals;
     cards = processedData.cards;
-    console.log('📊 MatchSummaryDialog: Using enhanced timeline data as unified source:', {
-      timelineEvents: enhancedData.timelineEvents.length,
+    console.log('📊 MatchSummaryDialog: Using enhanced timeline data as primary source:', {
+      timelineEvents: timelineEvents.length,
       goals: goals.length,
       cards: cards.length
     });
@@ -144,6 +145,7 @@ const MatchSummaryDialog = ({ fixture, isOpen, onClose }: MatchSummaryDialogProp
     // Fallback to enhanced goals/cards data
     goals = enhancedData.goals.filter(g => g.type === 'goal');
     cards = enhancedData.cards;
+    timelineEvents = enhancedData.timelineEvents || [];
     console.log('📊 MatchSummaryDialog: Using enhanced goals/cards data as fallback:', {
       goals: goals.length,
       cards: cards.length
@@ -275,7 +277,7 @@ const MatchSummaryDialog = ({ fixture, isOpen, onClose }: MatchSummaryDialogProp
               onClick={() => setViewStyle(viewStyle === 'compact' ? 'full' : 'compact')}
               className="flex items-center gap-2"
             >
-              <Palette className="h-4 w-4" />
+              <Layout className="h-4 w-4" />
               {viewStyle === 'compact' ? 'Full View' : 'Compact View'}
             </Button>
           </DialogTitle>
@@ -287,7 +289,7 @@ const MatchSummaryDialog = ({ fixture, isOpen, onClose }: MatchSummaryDialogProp
             <Alert>
               <Database className="h-4 w-4" />
               <AlertDescription>
-                Enhanced timeline data active - displaying unified match events with comprehensive analytics.
+                Enhanced timeline data active - displaying unified match events with comprehensive analytics from {timelineEvents.length} events.
               </AlertDescription>
             </Alert>
           )}
@@ -298,6 +300,7 @@ const MatchSummaryDialog = ({ fixture, isOpen, onClose }: MatchSummaryDialogProp
               fixture={fixture}
               goals={goals}
               cards={cards}
+              timelineEvents={timelineEvents}
               formatTime={formatTime}
               getGoalTeamId={getGoalTeamId}
               getGoalPlayerName={getGoalPlayerName}
