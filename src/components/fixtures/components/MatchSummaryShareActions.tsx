@@ -1,8 +1,7 @@
-
 import { Button } from "@/components/ui/button";
 import { Download, Share } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { saveImageToDevice, shareImage } from "@/utils/exportUtils";
+import { saveImageToDeviceFromElement, shareImageFromElement } from "@/utils/exportUtils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useState } from "react";
 
@@ -35,7 +34,7 @@ const MatchSummaryShareActions = ({ fixture }: MatchSummaryShareActionsProps) =>
     setIsProcessing(true);
     try {
       const filename = `match-summary-${getMatchTitle().replace(/\s+/g, '-').toLowerCase()}-${fixture?.match_date || 'today'}.jpg`;
-      await saveImageToDevice('match-summary-content', filename);
+      await saveImageToDeviceFromElement('match-summary-content', filename);
       
       toast({
         title: "📥 Saved to Device",
@@ -61,7 +60,7 @@ const MatchSummaryShareActions = ({ fixture }: MatchSummaryShareActionsProps) =>
       const title = getMatchTitle();
       const text = getShareText();
       
-      await shareImage('match-summary-content', title, text);
+      await shareImageFromElement('match-summary-content', title, text);
       
       toast({
         title: "📤 Share Successful",
@@ -75,7 +74,6 @@ const MatchSummaryShareActions = ({ fixture }: MatchSummaryShareActionsProps) =>
         variant: "destructive",
       });
       
-      // Fallback to save
       try {
         await handleSaveToCameraRoll();
       } catch (saveError) {
