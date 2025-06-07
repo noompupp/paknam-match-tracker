@@ -16,6 +16,34 @@ const PremierLeagueHeader = ({ fixture, homeGoals, awayGoals }: PremierLeagueHea
   const homeScore = homeGoals.length;
   const awayScore = awayGoals.length;
   
+  // Enhanced team logo extraction
+  const getTeamLogo = (team: any) => {
+    if (!team) return null;
+    
+    // Try multiple possible logo field names
+    const possibleLogoFields = [
+      team.logo,
+      team.logoURL,
+      team.logo_url,
+      team.teamLogo,
+      team.team_logo,
+      team.logoUrl
+    ];
+    
+    const logo = possibleLogoFields.find(field => field && field.trim() !== '');
+    console.log('🏟️ Team logo extraction:', {
+      teamName: team.name,
+      possibleLogoFields,
+      selectedLogo: logo,
+      teamData: team
+    });
+    
+    return logo || null;
+  };
+  
+  const homeTeamLogo = getTeamLogo(fixture?.home_team);
+  const awayTeamLogo = getTeamLogo(fixture?.away_team);
+  
   const getMatchDate = () => {
     if (!fixture?.match_date) return '';
     return new Date(fixture.match_date).toLocaleDateString('en-GB', {
@@ -35,13 +63,13 @@ const PremierLeagueHeader = ({ fixture, homeGoals, awayGoals }: PremierLeagueHea
             <div className="text-sm text-slate-300 font-medium tracking-wide">{getMatchDate()}</div>
           </div>
           
-          {/* Teams and Score - Enhanced layout with logos */}
+          {/* Teams and Score - Enhanced layout with actual logos */}
           <div className="flex items-center justify-between">
             {/* Home Team with Logo */}
             <div className="flex-1 flex flex-col items-center max-w-[100px]">
               <TeamLogoDisplay
                 teamName={homeTeamName}
-                teamLogo={fixture?.home_team?.logo}
+                teamLogo={homeTeamLogo}
                 teamColor={fixture?.home_team?.color || "#1f2937"}
                 size="sm"
               />
@@ -68,7 +96,7 @@ const PremierLeagueHeader = ({ fixture, homeGoals, awayGoals }: PremierLeagueHea
             <div className="flex-1 flex flex-col items-center max-w-[100px]">
               <TeamLogoDisplay
                 teamName={awayTeamName}
-                teamLogo={fixture?.away_team?.logo}
+                teamLogo={awayTeamLogo}
                 teamColor={fixture?.away_team?.color || "#7c3aed"}
                 size="sm"
               />
@@ -95,7 +123,7 @@ const PremierLeagueHeader = ({ fixture, homeGoals, awayGoals }: PremierLeagueHea
               <div className="flex flex-col items-center">
                 <TeamLogoDisplay
                   teamName={homeTeamName}
-                  teamLogo={fixture?.home_team?.logo}
+                  teamLogo={homeTeamLogo}
                   teamColor={fixture?.home_team?.color || "#1f2937"}
                   size="md"
                 />
@@ -120,7 +148,7 @@ const PremierLeagueHeader = ({ fixture, homeGoals, awayGoals }: PremierLeagueHea
               <div className="flex flex-col items-center">
                 <TeamLogoDisplay
                   teamName={awayTeamName}
-                  teamLogo={fixture?.away_team?.logo}
+                  teamLogo={awayTeamLogo}
                   teamColor={fixture?.away_team?.color || "#7c3aed"}
                   size="md"
                 />

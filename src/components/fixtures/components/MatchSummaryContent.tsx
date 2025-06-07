@@ -101,12 +101,15 @@ const MatchSummaryContent = ({
           font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif !important;
           -webkit-font-smoothing: antialiased !important;
           -moz-osx-font-smoothing: grayscale !important;
+          background: white !important;
         }
         
         .export-mode-mobile {
           font-size: 14px !important;
           line-height: 1.4 !important;
           letter-spacing: 0.01em !important;
+          width: 375px !important;
+          max-width: 375px !important;
         }
         
         .export-mode-mobile * {
@@ -155,21 +158,27 @@ const MatchSummaryContent = ({
           line-height: 1.1 !important;
         }
         
+        .export-mode img {
+          max-width: 100% !important;
+          height: auto !important;
+          border-radius: 8px !important;
+        }
+        
         .export-mode-mobile img {
           max-width: 100% !important;
           height: auto !important;
           border-radius: 8px !important;
         }
         
-        .export-mode-mobile .shadow-sm {
+        .export-mode .shadow-sm {
           box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
         }
         
-        .export-mode-mobile .shadow-lg {
+        .export-mode .shadow-lg {
           box-shadow: 0 8px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
         }
         
-        .export-mode-mobile .shadow-xl {
+        .export-mode .shadow-xl {
           box-shadow: 0 15px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -5px rgba(0, 0, 0, 0.04) !important;
         }
         `}

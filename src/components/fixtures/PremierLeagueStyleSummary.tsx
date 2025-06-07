@@ -1,6 +1,6 @@
 
 import PremierLeagueHeader from "./PremierLeagueHeader";
-import GoalsSection from "./GoalsSection";
+import MatchEventsSection from "./MatchEventsSection";
 import MatchStatisticsFooter from "./MatchStatisticsFooter";
 import { extractTeamData, processTeamEvents } from "./utils/teamDataProcessor";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -71,16 +71,19 @@ const PremierLeagueStyleSummary = ({
         awayGoals={awayGoals}
       />
 
-      {/* Enhanced Goals Section with mobile optimization */}
-      <GoalsSection
+      {/* Enhanced Match Events Section with left/right alignment */}
+      <MatchEventsSection
         homeGoals={homeGoals}
         awayGoals={awayGoals}
-        homeTeamColor={teamData.homeTeamColor}
-        awayTeamColor={teamData.awayTeamColor}
+        homeTeamId={teamData.homeTeamId}
+        awayTeamId={teamData.awayTeamId}
+        homeTeamName={teamData.homeTeamName}
+        awayTeamName={teamData.awayTeamName}
         formatTime={formatTime}
         getGoalPlayerName={getGoalPlayerName}
         getGoalAssistPlayerName={getGoalAssistPlayerName}
         getGoalTime={getGoalTime}
+        getGoalTeamId={getGoalTeamId}
       />
 
       {/* Enhanced Statistics Footer */}

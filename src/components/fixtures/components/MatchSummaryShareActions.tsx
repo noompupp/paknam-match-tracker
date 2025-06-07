@@ -32,17 +32,22 @@ const MatchSummaryShareActions = ({ fixture, goals = [], cards = [] }: MatchSumm
 
   const enableExportMode = () => {
     const element = document.getElementById('match-summary-content');
-    if (element && isMobile) {
+    if (element) {
       element.setAttribute('data-export-mode', 'true');
-      element.classList.add('export-mode-mobile');
+      element.classList.add('export-mode');
+      if (isMobile) {
+        element.classList.add('export-mode-mobile');
+      }
+      console.log('🔧 Export mode enabled for element:', element);
     }
   };
 
   const disableExportMode = () => {
     const element = document.getElementById('match-summary-content');
-    if (element && isMobile) {
+    if (element) {
       element.removeAttribute('data-export-mode');
-      element.classList.remove('export-mode-mobile');
+      element.classList.remove('export-mode', 'export-mode-mobile');
+      console.log('🔧 Export mode disabled for element:', element);
     }
   };
 
@@ -52,14 +57,18 @@ const MatchSummaryShareActions = ({ fixture, goals = [], cards = [] }: MatchSumm
     setIsProcessing(true);
 
     try {
+      console.log('💾 Starting save to camera roll process...');
       enableExportMode();
       
-      // Wait for layout to settle
-      await new Promise(resolve => setTimeout(resolve, 200));
+      // Wait for layout to settle and styles to apply
+      await new Promise(resolve => setTimeout(resolve, 300));
 
       const filename = `match-summary-${getMatchTitle().replace(/[^a-zA-Z0-9]/g, '-').toLowerCase()}-${fixture?.match_date?.split('T')[0] || 'today'}.jpg`;
       
+      console.log('📸 Capturing image for sharing...');
       const imageBlob = await captureImageForSharing('match-summary-content');
+      
+      console.log('💾 Saving image to device...');
       await saveImageToDevice(imageBlob, filename);
       
       toast({
@@ -67,7 +76,7 @@ const MatchSummaryShareActions = ({ fixture, goals = [], cards = [] }: MatchSumm
         description: "Match summary has been saved to your device.",
       });
     } catch (error) {
-      console.error('Save failed:', error);
+      console.error('❌ Save failed:', error);
       toast({
         title: "❌ Save Failed",
         description: "Unable to save image. Please try again.",
@@ -85,15 +94,19 @@ const MatchSummaryShareActions = ({ fixture, goals = [], cards = [] }: MatchSumm
     setIsProcessing(true);
 
     try {
+      console.log('📱 Starting share to story process...');
       enableExportMode();
       
-      // Wait for layout to settle
-      await new Promise(resolve => setTimeout(resolve, 200));
+      // Wait for layout to settle and styles to apply
+      await new Promise(resolve => setTimeout(resolve, 300));
 
       const title = getMatchTitle();
       const text = getShareText();
       
+      console.log('📸 Capturing image for sharing...');
       const imageBlob = await captureImageForSharing('match-summary-content');
+      
+      console.log('📤 Sharing image...');
       await shareImage(imageBlob, title, text);
       
       toast({
@@ -101,7 +114,7 @@ const MatchSummaryShareActions = ({ fixture, goals = [], cards = [] }: MatchSumm
         description: "Opening share dialog...",
       });
     } catch (error) {
-      console.error('Share failed:', error);
+      console.error('❌ Share failed:', error);
       toast({
         title: "⚠️ Share Unavailable",
         description: "Saving to device instead.",
@@ -112,7 +125,7 @@ const MatchSummaryShareActions = ({ fixture, goals = [], cards = [] }: MatchSumm
       try {
         await handleSaveToCameraRoll();
       } catch (saveError) {
-        console.error('Fallback save failed:', saveError);
+        console.error('❌ Fallback save failed:', saveError);
       }
     } finally {
       disableExportMode();

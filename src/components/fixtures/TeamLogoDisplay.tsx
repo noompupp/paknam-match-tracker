@@ -39,6 +39,19 @@ const TeamLogoDisplay = ({
 
   const gapSize = isMobile ? 'gap-3' : 'gap-3';
 
+  // Enhanced team logo source handling
+  const getTeamLogoSource = () => {
+    if (teamLogo) {
+      // Handle different possible logo field names
+      if (typeof teamLogo === 'string' && teamLogo.trim() !== '') {
+        return teamLogo;
+      }
+    }
+    return null;
+  };
+
+  const logoSource = getTeamLogoSource();
+
   // Break long team names into multiple lines on mobile if needed
   const formatTeamName = (name: string) => {
     if (!isMobile || name.length <= 12) return name;
@@ -62,11 +75,15 @@ const TeamLogoDisplay = ({
       <Avatar 
         className={`${sizeClasses[size]} shadow-lg ring-2 ring-offset-2 ring-white/20 bg-white`}
       >
-        {teamLogo && (
+        {logoSource && (
           <AvatarImage 
-            src={teamLogo} 
+            src={logoSource} 
             alt={teamName} 
             className="object-contain p-1"
+            onError={(e) => {
+              console.log('Team logo failed to load:', logoSource);
+              e.currentTarget.style.display = 'none';
+            }}
           />
         )}
         <AvatarFallback 
