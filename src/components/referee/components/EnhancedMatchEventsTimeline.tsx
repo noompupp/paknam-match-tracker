@@ -1,6 +1,5 @@
 
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Clock, Goal, UserX, Trophy } from "lucide-react";
 
 interface TimelineEvent {
@@ -122,66 +121,58 @@ const EnhancedMatchEventsTimeline = ({
   const sortedEvents = [...timelineEvents].sort((a, b) => a.time - b.time);
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Clock className="h-5 w-5" />
-          Enhanced Match Timeline ({sortedEvents.length} events)
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        {sortedEvents.length === 0 ? (
-          <p className="text-sm text-muted-foreground text-center py-8">
-            No timeline events recorded for this match
-          </p>
-        ) : (
-          <div className="space-y-3">
-            {sortedEvents.map((event, index) => (
-              <div 
-                key={`${event.id}-${index}`}
-                className="relative flex items-start gap-3 p-3 bg-muted/10 rounded-lg border-l-4 border-l-blue-200 hover:bg-muted/20 transition-colors"
-              >
-                <div className="flex-shrink-0 mt-0.5">
-                  {getEventIcon(event.type)}
+    <>
+      {sortedEvents.length === 0 ? (
+        <p className="text-sm text-muted-foreground text-center py-8">
+          No timeline events recorded for this match
+        </p>
+      ) : (
+        <div className="space-y-3">
+          {sortedEvents.map((event, index) => (
+            <div 
+              key={`${event.id}-${index}`}
+              className="relative flex items-start gap-3 p-3 bg-muted/10 rounded-lg border-l-4 border-l-blue-200 hover:bg-muted/20 transition-colors"
+            >
+              <div className="flex-shrink-0 mt-0.5">
+                {getEventIcon(event.type)}
+              </div>
+              
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between mb-1">
+                  <p className="text-sm font-medium text-foreground">
+                    {formatEventDescription(event)}
+                  </p>
+                  
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <Badge 
+                      variant={getEventVariant(event.type)} 
+                      className="text-xs"
+                    >
+                      {getEventTypeLabel(event.type)}
+                    </Badge>
+                    <span className="text-xs text-muted-foreground font-mono">
+                      {formatTime(event.time)}'
+                    </span>
+                  </div>
                 </div>
                 
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between mb-1">
-                    <p className="text-sm font-medium text-foreground">
-                      {formatEventDescription(event)}
-                    </p>
-                    
-                    <div className="flex items-center gap-2 flex-shrink-0">
-                      <Badge 
-                        variant={getEventVariant(event.type)} 
-                        className="text-xs"
-                      >
-                        {getEventTypeLabel(event.type)}
-                      </Badge>
-                      <span className="text-xs text-muted-foreground font-mono">
-                        {formatTime(event.time)}'
-                      </span>
-                    </div>
-                  </div>
-                  
-                  {event.assistPlayerName && event.type === 'goal' && (
-                    <p className="text-xs text-muted-foreground">
-                      🅰️ Assisted by {event.assistPlayerName}
-                    </p>
-                  )}
-                </div>
+                {event.assistPlayerName && event.type === 'goal' && (
+                  <p className="text-xs text-muted-foreground">
+                    🅰️ Assisted by {event.assistPlayerName}
+                  </p>
+                )}
               </div>
-            ))}
-            
-            {sortedEvents.length > 10 && (
-              <p className="text-xs text-muted-foreground text-center pt-2">
-                Showing all {sortedEvents.length} timeline events
-              </p>
-            )}
-          </div>
-        )}
-      </CardContent>
-    </Card>
+            </div>
+          ))}
+          
+          {sortedEvents.length > 10 && (
+            <p className="text-xs text-muted-foreground text-center pt-2">
+              Showing all {sortedEvents.length} timeline events
+            </p>
+          )}
+        </div>
+      )}
+    </>
   );
 };
 
