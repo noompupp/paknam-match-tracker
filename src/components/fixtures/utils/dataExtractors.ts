@@ -1,4 +1,6 @@
 
+import { normalizeTeamId } from './teamMatching';
+
 // Data extraction utilities for goals and cards
 
 export const getGoalTeamId = (goal: any): string => {
@@ -123,10 +125,4 @@ export const getCardType = (card: any): string => {
 export const isCardRed = (card: any): boolean => {
   const type = card.type || card.cardType || card.event_type || '';
   return type.includes('red');
-};
-
-// Import normalization function to avoid circular dependency
-const normalizeTeamId = (teamId: any): string => {
-  if (!teamId) return '';
-  return String(teamId).trim();
 };
