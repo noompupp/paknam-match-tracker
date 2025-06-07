@@ -116,8 +116,8 @@ const RoleGuard = ({
             </div>
           </div>
         </div>
-      );
-    }
+      </div>
+    );
   }
 
   return <>{children}</>;
