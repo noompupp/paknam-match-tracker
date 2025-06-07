@@ -1,4 +1,7 @@
 
+import { Badge } from "@/components/ui/badge";
+import { Target } from "lucide-react";
+import TeamLogoDisplay from "../../TeamLogoDisplay";
 import { getGoalPlayerName, getGoalTime, getGoalAssistPlayerName } from "../../utils/matchSummaryDataProcessor";
 
 interface IPhoneStoryGoalsProps {
@@ -9,13 +12,7 @@ interface IPhoneStoryGoalsProps {
   awayTeamColor: string;
 }
 
-const IPhoneStoryGoals = ({
-  goals,
-  homeGoals,
-  awayGoals,
-  homeTeamColor,
-  awayTeamColor
-}: IPhoneStoryGoalsProps) => {
+const IPhoneStoryGoals = ({ goals, homeGoals, awayGoals, homeTeamColor, awayTeamColor }: IPhoneStoryGoalsProps) => {
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
     return `${minutes}'`;
@@ -24,17 +21,17 @@ const IPhoneStoryGoals = ({
   if (goals.length === 0) return null;
 
   return (
-    <div className="px-4 py-3 bg-white">
+    <div className="px-4 py-4 bg-green-25 border-b border-green-100">
       <div className="flex items-center justify-center gap-2 mb-3">
         <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
-          <span className="text-white text-xs font-bold">⚽</span>
+          <Target className="h-3 w-3 text-white" />
         </div>
-        <h3 className="font-semibold text-sm text-slate-800 text-center">
-          Goals ({goals.length})
+        <h3 className="font-semibold text-sm text-green-800 text-center">
+          Match Events ({goals.length})
         </h3>
       </div>
       
-      <div className="space-y-2">
+      <div className="space-y-3">
         {goals.map((goal, index) => {
           const isHomeGoal = homeGoals.includes(goal);
           const teamColor = isHomeGoal ? homeTeamColor : awayTeamColor;
@@ -44,27 +41,36 @@ const IPhoneStoryGoals = ({
           
           return (
             <div 
-              key={`goal-${goal.id}-${index}`} 
-              className="flex items-center justify-between p-2.5 bg-slate-50 rounded-lg border"
+              key={`goal-${goal.id}-${index}`}
+              className="flex items-start gap-3 p-3 bg-white rounded border border-green-200"
             >
-              <div className="flex items-center gap-2.5 flex-1 min-w-0">
+              <div className="flex-shrink-0 mt-0.5">
                 <div 
-                  className="w-3 h-3 rounded-full flex-shrink-0"
+                  className="w-4 h-4 rounded-full flex items-center justify-center"
                   style={{ backgroundColor: teamColor }}
-                />
-                <div className="flex-1 min-w-0 text-center">
-                  <div className="text-sm font-semibold text-slate-800 truncate leading-tight">
-                    {playerName}
-                  </div>
-                  {assistName && (
-                    <div className="text-xs text-slate-500 truncate leading-tight">
-                      Assist: {assistName}
-                    </div>
-                  )}
+                >
+                  <span className="text-xs text-white">⚽</span>
                 </div>
               </div>
-              <div className="text-xs font-mono text-slate-600 bg-white px-2 py-1 rounded border ml-2 font-semibold">
-                {formatTime(time)}
+              
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="font-semibold text-sm text-green-800 truncate">
+                    {playerName}
+                  </span>
+                  <Badge variant="outline" className="text-xs bg-green-600 text-white border-green-600 ml-2 flex-shrink-0">
+                    {formatTime(time)}
+                  </Badge>
+                </div>
+                
+                {assistName && (
+                  <div className="text-xs text-green-600 flex items-center gap-1">
+                    <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-300 text-xs px-1 py-0">
+                      A
+                    </Badge>
+                    <span className="truncate">{assistName}</span>
+                  </div>
+                )}
               </div>
             </div>
           );

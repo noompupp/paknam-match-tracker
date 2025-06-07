@@ -1,7 +1,8 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Trophy, Target, AlertTriangle, Clock, Calendar, MapPin } from "lucide-react";
+import { Trophy, Target, AlertTriangle, Clock, Calendar, MapPin, ChevronDown, ChevronUp } from "lucide-react";
+import { useState } from "react";
 import TeamLogoDisplay from "../TeamLogoDisplay";
 import EnhancedMatchEventsTimeline from "../../referee/components/EnhancedMatchEventsTimeline";
 import { getGoalAssistPlayerName } from "../utils/matchSummaryDataProcessor";
@@ -41,6 +42,7 @@ const UnifiedMatchSummaryLayout = ({
   isCardRed
 }: UnifiedMatchSummaryLayoutProps) => {
   const isMobile = useIsMobile();
+  const [cardsExpanded, setCardsExpanded] = useState(false);
   
   // Extract team data using the existing utility
   const teamData = extractTeamData(fixture);
@@ -69,6 +71,10 @@ const UnifiedMatchSummaryLayout = ({
     );
   }
 
+  const formatMinutes = (seconds: number) => {
+    return Math.floor(seconds / 60);
+  };
+
   const getResult = () => {
     const homeScore = fixture?.home_score || 0;
     const awayScore = fixture?.away_score || 0;
@@ -87,11 +93,11 @@ const UnifiedMatchSummaryLayout = ({
 
   return (
     <div className="space-y-6">
-      {/* Header Section */}
-      <Card className="overflow-hidden">
+      {/* Premier League Style Header */}
+      <Card className="overflow-hidden bg-gradient-to-r from-purple-600 via-blue-600 to-purple-600 text-white">
         <CardContent className="p-6">
           {/* Match Info Bar */}
-          <div className="flex items-center justify-center gap-4 text-sm text-muted-foreground mb-6">
+          <div className="flex items-center justify-center gap-4 text-sm text-purple-100 mb-6">
             <div className="flex items-center gap-1">
               <Calendar className="h-4 w-4" />
               <span>{fixture.match_date}</span>
@@ -106,7 +112,7 @@ const UnifiedMatchSummaryLayout = ({
               </>
             )}
             <span>•</span>
-            <Badge variant={fixture.status === 'completed' ? 'default' : 'outline'}>
+            <Badge variant="outline" className="bg-white text-purple-600 border-white">
               {fixture.status === 'completed' ? 'FULL TIME' : fixture.status}
             </Badge>
           </div>
@@ -122,34 +128,28 @@ const UnifiedMatchSummaryLayout = ({
                 showName={false}
               />
               <div className="text-center">
-                <div className="text-sm font-medium text-muted-foreground mb-1">
+                <div className="text-sm font-medium text-purple-100 mb-1">
                   {fixture.home_team?.name || 'Home'}
                 </div>
-                <div 
-                  className="text-4xl font-bold"
-                  style={{ color: teamData.homeTeamColor }}
-                >
+                <div className="text-5xl font-bold text-white">
                   {fixture.home_score || 0}
                 </div>
               </div>
             </div>
 
             <div className="text-center px-8">
-              <div className="text-3xl font-light text-muted-foreground mb-2">VS</div>
-              <Badge variant="outline" className={getResultColor()}>
+              <div className="text-2xl font-light text-purple-200 mb-2">-</div>
+              <Badge variant="outline" className={`bg-white ${getResultColor()} border-white font-semibold`}>
                 {getResult()}
               </Badge>
             </div>
 
             <div className="flex items-center gap-4 flex-1 justify-end">
               <div className="text-center">
-                <div className="text-sm font-medium text-muted-foreground mb-1">
+                <div className="text-sm font-medium text-purple-100 mb-1">
                   {fixture.away_team?.name || 'Away'}
                 </div>
-                <div 
-                  className="text-4xl font-bold"
-                  style={{ color: teamData.awayTeamColor }}
-                >
+                <div className="text-5xl font-bold text-white">
                   {fixture.away_score || 0}
                 </div>
               </div>
@@ -166,135 +166,146 @@ const UnifiedMatchSummaryLayout = ({
       </Card>
 
       {/* Match Events Section */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Goals */}
-        <Card>
-          <CardContent className="pt-6">
-            <h4 className="font-semibold flex items-center gap-2 mb-4">
-              <Target className="h-4 w-4" />
-              Goals ({goals.length})
-            </h4>
-            
-            {goals.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-8">No goals recorded</p>
-            ) : (
-              <div className="space-y-3">
-                {goals.map((goal, index) => {
-                  const isHomeGoal = processedEvents.homeGoals.includes(goal);
-                  const teamColor = isHomeGoal ? teamData.homeTeamColor : teamData.awayTeamColor;
-                  const playerName = getGoalPlayerName(goal);
-                  const assistName = getGoalAssistPlayerName(goal);
-                  const time = getGoalTime(goal);
-                  
-                  return (
-                    <div 
-                      key={`goal-${goal.id}-${index}`} 
-                      className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
-                    >
-                      <div className="flex items-center gap-3 flex-1">
-                        <div 
-                          className="w-3 h-3 rounded-full"
-                          style={{ backgroundColor: teamColor }}
-                        />
-                        <div className="flex-1">
-                          <div className="font-medium text-sm">{playerName}</div>
-                          {assistName && (
-                            <div className="text-xs text-muted-foreground">
-                              Assist: {assistName}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                      <Badge variant="outline" className="text-xs">
-                        {Math.floor(time / 60)}'
-                      </Badge>
+      <Card>
+        <CardContent className="pt-6">
+          <h4 className="font-semibold flex items-center gap-2 mb-6 text-lg">
+            <Target className="h-5 w-5" />
+            Match Events ({goals.length})
+          </h4>
+          
+          {goals.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-12 bg-muted/30 rounded-lg">
+              No goals recorded in this match
+            </p>
+          ) : (
+            <div className="space-y-6">
+              {goals.map((goal, index) => {
+                const isHomeGoal = processedEvents.homeGoals.includes(goal);
+                const teamLogo = isHomeGoal ? fixture.home_team?.logoURL : fixture.away_team?.logoURL;
+                const teamName = isHomeGoal ? fixture.home_team?.name : fixture.away_team?.name;
+                const teamColor = isHomeGoal ? teamData.homeTeamColor : teamData.awayTeamColor;
+                const playerName = getGoalPlayerName(goal);
+                const assistName = getGoalAssistPlayerName(goal);
+                const time = getGoalTime(goal);
+                
+                return (
+                  <div 
+                    key={`goal-${goal.id}-${index}`} 
+                    className="flex items-start gap-4 p-4 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg"
+                  >
+                    <div className="flex-shrink-0 mt-1">
+                      <TeamLogoDisplay 
+                        teamName={teamName}
+                        teamLogo={teamLogo}
+                        teamColor={teamColor}
+                        size="sm"
+                        showName={false}
+                      />
                     </div>
-                  );
-                })}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                    
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-1">
+                        <span className="text-2xl">⚽</span>
+                        <div className="font-semibold text-lg text-green-800">
+                          {playerName}
+                        </div>
+                        <Badge 
+                          variant="outline" 
+                          className="bg-green-600 text-white border-green-600 font-bold px-3 py-1"
+                        >
+                          {formatMinutes(time)}'
+                        </Badge>
+                      </div>
+                      
+                      {assistName && (
+                        <div className="text-sm text-green-700 ml-8 flex items-center gap-2">
+                          <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-300 text-xs">
+                            ASSIST
+                          </Badge>
+                          <span className="font-medium">{assistName}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
-        {/* Cards */}
-        <Card>
-          <CardContent className="pt-6">
-            <h4 className="font-semibold flex items-center gap-2 mb-4">
-              <AlertTriangle className="h-4 w-4" />
-              Cards ({cards.length})
-            </h4>
-            
-            {cards.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-8">No cards issued</p>
-            ) : (
-              <div className="space-y-3">
-                {cards.map((card, index) => {
+      {/* Collapsible Cards Section */}
+      <Card>
+        <CardContent className="pt-6">
+          <button 
+            onClick={() => setCardsExpanded(!cardsExpanded)}
+            className="w-full flex items-center justify-between mb-4 text-lg font-semibold hover:text-yellow-600 transition-colors"
+          >
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5" />
+              Disciplinary ({cards.length})
+            </div>
+            {cardsExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+          </button>
+          
+          {cardsExpanded && (
+            <div className="space-y-3">
+              {cards.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-8 bg-muted/30 rounded-lg">
+                  No cards issued in this match
+                </p>
+              ) : (
+                cards.map((card, index) => {
                   const isHomeCard = getCardTeamId(card) === fixture?.home_team_id;
+                  const teamLogo = isHomeCard ? fixture.home_team?.logoURL : fixture.away_team?.logoURL;
+                  const teamName = isHomeCard ? fixture.home_team?.name : fixture.away_team?.name;
                   const teamColor = isHomeCard ? teamData.homeTeamColor : teamData.awayTeamColor;
+                  const cardType = getCardType(card);
+                  const isRed = isCardRed(card);
                   
                   return (
                     <div 
                       key={`card-${card.id}-${index}`} 
-                      className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
+                      className={`flex items-center gap-4 p-4 rounded-lg border ${
+                        isRed 
+                          ? 'bg-gradient-to-r from-red-50 to-pink-50 border-red-200' 
+                          : 'bg-gradient-to-r from-yellow-50 to-amber-50 border-yellow-200'
+                      }`}
                     >
-                      <div className="flex items-center gap-3 flex-1">
-                        <div 
-                          className="w-3 h-3 rounded-full"
-                          style={{ backgroundColor: teamColor }}
-                        />
-                        <div className="font-medium text-sm">
+                      <TeamLogoDisplay 
+                        teamName={teamName}
+                        teamLogo={teamLogo}
+                        teamColor={teamColor}
+                        size="sm"
+                        showName={false}
+                      />
+                      
+                      <div className="flex-1 flex items-center gap-3">
+                        <span className="text-lg">{isRed ? '🟥' : '🟨'}</span>
+                        <div className="font-semibold text-base">
                           {getCardPlayerName(card)}
                         </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Badge variant={isCardRed(card) ? 'destructive' : 'outline'} className="text-xs">
-                          {getCardType(card)}
+                      
+                      <div className="flex items-center gap-3">
+                        <Badge 
+                          variant={isRed ? 'destructive' : 'outline'} 
+                          className={`font-bold px-3 py-1 ${
+                            !isRed ? 'bg-yellow-500 text-white border-yellow-500' : ''
+                          }`}
+                        >
+                          {cardType.toUpperCase()}
                         </Badge>
-                        <span className="text-xs text-muted-foreground">
-                          {Math.floor(getCardTime(card) / 60)}'
+                        <span className="text-sm text-muted-foreground font-mono">
+                          {formatMinutes(getCardTime(card))}'
                         </span>
                       </div>
                     </div>
                   );
-                })}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Summary Statistics Box */}
-      <Card className="bg-gradient-to-r from-muted/30 via-muted/20 to-muted/30">
-        <CardContent className="pt-6">
-          <div className="grid grid-cols-3 gap-6 text-center">
-            <div>
-              <div className="text-2xl font-bold mb-1" style={{ color: teamData.homeTeamColor }}>
-                {processedEvents.homeGoals.length}
-              </div>
-              <div className="text-sm text-muted-foreground mb-2">Goals</div>
-              <div className="text-xs text-muted-foreground truncate">
-                {fixture.home_team?.name || 'Home'}
-              </div>
+                })
+              )}
             </div>
-            <div>
-              <div className="text-2xl font-bold mb-1 text-amber-600">
-                {cards.length}
-              </div>
-              <div className="text-sm text-muted-foreground mb-2">Cards</div>
-              <div className="text-xs text-muted-foreground">
-                {timelineEvents.length} Events
-              </div>
-            </div>
-            <div>
-              <div className="text-2xl font-bold mb-1" style={{ color: teamData.awayTeamColor }}>
-                {processedEvents.awayGoals.length}
-              </div>
-              <div className="text-sm text-muted-foreground mb-2">Goals</div>
-              <div className="text-xs text-muted-foreground truncate">
-                {fixture.away_team?.name || 'Away'}
-              </div>
-            </div>
-          </div>
+          )}
         </CardContent>
       </Card>
 
@@ -302,8 +313,8 @@ const UnifiedMatchSummaryLayout = ({
       {timelineEvents.length > 0 && (
         <Card>
           <CardContent className="pt-6">
-            <h4 className="font-semibold flex items-center gap-2 mb-4">
-              <Clock className="h-4 w-4" />
+            <h4 className="font-semibold flex items-center gap-2 mb-4 text-lg">
+              <Clock className="h-5 w-5" />
               Match Timeline ({timelineEvents.length})
             </h4>
             <EnhancedMatchEventsTimeline
@@ -313,6 +324,51 @@ const UnifiedMatchSummaryLayout = ({
           </CardContent>
         </Card>
       )}
+
+      {/* Summary Statistics Box */}
+      <Card className="bg-gradient-to-r from-slate-50 via-gray-50 to-slate-50 border-2">
+        <CardContent className="pt-6">
+          <div className="grid grid-cols-3 gap-6 text-center">
+            <div className="flex flex-col items-center">
+              <TeamLogoDisplay 
+                teamName={fixture.home_team?.name || 'Home'}
+                teamLogo={fixture.home_team?.logoURL}
+                teamColor={teamData.homeTeamColor}
+                size="sm"
+                showName={false}
+              />
+              <div className="text-3xl font-bold mt-2 mb-1" style={{ color: teamData.homeTeamColor }}>
+                {processedEvents.homeGoals.length}
+              </div>
+              <div className="text-sm text-muted-foreground">Goals</div>
+            </div>
+            
+            <div className="flex flex-col items-center">
+              <div className="w-10 h-10 bg-amber-500 rounded-full flex items-center justify-center mb-2">
+                <AlertTriangle className="h-5 w-5 text-white" />
+              </div>
+              <div className="text-3xl font-bold mb-1 text-amber-600">
+                {cards.length}
+              </div>
+              <div className="text-sm text-muted-foreground">Cards</div>
+            </div>
+            
+            <div className="flex flex-col items-center">
+              <TeamLogoDisplay 
+                teamName={fixture.away_team?.name || 'Away'}
+                teamLogo={fixture.away_team?.logoURL}
+                teamColor={teamData.awayTeamColor}
+                size="sm"
+                showName={false}
+              />
+              <div className="text-3xl font-bold mt-2 mb-1" style={{ color: teamData.awayTeamColor }}>
+                {processedEvents.awayGoals.length}
+              </div>
+              <div className="text-sm text-muted-foreground">Goals</div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };
