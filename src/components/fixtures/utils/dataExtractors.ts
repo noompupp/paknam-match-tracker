@@ -46,27 +46,33 @@ export const getGoalPlayerName = (goal: any): string => {
 };
 
 export const getGoalAssistPlayerName = (goal: any): string => {
-  // Enhanced assist extraction from processed timeline events
+  // Enhanced assist extraction with comprehensive field checking
   const possibleAssistNames = [
     goal.assistPlayerName,
     goal.assist_player_name,
     goal.assistPlayer?.name,
     goal.assist?.player_name,
     goal.assist?.name,
-    goal.assist?.playerName
+    goal.assist?.playerName,
+    goal.assist_name,
+    goal.assistName
   ];
   
   const assistPlayerName = possibleAssistNames.find(name => name && name.trim() !== '') || '';
   
-  console.log('🅰️ getGoalAssistPlayerName - Enhanced extraction from timeline:', {
+  console.log('🅰️ getGoalAssistPlayerName - Enhanced extraction:', {
     goalId: goal.id,
+    goalType: goal.type,
     possibleAssistNames,
     selectedAssistName: assistPlayerName,
     hasAssist: !!assistPlayerName,
-    goalStructure: {
+    rawGoalStructure: {
       assistPlayerName: goal.assistPlayerName,
       assist_player_name: goal.assist_player_name,
-      assistTeamId: goal.assistTeamId
+      assistTeamId: goal.assistTeamId,
+      assist_team_id: goal.assist_team_id,
+      assistName: goal.assistName,
+      assist_name: goal.assist_name
     }
   });
   

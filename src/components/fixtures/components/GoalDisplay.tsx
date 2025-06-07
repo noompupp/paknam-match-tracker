@@ -21,16 +21,18 @@ const GoalDisplay = ({ goal, index, teamType, teamColor }: GoalDisplayProps) => 
     const goalTime = getGoalTime(goal);
     const goalId = goal.id || `${teamType}-goal-${index}`;
 
-    console.log(`⚽ GoalDisplay: Enhanced rendering ${teamType} goal with assist data:`, {
+    console.log(`⚽ GoalDisplay: Enhanced rendering ${teamType} goal with comprehensive assist analysis:`, {
       goalId,
       player: playerName,
       assist: assistPlayerName,
       time: goalTime,
       assistFound: !!assistPlayerName,
-      rawAssistData: {
+      comprehensiveAssistCheck: {
         assistPlayerName: goal.assistPlayerName,
         assist_player_name: goal.assist_player_name,
-        assistTeamId: goal.assistTeamId
+        assistTeamId: goal.assistTeamId,
+        assist_team_id: goal.assist_team_id,
+        extractorResult: getGoalAssistPlayerName(goal)
       },
       fullGoalStructure: goal
     });
@@ -88,13 +90,20 @@ const GoalDisplay = ({ goal, index, teamType, teamColor }: GoalDisplayProps) => 
           )}
         </div>
         
-        {/* Enhanced Premier League Style Assist Display */}
+        {/* Enhanced Premier League Style Assist Display with Comprehensive Data Checking */}
         {assistPlayerName && (
           <div className={`text-sm text-muted-foreground mt-1 font-medium ${teamType === 'away' ? 'text-right mr-6' : 'ml-6'}`}>
             <span className="inline-flex items-center gap-1">
               <span className="text-xs bg-muted px-1.5 py-0.5 rounded font-bold">A</span>
               {assistPlayerName}
             </span>
+          </div>
+        )}
+
+        {/* Debug assist information in development */}
+        {process.env.NODE_ENV === 'development' && !assistPlayerName && (
+          <div className={`text-xs text-muted-foreground mt-1 opacity-60 ${teamType === 'away' ? 'text-right mr-6' : 'ml-6'}`}>
+            <span className="italic">No assist data available</span>
           </div>
         )}
       </div>

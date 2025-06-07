@@ -23,12 +23,12 @@ const GoalsSection = ({
   getGoalPlayerName,
   getGoalTime
 }: GoalsSectionProps) => {
-  console.log('⚽ GoalsSection: Enhanced assist information analysis:', {
+  console.log('⚽ GoalsSection: Comprehensive assist information analysis with enhanced debugging:', {
     totalGoals: goals.length,
     homeGoals: homeGoals.length,
     awayGoals: awayGoals.length,
     totalGoalsWithAssists: goals.filter(g => getGoalAssistPlayerName(g)).length,
-    assistAnalysis: goals.map(g => ({
+    comprehensiveAssistAnalysis: goals.map(g => ({
       id: g.id,
       type: g.type,
       playerName: getGoalPlayerName(g),
@@ -38,23 +38,41 @@ const GoalsSection = ({
       rawAssistFields: {
         assistPlayerName: g.assistPlayerName,
         assist_player_name: g.assist_player_name,
-        assistTeamId: g.assistTeamId
+        assistTeamId: g.assistTeamId,
+        assist_team_id: g.assist_team_id,
+        assistName: g.assistName,
+        assist_name: g.assist_name
+      },
+      extractorResult: getGoalAssistPlayerName(g)
+    })),
+    homeGoalsWithAssistDetails: homeGoals.map(g => ({
+      id: g.id,
+      player: getGoalPlayerName(g),
+      assist: getGoalAssistPlayerName(g),
+      hasAssist: !!getGoalAssistPlayerName(g),
+      time: getGoalTime(g),
+      rawData: {
+        assistPlayerName: g.assistPlayerName,
+        assist_player_name: g.assist_player_name
       }
     })),
-    homeGoalsWithAssists: homeGoals.map(g => ({
+    awayGoalsWithAssistDetails: awayGoals.map(g => ({
       id: g.id,
       player: getGoalPlayerName(g),
       assist: getGoalAssistPlayerName(g),
       hasAssist: !!getGoalAssistPlayerName(g),
-      time: getGoalTime(g)
+      time: getGoalTime(g),
+      rawData: {
+        assistPlayerName: g.assistPlayerName,
+        assist_player_name: g.assist_player_name
+      }
     })),
-    awayGoalsWithAssists: awayGoals.map(g => ({
-      id: g.id,
-      player: getGoalPlayerName(g),
-      assist: getGoalAssistPlayerName(g),
-      hasAssist: !!getGoalAssistPlayerName(g),
-      time: getGoalTime(g)
-    }))
+    assistCorrelationSummary: {
+      totalGoalsWithRawAssistData: goals.filter(g => g.assistPlayerName || g.assist_player_name).length,
+      totalGoalsWithExtractedAssists: goals.filter(g => getGoalAssistPlayerName(g)).length,
+      homeGoalsWithAssists: homeGoals.filter(g => getGoalAssistPlayerName(g)).length,
+      awayGoalsWithAssists: awayGoals.filter(g => getGoalAssistPlayerName(g)).length
+    }
   });
 
   if (goals.length === 0) {
