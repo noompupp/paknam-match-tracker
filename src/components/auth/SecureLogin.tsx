@@ -9,7 +9,11 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Lock, Mail, Eye, EyeOff, Shield } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
-const SecureLogin = () => {
+interface SecureLoginProps {
+  onSuccess?: () => void;
+}
+
+const SecureLogin = ({ onSuccess }: SecureLoginProps) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isSignUp, setIsSignUp] = useState(false);
@@ -61,6 +65,11 @@ const SecureLogin = () => {
             ? "Please check your email to verify your account."
             : "You have been successfully signed in.",
         });
+        
+        // Call onSuccess callback if provided
+        if (onSuccess) {
+          onSuccess();
+        }
       }
     } catch (error) {
       setError("An unexpected error occurred. Please try again.");

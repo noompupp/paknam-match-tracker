@@ -5,11 +5,11 @@ import { Toaster } from "@/components/ui/toaster";
 import { SecureAuthProvider, useSecureAuth } from "@/contexts/SecureAuthContext";
 import { AuthProvider } from "@/contexts/AuthContext"; // Keep for backward compatibility
 import SecureLogin from "@/components/auth/SecureLogin";
-import Navigation from "@/components/Navigation";
+import RoleBasedNavigation from "@/components/auth/RoleBasedNavigation";
+import RoleGuard from "@/components/auth/RoleGuard";
 import Dashboard from "@/components/Dashboard";
 import Teams from "@/components/Teams";
 import Fixtures from "@/components/Fixtures";
-import ProtectedTabWrapper from "@/components/auth/ProtectedTabWrapper";
 import RefereeToolsContainer from "@/components/referee/RefereeToolsContainer";
 import Notifications from "@/components/Notifications";
 
@@ -39,12 +39,12 @@ const AppContent = () => {
     );
   }
 
-  // Show login screen if not authenticated
-  if (!user) {
-    return <SecureLogin />;
+  // Handle authentication tab - show login screen
+  if (activeTab === 'auth') {
+    return <SecureLogin onSuccess={() => setActiveTab('dashboard')} />;
   }
 
-  // Main application interface for authenticated users
+  // Main application interface - no authentication required for basic tabs
   const renderContent = () => {
     switch (activeTab) {
       case "teams":
@@ -53,23 +53,15 @@ const AppContent = () => {
         return <Fixtures />;
       case "referee":
         return (
-          <ProtectedTabWrapper 
-            tabId="referee" 
-            title="Referee Tools Access"
-            description="Enter the referee access code to use match management tools"
-          >
+          <RoleGuard requiredRole="referee">
             <RefereeToolsContainer />
-          </ProtectedTabWrapper>
+          </RoleGuard>
         );
       case "notifications":
         return (
-          <ProtectedTabWrapper 
-            tabId="notifications" 
-            title="Enhanced Features"
-            description="Enter access code for enhanced features and notifications"
-          >
+          <RoleGuard requiredRole="referee">
             <Notifications />
-          </ProtectedTabWrapper>
+          </RoleGuard>
         );
       default:
         return <Dashboard />;
@@ -81,7 +73,7 @@ const AppContent = () => {
       <main className="pb-20">
         {renderContent()}
       </main>
-      <Navigation activeTab={activeTab} onTabChange={setActiveTab} />
+      <RoleBasedNavigation activeTab={activeTab} onTabChange={setActiveTab} />
     </div>
   );
 };
