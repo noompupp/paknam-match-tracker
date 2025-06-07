@@ -56,12 +56,12 @@ const LeagueTable = ({ teams, isLoading }: LeagueTableProps) => {
                 teams.map((team) => (
                   <tr key={team.id} className="border-b hover:bg-muted/30 transition-colors">
                     <td className="p-3">
-                      <div className="flex items-center gap-2">
-                        <span className="font-bold">{team.position}</span>
+                      <div className="flex items-center gap-1">
                         <RankChangeIndicator 
                           currentPosition={team.position} 
                           previousPosition={team.previous_position} 
                         />
+                        <span className="font-bold">{team.position}</span>
                       </div>
                     </td>
                     <td className="p-3">
