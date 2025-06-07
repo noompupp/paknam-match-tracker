@@ -95,7 +95,11 @@ const MatchSummaryDialog = ({ fixture, isOpen, onClose }: MatchSummaryDialogProp
           isCardRed={isCardRed}
         />
 
-        <MatchSummaryShareActions fixture={fixture} />
+        <MatchSummaryShareActions 
+          fixture={fixture} 
+          goals={goals}
+          cards={cards}
+        />
       </DialogContent>
     </Dialog>
   );

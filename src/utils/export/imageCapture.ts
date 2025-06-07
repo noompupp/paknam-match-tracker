@@ -49,14 +49,15 @@ export const getMobileOptimizedCaptureOptions = (element: HTMLElement): CaptureO
     };
   }
 
+  // Mobile export optimization - force specific dimensions for story format
   return {
-    scale: window.devicePixelRatio || 2,
-    width: Math.min(375, element.scrollWidth),
-    height: element.scrollHeight,
-    x: Math.max(0, (element.scrollWidth - 375) / 2),
+    scale: 2,
+    width: 375, // Fixed width for mobile stories
+    height: Math.min(667, element.scrollHeight), // Max height for story format
+    x: 0,
     y: 0,
     windowWidth: 375,
-    windowHeight: window.innerHeight,
+    windowHeight: 667,
   };
 };
 

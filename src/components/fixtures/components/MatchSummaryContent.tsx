@@ -1,6 +1,9 @@
 
 import PremierLeagueStyleSummary from "../PremierLeagueStyleSummary";
 import TraditionalMatchSummaryView from "./TraditionalMatchSummaryView";
+import MobileExportLayout from "./MobileExportLayout";
+import { extractTeamData, processTeamEvents } from "../utils/teamDataProcessor";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface MatchSummaryContentProps {
   fixture: any;
@@ -10,6 +13,7 @@ interface MatchSummaryContentProps {
   enhancedSuccess: boolean;
   enhancedData: any;
   viewStyle: 'compact' | 'full';
+  isExportMode?: boolean;
   formatTime: (seconds: number) => string;
   getGoalTeamId: (goal: any) => string;
   getGoalPlayerName: (goal: any) => string;
@@ -29,6 +33,7 @@ const MatchSummaryContent = ({
   enhancedSuccess,
   enhancedData,
   viewStyle,
+  isExportMode = false,
   formatTime,
   getGoalTeamId,
   getGoalPlayerName,
@@ -39,6 +44,27 @@ const MatchSummaryContent = ({
   getCardType,
   isCardRed
 }: MatchSummaryContentProps) => {
+  const isMobile = useIsMobile();
+
+  // Extract team data for mobile export layout
+  const teamData = extractTeamData(fixture);
+  const processedEvents = processTeamEvents(goals, cards, teamData, getCardTeamId);
+
+  // Use mobile export layout when in export mode on mobile
+  if (isExportMode && isMobile) {
+    return (
+      <MobileExportLayout
+        fixture={fixture}
+        goals={goals}
+        cards={cards}
+        homeGoals={processedEvents.homeGoals}
+        awayGoals={processedEvents.awayGoals}
+        homeTeamColor={teamData.homeTeamColor}
+        awayTeamColor={teamData.awayTeamColor}
+      />
+    );
+  }
+
   return (
     <div id="match-summary-content" className="space-y-6 w-full">
       {/* Mobile-optimized container with proper centering */}
