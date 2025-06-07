@@ -36,38 +36,37 @@ const PWAPromptToast = () => {
         return {
           title: "Add to Home Screen",
           description: "Install this app on your iPhone: tap Share then 'Add to Home Screen'",
-          icon: <Share className="h-5 w-5" />,
+          icon: Share,
           instructions: "Tap the Share button below and select 'Add to Home Screen'"
         };
       } else if (isAndroid && isChrome) {
         return {
           title: "Install App",
           description: "Add Paknam FC to your home screen for quick access",
-          icon: <Plus className="h-5 w-5" />,
+          icon: Plus,
           instructions: "Tap 'Add to Home Screen' when prompted"
         };
       } else {
         return {
           title: "Install App",
           description: "Add Paknam FC to your home screen for the best experience",
-          icon: <Home className="h-5 w-5" />,
+          icon: Home,
           instructions: "Look for 'Add to Home Screen' in your browser menu"
         };
       }
     };
 
     const content = getPromptContent();
+    const IconComponent = content.icon;
 
     toast({
-      title: (
-        <div className="flex items-center gap-2">
-          {content.icon}
-          <span>{content.title}</span>
-        </div>
-      ),
+      title: content.title,
       description: (
         <div className="space-y-2">
-          <p>{content.description}</p>
+          <div className="flex items-center gap-2">
+            <IconComponent className="h-4 w-4" />
+            <span>{content.description}</span>
+          </div>
           <p className="text-xs text-muted-foreground">{content.instructions}</p>
         </div>
       ),
