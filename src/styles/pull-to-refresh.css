@@ -1,0 +1,76 @@
+
+/* Pull to Refresh Styles */
+.pull-to-refresh-container {
+  position: relative;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+/* Prevent overscroll bounce on iOS when pulling */
+@supports (-webkit-appearance: none) {
+  @media (display-mode: standalone) {
+    .pull-to-refresh-container {
+      overscroll-behavior-y: contain;
+      -webkit-overflow-scrolling: touch;
+    }
+    
+    /* Disable the default pull-to-refresh behavior */
+    body {
+      overscroll-behavior-y: contain;
+    }
+  }
+}
+
+/* Pull to refresh animations */
+.pull-indicator-enter {
+  animation: pullIndicatorEnter 0.3s ease-out;
+}
+
+.pull-indicator-exit {
+  animation: pullIndicatorExit 0.2s ease-in;
+}
+
+@keyframes pullIndicatorEnter {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-20px) scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0px) scale(1);
+  }
+}
+
+@keyframes pullIndicatorExit {
+  from {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0px) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-10px) scale(0.9);
+  }
+}
+
+/* Smooth pull animation */
+.pull-content {
+  transition: transform 0.1s ease-out;
+  will-change: transform;
+}
+
+/* Enhanced refresh animation */
+.refresh-complete {
+  animation: refreshComplete 0.5s ease-out;
+}
+
+@keyframes refreshComplete {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}

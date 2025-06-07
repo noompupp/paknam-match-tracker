@@ -11,9 +11,19 @@ import { NavigationProvider } from "@/contexts/NavigationContext";
 import ProtectedTabWrapper from "@/components/auth/ProtectedTabWrapper";
 import PWAInstallButton from "@/components/PWAInstallButton";
 import PWAPromptToast from "@/components/PWAPromptToast";
+import PullToRefreshIndicator from "@/components/PullToRefreshIndicator";
+import { usePullToRefresh } from "@/hooks/usePullToRefresh";
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
+  
+  // Pull to refresh functionality
+  const pullToRefresh = usePullToRefresh({
+    threshold: 80,
+    maxPull: 120,
+    resistance: 2.5,
+    enabled: true
+  });
 
   const handleNavigateToFixtures = () => {
     setActiveTab("fixtures");
@@ -105,8 +115,28 @@ const Index = () => {
   return (
     <AuthProvider>
       <NavigationProvider onTabChange={setActiveTab}>
-        <div className="min-h-screen min-h-dvh safe-x">
-          {renderContent()}
+        <div className="min-h-screen min-h-dvh safe-x pull-to-refresh-container">
+          {/* Pull to refresh indicator */}
+          <PullToRefreshIndicator
+            pullDistance={pullToRefresh.pullDistance}
+            isRefreshing={pullToRefresh.isRefreshing}
+            canRefresh={pullToRefresh.canRefresh}
+            isActive={pullToRefresh.isActive}
+            progress={pullToRefresh.progress}
+          />
+          
+          {/* Main content with pull animation */}
+          <div 
+            className="pull-content"
+            style={{
+              transform: pullToRefresh.isActive ? 
+                `translateY(${Math.min(pullToRefresh.pullDistance * 0.5, 30)}px)` : 
+                'translateY(0px)'
+            }}
+          >
+            {renderContent()}
+          </div>
+          
           <Navigation activeTab={activeTab} onTabChange={setActiveTab} />
           <PWAInstallButton />
           <PWAPromptToast />
