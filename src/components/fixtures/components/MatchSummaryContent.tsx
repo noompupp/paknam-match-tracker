@@ -95,7 +95,8 @@ const MatchSummaryContent = ({
       </div>
 
       {/* Enhanced export mode styles with better mobile typography */}
-      <style jsx>{`
+      <style>
+        {`
         .export-mode-mobile {
           font-size: 14px !important;
           line-height: 1.4 !important;
@@ -142,7 +143,8 @@ const MatchSummaryContent = ({
           max-width: 100% !important;
           height: auto !important;
         }
-      `}</style>
+        `}
+      </style>
     </div>
   );
 };
