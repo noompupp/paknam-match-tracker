@@ -69,8 +69,11 @@ const RoleBasedNavigation = ({ activeTab, onTabChange }: RoleBasedNavigationProp
 
   return (
     <nav 
-      className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-sm border-t border-gray-200 dark:bg-gray-900/95 dark:border-gray-800 z-50 safe-bottom"
+      className="fixed bottom-0 left-0 right-0 border-t z-50 safe-bottom"
       style={{
+        background: 'var(--header-background)',
+        backdropFilter: 'var(--header-backdrop-blur)',
+        borderColor: 'var(--header-border)',
         paddingBottom: `max(env(safe-area-inset-bottom), 0.5rem)`,
         height: `calc(70px + env(safe-area-inset-bottom))`
       }}
