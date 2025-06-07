@@ -1,7 +1,8 @@
 
 import { Button } from "@/components/ui/button";
-import { Home, Calendar, Bell, BarChart3, Flag, Lock } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
+import { Home, Calendar, Bell, BarChart3, Flag, Lock, LogOut } from "lucide-react";
+import { useSecureAuth } from "@/contexts/SecureAuthContext";
+import { useToast } from "@/hooks/use-toast";
 
 interface NavigationProps {
   activeTab: string;
@@ -9,13 +10,30 @@ interface NavigationProps {
 }
 
 const Navigation = ({ activeTab, onTabChange }: NavigationProps) => {
-  const { isAuthenticated } = useAuth();
+  const { user, signOut, hasRole } = useSecureAuth();
+  const { toast } = useToast();
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      toast({
+        title: "Signed Out",
+        description: "You have been successfully signed out.",
+      });
+    } catch (error) {
+      toast({
+        title: "Sign Out Error",
+        description: "Failed to sign out. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
 
   const navItems = [
     { id: "dashboard", label: "Latest", icon: Home, protected: false },
     { id: "teams", label: "Teams", icon: BarChart3, protected: false },
     { id: "fixtures", label: "Fixtures", icon: Calendar, protected: false },
-    { id: "referee", label: "Referee Tools", icon: Flag, protected: true },
+    { id: "referee", label: "Referee", icon: Flag, protected: true },
     { id: "notifications", label: "More", icon: Bell, protected: true },
   ];
 
@@ -31,7 +49,6 @@ const Navigation = ({ activeTab, onTabChange }: NavigationProps) => {
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = activeTab === item.id;
-          const isProtectedAndLocked = item.protected && !isAuthenticated(item.id);
           
           return (
             <Button
@@ -52,7 +69,7 @@ const Navigation = ({ activeTab, onTabChange }: NavigationProps) => {
             >
               <div className="relative">
                 <Icon className="h-5 w-5" />
-                {isProtectedAndLocked && (
+                {item.protected && (
                   <Lock className="h-3 w-3 absolute -top-1 -right-1 text-orange-500" />
                 )}
               </div>
@@ -60,6 +77,18 @@ const Navigation = ({ activeTab, onTabChange }: NavigationProps) => {
             </Button>
           );
         })}
+        
+        {/* Sign out button */}
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handleSignOut}
+          className="flex flex-col items-center gap-1 h-auto py-2 px-3 transition-all duration-200 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+          title="Sign Out"
+        >
+          <LogOut className="h-5 w-5" />
+          <span className="text-xs font-medium">Exit</span>
+        </Button>
       </div>
     </nav>
   );

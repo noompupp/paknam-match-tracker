@@ -448,6 +448,14 @@ export type Database = {
         }
         Returns: Json
       }
+      validate_fixture_score: {
+        Args: { home_score: number; away_score: number }
+        Returns: boolean
+      }
+      validate_player_name: {
+        Args: { player_name: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never

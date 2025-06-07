@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { updateFixtureScore } from './scoreUpdateService';
 import { assignGoalToPlayer } from './goalAssignmentService';
@@ -6,6 +7,8 @@ import { playerTimeTrackingService } from './playerTimeTrackingService';
 import { enhancedDuplicatePreventionService } from './enhancedDuplicatePreventionService';
 import { enhancedMemberStatsService } from '@/services/enhancedMemberStatsService';
 import { operationLoggingService } from '@/services/operationLoggingService';
+import { inputValidationService } from '@/services/security/inputValidationService';
+import { securityMonitoringService } from '@/services/security/securityMonitoringService';
 
 export interface UnifiedSaveResult {
   success: boolean;
@@ -48,13 +51,13 @@ export interface MatchDataToSave {
       duration: number;
     }>;
   }>;
-  homeTeam: { id: string; name: string }; // Already correct as string
-  awayTeam: { id: string; name: string }; // Already correct as string
+  homeTeam: { id: string; name: string };
+  awayTeam: { id: string; name: string };
 }
 
 export const unifiedRefereeService = {
   async saveCompleteMatchData(matchData: MatchDataToSave): Promise<UnifiedSaveResult> {
-    console.log('💾 UnifiedRefereeService: Starting complete match data save...', {
+    console.log('💾 UnifiedRefereeService: Starting secure match data save...', {
       fixture: matchData.fixtureId,
       homeScore: matchData.homeScore,
       awayScore: matchData.awayScore,
@@ -62,6 +65,21 @@ export const unifiedRefereeService = {
       cards: matchData.cards.length,
       playerTimes: matchData.playerTimes.length
     });
+
+    // Security validation first
+    const validationResult = await this.validateMatchData(matchData);
+    if (!validationResult.isValid) {
+      await securityMonitoringService.logSuspiciousActivity(
+        'system',
+        'Invalid match data submission',
+        { errors: validationResult.errors, matchData }
+      );
+      return {
+        success: false,
+        message: 'Match data validation failed',
+        errors: validationResult.errors
+      };
+    }
 
     // Log the operation start
     await operationLoggingService.logOperation({
@@ -88,9 +106,18 @@ export const unifiedRefereeService = {
       console.log('🧹 Cleaning up existing duplicates before save...');
       await enhancedDuplicatePreventionService.cleanupAllDuplicateEvents();
 
-      // 1. Update fixture score
+      // 1. Update fixture score with validation
       try {
-        console.log('📊 Updating fixture score...');
+        console.log('📊 Updating fixture score with security validation...');
+        const scoreValidation = await inputValidationService.validateFixtureScore(
+          matchData.homeScore, 
+          matchData.awayScore
+        );
+        
+        if (!scoreValidation.isValid) {
+          throw new Error(scoreValidation.error);
+        }
+        
         await updateFixtureScore(matchData.fixtureId, matchData.homeScore, matchData.awayScore);
         scoreUpdated = true;
         console.log('✅ Fixture score updated successfully');
@@ -117,12 +144,18 @@ export const unifiedRefereeService = {
         });
       }
 
-      // 2. Assign goals and assists with duplicate prevention and enhanced member stats update
+      // 2. Assign goals and assists with validation and enhanced member stats update
       const memberStatsUpdates = new Map<number, { goals: number; assists: number }>();
       
       for (const goal of matchData.goals) {
         try {
           console.log(`⚽ Assigning ${goal.type} to ${goal.playerName}...`);
+          
+          // Validate player name
+          const playerValidation = await inputValidationService.validatePlayerName(goal.playerName);
+          if (!playerValidation.isValid) {
+            throw new Error(`Invalid player name: ${playerValidation.error}`);
+          }
           
           // Resolve team ID to string format
           const teamId = goal.team === matchData.homeTeam.name ? matchData.homeTeam.id : matchData.awayTeam.id;
@@ -136,7 +169,7 @@ export const unifiedRefereeService = {
             await assignGoalToPlayer({
               fixtureId: matchData.fixtureId,
               playerId: goal.playerId,
-              playerName: goal.playerName,
+              playerName: playerValidation.sanitizedValue,
               teamId,
               eventTime: goal.time,
               type: goal.type
@@ -186,21 +219,27 @@ export const unifiedRefereeService = {
         }
       }
 
-      // 3. Create cards with duplicate prevention
+      // 3. Create cards with validation and duplicate prevention
       for (const card of matchData.cards) {
         try {
           console.log(`🟨 Creating ${card.type} card for ${card.playerName}...`);
+          
+          // Validate player name
+          const playerValidation = await inputValidationService.validatePlayerName(card.playerName);
+          if (!playerValidation.isValid) {
+            throw new Error(`Invalid player name: ${playerValidation.error}`);
+          }
           
           const teamId = card.team === matchData.homeTeam.name ? matchData.homeTeam.id : matchData.awayTeam.id;
           
           await cardsApi.create({
             fixture_id: matchData.fixtureId,
             player_id: card.playerId,
-            player_name: card.playerName,
+            player_name: playerValidation.sanitizedValue,
             team_id: teamId,
             card_type: card.type,
             event_time: card.time,
-            description: `${card.type} card for ${card.playerName}`
+            description: `${card.type} card for ${playerValidation.sanitizedValue}`
           });
           cardsCreated++;
           console.log(`✅ ${card.type} card created for ${card.playerName}`);
@@ -211,19 +250,31 @@ export const unifiedRefereeService = {
         }
       }
 
-      // 4. Save player time tracking data
+      // 4. Save player time tracking data with validation
       for (const playerTime of matchData.playerTimes) {
         try {
           console.log(`⏱️ Saving time data for ${playerTime.playerName}...`);
+          
+          // Validate player name
+          const playerValidation = await inputValidationService.validatePlayerName(playerTime.playerName);
+          if (!playerValidation.isValid) {
+            throw new Error(`Invalid player name: ${playerValidation.error}`);
+          }
+          
+          // Validate time data
+          const timeValidation = await inputValidationService.validateInteger(playerTime.totalTime, 0, 7200); // Max 2 hours
+          if (!timeValidation.isValid) {
+            throw new Error(`Invalid time data: ${timeValidation.error}`);
+          }
           
           const teamId = playerTime.team === matchData.homeTeam.name ? matchData.homeTeam.id : matchData.awayTeam.id;
           
           await playerTimeTrackingService.savePlayerTime({
             fixture_id: matchData.fixtureId,
             player_id: playerTime.playerId,
-            player_name: playerTime.playerName,
+            player_name: playerValidation.sanitizedValue,
             team_id: parseInt(teamId) || 0,
-            total_minutes: playerTime.totalTime,
+            total_minutes: timeValidation.sanitizedValue,
             periods: playerTime.periods
           });
           playerTimesUpdated++;
@@ -244,7 +295,7 @@ export const unifiedRefereeService = {
         ? `Match data saved successfully: Score updated, ${goalsAssigned} goals/assists assigned, ${cardsCreated} cards created, ${playerTimesUpdated} player times saved`
         : `Match data partially saved with ${errors.length} errors`;
 
-      // Log the final result
+      // Log the final result with security monitoring
       await operationLoggingService.logOperation({
         operation_type: 'referee_match_save_complete',
         table_name: 'fixtures',
@@ -262,6 +313,15 @@ export const unifiedRefereeService = {
         error_message: errors.length > 0 ? errors.join('; ') : null,
         success
       });
+
+      if (errors.length > 0) {
+        await securityMonitoringService.logSecurityEvent({
+          type: 'data_access',
+          severity: 'medium',
+          description: `Match save completed with ${errors.length} errors`,
+          metadata: { fixtureId: matchData.fixtureId, errors }
+        });
+      }
 
       console.log(success ? '✅' : '⚠️', 'UnifiedRefereeService save completed:', {
         success,
@@ -294,6 +354,13 @@ export const unifiedRefereeService = {
         error_message: error instanceof Error ? error.message : 'Unknown critical error',
         success: false
       });
+
+      await securityMonitoringService.logSecurityEvent({
+        type: 'suspicious_activity',
+        severity: 'high',
+        description: 'Critical error during match save operation',
+        metadata: { error: error instanceof Error ? error.message : 'Unknown error', fixtureId: matchData.fixtureId }
+      });
       
       return {
         success: false,
@@ -312,8 +379,12 @@ export const unifiedRefereeService = {
     }
 
     // Validate scores
-    if (matchData.homeScore < 0 || matchData.awayScore < 0) {
-      errors.push('Scores cannot be negative');
+    const scoreValidation = await inputValidationService.validateFixtureScore(
+      matchData.homeScore, 
+      matchData.awayScore
+    );
+    if (!scoreValidation.isValid) {
+      errors.push(scoreValidation.error || 'Invalid scores');
     }
 
     // Validate team data
@@ -321,17 +392,40 @@ export const unifiedRefereeService = {
       errors.push('Invalid team data - missing team IDs or names');
     }
 
-    // Validate goals data
+    // Validate goals data with security checks
     for (const goal of matchData.goals) {
       if (!goal.playerId || !goal.playerName || !goal.team || !['goal', 'assist'].includes(goal.type)) {
         errors.push(`Invalid goal data for ${goal.playerName || 'unknown player'}`);
       }
+      
+      const playerValidation = await inputValidationService.validatePlayerName(goal.playerName);
+      if (!playerValidation.isValid) {
+        errors.push(`Invalid player name in goals: ${playerValidation.error}`);
+      }
     }
 
-    // Validate cards data
+    // Validate cards data with security checks
     for (const card of matchData.cards) {
       if (!card.playerId || !card.playerName || !card.team || !['yellow', 'red'].includes(card.type)) {
         errors.push(`Invalid card data for ${card.playerName || 'unknown player'}`);
+      }
+      
+      const playerValidation = await inputValidationService.validatePlayerName(card.playerName);
+      if (!playerValidation.isValid) {
+        errors.push(`Invalid player name in cards: ${playerValidation.error}`);
+      }
+    }
+
+    // Validate player time data
+    for (const playerTime of matchData.playerTimes) {
+      const playerValidation = await inputValidationService.validatePlayerName(playerTime.playerName);
+      if (!playerValidation.isValid) {
+        errors.push(`Invalid player name in time tracking: ${playerValidation.error}`);
+      }
+      
+      const timeValidation = await inputValidationService.validateInteger(playerTime.totalTime, 0, 7200);
+      if (!timeValidation.isValid) {
+        errors.push(`Invalid time data for ${playerTime.playerName}: ${timeValidation.error}`);
       }
     }
 

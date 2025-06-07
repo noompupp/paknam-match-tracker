@@ -1,5 +1,4 @@
-
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { createContext, useContext, ReactNode } from "react";
 
 interface AuthContextType {
   isAuthenticated: (tab: string) => boolean;
@@ -15,53 +14,24 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
-  const [authenticatedTabs, setAuthenticatedTabs] = useState<Set<string>>(new Set());
-
-  // Load authentication state from sessionStorage on mount
-  useEffect(() => {
-    const savedAuth = sessionStorage.getItem("referee-auth");
-    if (savedAuth) {
-      try {
-        const parsed = JSON.parse(savedAuth);
-        if (Array.isArray(parsed)) {
-          setAuthenticatedTabs(new Set(parsed));
-        }
-      } catch (error) {
-        console.error("Failed to parse saved authentication state:", error);
-        sessionStorage.removeItem("referee-auth");
-      }
-    }
-  }, []);
-
-  // Save authentication state to sessionStorage whenever it changes
-  useEffect(() => {
-    const authArray = Array.from(authenticatedTabs);
-    if (authArray.length > 0) {
-      sessionStorage.setItem("referee-auth", JSON.stringify(authArray));
-    } else {
-      sessionStorage.removeItem("referee-auth");
-    }
-  }, [authenticatedTabs]);
-
+  // This is a deprecated implementation
+  // All functionality should migrate to SecureAuthContext
+  
   const isAuthenticated = (tab: string): boolean => {
-    return authenticatedTabs.has(tab);
+    console.warn('⚠️ Using deprecated AuthContext. Please migrate to SecureAuthContext.');
+    return false; // Force migration by returning false
   };
 
   const authenticate = (tab: string) => {
-    setAuthenticatedTabs(prev => new Set([...prev, tab]));
+    console.warn('⚠️ Using deprecated AuthContext. Please migrate to SecureAuthContext.');
   };
 
   const logout = (tab: string) => {
-    setAuthenticatedTabs(prev => {
-      const newSet = new Set(prev);
-      newSet.delete(tab);
-      return newSet;
-    });
+    console.warn('⚠️ Using deprecated AuthContext. Please migrate to SecureAuthContext.');
   };
 
   const clearAllSessions = () => {
-    setAuthenticatedTabs(new Set());
-    sessionStorage.removeItem("referee-auth");
+    console.warn('⚠️ Using deprecated AuthContext. Please migrate to SecureAuthContext.');
   };
 
   return (
