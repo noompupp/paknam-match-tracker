@@ -1,4 +1,3 @@
-
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -20,7 +19,15 @@ interface MatchSummaryDialogProps {
   onClose: () => void;
 }
 
-// Type guards and helper functions
+// Enhanced data processing utilities for unified timeline data
+const processTimelineDataForDisplay = (timelineEvents: any[]) => {
+  const goals = timelineEvents.filter(event => event.type === 'goal');
+  const cards = timelineEvents.filter(event => event.type === 'yellow_card' || event.type === 'red_card');
+  
+  return { goals, cards };
+};
+
+// Type guards and helper functions for unified data handling
 const isEnhancedGoal = (goal: any): goal is { id: number; playerId: number; playerName: string; team: string; teamId: string; type: "assist" | "goal"; time: number; timestamp: string; assistPlayerName?: string; assistTeamId?: string; } => {
   return 'teamId' in goal && 'playerName' in goal && 'time' in goal;
 };
@@ -29,31 +36,54 @@ const isEnhancedCard = (card: any): card is { id: number; playerId: number; play
   return 'teamId' in card && 'playerName' in card && 'time' in card && 'type' in card;
 };
 
+const isTimelineGoal = (goal: any): goal is { id: number; type: string; time: number; playerName: string; teamId: string; teamName: string; description: string; timestamp: string; } => {
+  return 'teamName' in goal && 'playerName' in goal && 'time' in goal && goal.type === 'goal';
+};
+
+const isTimelineCard = (card: any): card is { id: number; type: string; time: number; playerName: string; teamId: string; teamName: string; cardType?: string; description: string; timestamp: string; } => {
+  return 'teamName' in card && 'playerName' in card && 'time' in card && (card.type === 'yellow_card' || card.type === 'red_card');
+};
+
 const getGoalTeamId = (goal: any): string => {
-  return isEnhancedGoal(goal) ? goal.teamId : goal.team_id;
+  if (isTimelineGoal(goal)) return goal.teamId;
+  if (isEnhancedGoal(goal)) return goal.teamId;
+  return goal.team_id;
 };
 
 const getGoalPlayerName = (goal: any): string => {
-  return isEnhancedGoal(goal) ? goal.playerName : goal.player_name;
+  if (isTimelineGoal(goal)) return goal.playerName;
+  if (isEnhancedGoal(goal)) return goal.playerName;
+  return goal.player_name;
 };
 
 const getGoalTime = (goal: any): number => {
-  return isEnhancedGoal(goal) ? goal.time : goal.event_time;
+  if (isTimelineGoal(goal)) return goal.time;
+  if (isEnhancedGoal(goal)) return goal.time;
+  return goal.event_time;
 };
 
 const getCardTeamId = (card: any): string => {
-  return isEnhancedCard(card) ? card.teamId : card.team_id;
+  if (isTimelineCard(card)) return card.teamId;
+  if (isEnhancedCard(card)) return card.teamId;
+  return card.team_id;
 };
 
 const getCardPlayerName = (card: any): string => {
-  return isEnhancedCard(card) ? card.playerName : card.player_name;
+  if (isTimelineCard(card)) return card.playerName;
+  if (isEnhancedCard(card)) return card.playerName;
+  return card.player_name;
 };
 
 const getCardTime = (card: any): number => {
-  return isEnhancedCard(card) ? card.time : card.event_time;
+  if (isTimelineCard(card)) return card.time;
+  if (isEnhancedCard(card)) return card.time;
+  return card.event_time;
 };
 
 const getCardType = (card: any): string => {
+  if (isTimelineCard(card)) {
+    return card.type === 'red_card' ? 'red card' : 'yellow card';
+  }
   if (isEnhancedCard(card)) {
     return card.type === 'red' ? 'red card' : 'yellow card';
   }
@@ -61,9 +91,8 @@ const getCardType = (card: any): string => {
 };
 
 const isCardRed = (card: any): boolean => {
-  if (isEnhancedCard(card)) {
-    return card.type === 'red';
-  }
+  if (isTimelineCard(card)) return card.type === 'red_card';
+  if (isEnhancedCard(card)) return card.type === 'red';
   return card.event_type === 'red_card';
 };
 
@@ -71,7 +100,7 @@ const MatchSummaryDialog = ({ fixture, isOpen, onClose }: MatchSummaryDialogProp
   const { data: matchEvents, isLoading } = useMatchEvents(fixture?.id);
   const { data: enhancedData, isSuccess: enhancedSuccess } = useEnhancedMatchSummary(fixture?.id);
   const { toast } = useToast();
-  const [viewStyle, setViewStyle] = useState<'premier-league' | 'traditional'>('premier-league');
+  const [viewStyle, setViewStyle] = useState<'compact' | 'full'>('compact');
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -95,16 +124,41 @@ const MatchSummaryDialog = ({ fixture, isOpen, onClose }: MatchSummaryDialogProp
     return 'text-yellow-600';
   };
 
-  // Use enhanced data when available, fallback to match events
+  // Unified data source logic - prioritize enhanced timeline data
+  const shouldUseEnhancedTimeline = enhancedSuccess && enhancedData?.timelineEvents && enhancedData.timelineEvents.length > 0;
   const shouldUseEnhancedData = enhancedSuccess && enhancedData;
-  const goals = shouldUseEnhancedData 
-    ? enhancedData.goals.filter(g => g.type === 'goal')
-    : (matchEvents || []).filter(event => event.event_type === 'goal');
-  const cards = shouldUseEnhancedData
-    ? enhancedData.cards
-    : (matchEvents || []).filter(event => 
-        event.event_type === 'yellow_card' || event.event_type === 'red_card'
-      );
+
+  let goals, cards;
+
+  if (shouldUseEnhancedTimeline) {
+    // Use timeline data as primary source for unified display
+    const processedData = processTimelineDataForDisplay(enhancedData.timelineEvents);
+    goals = processedData.goals;
+    cards = processedData.cards;
+    console.log('📊 MatchSummaryDialog: Using enhanced timeline data as unified source:', {
+      timelineEvents: enhancedData.timelineEvents.length,
+      goals: goals.length,
+      cards: cards.length
+    });
+  } else if (shouldUseEnhancedData) {
+    // Fallback to enhanced goals/cards data
+    goals = enhancedData.goals.filter(g => g.type === 'goal');
+    cards = enhancedData.cards;
+    console.log('📊 MatchSummaryDialog: Using enhanced goals/cards data as fallback:', {
+      goals: goals.length,
+      cards: cards.length
+    });
+  } else {
+    // Final fallback to match events
+    goals = (matchEvents || []).filter(event => event.event_type === 'goal');
+    cards = (matchEvents || []).filter(event => 
+      event.event_type === 'yellow_card' || event.event_type === 'red_card'
+    );
+    console.log('📊 MatchSummaryDialog: Using match events as final fallback:', {
+      goals: goals.length,
+      cards: cards.length
+    });
+  }
 
   const homeGoals = goals.filter(g => getGoalTeamId(g) === fixture?.home_team_id);
   const awayGoals = goals.filter(g => getGoalTeamId(g) === fixture?.away_team_id);
@@ -218,28 +272,28 @@ const MatchSummaryDialog = ({ fixture, isOpen, onClose }: MatchSummaryDialogProp
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setViewStyle(viewStyle === 'premier-league' ? 'traditional' : 'premier-league')}
+              onClick={() => setViewStyle(viewStyle === 'compact' ? 'full' : 'compact')}
               className="flex items-center gap-2"
             >
               <Palette className="h-4 w-4" />
-              {viewStyle === 'premier-league' ? 'Traditional' : 'Premier League'}
+              {viewStyle === 'compact' ? 'Full View' : 'Compact View'}
             </Button>
           </DialogTitle>
         </DialogHeader>
 
         <div id="match-summary-content" className="space-y-6">
           {/* Enhanced Data Status Indicator */}
-          {shouldUseEnhancedData && (
+          {shouldUseEnhancedTimeline && (
             <Alert>
               <Database className="h-4 w-4" />
               <AlertDescription>
-                Enhanced data service active - displaying comprehensive match analytics.
+                Enhanced timeline data active - displaying unified match events with comprehensive analytics.
               </AlertDescription>
             </Alert>
           )}
 
           {/* Render based on selected view style */}
-          {viewStyle === 'premier-league' ? (
+          {viewStyle === 'compact' ? (
             <PremierLeagueStyleSummary
               fixture={fixture}
               goals={goals}
@@ -256,7 +310,7 @@ const MatchSummaryDialog = ({ fixture, isOpen, onClose }: MatchSummaryDialogProp
             />
           ) : (
             <>
-              {/* Traditional Match Result */}
+              {/* Full View - Traditional Match Result */}
               <Card>
                 <CardContent className="pt-6">
                   <div className="text-center space-y-4">
@@ -285,8 +339,8 @@ const MatchSummaryDialog = ({ fixture, isOpen, onClose }: MatchSummaryDialogProp
                 </CardContent>
               </Card>
 
-              {/* Enhanced Timeline - Only show if we have enhanced data with timeline events */}
-              {shouldUseEnhancedData && enhancedData.timelineEvents && enhancedData.timelineEvents.length > 0 && (
+              {/* Enhanced Timeline - Show if we have unified timeline data */}
+              {shouldUseEnhancedTimeline && (
                 <>
                   <EnhancedMatchEventsTimeline
                     timelineEvents={enhancedData.timelineEvents}
@@ -421,7 +475,7 @@ const MatchSummaryDialog = ({ fixture, isOpen, onClose }: MatchSummaryDialogProp
               </Card>
 
               {/* All Events - Only show if we don't have enhanced timeline or as fallback */}
-              {(!shouldUseEnhancedData || !enhancedData.timelineEvents || enhancedData.timelineEvents.length === 0) && (
+              {(!shouldUseEnhancedTimeline) && (
                 <Card>
                   <CardContent className="pt-6 space-y-4">
                     <h4 className="font-semibold">All Match Events ({(matchEvents || []).length})</h4>
