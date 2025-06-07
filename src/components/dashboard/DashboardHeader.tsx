@@ -26,7 +26,7 @@ const DashboardHeader = () => {
             </div>
           </div>
           <p className="text-white/90 text-lg font-medium tracking-wide">
-            🏆 Community Football Championship
+            🏆 ลีกฟุตบอลชุมชน
           </p>
           
           {/* Enhanced Subtitle */}

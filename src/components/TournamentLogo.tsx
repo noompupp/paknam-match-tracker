@@ -40,11 +40,11 @@ const TournamentLogo = ({ size = 'medium', className = '' }: TournamentLogoProps
   const getSizeClasses = () => {
     switch (size) {
       case 'small':
-        return 'w-8 h-8';
-      case 'large':
-        return 'w-16 h-16';
-      default:
         return 'w-12 h-12';
+      case 'large':
+        return 'w-24 h-24';
+      default:
+        return 'w-16 h-16';
     }
   };
 
@@ -53,8 +53,8 @@ const TournamentLogo = ({ size = 'medium', className = '' }: TournamentLogoProps
   if (isLoading) {
     return (
       <div className={`flex items-center justify-center ${className}`}>
-        <div className={`${sizeClasses} bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center shadow-lg animate-pulse`}>
-          <Trophy className={`${size === 'small' ? 'w-4 h-4' : size === 'large' ? 'w-8 h-8' : 'w-6 h-6'} text-white`} />
+        <div className={`${sizeClasses} bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center shadow-lg animate-pulse`}>
+          <Trophy className={`${size === 'small' ? 'w-6 h-6' : size === 'large' ? 'w-12 h-12' : 'w-8 h-8'} text-white`} />
         </div>
       </div>
     );
@@ -62,7 +62,7 @@ const TournamentLogo = ({ size = 'medium', className = '' }: TournamentLogoProps
 
   return (
     <div className={`flex items-center justify-center ${className}`}>
-      <div className={`${sizeClasses} bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center shadow-lg overflow-hidden`}>
+      <div className={`${sizeClasses} bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center shadow-lg overflow-hidden`}>
         {logoUrl ? (
           <img 
             src={logoUrl} 
@@ -71,7 +71,7 @@ const TournamentLogo = ({ size = 'medium', className = '' }: TournamentLogoProps
             onError={() => setLogoUrl(null)}
           />
         ) : (
-          <Trophy className={`${size === 'small' ? 'w-4 h-4' : size === 'large' ? 'w-8 h-8' : 'w-6 h-6'} text-white`} />
+          <Trophy className={`${size === 'small' ? 'w-6 h-6' : size === 'large' ? 'w-12 h-12' : 'w-8 h-8'} text-white`} />
         )}
       </div>
     </div>

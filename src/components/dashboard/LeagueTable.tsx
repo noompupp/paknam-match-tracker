@@ -36,7 +36,7 @@ const LeagueTable = ({ teams, isLoading }: LeagueTableProps) => {
       <CardHeader className="bg-gradient-to-r from-primary via-primary/90 to-primary text-white">
         <CardTitle className="text-2xl font-bold flex items-center justify-between">
           <span className="flex items-center gap-3">
-            🏆 Premier League Table
+            🏆 ตารางแข่งขัน
           </span>
           <ArrowRight className="h-5 w-5 text-white/80" />
         </CardTitle>
@@ -97,9 +97,6 @@ const LeagueTable = ({ teams, isLoading }: LeagueTableProps) => {
                         <TeamLogo team={team} size="small" showColor />
                         <div className="flex flex-col">
                           <span className="font-bold text-slate-800">{team.name}</span>
-                          <span className="text-xs text-slate-500 uppercase tracking-wide">
-                            {team.name.length > 12 ? team.name.substring(0, 3).toUpperCase() : team.name.substring(0, 6).toUpperCase()}
-                          </span>
                         </div>
                       </div>
                     </td>
