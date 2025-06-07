@@ -1,4 +1,3 @@
-
 import html2canvas from 'html2canvas';
 
 export interface CaptureOptions {
@@ -36,18 +35,17 @@ export const createCanvasFromElement = async (elementId: string, options: Captur
 };
 
 export const getIPhoneStoryOptimizedOptions = (): CaptureOptions => {
-  // iPhone story format: 9:16 aspect ratio
-  // Standard iPhone screen widths: 375px, 414px, 428px
-  // Standard heights: 667px, 896px, 926px
+  // Modern iPhone story format: 9:16 aspect ratio
+  // iPhone X/11/12/13/14/15 compatibility: 375x812px
   
   return {
     scale: 2, // High quality for story sharing
     width: 375,
-    height: 667,
+    height: 812,
     x: 0,
     y: 0,
     windowWidth: 375,
-    windowHeight: 667,
+    windowHeight: 812,
     backgroundColor: '#ffffff',
     useCORS: true,
     allowTaint: true
