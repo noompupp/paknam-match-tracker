@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, ChevronUp, Trophy } from "lucide-react";
+import { ChevronDown, ChevronUp, Trophy, AlertTriangle } from "lucide-react";
 import { useState } from "react";
 import TeamLogoDisplay from "./TeamLogoDisplay";
 import EnhancedMatchDetails from "./EnhancedMatchDetails";

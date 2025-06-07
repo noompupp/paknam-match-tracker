@@ -37,10 +37,9 @@ const TeamLogoDisplay = ({
   return (
     <div className="flex flex-col items-center gap-3">
       <Avatar 
-        className={`${sizeClasses[size]} shadow-lg ring-2 ring-offset-2`} 
+        className={`${sizeClasses[size]} shadow-lg ring-2 ring-offset-2 ring-gray-200`} 
         style={{ 
-          borderColor: teamColor, 
-          ringColor: `${teamColor}20`
+          borderColor: teamColor
         }}
       >
         {teamLogo && (
