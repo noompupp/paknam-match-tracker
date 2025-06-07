@@ -14,12 +14,30 @@ export const processUnifiedMatchData = (enhancedData: any) => {
     event.type === 'yellow_card' || event.type === 'red_card'
   );
 
-  console.log('📊 Unified data processing:', {
+  console.log('📊 Unified data processing - Enhanced debugging:', {
     timelineEvents: timelineEvents.length,
     goals: goals.length,
     cards: cards.length,
-    goalsData: goals,
-    cardsData: cards
+    sampleGoalStructure: goals.length > 0 ? {
+      id: goals[0].id,
+      type: goals[0].type,
+      teamId: goals[0].teamId,
+      team_id: goals[0].team_id,
+      team: goals[0].team,
+      playerName: goals[0].playerName,
+      player_name: goals[0].player_name,
+      time: goals[0].time,
+      event_time: goals[0].event_time,
+      fullStructure: goals[0]
+    } : 'No goals found',
+    allGoalTeamIds: goals.map(g => ({
+      id: g.id,
+      teamId: getGoalTeamId(g),
+      rawTeamId: g.teamId,
+      rawTeam_id: g.team_id,
+      rawTeam: g.team,
+      playerName: getGoalPlayerName(g)
+    }))
   });
 
   return { goals, cards, timelineEvents };
@@ -47,17 +65,22 @@ export const compareTeamIds = (teamId1: any, teamId2: any): boolean => {
   return result;
 };
 
-// Enhanced goal filtering with fallback logic
+// Enhanced goal filtering with comprehensive fallback logic
 export const filterGoalsByTeam = (goals: any[], teamId: any, teamName?: string): any[] => {
-  console.log('🎯 Filtering goals by team:', {
+  console.log('🎯 Enhanced goal filtering - Input analysis:', {
     totalGoals: goals.length,
     targetTeamId: teamId,
     targetTeamName: teamName,
-    goalsData: goals.map(g => ({
+    goalStructures: goals.map(g => ({
       id: g.id,
-      teamId: getGoalTeamId(g),
-      playerName: getGoalPlayerName(g),
-      time: getGoalTime(g)
+      teamId: g.teamId,
+      team_id: g.team_id,
+      team: g.team,
+      playerName: g.playerName || g.player_name,
+      time: g.time || g.event_time,
+      extractedTeamId: getGoalTeamId(g),
+      extractedPlayerName: getGoalPlayerName(g),
+      extractedTime: getGoalTime(g)
     }))
   });
 
@@ -75,7 +98,18 @@ export const filterGoalsByTeam = (goals: any[], teamId: any, teamName?: string):
       return true;
     }
     
-    // Fallback: team name comparison if available
+    // Secondary match: Check against string representation of team ID
+    if (goalTeamId && String(goalTeamId) === String(teamId)) {
+      console.log('✅ Goal matched by string team ID:', {
+        goalId: goal.id,
+        goalTeamId,
+        targetTeamId: teamId,
+        player: getGoalPlayerName(goal)
+      });
+      return true;
+    }
+    
+    // Tertiary match: team name comparison if available
     if (teamName && goal.team && String(goal.team).toLowerCase().includes(teamName.toLowerCase())) {
       console.log('✅ Goal matched by team name fallback:', {
         goalId: goal.id,
@@ -86,48 +120,145 @@ export const filterGoalsByTeam = (goals: any[], teamId: any, teamName?: string):
       return true;
     }
     
-    console.log('❌ Goal not matched:', {
+    // Quaternary match: Check if goal.teamName matches target team name
+    if (teamName && goal.teamName && String(goal.teamName).toLowerCase().includes(teamName.toLowerCase())) {
+      console.log('✅ Goal matched by teamName property:', {
+        goalId: goal.id,
+        goalTeamName: goal.teamName,
+        targetTeamName: teamName,
+        player: getGoalPlayerName(goal)
+      });
+      return true;
+    }
+    
+    console.log('❌ Goal not matched - All attempts failed:', {
       goalId: goal.id,
       goalTeamId,
       targetTeamId: teamId,
       goalTeam: goal.team,
+      goalTeamName: goal.teamName,
       targetTeamName: teamName,
-      player: getGoalPlayerName(goal)
+      player: getGoalPlayerName(goal),
+      goalStructure: {
+        teamId: goal.teamId,
+        team_id: goal.team_id,
+        team: goal.team,
+        teamName: goal.teamName
+      }
     });
     
     return false;
   });
 
-  console.log(`🎯 Team ${teamId} goals filtered:`, {
+  console.log(`🎯 Team ${teamId} (${teamName}) goals filtered:`, {
     totalGoals: goals.length,
     filteredGoals: filtered.length,
     teamId,
-    teamName
+    teamName,
+    filteredGoalIds: filtered.map(g => g.id)
   });
 
   return filtered;
 };
 
-// Unified helper functions for both data sources
+// Enhanced helper functions with improved data extraction
 export const getGoalTeamId = (goal: any): string => {
-  const teamId = goal.teamId || goal.team_id || goal.team || '';
+  // Try multiple possible team ID fields with enhanced debugging
+  const possibleTeamIds = [
+    goal.teamId,
+    goal.team_id, 
+    goal.team,
+    goal.teamName,
+    goal.player?.team_id,
+    goal.player?.teamId
+  ];
+  
+  console.log('🔍 getGoalTeamId - Analyzing goal:', {
+    goalId: goal.id,
+    possibleTeamIds,
+    selectedTeamId: possibleTeamIds.find(id => id !== undefined && id !== null) || ''
+  });
+  
+  const teamId = possibleTeamIds.find(id => id !== undefined && id !== null) || '';
   return normalizeTeamId(teamId);
 };
 
-export const getGoalPlayerName = (goal: any): string => goal.playerName || goal.player_name || '';
-export const getGoalTime = (goal: any): number => goal.time || goal.event_time || 0;
+export const getGoalPlayerName = (goal: any): string => {
+  // Try multiple possible player name fields
+  const possibleNames = [
+    goal.playerName,
+    goal.player_name,
+    goal.player?.name,
+    goal.scorer,
+    goal.name
+  ];
+  
+  const playerName = possibleNames.find(name => name && name.trim() !== '') || '';
+  
+  console.log('🔍 getGoalPlayerName - Analyzing goal:', {
+    goalId: goal.id,
+    possibleNames,
+    selectedName: playerName
+  });
+  
+  return playerName;
+};
+
+export const getGoalTime = (goal: any): number => {
+  // Try multiple possible time fields
+  const possibleTimes = [
+    goal.time,
+    goal.event_time,
+    goal.minute,
+    goal.matchTime
+  ];
+  
+  const time = possibleTimes.find(t => t !== undefined && t !== null) || 0;
+  return Number(time);
+};
 
 export const getCardTeamId = (card: any): string => {
-  const teamId = card.teamId || card.team_id || card.team || '';
+  const possibleTeamIds = [
+    card.teamId,
+    card.team_id,
+    card.team,
+    card.teamName,
+    card.player?.team_id,
+    card.player?.teamId
+  ];
+  
+  const teamId = possibleTeamIds.find(id => id !== undefined && id !== null) || '';
   return normalizeTeamId(teamId);
 };
 
-export const getCardPlayerName = (card: any): string => card.playerName || card.player_name || '';
-export const getCardTime = (card: any): number => card.time || card.event_time || 0;
+export const getCardPlayerName = (card: any): string => {
+  const possibleNames = [
+    card.playerName,
+    card.player_name,
+    card.player?.name,
+    card.name
+  ];
+  
+  return possibleNames.find(name => name && name.trim() !== '') || '';
+};
+
+export const getCardTime = (card: any): number => {
+  const possibleTimes = [
+    card.time,
+    card.event_time,
+    card.minute,
+    card.matchTime
+  ];
+  
+  const time = possibleTimes.find(t => t !== undefined && t !== null) || 0;
+  return Number(time);
+};
+
 export const getCardType = (card: any): string => {
   const type = card.type || card.cardType || card.event_type || '';
   return type.includes('red') ? 'red card' : 'yellow card';
 };
+
 export const isCardRed = (card: any): boolean => {
   const type = card.type || card.cardType || card.event_type || '';
   return type.includes('red');

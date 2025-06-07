@@ -28,21 +28,42 @@ const GoalsSection = ({
     return `${minutes}'`;
   };
 
-  console.log('⚽ GoalsSection: Received props:', {
+  console.log('⚽ GoalsSection: Enhanced debugging - Received props:', {
     totalGoals: goals.length,
     homeGoals: homeGoals.length,
     awayGoals: awayGoals.length,
-    homeGoalsData: homeGoals.map(g => ({
+    goalStructureAnalysis: goals.map(g => ({
       id: g.id,
-      player: getGoalPlayerName(g),
+      type: g.type,
+      playerName: getGoalPlayerName(g),
       time: getGoalTime(g),
-      teamId: g.teamId || g.team_id || g.team
+      teamId: g.teamId,
+      team_id: g.team_id,
+      team: g.team,
+      teamName: g.teamName,
+      rawStructure: g
     })),
-    awayGoalsData: awayGoals.map(g => ({
+    homeGoalsAnalysis: homeGoals.map(g => ({
       id: g.id,
       player: getGoalPlayerName(g),
       time: getGoalTime(g),
-      teamId: g.teamId || g.team_id || g.team
+      teamData: {
+        teamId: g.teamId,
+        team_id: g.team_id,
+        team: g.team,
+        teamName: g.teamName
+      }
+    })),
+    awayGoalsAnalysis: awayGoals.map(g => ({
+      id: g.id,
+      player: getGoalPlayerName(g),
+      time: getGoalTime(g),
+      teamData: {
+        teamId: g.teamId,
+        team_id: g.team_id,
+        team: g.team,
+        teamName: g.teamName
+      }
     }))
   });
 
@@ -51,25 +72,57 @@ const GoalsSection = ({
     return null;
   }
 
-  // Enhanced goal rendering with error handling
+  // Enhanced goal rendering with comprehensive error handling and fallback data
   const renderGoal = (goal: any, index: number, teamType: 'home' | 'away') => {
     try {
       const playerName = getGoalPlayerName(goal);
       const goalTime = getGoalTime(goal);
       const goalId = goal.id || `${teamType}-goal-${index}`;
 
-      console.log(`⚽ GoalsSection: Rendering ${teamType} goal:`, {
+      console.log(`⚽ GoalsSection: Enhanced rendering ${teamType} goal:`, {
         goalId,
         player: playerName,
         time: goalTime,
-        teamId: goal.teamId || goal.team_id || goal.team,
-        fullGoalData: goal
+        teamData: {
+          teamId: goal.teamId,
+          team_id: goal.team_id,
+          team: goal.team,
+          teamName: goal.teamName
+        },
+        fullGoalStructure: goal,
+        hasPlayerName: !!playerName,
+        hasTime: !!goalTime
       });
 
       if (!playerName) {
-        console.warn(`⚠️ GoalsSection: Missing player name for ${teamType} goal:`, goal);
-        return null;
+        console.warn(`⚠️ GoalsSection: Missing player name for ${teamType} goal - attempting fallback:`, {
+          goal,
+          fallbackAttempts: {
+            playerName: goal.playerName,
+            player_name: goal.player_name,
+            player: goal.player,
+            scorer: goal.scorer,
+            name: goal.name
+          }
+        });
+        
+        // Try fallback player name extraction
+        const fallbackName = goal.scorer || goal.name || `Unknown Player (Goal ${goalId})`;
+        
+        if (!fallbackName || fallbackName.includes('Unknown')) {
+          console.error(`❌ GoalsSection: Unable to extract player name for goal:`, goal);
+          return (
+            <div key={goalId} className={teamType === 'home' ? "text-left" : "text-right"}>
+              <div className="text-sm text-muted-foreground italic">
+                Goal recorded but player name unavailable (ID: {goalId})
+              </div>
+            </div>
+          );
+        }
       }
+
+      const displayName = playerName || goal.scorer || goal.name || `Goal ${goalId}`;
+      const displayTime = goalTime || goal.minute || 0;
 
       return (
         <div key={goalId} className={teamType === 'home' ? "text-left" : "text-right"}>
@@ -81,10 +134,10 @@ const GoalsSection = ({
               />
             )}
             
-            <span className="font-semibold text-base">{playerName}</span>
+            <span className="font-semibold text-base">{displayName}</span>
             
             <Badge variant="outline" className="text-sm font-medium">
-              {formatMatchTime(goalTime)}
+              {formatMatchTime(displayTime)}
             </Badge>
 
             {teamType === 'away' && (
@@ -94,16 +147,25 @@ const GoalsSection = ({
               />
             )}
           </div>
-          {goal.assistPlayerName && (
+          {(goal.assistPlayerName || goal.assist_player_name) && (
             <div className={`text-sm text-muted-foreground mt-2 font-medium ${teamType === 'away' ? 'mr-6' : 'ml-6'}`}>
-              🅰️ Assist: {goal.assistPlayerName}
+              🅰️ Assist: {goal.assistPlayerName || goal.assist_player_name}
             </div>
           )}
         </div>
       );
     } catch (error) {
-      console.error(`❌ GoalsSection: Error rendering ${teamType} goal:`, { error, goal });
-      return null;
+      console.error(`❌ GoalsSection: Error rendering ${teamType} goal:`, { 
+        error: error.message,
+        stack: error.stack,
+        goal,
+        index 
+      });
+      return (
+        <div key={`error-${teamType}-${index}`} className="text-sm text-destructive">
+          Error displaying goal (ID: {goal?.id || index})
+        </div>
+      );
     }
   };
 

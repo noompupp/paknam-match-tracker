@@ -43,7 +43,7 @@ const PremierLeagueStyleSummary = ({
 }: PremierLeagueStyleSummaryProps) => {
   const [detailsExpanded, setDetailsExpanded] = useState(true);
 
-  console.log('🎨 PremierLeagueStyleSummary: Processing fixture data:', {
+  console.log('🎨 PremierLeagueStyleSummary: Enhanced processing fixture data:', {
     fixtureId: fixture?.id,
     homeTeamId: fixture?.home_team_id,
     awayTeamId: fixture?.away_team_id,
@@ -51,49 +51,90 @@ const PremierLeagueStyleSummary = ({
     awayTeamName: fixture?.away_team?.name,
     totalGoals: goals.length,
     totalCards: cards.length,
-    goalsData: goals.map(g => ({
+    detailedGoalsAnalysis: goals.map(g => ({
       id: g.id,
       teamId: getGoalTeamId(g),
       player: getGoalPlayerName(g),
-      time: getGoalTime(g)
+      time: getGoalTime(g),
+      rawTeamData: {
+        teamId: g.teamId,
+        team_id: g.team_id,
+        team: g.team,
+        teamName: g.teamName
+      }
     }))
   });
 
-  // Enhanced team filtering with comprehensive logging
+  // Enhanced team identification with multiple fallbacks
   const homeTeamId = normalizeTeamId(fixture?.home_team_id);
   const awayTeamId = normalizeTeamId(fixture?.away_team_id);
   const homeTeamName = fixture?.home_team?.name;
   const awayTeamName = fixture?.away_team?.name;
 
-  console.log('🎨 PremierLeagueStyleSummary: Team identification:', {
+  console.log('🎨 PremierLeagueStyleSummary: Enhanced team identification:', {
     homeTeamId,
     awayTeamId,
     homeTeamName,
-    awayTeamName
+    awayTeamName,
+    fixtureHomeTeam: fixture?.home_team,
+    fixtureAwayTeam: fixture?.away_team
   });
 
-  // Use enhanced filtering function
+  // Use enhanced filtering function with comprehensive debugging
+  console.log('🎨 PremierLeagueStyleSummary: About to filter goals with enhanced logic');
   const homeGoals = filterGoalsByTeam(goals, homeTeamId, homeTeamName);
   const awayGoals = filterGoalsByTeam(goals, awayTeamId, awayTeamName);
 
-  // Get cards for each team using the same logic
+  // Enhanced cards filtering with same logic
   const homeCards = cards.filter(c => {
     const cardTeamId = getCardTeamId(c);
-    return normalizeTeamId(cardTeamId) === homeTeamId;
+    const normalizedCardTeamId = normalizeTeamId(cardTeamId);
+    const matches = normalizedCardTeamId === homeTeamId;
+    
+    console.log('🟨 Home card filtering:', {
+      cardId: c.id,
+      cardTeamId,
+      normalizedCardTeamId,
+      homeTeamId,
+      matches
+    });
+    
+    return matches;
   });
   
   const awayCards = cards.filter(c => {
     const cardTeamId = getCardTeamId(c);
-    return normalizeTeamId(cardTeamId) === awayTeamId;
+    const normalizedCardTeamId = normalizeTeamId(cardTeamId);
+    const matches = normalizedCardTeamId === awayTeamId;
+    
+    console.log('🟨 Away card filtering:', {
+      cardId: c.id,
+      cardTeamId,
+      normalizedCardTeamId,
+      awayTeamId,
+      matches
+    });
+    
+    return matches;
   });
 
-  console.log('🎨 PremierLeagueStyleSummary: Final team data:', {
+  console.log('🎨 PremierLeagueStyleSummary: Enhanced final team data analysis:', {
     homeGoals: homeGoals.length,
     awayGoals: awayGoals.length,
     homeCards: homeCards.length,
     awayCards: awayCards.length,
-    homeGoalsData: homeGoals,
-    awayGoalsData: awayGoals
+    homeGoalsDetailed: homeGoals.map(g => ({
+      id: g.id,
+      player: getGoalPlayerName(g),
+      teamId: getGoalTeamId(g)
+    })),
+    awayGoalsDetailed: awayGoals.map(g => ({
+      id: g.id,
+      player: getGoalPlayerName(g),
+      teamId: getGoalTeamId(g)
+    })),
+    totalGoalsBeforeFiltering: goals.length,
+    totalGoalsAfterFiltering: homeGoals.length + awayGoals.length
   });
 
   // Enhanced team colors with better defaults
