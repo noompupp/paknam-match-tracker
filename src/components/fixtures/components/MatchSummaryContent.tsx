@@ -1,7 +1,5 @@
 
-import PremierLeagueStyleSummary from "../PremierLeagueStyleSummary";
-import TraditionalMatchSummaryView from "./TraditionalMatchSummaryView";
-import { extractTeamData, processTeamEvents } from "../utils/teamDataProcessor";
+import UnifiedMatchSummaryLayout from "./UnifiedMatchSummaryLayout";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface MatchSummaryContentProps {
@@ -11,7 +9,7 @@ interface MatchSummaryContentProps {
   timelineEvents: any[];
   enhancedSuccess: boolean;
   enhancedData: any;
-  viewStyle: 'compact' | 'full';
+  viewStyle?: 'compact' | 'full'; // Keep for backward compatibility but don't use
   isExportMode?: boolean;
   formatTime: (seconds: number) => string;
   getGoalTeamId: (goal: any) => string;
@@ -31,7 +29,6 @@ const MatchSummaryContent = ({
   timelineEvents,
   enhancedSuccess,
   enhancedData,
-  viewStyle,
   isExportMode = false,
   formatTime,
   getGoalTeamId,
@@ -58,41 +55,22 @@ const MatchSummaryContent = ({
             : 'max-w-[375px]'
           : 'max-w-[768px]'
       }`}>
-        {/* Render based on view style with unified responsive design */}
-        {viewStyle === 'compact' ? (
-          <PremierLeagueStyleSummary
-            fixture={fixture}
-            goals={goals}
-            cards={cards}
-            timelineEvents={timelineEvents}
-            formatTime={formatTime}
-            getGoalTeamId={getGoalTeamId}
-            getGoalPlayerName={getGoalPlayerName}
-            getGoalTime={getGoalTime}
-            getCardTeamId={getCardTeamId}
-            getCardPlayerName={getCardPlayerName}
-            getCardTime={getCardTime}
-            getCardType={getCardType}
-            isCardRed={isCardRed}
-          />
-        ) : (
-          <TraditionalMatchSummaryView
-            fixture={fixture}
-            goals={goals}
-            cards={cards}
-            enhancedSuccess={enhancedSuccess}
-            enhancedData={enhancedData}
-            formatTime={formatTime}
-            getGoalTeamId={getGoalTeamId}
-            getGoalPlayerName={getGoalPlayerName}
-            getGoalTime={getGoalTime}
-            getCardTeamId={getCardTeamId}
-            getCardPlayerName={getCardPlayerName}
-            getCardTime={getCardTime}
-            getCardType={getCardType}
-            isCardRed={isCardRed}
-          />
-        )}
+        {/* Always use the unified layout */}
+        <UnifiedMatchSummaryLayout
+          fixture={fixture}
+          goals={goals}
+          cards={cards}
+          timelineEvents={timelineEvents}
+          formatTime={formatTime}
+          getGoalTeamId={getGoalTeamId}
+          getGoalPlayerName={getGoalPlayerName}
+          getGoalTime={getGoalTime}
+          getCardTeamId={getCardTeamId}
+          getCardPlayerName={getCardPlayerName}
+          getCardTime={getCardTime}
+          getCardType={getCardType}
+          isCardRed={isCardRed}
+        />
       </div>
 
       {/* Export mode specific styles optimized for iPhone */}

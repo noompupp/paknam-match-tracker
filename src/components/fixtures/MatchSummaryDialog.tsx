@@ -1,8 +1,8 @@
+
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Trophy, Database } from "lucide-react";
 import { useMatchEvents } from "@/hooks/useMatchEvents";
 import { useEnhancedMatchSummary } from "@/hooks/useEnhancedMatchSummary";
-import { useState } from "react";
 import { 
   processUnifiedMatchData,
   getGoalTeamId,
@@ -14,7 +14,6 @@ import {
   getCardType,
   isCardRed
 } from "./utils/matchSummaryDataProcessor";
-import MatchSummaryViewToggle from "./components/MatchSummaryViewToggle";
 import MatchSummaryContent from "./components/MatchSummaryContent";
 import MatchSummaryShareActions from "./components/MatchSummaryShareActions";
 
@@ -27,7 +26,6 @@ interface MatchSummaryDialogProps {
 const MatchSummaryDialog = ({ fixture, isOpen, onClose }: MatchSummaryDialogProps) => {
   const { data: matchEvents, isLoading } = useMatchEvents(fixture?.id);
   const { data: enhancedData, isSuccess: enhancedSuccess } = useEnhancedMatchSummary(fixture?.id);
-  const [viewStyle, setViewStyle] = useState<'compact' | 'full'>('compact');
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -60,18 +58,12 @@ const MatchSummaryDialog = ({ fixture, isOpen, onClose }: MatchSummaryDialogProp
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Trophy className="h-5 w-5" />
-              Match Summary
-              {enhancedSuccess && enhancedData?.timelineEvents?.length > 0 && (
-                <Database className="h-4 w-4 text-green-600" />
-              )}
-            </div>
-            <MatchSummaryViewToggle 
-              viewStyle={viewStyle} 
-              onToggle={setViewStyle}
-            />
+          <DialogTitle className="flex items-center gap-2">
+            <Trophy className="h-5 w-5" />
+            Match Summary
+            {enhancedSuccess && enhancedData?.timelineEvents?.length > 0 && (
+              <Database className="h-4 w-4 text-green-600" />
+            )}
           </DialogTitle>
         </DialogHeader>
 
@@ -82,7 +74,6 @@ const MatchSummaryDialog = ({ fixture, isOpen, onClose }: MatchSummaryDialogProp
           timelineEvents={timelineEvents}
           enhancedSuccess={enhancedSuccess}
           enhancedData={enhancedData}
-          viewStyle={viewStyle}
           isExportMode={false}
           formatTime={formatTime}
           getGoalTeamId={getGoalTeamId}
