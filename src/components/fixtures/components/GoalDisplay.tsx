@@ -70,10 +70,7 @@ const GoalDisplay = ({ goal, index, teamType, teamColor }: GoalDisplayProps) => 
       <div key={goalId} className={teamType === 'home' ? "text-left" : "text-right"}>
         <div className={`flex items-center gap-3 ${teamType === 'away' ? 'justify-end' : ''}`}>
           {teamType === 'home' && (
-            <div 
-              className="w-3 h-3 rounded-full shadow-md"
-              style={{ backgroundColor: teamColor }}
-            />
+            <span className="text-lg">⚽</span>
           )}
           
           <span className="font-semibold text-base">{displayName}</span>
@@ -83,10 +80,7 @@ const GoalDisplay = ({ goal, index, teamType, teamColor }: GoalDisplayProps) => 
           </Badge>
 
           {teamType === 'away' && (
-            <div 
-              className="w-3 h-3 rounded-full shadow-md"
-              style={{ backgroundColor: teamColor }}
-            />
+            <span className="text-lg">⚽</span>
           )}
         </div>
         

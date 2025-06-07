@@ -1,6 +1,4 @@
 
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Database } from "lucide-react";
 import PremierLeagueStyleSummary from "../PremierLeagueStyleSummary";
 import TraditionalMatchSummaryView from "./TraditionalMatchSummaryView";
 
@@ -43,16 +41,6 @@ const MatchSummaryContent = ({
 }: MatchSummaryContentProps) => {
   return (
     <div id="match-summary-content" className="space-y-6">
-      {/* Enhanced Data Status */}
-      {enhancedSuccess && enhancedData?.timelineEvents?.length > 0 && (
-        <Alert>
-          <Database className="h-4 w-4" />
-          <AlertDescription>
-            Enhanced timeline active - displaying {timelineEvents.length} unified match events with {goals.length} goals and {cards.length} cards.
-          </AlertDescription>
-        </Alert>
-      )}
-
       {/* Render based on view style */}
       {viewStyle === 'compact' ? (
         <PremierLeagueStyleSummary
