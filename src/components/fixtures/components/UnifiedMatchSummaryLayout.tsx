@@ -1,7 +1,5 @@
 
 import { Card, CardContent } from "@/components/ui/card";
-import { Clock } from "lucide-react";
-import EnhancedMatchEventsTimeline from "../../referee/components/EnhancedMatchEventsTimeline";
 import { extractTeamData, processTeamEvents } from "../utils/teamDataProcessor";
 import IPhoneStoryLayout from "./export/IPhoneStoryLayout";
 import MatchHeaderSection from "./MatchHeaderSection";
@@ -78,10 +76,11 @@ const UnifiedMatchSummaryLayout = ({
         awayTeamColor={teamData.awayTeamColor}
       />
 
-      {/* Match Events Section (replaces Goals Section) */}
+      {/* Match Events Section - now includes timeline events for comprehensive display */}
       <MatchEventsSection
         goals={goals}
         cards={cards}
+        timelineEvents={timelineEvents}
         processedEvents={processedEvents}
         homeTeamColor={teamData.homeTeamColor}
         awayTeamColor={teamData.awayTeamColor}
@@ -93,6 +92,7 @@ const UnifiedMatchSummaryLayout = ({
         getCardType={getCardType}
         isCardRed={isCardRed}
         fixture={fixture}
+        formatTime={formatTime}
       />
 
       {/* Summary Statistics Box */}
@@ -105,22 +105,6 @@ const UnifiedMatchSummaryLayout = ({
         homeTeamColor={teamData.homeTeamColor}
         awayTeamColor={teamData.awayTeamColor}
       />
-
-      {/* Match Timeline Section */}
-      {timelineEvents.length > 0 && (
-        <Card>
-          <CardContent className="pt-6">
-            <h4 className="font-semibold flex items-center gap-2 mb-4">
-              <Clock className="h-4 w-4" />
-              Match Timeline ({timelineEvents.length})
-            </h4>
-            <EnhancedMatchEventsTimeline
-              timelineEvents={timelineEvents}
-              formatTime={formatTime}
-            />
-          </CardContent>
-        </Card>
-      )}
     </div>
   );
 };
