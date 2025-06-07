@@ -6,15 +6,25 @@ import DashboardHeader from "./dashboard/DashboardHeader";
 import LeagueTable from "./dashboard/LeagueTable";
 import TopScorersCard from "./dashboard/TopScorersCard";
 import TopAssistsCard from "./dashboard/TopAssistsCard";
-import RecentResultsCard from "./dashboard/RecentResultsCard";
+import EnhancedRecentResultsCard from "./dashboard/EnhancedRecentResultsCard";
 import UpcomingFixturesCard from "./dashboard/UpcomingFixturesCard";
 
-const Dashboard = () => {
+interface DashboardProps {
+  onNavigateToFixtures?: () => void;
+}
+
+const Dashboard = ({ onNavigateToFixtures }: DashboardProps) => {
   const { data: teams, isLoading: teamsLoading, error: teamsError } = useTeams();
   const { data: topScorers, isLoading: scorersLoading, error: scorersError } = useEnhancedTopScorers(5);
   const { data: topAssists, isLoading: assistsLoading, error: assistsError } = useEnhancedTopAssists(5);
   const { data: recentFixtures, isLoading: recentLoading } = useRecentFixtures();
   const { data: upcomingFixtures, isLoading: upcomingLoading } = useUpcomingFixtures();
+
+  const handleViewAllRecentResults = () => {
+    if (onNavigateToFixtures) {
+      onNavigateToFixtures();
+    }
+  };
 
   if (teamsError) {
     return (
@@ -47,7 +57,11 @@ const Dashboard = () => {
           />
         </div>
 
-        <RecentResultsCard recentFixtures={recentFixtures} isLoading={recentLoading} />
+        <EnhancedRecentResultsCard 
+          recentFixtures={recentFixtures} 
+          isLoading={recentLoading}
+          onViewAll={handleViewAllRecentResults}
+        />
 
         <UpcomingFixturesCard upcomingFixtures={upcomingFixtures} isLoading={upcomingLoading} />
       </div>

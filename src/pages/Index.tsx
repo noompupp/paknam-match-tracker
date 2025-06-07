@@ -12,10 +12,14 @@ import ProtectedTabWrapper from "@/components/auth/ProtectedTabWrapper";
 const Index = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
 
+  const handleNavigateToFixtures = () => {
+    setActiveTab("fixtures");
+  };
+
   const renderContent = () => {
     switch (activeTab) {
       case "dashboard":
-        return <Dashboard />;
+        return <Dashboard onNavigateToFixtures={handleNavigateToFixtures} />;
       case "teams":
         return <Teams />;
       case "fixtures":
@@ -41,7 +45,7 @@ const Index = () => {
           </ProtectedTabWrapper>
         );
       default:
-        return <Dashboard />;
+        return <Dashboard onNavigateToFixtures={handleNavigateToFixtures} />;
     }
   };
 
