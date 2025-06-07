@@ -40,9 +40,40 @@ const UnifiedMatchSummaryLayout = ({
 }: UnifiedMatchSummaryLayoutProps) => {
   const isMobile = useIsMobile();
   
+  console.log('🎯 UnifiedMatchSummaryLayout - Props Analysis:', {
+    fixtureId: fixture?.id,
+    goalsCount: goals.length,
+    cardsCount: cards.length,
+    timelineEventsCount: timelineEvents.length,
+    goalSample: goals.length > 0 ? {
+      id: goals[0].id,
+      playerName: getGoalPlayerName(goals[0]),
+      time: getGoalTime(goals[0]),
+      teamId: getGoalTeamId(goals[0])
+    } : null,
+    cardSample: cards.length > 0 ? {
+      id: cards[0].id,
+      playerName: getCardPlayerName(cards[0]),
+      time: getCardTime(cards[0]),
+      teamId: getCardTeamId(cards[0])
+    } : null
+  });
+
   // Extract team data using the existing utility
   const teamData = extractTeamData(fixture);
   const processedEvents = processTeamEvents(goals, cards, teamData, getCardTeamId);
+
+  console.log('🎯 UnifiedMatchSummaryLayout - Processed Events:', {
+    teamData,
+    processedEvents: {
+      homeGoals: processedEvents.homeGoals.length,
+      awayGoals: processedEvents.awayGoals.length,
+      homeCards: processedEvents.homeCards.length,
+      awayCards: processedEvents.awayCards.length
+    },
+    homeGoalPlayers: processedEvents.homeGoals.map(g => getGoalPlayerName(g)),
+    awayGoalPlayers: processedEvents.awayGoals.map(g => getGoalPlayerName(g))
+  });
 
   // Check if we're in export mode on mobile
   const isExportMode = isMobile && document.getElementById('match-summary-content')?.classList.contains('export-mode-mobile');
@@ -76,7 +107,7 @@ const UnifiedMatchSummaryLayout = ({
         awayTeamColor={teamData.awayTeamColor}
       />
 
-      {/* Match Events Section - now includes timeline events for comprehensive display */}
+      {/* Match Events Section - Enhanced with debugging and fallback handling */}
       <MatchEventsSection
         goals={goals}
         cards={cards}
