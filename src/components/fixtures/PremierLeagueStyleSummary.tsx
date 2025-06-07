@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { ChevronDown, ChevronUp } from "lucide-react";
@@ -8,7 +7,7 @@ import PremierLeagueHeader from "./PremierLeagueHeader";
 import GoalsSection from "./GoalsSection";
 import CardsSection from "./CardsSection";
 import MatchStatisticsFooter from "./MatchStatisticsFooter";
-import { filterGoalsByTeam, normalizeTeamId } from "./utils/matchSummaryDataProcessor";
+import { filterGoalsByTeam, normalizeTeamId, getGoalAssistPlayerName } from "./utils/matchSummaryDataProcessor";
 
 interface PremierLeagueStyleSummaryProps {
   fixture: any;
@@ -43,7 +42,7 @@ const PremierLeagueStyleSummary = ({
 }: PremierLeagueStyleSummaryProps) => {
   const [detailsExpanded, setDetailsExpanded] = useState(true);
 
-  console.log('🎨 PremierLeagueStyleSummary: Enhanced processing fixture data:', {
+  console.log('🎨 PremierLeagueStyleSummary: Enhanced processing with assist support:', {
     fixtureId: fixture?.id,
     homeTeamId: fixture?.home_team_id,
     awayTeamId: fixture?.away_team_id,
@@ -51,10 +50,11 @@ const PremierLeagueStyleSummary = ({
     awayTeamName: fixture?.away_team?.name,
     totalGoals: goals.length,
     totalCards: cards.length,
-    detailedGoalsAnalysis: goals.map(g => ({
+    detailedGoalsWithAssists: goals.map(g => ({
       id: g.id,
       teamId: getGoalTeamId(g),
       player: getGoalPlayerName(g),
+      assist: getGoalAssistPlayerName(g),
       time: getGoalTime(g),
       rawTeamData: {
         teamId: g.teamId,
@@ -118,7 +118,7 @@ const PremierLeagueStyleSummary = ({
     return matches;
   });
 
-  console.log('🎨 PremierLeagueStyleSummary: Enhanced final team data analysis:', {
+  console.log('🎨 PremierLeagueStyleSummary: Enhanced final team data analysis with assists:', {
     homeGoals: homeGoals.length,
     awayGoals: awayGoals.length,
     homeCards: homeCards.length,
@@ -126,11 +126,13 @@ const PremierLeagueStyleSummary = ({
     homeGoalsDetailed: homeGoals.map(g => ({
       id: g.id,
       player: getGoalPlayerName(g),
+      assist: getGoalAssistPlayerName(g),
       teamId: getGoalTeamId(g)
     })),
     awayGoalsDetailed: awayGoals.map(g => ({
       id: g.id,
       player: getGoalPlayerName(g),
+      assist: getGoalAssistPlayerName(g),
       teamId: getGoalTeamId(g)
     })),
     totalGoalsBeforeFiltering: goals.length,
@@ -150,7 +152,7 @@ const PremierLeagueStyleSummary = ({
         awayTeamColor={awayTeamColor}
       />
 
-      {/* Enhanced Goals Section - Pass the filtered goals */}
+      {/* Enhanced Goals Section with Assist Support */}
       <GoalsSection 
         goals={goals}
         homeGoals={homeGoals}

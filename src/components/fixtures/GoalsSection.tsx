@@ -2,7 +2,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Trophy } from "lucide-react";
-import { filterGoalsByTeam, getGoalPlayerName, getGoalTime, normalizeTeamId } from "./utils/matchSummaryDataProcessor";
+import { filterGoalsByTeam, getGoalPlayerName, getGoalTime, getGoalAssistPlayerName, normalizeTeamId } from "./utils/matchSummaryDataProcessor";
 
 interface GoalsSectionProps {
   goals: any[];
@@ -28,7 +28,7 @@ const GoalsSection = ({
     return `${minutes}'`;
   };
 
-  console.log('⚽ GoalsSection: Enhanced debugging - Received props:', {
+  console.log('⚽ GoalsSection: Enhanced debugging with assist information:', {
     totalGoals: goals.length,
     homeGoals: homeGoals.length,
     awayGoals: awayGoals.length,
@@ -36,6 +36,7 @@ const GoalsSection = ({
       id: g.id,
       type: g.type,
       playerName: getGoalPlayerName(g),
+      assistPlayerName: getGoalAssistPlayerName(g),
       time: getGoalTime(g),
       teamId: g.teamId,
       team_id: g.team_id,
@@ -43,27 +44,17 @@ const GoalsSection = ({
       teamName: g.teamName,
       rawStructure: g
     })),
-    homeGoalsAnalysis: homeGoals.map(g => ({
+    homeGoalsWithAssists: homeGoals.map(g => ({
       id: g.id,
       player: getGoalPlayerName(g),
-      time: getGoalTime(g),
-      teamData: {
-        teamId: g.teamId,
-        team_id: g.team_id,
-        team: g.team,
-        teamName: g.teamName
-      }
+      assist: getGoalAssistPlayerName(g),
+      time: getGoalTime(g)
     })),
-    awayGoalsAnalysis: awayGoals.map(g => ({
+    awayGoalsWithAssists: awayGoals.map(g => ({
       id: g.id,
       player: getGoalPlayerName(g),
-      time: getGoalTime(g),
-      teamData: {
-        teamId: g.teamId,
-        team_id: g.team_id,
-        team: g.team,
-        teamName: g.teamName
-      }
+      assist: getGoalAssistPlayerName(g),
+      time: getGoalTime(g)
     }))
   });
 
@@ -72,16 +63,18 @@ const GoalsSection = ({
     return null;
   }
 
-  // Enhanced goal rendering with comprehensive error handling and fallback data
+  // Enhanced goal rendering with assist information
   const renderGoal = (goal: any, index: number, teamType: 'home' | 'away') => {
     try {
       const playerName = getGoalPlayerName(goal);
+      const assistPlayerName = getGoalAssistPlayerName(goal);
       const goalTime = getGoalTime(goal);
       const goalId = goal.id || `${teamType}-goal-${index}`;
 
-      console.log(`⚽ GoalsSection: Enhanced rendering ${teamType} goal:`, {
+      console.log(`⚽ GoalsSection: Enhanced rendering ${teamType} goal with assist:`, {
         goalId,
         player: playerName,
+        assist: assistPlayerName,
         time: goalTime,
         teamData: {
           teamId: goal.teamId,
@@ -91,6 +84,7 @@ const GoalsSection = ({
         },
         fullGoalStructure: goal,
         hasPlayerName: !!playerName,
+        hasAssist: !!assistPlayerName,
         hasTime: !!goalTime
       });
 
@@ -106,7 +100,6 @@ const GoalsSection = ({
           }
         });
         
-        // Try fallback player name extraction
         const fallbackName = goal.scorer || goal.name || `Unknown Player (Goal ${goalId})`;
         
         if (!fallbackName || fallbackName.includes('Unknown')) {
@@ -147,9 +140,11 @@ const GoalsSection = ({
               />
             )}
           </div>
-          {(goal.assistPlayerName || goal.assist_player_name) && (
-            <div className={`text-sm text-muted-foreground mt-2 font-medium ${teamType === 'away' ? 'mr-6' : 'ml-6'}`}>
-              🅰️ Assist: {goal.assistPlayerName || goal.assist_player_name}
+          
+          {/* Premier League Style Assist Display */}
+          {assistPlayerName && (
+            <div className={`text-sm text-muted-foreground mt-1 font-medium ${teamType === 'away' ? 'text-right mr-6' : 'ml-6'}`}>
+              🅰️ Assist: {assistPlayerName}
             </div>
           )}
         </div>

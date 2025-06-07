@@ -204,6 +204,28 @@ export const getGoalPlayerName = (goal: any): string => {
   return playerName;
 };
 
+export const getGoalAssistPlayerName = (goal: any): string => {
+  // Try multiple possible assist player name fields
+  const possibleAssistNames = [
+    goal.assistPlayerName,
+    goal.assist_player_name,
+    goal.assistPlayer?.name,
+    goal.assist?.player_name,
+    goal.assist?.name
+  ];
+  
+  const assistPlayerName = possibleAssistNames.find(name => name && name.trim() !== '') || '';
+  
+  console.log('🅰️ getGoalAssistPlayerName - Analyzing goal:', {
+    goalId: goal.id,
+    possibleAssistNames,
+    selectedAssistName: assistPlayerName,
+    hasAssist: !!assistPlayerName
+  });
+  
+  return assistPlayerName;
+};
+
 export const getGoalTime = (goal: any): number => {
   // Try multiple possible time fields
   const possibleTimes = [
