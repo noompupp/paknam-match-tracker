@@ -19,69 +19,31 @@ const MatchStatisticsFooter = ({
   fixture
 }: MatchStatisticsFooterProps) => {
   return (
-    <div className="bg-gradient-to-r from-slate-50 via-slate-100 to-slate-50 rounded-xl p-3 md:p-6 border max-w-4xl mx-auto">
-      {/* Mobile-First Statistics Layout */}
-      <div className="space-y-3 md:space-y-0">
-        {/* Mobile Layout - Stacked cards */}
-        <div className="block md:hidden space-y-3">
-          {/* Team Goals Stats */}
-          <div className="grid grid-cols-2 gap-3">
-            <div className="text-center p-3 rounded-lg border bg-white">
-              <div className="font-bold text-xl mb-1" style={{ color: homeTeamColor }}>
-                {homeGoals.length}
-              </div>
-              <div className="text-muted-foreground text-xs font-medium">Goals</div>
-              <div className="text-xs text-muted-foreground mt-1 truncate">
-                {fixture.home_team?.name}
-              </div>
-            </div>
-            <div className="text-center p-3 rounded-lg border bg-white">
-              <div className="font-bold text-xl mb-1" style={{ color: awayTeamColor }}>
-                {awayGoals.length}
-              </div>
-              <div className="text-muted-foreground text-xs font-medium">Goals</div>
-              <div className="text-xs text-muted-foreground mt-1 truncate">
-                {fixture.away_team?.name}
-              </div>
-            </div>
+    <div className="bg-gradient-to-r from-slate-50 via-slate-100 to-slate-50 rounded-xl p-4 md:p-6 border">
+      <div className="grid grid-cols-3 gap-3 md:gap-6 text-center">
+        <div>
+          <div className="font-bold text-xl md:text-2xl mb-1" style={{ color: homeTeamColor }}>
+            {homeGoals.length}
           </div>
-          
-          {/* Additional Stats */}
-          <div className="text-center p-3 rounded-lg border bg-white">
-            <div className="font-bold text-xl mb-1 text-amber-600">{cards.length}</div>
-            <div className="text-muted-foreground text-xs font-medium">Total Cards</div>
-            <div className="text-xs text-muted-foreground mt-1">
-              {timelineEvents.length} Events
-            </div>
+          <div className="text-muted-foreground text-xs md:text-sm font-medium">Goals</div>
+          <div className="text-xs text-muted-foreground mt-1 truncate">
+            {fixture.home_team?.name}
           </div>
         </div>
-
-        {/* Desktop Layout - Grid */}
-        <div className="hidden md:grid grid-cols-3 gap-6 text-center">
-          <div>
-            <div className="font-bold text-2xl mb-1" style={{ color: homeTeamColor }}>
-              {homeGoals.length}
-            </div>
-            <div className="text-muted-foreground text-sm font-medium">Goals</div>
-            <div className="text-xs text-muted-foreground mt-1 truncate">
-              {fixture.home_team?.name}
-            </div>
+        <div>
+          <div className="font-bold text-xl md:text-2xl mb-1 text-amber-600">{cards.length}</div>
+          <div className="text-muted-foreground text-xs md:text-sm font-medium">Total Cards</div>
+          <div className="text-xs text-muted-foreground mt-1">
+            {timelineEvents.length} Events
           </div>
-          <div>
-            <div className="font-bold text-2xl mb-1 text-amber-600">{cards.length}</div>
-            <div className="text-muted-foreground text-sm font-medium">Total Cards</div>
-            <div className="text-xs text-muted-foreground mt-1">
-              {timelineEvents.length} Events
-            </div>
+        </div>
+        <div>
+          <div className="font-bold text-xl md:text-2xl mb-1" style={{ color: awayTeamColor }}>
+            {awayGoals.length}
           </div>
-          <div>
-            <div className="font-bold text-2xl mb-1" style={{ color: awayTeamColor }}>
-              {awayGoals.length}
-            </div>
-            <div className="text-muted-foreground text-sm font-medium">Goals</div>
-            <div className="text-xs text-muted-foreground mt-1 truncate">
-              {fixture.away_team?.name}
-            </div>
+          <div className="text-muted-foreground text-xs md:text-sm font-medium">Goals</div>
+          <div className="text-xs text-muted-foreground mt-1 truncate">
+            {fixture.away_team?.name}
           </div>
         </div>
       </div>
