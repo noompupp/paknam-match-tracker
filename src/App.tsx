@@ -39,12 +39,18 @@ const AppContent = () => {
     );
   }
 
-  // Handle authentication tab - show login screen
+  // Handle authentication tab - show login screen with close functionality
   if (activeTab === 'auth') {
-    return <SecureLogin onSuccess={() => setActiveTab('dashboard')} />;
+    return (
+      <SecureLogin 
+        onSuccess={() => setActiveTab('dashboard')} 
+        onClose={() => setActiveTab('dashboard')}
+        showCloseButton={true}
+      />
+    );
   }
 
-  // Main application interface - no authentication required for basic tabs
+  // Main application interface - enhanced for viewer experience
   const renderContent = () => {
     switch (activeTab) {
       case "teams":

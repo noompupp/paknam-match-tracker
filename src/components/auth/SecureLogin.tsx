@@ -6,14 +6,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Lock, Mail, Eye, EyeOff, Shield } from "lucide-react";
+import { Lock, Mail, Eye, EyeOff, Shield, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface SecureLoginProps {
   onSuccess?: () => void;
+  onClose?: () => void;
+  showCloseButton?: boolean;
 }
 
-const SecureLogin = ({ onSuccess }: SecureLoginProps) => {
+const SecureLogin = ({ onSuccess, onClose, showCloseButton = false }: SecureLoginProps) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isSignUp, setIsSignUp] = useState(false);
@@ -52,6 +54,9 @@ const SecureLogin = ({ onSuccess }: SecureLoginProps) => {
     setLoading(true);
     
     try {
+      // Use the correct window location for redirect
+      const redirectUrl = `${window.location.origin}/`;
+      
       const { error } = isSignUp 
         ? await signUp(email, password)
         : await signIn(email, password);
@@ -79,9 +84,27 @@ const SecureLogin = ({ onSuccess }: SecureLoginProps) => {
     }
   };
 
+  const handleClose = () => {
+    if (onClose) {
+      onClose();
+    }
+  };
+
   return (
     <div className="min-h-screen gradient-bg flex items-center justify-center p-4">
-      <Card className="w-full max-w-md">
+      <Card className="w-full max-w-md relative">
+        {showCloseButton && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleClose}
+            className="absolute right-2 top-2 h-8 w-8 p-0 hover:bg-muted"
+            title="Close"
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        )}
+        
         <CardHeader className="text-center">
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
             <Shield className="h-8 w-8 text-primary" />
@@ -91,8 +114,8 @@ const SecureLogin = ({ onSuccess }: SecureLoginProps) => {
           </CardTitle>
           <CardDescription>
             {isSignUp 
-              ? "Create your secure account to get started"
-              : "Sign in to your account securely"
+              ? "Create your secure account to access referee tools"
+              : "Sign in to access advanced features and referee tools"
             }
           </CardDescription>
         </CardHeader>
@@ -179,6 +202,21 @@ const SecureLogin = ({ onSuccess }: SecureLoginProps) => {
               </Button>
             </div>
           </form>
+          
+          {showCloseButton && (
+            <div className="mt-4 pt-4 border-t text-center">
+              <p className="text-sm text-muted-foreground mb-2">
+                You can browse content without signing in
+              </p>
+              <Button
+                variant="outline"
+                onClick={handleClose}
+                className="w-full"
+              >
+                Continue as Viewer
+              </Button>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

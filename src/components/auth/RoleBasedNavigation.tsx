@@ -2,7 +2,7 @@
 import React from 'react';
 import { useSecureAuth } from "@/contexts/SecureAuthContext";
 import { Button } from "@/components/ui/button";
-import { Home, Calendar, Bell, BarChart3, Flag, LogOut, User } from "lucide-react";
+import { Home, Calendar, Bell, BarChart3, Flag, LogOut, User, Lock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface RoleBasedNavigationProps {
@@ -35,6 +35,19 @@ const RoleBasedNavigation = ({ activeTab, onTabChange }: RoleBasedNavigationProp
     onTabChange('auth');
   };
 
+  const handleProtectedTabClick = (tabId: string) => {
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in to access referee tools and advanced features.",
+        variant: "default"
+      });
+      onTabChange('auth');
+    } else {
+      onTabChange(tabId);
+    }
+  };
+
   // Base navigation items available to all users (including non-authenticated)
   const baseNavItems = [
     { id: "dashboard", label: "Latest", icon: Home },
@@ -44,8 +57,20 @@ const RoleBasedNavigation = ({ activeTab, onTabChange }: RoleBasedNavigationProp
 
   // Protected navigation items for authenticated users
   const protectedNavItems = [
-    { id: "referee", label: "Referee", icon: Flag, requiredRole: "referee" },
-    { id: "notifications", label: "More", icon: Bell, requiredRole: "referee" },
+    { 
+      id: "referee", 
+      label: "Referee", 
+      icon: Flag, 
+      requiredRole: "referee",
+      description: "Access referee tools and match management"
+    },
+    { 
+      id: "notifications", 
+      label: "More", 
+      icon: Bell, 
+      requiredRole: "referee",
+      description: "View notifications and additional features"
+    },
   ];
 
   return (
@@ -85,42 +110,51 @@ const RoleBasedNavigation = ({ activeTab, onTabChange }: RoleBasedNavigationProp
           );
         })}
 
-        {/* Protected navigation items - only for authenticated users with appropriate roles */}
-        {user && protectedNavItems.map((item) => {
+        {/* Protected navigation items with visual indicators */}
+        {protectedNavItems.map((item) => {
           const Icon = item.icon;
           const isActive = activeTab === item.id;
+          const isAccessible = user; // For now, any authenticated user can access
           
           return (
             <Button
               key={item.id}
               variant="ghost"
               size="sm"
-              onClick={() => onTabChange(item.id)}
+              onClick={() => handleProtectedTabClick(item.id)}
               className={`flex flex-col items-center gap-1 h-auto py-2 px-3 transition-all duration-200 relative touch-target ${
                 isActive 
                   ? "text-primary rounded-xl border border-transparent" 
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                  : isAccessible
+                    ? "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                    : "text-muted-foreground/50 hover:text-muted-foreground hover:bg-muted/30"
               }`}
               style={isActive ? {
                 background: 'var(--nav-active-bg)',
                 borderColor: 'var(--nav-active-border)',
                 boxShadow: 'var(--nav-active-glow)'
               } : {}}
+              title={isAccessible ? item.description : "Sign in required"}
             >
-              <Icon className="h-5 w-5" />
+              <div className="relative">
+                <Icon className="h-5 w-5" />
+                {!isAccessible && (
+                  <Lock className="h-2 w-2 absolute -top-1 -right-1 text-muted-foreground" />
+                )}
+              </div>
               <span className="text-xs font-medium">{item.label}</span>
             </Button>
           );
         })}
         
-        {/* Authentication button */}
+        {/* Authentication button with enhanced UX */}
         {user ? (
           <Button
             variant="ghost"
             size="sm"
             onClick={handleSignOut}
             className="flex flex-col items-center gap-1 h-auto py-2 px-3 transition-all duration-200 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-            title="Sign Out"
+            title={`Sign out (${user.email})`}
           >
             <LogOut className="h-5 w-5" />
             <span className="text-xs font-medium">Exit</span>
@@ -131,7 +165,7 @@ const RoleBasedNavigation = ({ activeTab, onTabChange }: RoleBasedNavigationProp
             size="sm"
             onClick={handleSignIn}
             className="flex flex-col items-center gap-1 h-auto py-2 px-3 transition-all duration-200 text-muted-foreground hover:text-primary hover:bg-primary/10"
-            title="Sign In"
+            title="Sign in to access referee tools"
           >
             <User className="h-5 w-5" />
             <span className="text-xs font-medium">Login</span>

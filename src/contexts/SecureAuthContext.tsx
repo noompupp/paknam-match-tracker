@@ -91,6 +91,7 @@ export const SecureAuthProvider = ({ children }: SecureAuthProviderProps) => {
     console.log('🔐 Attempting secure sign up...');
     
     try {
+      // Use the current window location for proper redirect handling
       const redirectUrl = `${window.location.origin}/`;
       
       const { data, error } = await supabase.auth.signUp({
