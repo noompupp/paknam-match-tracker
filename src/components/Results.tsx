@@ -2,10 +2,11 @@
 import { useRecentFixtures } from "@/hooks/useFixtures";
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Trophy, Clock } from "lucide-react";
+import { Clock } from "lucide-react";
 import FixtureCard from "./fixtures/FixtureCard";
 import LoadingCard from "./fixtures/LoadingCard";
 import MatchSummaryDialog from "./fixtures/MatchSummaryDialog";
+import ResultsHeader from "./results/ResultsHeader";
 
 const Results = () => {
   const { data: recentFixtures, isLoading, error } = useRecentFixtures();
@@ -34,23 +35,10 @@ const Results = () => {
   return (
     <>
       <div className="gradient-bg">
-        {/* Header */}
-        <div className="max-w-7xl mx-auto container-responsive py-8">
-          <div className="text-center mb-8">
-            <div className="flex items-center justify-center gap-3 mb-4">
-              <Trophy className="h-8 w-8 text-primary" />
-              <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-foreground">
-                Match Results
-              </h1>
-            </div>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              View completed matches and detailed match summaries
-            </p>
-          </div>
-        </div>
+        <ResultsHeader />
 
         {/* Results Content */}
-        <div className="max-w-7xl mx-auto container-responsive pb-8 space-y-8 mobile-content-spacing">
+        <div className="max-w-7xl mx-auto container-responsive py-8 space-y-8 mobile-content-spacing">
           <Card className="card-shadow-lg">
             <CardHeader className="flex flex-row items-center gap-2">
               <Clock className="h-5 w-5 text-primary" />

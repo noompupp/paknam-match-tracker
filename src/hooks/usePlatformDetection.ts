@@ -23,29 +23,37 @@ export const usePlatformDetection = (): PlatformInfo => {
   useEffect(() => {
     const userAgent = navigator.userAgent.toLowerCase();
     
-    // Check if mobile
-    const isMobile = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent);
+    console.log('Platform detection - User Agent:', userAgent);
     
-    // Check specific platforms
+    // Enhanced mobile detection
+    const isMobile = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini|mobile/i.test(userAgent) ||
+                     window.innerWidth <= 768;
+    
+    // Enhanced platform detection
     const isIOS = /iphone|ipad|ipod/i.test(userAgent);
     const isAndroid = /android/i.test(userAgent);
     
-    // Check browsers
-    const isSafari = /safari/i.test(userAgent) && !/chrome/i.test(userAgent);
-    const isChrome = /chrome/i.test(userAgent);
+    // Enhanced browser detection
+    const isSafari = /safari/i.test(userAgent) && !/chrome/i.test(userAgent) && !/crios/i.test(userAgent);
+    const isChrome = /chrome/i.test(userAgent) || /crios/i.test(userAgent);
     
-    // Check if already installed as PWA
+    // Enhanced PWA detection
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches ||
-                        (window.navigator as any).standalone === true;
+                        (window.navigator as any).standalone === true ||
+                        document.referrer.includes('android-app://');
 
-    setPlatformInfo({
+    const detectedInfo = {
       isMobile,
       isIOS,
       isAndroid,
       isSafari,
       isChrome,
       isStandalone,
-    });
+    };
+
+    console.log('Platform detection results:', detectedInfo);
+    
+    setPlatformInfo(detectedInfo);
   }, []);
 
   return platformInfo;

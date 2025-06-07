@@ -11,24 +11,53 @@ const PWAPromptToast = () => {
   const [hasShownPrompt, setHasShownPrompt] = useState(false);
 
   useEffect(() => {
-    // Don't show if already installed, not mobile, or already shown
-    if (isStandalone || !isMobile || hasShownPrompt) {
+    console.log('PWA Prompt - Platform detection:', { 
+      isMobile, 
+      isIOS, 
+      isAndroid, 
+      isSafari, 
+      isChrome, 
+      isStandalone 
+    });
+
+    // Don't show if already installed or not mobile
+    if (isStandalone || !isMobile) {
+      console.log('PWA Prompt - Not showing: standalone or not mobile');
+      return;
+    }
+
+    // Don't show if already shown in this session
+    if (hasShownPrompt) {
+      console.log('PWA Prompt - Already shown this session');
       return;
     }
 
     // Don't show if user dismissed it in this session
     if (sessionStorage.getItem('pwa-prompt-dismissed')) {
+      console.log('PWA Prompt - User dismissed in session');
       return;
     }
 
-    // Show prompt after 8 seconds
+    // Check if we should show the prompt based on platform
+    const shouldShow = (isIOS && isSafari) || (isAndroid && isChrome) || 
+                      (!isIOS && !isAndroid && isMobile);
+
+    if (!shouldShow) {
+      console.log('PWA Prompt - Platform not supported for prompt');
+      return;
+    }
+
+    console.log('PWA Prompt - Scheduling prompt to show in 5 seconds');
+
+    // Show prompt after 5 seconds (reduced from 8 for testing)
     const timer = setTimeout(() => {
+      console.log('PWA Prompt - Showing prompt now');
       showPWAPrompt();
       setHasShownPrompt(true);
-    }, 8000);
+    }, 5000);
 
     return () => clearTimeout(timer);
-  }, [isMobile, isStandalone, hasShownPrompt]);
+  }, [isMobile, isStandalone, hasShownPrompt, isIOS, isAndroid, isSafari, isChrome]);
 
   const showPWAPrompt = () => {
     const getPromptContent = () => {
@@ -59,6 +88,8 @@ const PWAPromptToast = () => {
     const content = getPromptContent();
     const IconComponent = content.icon;
 
+    console.log('PWA Prompt - Showing toast with content:', content);
+
     toast({
       title: content.title,
       description: (
@@ -76,6 +107,7 @@ const PWAPromptToast = () => {
           variant="ghost"
           size="sm"
           onClick={() => {
+            console.log('PWA Prompt - User dismissed toast');
             sessionStorage.setItem('pwa-prompt-dismissed', 'true');
             dismiss();
           }}
