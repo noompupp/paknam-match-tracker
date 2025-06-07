@@ -2,6 +2,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Trophy } from "lucide-react";
+import { filterGoalsByTeam, getGoalPlayerName, getGoalTime, normalizeTeamId } from "./utils/matchSummaryDataProcessor";
 
 interface GoalsSectionProps {
   goals: any[];
@@ -27,18 +28,84 @@ const GoalsSection = ({
     return `${minutes}'`;
   };
 
-  console.log('⚽ GoalsSection: Received data:', {
+  console.log('⚽ GoalsSection: Received props:', {
     totalGoals: goals.length,
     homeGoals: homeGoals.length,
     awayGoals: awayGoals.length,
-    homeGoalsData: homeGoals,
-    awayGoalsData: awayGoals
+    homeGoalsData: homeGoals.map(g => ({
+      id: g.id,
+      player: getGoalPlayerName(g),
+      time: getGoalTime(g),
+      teamId: g.teamId || g.team_id || g.team
+    })),
+    awayGoalsData: awayGoals.map(g => ({
+      id: g.id,
+      player: getGoalPlayerName(g),
+      time: getGoalTime(g),
+      teamId: g.teamId || g.team_id || g.team
+    }))
   });
 
   if (goals.length === 0) {
     console.log('⚽ GoalsSection: No goals to display');
     return null;
   }
+
+  // Enhanced goal rendering with error handling
+  const renderGoal = (goal: any, index: number, teamType: 'home' | 'away') => {
+    try {
+      const playerName = getGoalPlayerName(goal);
+      const goalTime = getGoalTime(goal);
+      const goalId = goal.id || `${teamType}-goal-${index}`;
+
+      console.log(`⚽ GoalsSection: Rendering ${teamType} goal:`, {
+        goalId,
+        player: playerName,
+        time: goalTime,
+        teamId: goal.teamId || goal.team_id || goal.team,
+        fullGoalData: goal
+      });
+
+      if (!playerName) {
+        console.warn(`⚠️ GoalsSection: Missing player name for ${teamType} goal:`, goal);
+        return null;
+      }
+
+      return (
+        <div key={goalId} className={teamType === 'home' ? "text-left" : "text-right"}>
+          <div className={`flex items-center gap-3 ${teamType === 'away' ? 'justify-end' : ''}`}>
+            {teamType === 'home' && (
+              <div 
+                className="w-3 h-3 rounded-full shadow-md"
+                style={{ backgroundColor: homeTeamColor }}
+              />
+            )}
+            
+            <span className="font-semibold text-base">{playerName}</span>
+            
+            <Badge variant="outline" className="text-sm font-medium">
+              {formatMatchTime(goalTime)}
+            </Badge>
+
+            {teamType === 'away' && (
+              <div 
+                className="w-3 h-3 rounded-full shadow-md"
+                style={{ backgroundColor: awayTeamColor }}
+              />
+            )}
+          </div>
+          {goal.assistPlayerName && (
+            <div className={`text-sm text-muted-foreground mt-2 font-medium ${teamType === 'away' ? 'mr-6' : 'ml-6'}`}>
+              🅰️ Assist: {goal.assistPlayerName}
+            </div>
+          )}
+        </div>
+      );
+    } catch (error) {
+      console.error(`❌ GoalsSection: Error rendering ${teamType} goal:`, { error, goal });
+      return null;
+    }
+  };
 
   return (
     <Card>
@@ -52,30 +119,12 @@ const GoalsSection = ({
           {/* Home Team Goals */}
           <div className="flex-1 pr-6">
             <div className="space-y-4">
-              {homeGoals.map((goal, index) => {
-                console.log('⚽ GoalsSection: Rendering home goal:', { goal, index });
-                return (
-                  <div key={`home-goal-${goal.id}-${index}`} className="text-left">
-                    <div className="flex items-center gap-3">
-                      <div 
-                        className="w-3 h-3 rounded-full shadow-md"
-                        style={{ backgroundColor: homeTeamColor }}
-                      />
-                      <span className="font-semibold text-base">{getGoalPlayerName(goal)}</span>
-                      <Badge variant="outline" className="text-sm font-medium">
-                        {formatMatchTime(getGoalTime(goal))}
-                      </Badge>
-                    </div>
-                    {goal.assistPlayerName && (
-                      <div className="text-sm text-muted-foreground ml-6 mt-2 font-medium">
-                        🅰️ Assist: {goal.assistPlayerName}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-              {homeGoals.length === 0 && (
-                <div className="text-sm text-muted-foreground italic text-center py-4">No goals scored</div>
+              {homeGoals.length > 0 ? (
+                homeGoals.map((goal, index) => renderGoal(goal, index, 'home'))
+              ) : (
+                <div className="text-sm text-muted-foreground italic text-center py-4">
+                  No goals scored
+                </div>
               )}
             </div>
           </div>
@@ -88,30 +137,12 @@ const GoalsSection = ({
           {/* Away Team Goals */}
           <div className="flex-1 pl-6">
             <div className="space-y-4">
-              {awayGoals.map((goal, index) => {
-                console.log('⚽ GoalsSection: Rendering away goal:', { goal, index });
-                return (
-                  <div key={`away-goal-${goal.id}-${index}`} className="text-right">
-                    <div className="flex items-center justify-end gap-3">
-                      <Badge variant="outline" className="text-sm font-medium">
-                        {formatMatchTime(getGoalTime(goal))}
-                      </Badge>
-                      <span className="font-semibold text-base">{getGoalPlayerName(goal)}</span>
-                      <div 
-                        className="w-3 h-3 rounded-full shadow-md"
-                        style={{ backgroundColor: awayTeamColor }}
-                      />
-                    </div>
-                    {goal.assistPlayerName && (
-                      <div className="text-sm text-muted-foreground mr-6 mt-2 font-medium">
-                        🅰️ Assist: {goal.assistPlayerName}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-              {awayGoals.length === 0 && (
-                <div className="text-sm text-muted-foreground italic text-center py-4">No goals scored</div>
+              {awayGoals.length > 0 ? (
+                awayGoals.map((goal, index) => renderGoal(goal, index, 'away'))
+              ) : (
+                <div className="text-sm text-muted-foreground italic text-center py-4">
+                  No goals scored
+                </div>
               )}
             </div>
           </div>
