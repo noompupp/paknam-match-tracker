@@ -99,13 +99,6 @@ const GoalDisplay = ({ goal, index, teamType, teamColor }: GoalDisplayProps) => 
             </span>
           </div>
         )}
-
-        {/* Debug assist information in development */}
-        {process.env.NODE_ENV === 'development' && !assistPlayerName && (
-          <div className={`text-xs text-muted-foreground mt-1 opacity-60 ${teamType === 'away' ? 'text-right mr-6' : 'ml-6'}`}>
-            <span className="italic">No assist data available</span>
-          </div>
-        )}
       </div>
     );
   } catch (error) {
