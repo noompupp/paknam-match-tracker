@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -147,9 +146,8 @@ export const SecureAuthProvider = ({ children }: SecureAuthProviderProps) => {
     if (!user) return false;
     
     try {
-      const { data, error } = await supabase.rpc('has_role', {
-        _user_id: user.id,
-        _role: role
+      const { data, error } = await supabase.rpc('get_user_role', {
+        user_uuid: user.id
       });
 
       if (error) {
@@ -157,7 +155,9 @@ export const SecureAuthProvider = ({ children }: SecureAuthProviderProps) => {
         return false;
       }
 
-      return data || false;
+      // The function returns the user's role as a string, so we check if it matches
+      const userRole = data as string;
+      return userRole === role || userRole === 'admin'; // Admin has access to everything
     } catch (error) {
       console.error('❌ Role check error:', error);
       return false;
