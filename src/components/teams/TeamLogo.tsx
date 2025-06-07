@@ -31,16 +31,57 @@ const TeamLogo = ({ team, size = 'medium', className = '', showColor = false }: 
 
   const sizeClasses = getSizeClasses();
 
-  // Create style object for team color background
-  const getColorStyle = () => {
+  // Enhanced gradient style function
+  const getGradientStyle = () => {
     if (!showColor || !team?.color) return {};
+    
+    // Create a gradient using the team color as base
+    const baseColor = team.color;
+    
+    // Generate a lighter shade for the gradient
+    const lighterShade = lightenColor(baseColor, 20);
+    const darkerShade = darkenColor(baseColor, 10);
+    
     return {
-      backgroundColor: team.color,
-      borderColor: team.color,
+      background: `linear-gradient(135deg, ${lighterShade} 0%, ${baseColor} 50%, ${darkerShade} 100%)`,
+      borderColor: baseColor,
+      boxShadow: `0 2px 8px ${baseColor}20`,
     };
   };
 
-  const colorStyle = getColorStyle();
+  // Helper function to lighten a color
+  const lightenColor = (color: string, percent: number): string => {
+    // Convert hex to RGB
+    const hex = color.replace('#', '');
+    const r = parseInt(hex.substr(0, 2), 16);
+    const g = parseInt(hex.substr(2, 2), 16);
+    const b = parseInt(hex.substr(4, 2), 16);
+    
+    // Lighten each component
+    const newR = Math.min(255, Math.round(r + (255 - r) * (percent / 100)));
+    const newG = Math.min(255, Math.round(g + (255 - g) * (percent / 100)));
+    const newB = Math.min(255, Math.round(b + (255 - b) * (percent / 100)));
+    
+    return `#${newR.toString(16).padStart(2, '0')}${newG.toString(16).padStart(2, '0')}${newB.toString(16).padStart(2, '0')}`;
+  };
+
+  // Helper function to darken a color
+  const darkenColor = (color: string, percent: number): string => {
+    // Convert hex to RGB
+    const hex = color.replace('#', '');
+    const r = parseInt(hex.substr(0, 2), 16);
+    const g = parseInt(hex.substr(2, 2), 16);
+    const b = parseInt(hex.substr(4, 2), 16);
+    
+    // Darken each component
+    const newR = Math.max(0, Math.round(r * (1 - percent / 100)));
+    const newG = Math.max(0, Math.round(g * (1 - percent / 100)));
+    const newB = Math.max(0, Math.round(b * (1 - percent / 100)));
+    
+    return `#${newR.toString(16).padStart(2, '0')}${newG.toString(16).padStart(2, '0')}${newB.toString(16).padStart(2, '0')}`;
+  };
+
+  const gradientStyle = getGradientStyle();
   const hasColor = showColor && team?.color;
 
   // Prioritize logoURL, then fallback to logo, then default emoji
@@ -51,8 +92,8 @@ const TeamLogo = ({ team, size = 'medium', className = '', showColor = false }: 
         <div 
           className={`${sizeClasses.replace(/text-\w+/, '')} rounded-lg border-2 p-1 ${
             hasColor ? 'border-current' : 'border-gray-200'
-          } overflow-hidden`}
-          style={colorStyle}
+          } overflow-hidden transition-all duration-200`}
+          style={gradientStyle}
         >
           <img 
             src={team.logoURL} 
@@ -69,7 +110,7 @@ const TeamLogo = ({ team, size = 'medium', className = '', showColor = false }: 
               console.log('🖼️ TeamLogo: Image loaded successfully:', team.logoURL);
             }}
           />
-          <span className={`${sizeClasses.replace(/w-\w+ h-\w+/, '')} hidden flex items-center justify-center`}>
+          <span className={`${sizeClasses.replace(/w-\w+ h-\w+/, '')} hidden flex items-center justify-center text-white font-bold`}>
             {team?.logo || '⚽'}
           </span>
         </div>
@@ -81,12 +122,12 @@ const TeamLogo = ({ team, size = 'medium', className = '', showColor = false }: 
   return (
     <div className={`flex items-center ${className}`}>
       <div 
-        className={`${sizeClasses.replace(/text-\w+/, '')} rounded-lg border-2 flex items-center justify-center ${
-          hasColor ? 'border-current text-white' : 'border-gray-200'
+        className={`${sizeClasses.replace(/text-\w+/, '')} rounded-lg border-2 flex items-center justify-center transition-all duration-200 ${
+          hasColor ? 'border-current text-white font-bold' : 'border-gray-200'
         }`}
-        style={colorStyle}
+        style={gradientStyle}
       >
-        <span className={sizeClasses.replace(/w-\w+ h-\w+/, '')}>
+        <span className={`${sizeClasses.replace(/w-\w+ h-\w+/, '')} drop-shadow-sm`}>
           {team?.logo || '⚽'}
         </span>
       </div>
