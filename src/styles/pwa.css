@@ -17,9 +17,9 @@
     /* Ensure full coverage including safe areas */
     min-height: 100vh;
     min-height: 100dvh;
-    /* Remove any padding that might cause white gaps */
-    padding-top: 0;
-    padding-bottom: 0;
+    /* Apply safe area padding for PWA mode */
+    padding-top: var(--safe-area-inset-top);
+    padding-bottom: var(--safe-area-inset-bottom);
   }
   
   /* Enhanced safe area for PWA mode */
@@ -47,18 +47,8 @@
       background-attachment: fixed;
     }
     
-    /* Single pseudo-element to cover the top safe area */
-    body::before {
-      content: '';
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: var(--safe-area-inset-top);
-      background: var(--app-gradient);
-      z-index: 9999;
-      pointer-events: none;
-    }
+    /* Remove the pseudo-element that was causing conflicts */
+    /* The safe-area-inset-top is now properly applied via body padding */
   }
 }
 
