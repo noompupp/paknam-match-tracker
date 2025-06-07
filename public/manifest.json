@@ -13,49 +13,49 @@
   "prefer_related_applications": false,
   "icons": [
     {
-      "src": "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=72&h=72&fit=crop&crop=center",
+      "src": "https://tvtizejqfbeihsqkbxul.supabase.co/storage/v1/object/public/tournament-logo/tournament-logo.png?v=1",
       "sizes": "72x72",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=96&h=96&fit=crop&crop=center",
+      "src": "https://tvtizejqfbeihsqkbxul.supabase.co/storage/v1/object/public/tournament-logo/tournament-logo.png?v=1",
       "sizes": "96x96",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=128&h=128&fit=crop&crop=center",
+      "src": "https://tvtizejqfbeihsqkbxul.supabase.co/storage/v1/object/public/tournament-logo/tournament-logo.png?v=1",
       "sizes": "128x128",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=144&h=144&fit=crop&crop=center",
+      "src": "https://tvtizejqfbeihsqkbxul.supabase.co/storage/v1/object/public/tournament-logo/tournament-logo.png?v=1",
       "sizes": "144x144",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=152&h=152&fit=crop&crop=center",
+      "src": "https://tvtizejqfbeihsqkbxul.supabase.co/storage/v1/object/public/tournament-logo/tournament-logo.png?v=1",
       "sizes": "152x152",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=192&h=192&fit=crop&crop=center",
+      "src": "https://tvtizejqfbeihsqkbxul.supabase.co/storage/v1/object/public/tournament-logo/tournament-logo.png?v=1",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=384&h=384&fit=crop&crop=center",
+      "src": "https://tvtizejqfbeihsqkbxul.supabase.co/storage/v1/object/public/tournament-logo/tournament-logo.png?v=1",
       "sizes": "384x384",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=512&h=512&fit=crop&crop=center",
+      "src": "https://tvtizejqfbeihsqkbxul.supabase.co/storage/v1/object/public/tournament-logo/tournament-logo.png?v=1",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
@@ -86,7 +86,7 @@
       "url": "/?tab=dashboard",
       "icons": [
         {
-          "src": "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=96&h=96&fit=crop&crop=center",
+          "src": "https://tvtizejqfbeihsqkbxul.supabase.co/storage/v1/object/public/tournament-logo/tournament-logo.png?v=1",
           "sizes": "96x96"
         }
       ]
@@ -98,7 +98,7 @@
       "url": "/?tab=fixtures",
       "icons": [
         {
-          "src": "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=96&h=96&fit=crop&crop=center",
+          "src": "https://tvtizejqfbeihsqkbxul.supabase.co/storage/v1/object/public/tournament-logo/tournament-logo.png?v=1",
           "sizes": "96x96"
         }
       ]
@@ -110,7 +110,7 @@
       "url": "/?tab=teams",
       "icons": [
         {
-          "src": "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=96&h=96&fit=crop&crop=center",
+          "src": "https://tvtizejqfbeihsqkbxul.supabase.co/storage/v1/object/public/tournament-logo/tournament-logo.png?v=1",
           "sizes": "96x96"
         }
       ]
