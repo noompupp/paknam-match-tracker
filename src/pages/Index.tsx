@@ -6,7 +6,6 @@ import Fixtures from "@/components/Fixtures";
 import RefereeTools from "@/components/RefereeTools";
 import MorePage from "@/components/MorePage";
 import Navigation from "@/components/Navigation";
-import { SupabaseAuthProvider } from "@/contexts/SupabaseAuthContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import ProtectedTabWrapper from "@/components/auth/ProtectedTabWrapper";
 
@@ -26,9 +25,7 @@ const Index = () => {
           <ProtectedTabWrapper
             tabId="referee"
             title="Referee Tools Access"
-            description="Access referee tools and match management features."
-            requiresAuth={true}
-            minimumRole="referee"
+            description="Enter the passcode to access referee tools and match management features."
           >
             <RefereeTools />
           </ProtectedTabWrapper>
@@ -38,9 +35,7 @@ const Index = () => {
           <ProtectedTabWrapper
             tabId="more"
             title="Administrative Access"
-            description="Access system management and administrative tools."
-            requiresAuth={true}
-            minimumRole="admin"
+            description="Enter the passcode to access system management and debug tools."
           >
             <MorePage />
           </ProtectedTabWrapper>
@@ -51,14 +46,12 @@ const Index = () => {
   };
 
   return (
-    <SupabaseAuthProvider>
-      <AuthProvider>
-        <div className="min-h-screen">
-          {renderContent()}
-          <Navigation activeTab={activeTab} onTabChange={setActiveTab} />
-        </div>
-      </AuthProvider>
-    </SupabaseAuthProvider>
+    <AuthProvider>
+      <div className="min-h-screen">
+        {renderContent()}
+        <Navigation activeTab={activeTab} onTabChange={setActiveTab} />
+      </div>
+    </AuthProvider>
   );
 };
 
