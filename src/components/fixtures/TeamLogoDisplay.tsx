@@ -73,12 +73,12 @@ const TeamLogoDisplay = ({
       </Avatar>
       {showName && (
         <div 
-          className={`text-center px-2 md:px-3 py-1 rounded-lg max-w-[80px] md:max-w-none ${isPremierLeagueStyle ? 'font-bold text-white' : ''}`}
+          className={`text-center px-2 md:px-3 py-1 rounded-lg w-16 md:w-auto ${isPremierLeagueStyle ? 'font-bold text-white' : ''}`}
           style={isPremierLeagueStyle ? {
             background: `linear-gradient(135deg, ${teamColor} 0%, ${teamColor}cc 100%)`
           } : {}}
         >
-          <span className={`${textSizeClasses[size]} font-bold leading-tight truncate block`}>
+          <span className={`${textSizeClasses[size]} font-bold leading-tight whitespace-normal break-words text-center block`}>
             {teamName}
           </span>
         </div>
