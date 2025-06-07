@@ -36,6 +36,18 @@
     user-select: none;
     -webkit-touch-callout: none;
   }
+  
+  /* Enhanced top notch integration for PWA */
+  .top-notch-background {
+    display: block;
+  }
+  
+  /* Instagram-like header styling in PWA mode */
+  .enhanced-header {
+    position: sticky;
+    top: var(--safe-area-inset-top, 0px);
+    z-index: 50;
+  }
 }
 
 /* iOS specific fixes for standalone mode */
@@ -47,8 +59,25 @@
       background-attachment: fixed;
     }
     
-    /* Remove the pseudo-element that was causing conflicts */
-    /* The safe-area-inset-top is now properly applied via body padding */
+    /* Enhanced notch support for iOS */
+    .top-notch-background {
+      /* Ensure notch background extends to the very top */
+      padding-top: 0;
+      margin-top: calc(-1 * var(--safe-area-inset-top, 0px));
+      height: calc(var(--safe-area-inset-top, 44px) + 20px);
+    }
+    
+    /* Proper content offset for iOS notch */
+    .top-notch-content {
+      margin-top: var(--safe-area-inset-top, 0px);
+    }
+  }
+}
+
+/* Non-PWA mode - hide notch background */
+@media not all and (display-mode: standalone) {
+  .top-notch-background {
+    display: none;
   }
 }
 
@@ -75,4 +104,17 @@
 .pwa-install-button:hover {
   background: rgba(102, 126, 234, 1);
   transform: scale(1.05);
+}
+
+/* Enhanced theme-aware animations */
+@media (prefers-color-scheme: dark) {
+  .top-notch-background {
+    box-shadow: 0 1px 3px rgba(255, 255, 255, 0.1);
+  }
+}
+
+@media (prefers-color-scheme: light) {
+  .top-notch-background {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
 }

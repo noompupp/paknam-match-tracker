@@ -43,6 +43,17 @@
     
     /* App gradient variables */
     --app-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    
+    /* Enhanced theme variables for top notch */
+    --notch-bg-light: rgba(255, 255, 255, 0.95);
+    --notch-bg-dark: rgba(0, 0, 0, 0.95);
+    --notch-blur: blur(20px);
+    --notch-border-light: rgba(0, 0, 0, 0.1);
+    --notch-border-dark: rgba(255, 255, 255, 0.1);
+    --header-bg-light: rgba(255, 255, 255, 0.9);
+    --header-bg-dark: rgba(30, 30, 30, 0.9);
+    --header-text-light: hsl(222.2 84% 4.9%);
+    --header-text-dark: hsl(210 40% 98%);
   }
 
   .dark {
@@ -91,5 +102,76 @@
     padding-left: var(--safe-area-inset-left);
     padding-right: var(--safe-area-inset-right);
     /* PWA mode will override these with full safe area support */
+  }
+}
+
+/* Dynamic Top Notch Styles */
+@layer components {
+  .top-notch-container {
+    position: relative;
+    width: 100%;
+  }
+  
+  .top-notch-background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: var(--safe-area-inset-top, 44px);
+    backdrop-filter: var(--notch-blur);
+    -webkit-backdrop-filter: var(--notch-blur);
+    z-index: 100;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+  }
+  
+  .top-notch-background.theme-light {
+    background: var(--notch-bg-light);
+    border-bottom: 1px solid var(--notch-border-light);
+  }
+  
+  .top-notch-background.theme-dark {
+    background: var(--notch-bg-dark);
+    border-bottom: 1px solid var(--notch-border-dark);
+  }
+  
+  .top-notch-content {
+    position: relative;
+    z-index: 10;
+  }
+  
+  /* Enhanced header styles with theme support */
+  .enhanced-header {
+    backdrop-filter: var(--notch-blur);
+    -webkit-backdrop-filter: var(--notch-blur);
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+  
+  .enhanced-header.theme-light {
+    background: var(--header-bg-light);
+    color: var(--header-text-light);
+  }
+  
+  .enhanced-header.theme-dark {
+    background: var(--header-bg-dark);
+    color: var(--header-text-dark);
+  }
+}
+
+/* Media queries for theme preferences */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --default-notch-bg: var(--notch-bg-dark);
+    --default-notch-border: var(--notch-border-dark);
+    --default-header-bg: var(--header-bg-dark);
+    --default-header-text: var(--header-text-dark);
+  }
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --default-notch-bg: var(--notch-bg-light);
+    --default-notch-border: var(--notch-border-light);
+    --default-header-bg: var(--header-bg-light);
+    --default-header-text: var(--header-text-light);
   }
 }
