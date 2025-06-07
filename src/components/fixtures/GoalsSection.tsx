@@ -1,5 +1,6 @@
 
 import { useIsMobile } from "@/hooks/use-mobile";
+import { formatTimeForSummary } from "@/utils/timeFormatting";
 
 interface GoalsSectionProps {
   homeGoals: any[];
@@ -32,22 +33,22 @@ const GoalsSection = ({
     return (
       <div 
         key={`${goal.id || 'goal'}-${index}`}
-        className={`flex items-center gap-2 ${isMobile ? 'text-xs' : 'text-sm'}`}
+        className={`flex items-start gap-3 py-2 ${isMobile ? 'text-sm' : 'text-base'}`}
       >
         <div 
-          className={`w-2 h-2 rounded-full flex-shrink-0`}
+          className="w-3 h-3 rounded-full flex-shrink-0 mt-1 shadow-sm"
           style={{ backgroundColor: teamColor }}
         />
-        <div className="flex-1 min-w-0">
-          <div className="font-medium truncate">{playerName}</div>
+        <div className="flex-1 min-w-0 space-y-1">
+          <div className="font-semibold text-slate-900 leading-tight">{playerName}</div>
           {assistPlayerName && (
-            <div className={`text-muted-foreground ${isMobile ? 'text-xs' : 'text-xs'}`}>
-              Assist: {assistPlayerName}
+            <div className={`text-slate-600 ${isMobile ? 'text-xs' : 'text-sm'} leading-tight`}>
+              Assist: <span className="font-medium">{assistPlayerName}</span>
             </div>
           )}
         </div>
-        <div className={`font-mono ${isMobile ? 'text-xs' : 'text-sm'} text-muted-foreground flex-shrink-0`}>
-          {formatTime(time)}
+        <div className={`font-bold ${isMobile ? 'text-sm' : 'text-base'} text-slate-700 flex-shrink-0 min-w-[40px] text-right`}>
+          {formatTimeForSummary(time)}
         </div>
       </div>
     );
@@ -56,14 +57,14 @@ const GoalsSection = ({
   const renderTeamGoals = (goals: any[], teamName: string, teamColor: string) => {
     if (goals.length === 0) {
       return (
-        <div className={`text-center text-muted-foreground ${isMobile ? 'text-xs' : 'text-sm'} py-4`}>
+        <div className={`text-center text-slate-500 ${isMobile ? 'text-sm' : 'text-base'} py-6`}>
           No goals scored
         </div>
       );
     }
 
     return (
-      <div className="space-y-3">
+      <div className="space-y-1">
         {goals.map((goal, index) => renderGoal(goal, teamColor, index))}
       </div>
     );
@@ -71,31 +72,31 @@ const GoalsSection = ({
 
   if (homeGoals.length === 0 && awayGoals.length === 0) {
     return (
-      <div className={`bg-slate-50 rounded-xl border ${isMobile ? 'p-4' : 'p-6'}`}>
-        <div className="text-center text-muted-foreground">
-          <div className="text-4xl mb-2">⚽</div>
-          <div className={isMobile ? 'text-sm' : 'text-base'}>No goals scored in this match</div>
+      <div className={`bg-slate-50 rounded-xl border border-slate-200 ${isMobile ? 'p-5' : 'p-6'}`}>
+        <div className="text-center text-slate-500">
+          <div className="text-4xl mb-3">⚽</div>
+          <div className={`font-medium ${isMobile ? 'text-base' : 'text-lg'}`}>No goals scored in this match</div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className={`bg-slate-50 rounded-xl border ${isMobile ? 'p-4' : 'p-6'}`}>
-      <div className={`flex items-center gap-2 mb-4 ${isMobile ? 'text-sm' : 'text-base'}`}>
-        <div className="text-xl">⚽</div>
-        <div className="font-semibold">Goals</div>
-        <div className={`ml-auto text-muted-foreground ${isMobile ? 'text-xs' : 'text-sm'}`}>
+    <div className={`bg-white rounded-xl border border-slate-200 shadow-sm ${isMobile ? 'p-5' : 'p-6'}`}>
+      <div className={`flex items-center gap-3 mb-5 ${isMobile ? 'text-base' : 'text-lg'}`}>
+        <div className="text-2xl">⚽</div>
+        <div className="font-bold text-slate-900">Goals</div>
+        <div className={`ml-auto text-slate-500 font-medium ${isMobile ? 'text-sm' : 'text-base'}`}>
           {homeGoals.length + awayGoals.length} total
         </div>
       </div>
 
-      {/* Mobile: Single column layout */}
+      {/* Mobile: Enhanced single column layout */}
       {isMobile ? (
-        <div className="space-y-4">
+        <div className="space-y-6">
           {homeGoals.length > 0 && (
             <div>
-              <div className={`font-semibold mb-2 text-xs text-muted-foreground`}>
+              <div className="font-bold mb-3 text-sm text-slate-700 uppercase tracking-wide">
                 HOME GOALS ({homeGoals.length})
               </div>
               {renderTeamGoals(homeGoals, 'Home', homeTeamColor)}
@@ -104,7 +105,7 @@ const GoalsSection = ({
           
           {awayGoals.length > 0 && (
             <div>
-              <div className={`font-semibold mb-2 text-xs text-muted-foreground`}>
+              <div className="font-bold mb-3 text-sm text-slate-700 uppercase tracking-wide">
                 AWAY GOALS ({awayGoals.length})
               </div>
               {renderTeamGoals(awayGoals, 'Away', awayTeamColor)}
@@ -112,17 +113,17 @@ const GoalsSection = ({
           )}
         </div>
       ) : (
-        /* Desktop: Two column layout */
-        <div className="grid grid-cols-2 gap-6">
+        /* Desktop: Enhanced two column layout */
+        <div className="grid grid-cols-2 gap-8">
           <div>
-            <div className="font-semibold mb-3 text-sm text-muted-foreground">
+            <div className="font-bold mb-4 text-sm text-slate-700 uppercase tracking-wide">
               HOME GOALS ({homeGoals.length})
             </div>
             {renderTeamGoals(homeGoals, 'Home', homeTeamColor)}
           </div>
           
           <div>
-            <div className="font-semibold mb-3 text-sm text-muted-foreground">
+            <div className="font-bold mb-4 text-sm text-slate-700 uppercase tracking-wide">
               AWAY GOALS ({awayGoals.length})
             </div>
             {renderTeamGoals(awayGoals, 'Away', awayTeamColor)}

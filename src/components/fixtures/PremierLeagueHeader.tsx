@@ -1,5 +1,6 @@
 
 import { useIsMobile } from "@/hooks/use-mobile";
+import TeamLogoDisplay from "./TeamLogoDisplay";
 
 interface PremierLeagueHeaderProps {
   fixture: any;
@@ -25,78 +26,106 @@ const PremierLeagueHeader = ({ fixture, homeGoals, awayGoals }: PremierLeagueHea
   };
 
   return (
-    <div className={`bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white rounded-xl ${isMobile ? 'p-4' : 'p-6'}`}>
-      {/* Mobile: Compact vertical layout optimized for export */}
+    <div className={`bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white rounded-xl ${isMobile ? 'p-5' : 'p-6'} shadow-xl`}>
+      {/* Mobile: Enhanced compact layout */}
       {isMobile ? (
-        <div className="w-full">
-          {/* Match Date */}
-          <div className="text-center mb-3">
-            <div className="text-xs text-slate-300 font-medium">{getMatchDate()}</div>
+        <div className="w-full space-y-4">
+          {/* Match Date with better spacing */}
+          <div className="text-center">
+            <div className="text-sm text-slate-300 font-medium tracking-wide">{getMatchDate()}</div>
           </div>
           
-          {/* Teams and Score - Compact horizontal layout */}
+          {/* Teams and Score - Enhanced layout with logos */}
           <div className="flex items-center justify-between">
-            {/* Home Team */}
-            <div className="flex-1 text-center">
-              <div className="text-xs text-slate-300 mb-1">HOME</div>
-              <div className="font-bold text-sm leading-tight break-words max-w-[80px] mx-auto">
-                {homeTeamName}
-              </div>
-            </div>
-            
-            {/* Score */}
-            <div className="px-4">
-              <div className="bg-white/10 rounded-lg px-3 py-2 backdrop-blur-sm">
-                <div className="text-center">
-                  <div className="text-2xl font-bold">
-                    {homeScore} - {awayScore}
-                  </div>
-                  <div className="text-xs text-slate-300">FINAL</div>
+            {/* Home Team with Logo */}
+            <div className="flex-1 flex flex-col items-center max-w-[100px]">
+              <TeamLogoDisplay
+                teamName={homeTeamName}
+                teamLogo={fixture?.home_team?.logo}
+                teamColor={fixture?.home_team?.color || "#1f2937"}
+                size="sm"
+              />
+              <div className="mt-2 text-center">
+                <div className="font-bold text-base leading-tight break-words">
+                  {homeTeamName}
                 </div>
               </div>
             </div>
             
-            {/* Away Team */}
-            <div className="flex-1 text-center">
-              <div className="text-xs text-slate-300 mb-1">AWAY</div>
-              <div className="font-bold text-sm leading-tight break-words max-w-[80px] mx-auto">
-                {awayTeamName}
+            {/* Enhanced Score Area with gradient and shadow */}
+            <div className="px-6">
+              <div className="bg-gradient-to-br from-white/20 to-white/10 rounded-xl px-4 py-3 backdrop-blur-sm shadow-lg border border-white/20">
+                <div className="text-center">
+                  <div className="text-3xl font-bold tracking-tight">
+                    {homeScore} - {awayScore}
+                  </div>
+                  <div className="text-xs text-slate-200 font-medium mt-1">FULL TIME</div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Away Team with Logo */}
+            <div className="flex-1 flex flex-col items-center max-w-[100px]">
+              <TeamLogoDisplay
+                teamName={awayTeamName}
+                teamLogo={fixture?.away_team?.logo}
+                teamColor={fixture?.away_team?.color || "#7c3aed"}
+                size="sm"
+              />
+              <div className="mt-2 text-center">
+                <div className="font-bold text-base leading-tight break-words">
+                  {awayTeamName}
+                </div>
               </div>
             </div>
           </div>
         </div>
       ) : (
-        /* Desktop layout */
-        <div className="space-y-4">
+        /* Desktop layout with enhanced styling */
+        <div className="space-y-5">
           {/* Match Info */}
           <div className="text-center">
-            <div className="text-sm text-slate-300">{getMatchDate()}</div>
+            <div className="text-base text-slate-300 font-medium">{getMatchDate()}</div>
           </div>
           
           {/* Teams and Score */}
           <div className="flex items-center justify-between">
             {/* Home Team */}
             <div className="flex-1 text-center">
-              <div className="text-sm text-slate-300 mb-2">HOME</div>
-              <div className="text-2xl font-bold">{homeTeamName}</div>
+              <div className="flex flex-col items-center">
+                <TeamLogoDisplay
+                  teamName={homeTeamName}
+                  teamLogo={fixture?.home_team?.logo}
+                  teamColor={fixture?.home_team?.color || "#1f2937"}
+                  size="md"
+                />
+                <div className="mt-3 text-2xl font-bold">{homeTeamName}</div>
+              </div>
             </div>
             
-            {/* Score */}
+            {/* Enhanced Score */}
             <div className="px-8">
-              <div className="bg-white/10 rounded-xl px-6 py-4 backdrop-blur-sm">
+              <div className="bg-gradient-to-br from-white/20 to-white/10 rounded-xl px-8 py-5 backdrop-blur-sm shadow-xl border border-white/20">
                 <div className="text-center">
-                  <div className="text-4xl font-bold mb-1">
+                  <div className="text-5xl font-bold mb-2 tracking-tight">
                     {homeScore} - {awayScore}
                   </div>
-                  <div className="text-sm text-slate-300">FINAL</div>
+                  <div className="text-sm text-slate-200 font-medium">FULL TIME</div>
                 </div>
               </div>
             </div>
             
             {/* Away Team */}
             <div className="flex-1 text-center">
-              <div className="text-sm text-slate-300 mb-2">AWAY</div>
-              <div className="text-2xl font-bold">{awayTeamName}</div>
+              <div className="flex flex-col items-center">
+                <TeamLogoDisplay
+                  teamName={awayTeamName}
+                  teamLogo={fixture?.away_team?.logo}
+                  teamColor={fixture?.away_team?.color || "#7c3aed"}
+                  size="md"
+                />
+                <div className="mt-3 text-2xl font-bold">{awayTeamName}</div>
+              </div>
             </div>
           </div>
         </div>
