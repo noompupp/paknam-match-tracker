@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useSupabaseAuth } from "@/contexts/SupabaseAuthContext";
 import PasscodeModal from "./PasscodeModal";
 
 interface ProtectedTabWrapperProps {
@@ -8,62 +8,91 @@ interface ProtectedTabWrapperProps {
   tabId: string;
   title: string;
   description: string;
+  requiresAuth?: boolean;
+  minimumRole?: 'viewer' | 'referee' | 'admin';
 }
 
-const ProtectedTabWrapper = ({ children, tabId, title, description }: ProtectedTabWrapperProps) => {
-  const { isAuthenticated, authenticate } = useAuth();
+const ProtectedTabWrapper = ({ 
+  children, 
+  tabId, 
+  title, 
+  description, 
+  requiresAuth = false,
+  minimumRole = 'viewer'
+}: ProtectedTabWrapperProps) => {
+  const { user, userRole, isLoading } = useSupabaseAuth();
   const [showPasscodeModal, setShowPasscodeModal] = useState(false);
 
-  // If user is already authenticated for this tab, show the content
-  if (isAuthenticated(tabId)) {
-    return <>{children}</>;
+  // Show loading while checking authentication
+  if (isLoading) {
+    return (
+      <div className="min-h-screen gradient-bg pb-20 flex items-center justify-center">
+        <div className="text-center text-white space-y-6 max-w-md mx-auto px-4">
+          <div className="text-6xl mb-4">⏳</div>
+          <h2 className="text-3xl font-bold">Loading...</h2>
+          <p className="text-white/80 text-lg">Checking authentication status...</p>
+        </div>
+      </div>
+    );
   }
 
-  // If not authenticated, show passcode modal when requested
-  const handleAuthenticate = () => {
-    setShowPasscodeModal(true);
+  // Check if user has sufficient role
+  const hasMinimumRole = () => {
+    if (!userRole) return minimumRole === 'viewer';
+    
+    const roleHierarchy = { 'viewer': 1, 'referee': 2, 'admin': 3 };
+    const userLevel = roleHierarchy[userRole as keyof typeof roleHierarchy] || 0;
+    const requiredLevel = roleHierarchy[minimumRole] || 1;
+    
+    return userLevel >= requiredLevel;
   };
 
-  const handleAuthSuccess = () => {
-    authenticate(tabId);
-    setShowPasscodeModal(false);
-  };
-
-  const handleModalClose = () => {
-    setShowPasscodeModal(false);
-  };
-
-  // Show placeholder content when not authenticated
-  return (
-    <>
+  // If authentication is required and user is not logged in
+  if (requiresAuth && !user) {
+    return (
       <div className="min-h-screen gradient-bg pb-20 flex items-center justify-center">
         <div className="text-center text-white space-y-6 max-w-md mx-auto px-4">
           <div className="space-y-4">
-            <div className="text-6xl mb-4">🔒</div>
-            <h2 className="text-3xl font-bold">Protected Area</h2>
+            <div className="text-6xl mb-4">🔐</div>
+            <h2 className="text-3xl font-bold">Authentication Required</h2>
             <p className="text-white/80 text-lg">
-              This section requires authentication to access.
+              You need to be logged in to access this section.
             </p>
           </div>
           
-          <button
-            onClick={handleAuthenticate}
-            className="bg-white text-black px-8 py-3 rounded-lg font-semibold hover:bg-white/90 transition-colors"
+          <a 
+            href="/auth"
+            className="inline-block bg-white text-black px-8 py-3 rounded-lg font-semibold hover:bg-white/90 transition-colors"
           >
-            Enter Passcode
-          </button>
+            Sign In
+          </a>
         </div>
       </div>
+    );
+  }
 
-      <PasscodeModal
-        isOpen={showPasscodeModal}
-        onClose={handleModalClose}
-        onSuccess={handleAuthSuccess}
-        title={title}
-        description={description}
-      />
-    </>
-  );
+  // If user doesn't have sufficient role
+  if (requiresAuth && user && !hasMinimumRole()) {
+    return (
+      <div className="min-h-screen gradient-bg pb-20 flex items-center justify-center">
+        <div className="text-center text-white space-y-6 max-w-md mx-auto px-4">
+          <div className="space-y-4">
+            <div className="text-6xl mb-4">🚫</div>
+            <h2 className="text-3xl font-bold">Insufficient Permissions</h2>
+            <p className="text-white/80 text-lg">
+              You need {minimumRole} role or higher to access this section.
+            </p>
+            <p className="text-white/60 text-sm">
+              Your current role: {userRole || 'none'}
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // If user has access or no auth is required, show content
+  return <>{children}</>;
 };
 
 export default ProtectedTabWrapper;
