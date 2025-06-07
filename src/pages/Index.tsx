@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Dashboard from "@/components/Dashboard";
 import Teams from "@/components/Teams";
 import Fixtures from "@/components/Fixtures";
@@ -9,6 +9,7 @@ import Navigation from "@/components/Navigation";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { NavigationProvider } from "@/contexts/NavigationContext";
 import ProtectedTabWrapper from "@/components/auth/ProtectedTabWrapper";
+import PWAInstallButton from "@/components/PWAInstallButton";
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -23,12 +24,16 @@ const Index = () => {
     setTimeout(() => {
       const element = document.getElementById("recent-results");
       if (element) {
-        // Mobile navigation offset (70px for navigation bar)
-        const mobileOffset = window.innerWidth < 768 ? 70 : 0;
-        const elementPosition = element.getBoundingClientRect().top + window.scrollY - mobileOffset;
+        // Enhanced mobile navigation offset calculation
+        const navHeight = 70;
+        const safeAreaBottom = parseInt(getComputedStyle(document.documentElement)
+          .getPropertyValue('--safe-area-inset-bottom').replace('px', '')) || 0;
+        const totalOffset = navHeight + safeAreaBottom + 20; // Extra padding for better UX
+        
+        const elementPosition = element.getBoundingClientRect().top + window.scrollY - totalOffset;
         
         window.scrollTo({
-          top: elementPosition,
+          top: Math.max(0, elementPosition),
           behavior: 'smooth'
         });
         
@@ -42,24 +47,30 @@ const Index = () => {
   };
 
   const renderContent = () => {
+    const baseClasses = "content-container mobile-safe-bottom";
+    
     switch (activeTab) {
       case "dashboard":
-        return <Dashboard onNavigateToFixtures={handleNavigateToRecentResults} />;
+        return (
+          <div className={baseClasses}>
+            <Dashboard onNavigateToFixtures={handleNavigateToRecentResults} />
+          </div>
+        );
       case "teams":
         return (
-          <div className="pb-24 sm:pb-28">
+          <div className={baseClasses}>
             <Teams />
           </div>
         );
       case "fixtures":
         return (
-          <div className="pb-24 sm:pb-28">
+          <div className={baseClasses}>
             <Fixtures />
           </div>
         );
       case "referee":
         return (
-          <div className="pb-24 sm:pb-28">
+          <div className={baseClasses}>
             <ProtectedTabWrapper
               tabId="referee"
               title="Referee Tools Access"
@@ -71,7 +82,7 @@ const Index = () => {
         );
       case "notifications":
         return (
-          <div className="pb-24 sm:pb-28">
+          <div className={baseClasses}>
             <ProtectedTabWrapper
               tabId="more"
               title="Administrative Access"
@@ -82,16 +93,21 @@ const Index = () => {
           </div>
         );
       default:
-        return <Dashboard onNavigateToFixtures={handleNavigateToRecentResults} />;
+        return (
+          <div className={baseClasses}>
+            <Dashboard onNavigateToFixtures={handleNavigateToRecentResults} />
+          </div>
+        );
     }
   };
 
   return (
     <AuthProvider>
       <NavigationProvider onTabChange={setActiveTab}>
-        <div className="min-h-screen">
+        <div className="min-h-screen min-h-dvh safe-x">
           {renderContent()}
           <Navigation activeTab={activeTab} onTabChange={setActiveTab} />
+          <PWAInstallButton />
         </div>
       </NavigationProvider>
     </AuthProvider>

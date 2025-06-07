@@ -28,8 +28,8 @@ const Dashboard = ({ onNavigateToFixtures }: DashboardProps) => {
 
   if (teamsError) {
     return (
-      <div className="min-h-screen gradient-bg flex items-center justify-center">
-        <div className="text-center text-white">
+      <div className="gradient-bg flex items-center justify-center min-h-screen">
+        <div className="text-center text-white container-responsive">
           <h2 className="text-2xl font-bold mb-4">Error Loading Data</h2>
           <p className="text-white/80">Please check your connection and try again.</p>
         </div>
@@ -38,10 +38,10 @@ const Dashboard = ({ onNavigateToFixtures }: DashboardProps) => {
   }
 
   return (
-    <div className="min-h-screen gradient-bg">
+    <div className="gradient-bg">
       <DashboardHeader />
 
-      <div className="max-w-7xl mx-auto px-4 py-8 space-y-8 pb-24 sm:pb-28">
+      <div className="max-w-7xl mx-auto container-responsive py-8 space-y-8 mobile-content-spacing">
         <LeagueTable teams={teams} isLoading={teamsLoading} />
 
         <div className="grid md:grid-cols-2 gap-8">

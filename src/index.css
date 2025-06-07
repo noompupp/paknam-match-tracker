@@ -30,6 +30,16 @@
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
     --radius: 0.5rem;
+    
+    /* Enhanced safe area variables */
+    --safe-area-inset-top: env(safe-area-inset-top, 0px);
+    --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+    --safe-area-inset-left: env(safe-area-inset-left, 0px);
+    --safe-area-inset-right: env(safe-area-inset-right, 0px);
+    
+    /* Navigation height variables */
+    --nav-height: 70px;
+    --mobile-nav-total-height: calc(70px + var(--safe-area-inset-bottom));
   }
 
   .dark {
@@ -64,58 +74,126 @@
   * {
     @apply border-border;
   }
-  body {
-    @apply bg-background text-foreground;
-  }
-}
-
-/* PWA specific styles */
-@media (display-mode: standalone) {
-  body {
-    /* Hide scrollbars in standalone mode for a native feel */
-    -webkit-overflow-scrolling: touch;
+  
+  html {
+    /* Prevent zooming on input focus */
+    -webkit-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
   }
   
-  /* Ensure content doesn't get hidden behind status bar on iOS */
-  .gradient-bg {
-    padding-top: env(safe-area-inset-top);
+  body {
+    @apply bg-background text-foreground;
+    /* Enhanced safe area support */
+    padding-top: var(--safe-area-inset-top);
+    padding-left: var(--safe-area-inset-left);
+    padding-right: var(--safe-area-inset-right);
   }
 }
 
-/* PWA Safe Area Support */
-.pwa-safe-top {
-  padding-top: env(safe-area-inset-top);
-}
-
-.pwa-safe-bottom {
-  padding-bottom: env(safe-area-inset-bottom);
-}
-
-.pwa-safe-left {
-  padding-left: env(safe-area-inset-left);
-}
-
-.pwa-safe-right {
-  padding-right: env(safe-area-inset-right);
-}
-
-/* Prevent text selection in PWA mode for better native feel */
+/* Enhanced PWA Detection and Styles */
 @media (display-mode: standalone) {
+  :root {
+    --is-pwa: 1;
+  }
+  
+  body {
+    /* Hide scrollbars in standalone mode for native feel */
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    /* Disable pull-to-refresh */
+    overscroll-behavior-y: contain;
+  }
+  
+  /* Enhanced safe area for PWA mode */
+  .gradient-bg {
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+  
+  /* Better text selection behavior in PWA */
   .no-select {
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
+    -webkit-touch-callout: none;
   }
 }
 
-/* Gradient background */
+/* Comprehensive Safe Area Classes */
+.safe-top {
+  padding-top: var(--safe-area-inset-top);
+}
+
+.safe-bottom {
+  padding-bottom: var(--safe-area-inset-bottom);
+}
+
+.safe-left {
+  padding-left: var(--safe-area-inset-left);
+}
+
+.safe-right {
+  padding-right: var(--safe-area-inset-right);
+}
+
+.safe-x {
+  padding-left: var(--safe-area-inset-left);
+  padding-right: var(--safe-area-inset-right);
+}
+
+.safe-y {
+  padding-top: var(--safe-area-inset-top);
+  padding-bottom: var(--safe-area-inset-bottom);
+}
+
+.safe-all {
+  padding: var(--safe-area-inset-top) var(--safe-area-inset-right) var(--safe-area-inset-bottom) var(--safe-area-inset-left);
+}
+
+/* Enhanced Navigation Safe Area */
+.nav-safe-bottom {
+  padding-bottom: calc(var(--nav-height) + var(--safe-area-inset-bottom));
+}
+
+/* Content container with proper mobile spacing */
+.content-container {
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding-bottom: var(--mobile-nav-total-height);
+}
+
+/* Mobile-specific safe area utilities */
+@media (max-width: 768px) {
+  .mobile-safe-bottom {
+    padding-bottom: var(--mobile-nav-total-height);
+  }
+  
+  .mobile-content-spacing {
+    padding-bottom: calc(2rem + var(--mobile-nav-total-height));
+  }
+  
+  /* Scroll margin for mobile navigation */
+  .scroll-mt-nav {
+    scroll-margin-top: calc(var(--nav-height) + 1rem);
+  }
+}
+
+/* Desktop fallbacks */
+@media (min-width: 769px) {
+  .desktop-safe-bottom {
+    padding-bottom: 2rem;
+  }
+}
+
+/* Gradient background with safe area support */
 .gradient-bg {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   min-height: 100vh;
+  min-height: 100dvh;
 }
 
-/* Card shadows */
+/* Enhanced card shadows */
 .card-shadow {
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
@@ -124,7 +202,7 @@
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
 
-/* Animation utilities */
+/* Enhanced animations */
 .animate-fade-in {
   animation: fadeIn 0.6s ease-in-out;
 }
@@ -157,21 +235,60 @@
   }
 }
 
-/* Safe area for mobile devices */
-.pb-safe {
-  padding-bottom: env(safe-area-inset-bottom);
+/* PWA Install Button */
+.pwa-install-button {
+  position: fixed;
+  bottom: calc(var(--mobile-nav-total-height) + 1rem);
+  right: 1rem;
+  z-index: 1000;
+  border-radius: 50%;
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(102, 126, 234, 0.9);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
 }
 
-/* Responsive text utilities */
+.pwa-install-button:hover {
+  background: rgba(102, 126, 234, 1);
+  transform: scale(1.05);
+}
+
+/* Enhanced responsive utilities */
 @media (max-width: 640px) {
   .text-responsive {
     font-size: 0.875rem;
   }
+  
+  .container-responsive {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
 }
 
-/* Ensure proper spacing for mobile navigation */
+/* Improved scroll behavior */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Enhanced focus styles for accessibility */
+.focus-visible:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+}
+
+/* Better touch targets for mobile */
 @media (max-width: 768px) {
-  .scroll-mt-20 {
-    scroll-margin-top: 5rem;
+  button, 
+  [role="button"],
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
   }
 }

@@ -2,7 +2,7 @@
 {
   "name": "Paknam FC - Football Club Management",
   "short_name": "Paknam FC",
-  "description": "Complete football club management system for Paknam FC",
+  "description": "Complete football club management system for Paknam FC with live scores, team management, and match tracking",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#667eea",
@@ -10,12 +10,49 @@
   "orientation": "portrait-primary",
   "scope": "/",
   "lang": "en",
+  "prefer_related_applications": false,
   "icons": [
+    {
+      "src": "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=72&h=72&fit=crop&crop=center",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=96&h=96&fit=crop&crop=center",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=128&h=128&fit=crop&crop=center",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=144&h=144&fit=crop&crop=center",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=152&h=152&fit=crop&crop=center",
+      "sizes": "152x152",
+      "type": "image/png",
+      "purpose": "any"
+    },
     {
       "src": "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=192&h=192&fit=crop&crop=center",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
+    },
+    {
+      "src": "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=384&h=384&fit=crop&crop=center",
+      "sizes": "384x384",
+      "type": "image/png",
+      "purpose": "any"
     },
     {
       "src": "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=512&h=512&fit=crop&crop=center",
@@ -24,13 +61,59 @@
       "purpose": "any maskable"
     }
   ],
-  "categories": ["sports", "utilities"],
+  "categories": ["sports", "utilities", "entertainment"],
   "screenshots": [
     {
       "src": "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=1080&h=1920&fit=crop&crop=center",
       "sizes": "1080x1920",
       "type": "image/png",
-      "form_factor": "narrow"
+      "form_factor": "narrow",
+      "label": "Paknam FC Dashboard - View latest scores and team standings"
+    },
+    {
+      "src": "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=1920&h=1080&fit=crop&crop=center",
+      "sizes": "1920x1080",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Paknam FC Management - Desktop view with comprehensive team management"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Latest Scores",
+      "short_name": "Scores",
+      "description": "View latest match scores and standings",
+      "url": "/?tab=dashboard",
+      "icons": [
+        {
+          "src": "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=96&h=96&fit=crop&crop=center",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Fixtures",
+      "short_name": "Fixtures",
+      "description": "View upcoming and past fixtures",
+      "url": "/?tab=fixtures",
+      "icons": [
+        {
+          "src": "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=96&h=96&fit=crop&crop=center",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Teams",
+      "short_name": "Teams",
+      "description": "Browse teams and player information",
+      "url": "/?tab=teams",
+      "icons": [
+        {
+          "src": "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=96&h=96&fit=crop&crop=center",
+          "sizes": "96x96"
+        }
+      ]
     }
   ]
 }

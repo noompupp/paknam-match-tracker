@@ -19,14 +19,25 @@ const Teams = () => {
     setSelectedTeamId(teamId);
     const squadSection = document.getElementById('team-squad');
     if (squadSection) {
-      squadSection.scrollIntoView({ behavior: 'smooth' });
+      // Enhanced scroll calculation with safe area support
+      const navHeight = 70;
+      const safeAreaBottom = parseInt(getComputedStyle(document.documentElement)
+        .getPropertyValue('--safe-area-inset-bottom').replace('px', '')) || 0;
+      const totalOffset = navHeight + safeAreaBottom + 20;
+      
+      const elementPosition = squadSection.getBoundingClientRect().top + window.scrollY - totalOffset;
+      
+      window.scrollTo({ 
+        top: Math.max(0, elementPosition), 
+        behavior: 'smooth' 
+      });
     }
   };
 
   if (error) {
     return (
-      <div className="min-h-screen gradient-bg flex items-center justify-center pb-20">
-        <div className="text-center text-white">
+      <div className="gradient-bg flex items-center justify-center min-h-screen">
+        <div className="text-center text-white container-responsive">
           <h2 className="text-2xl font-bold mb-4">Error Loading Teams</h2>
           <p className="text-white/80">Please check your connection and try again.</p>
           <p className="text-white/60 text-sm mt-2">{error.message}</p>
@@ -36,10 +47,10 @@ const Teams = () => {
   }
 
   return (
-    <div className="min-h-screen gradient-bg pb-20">
+    <div className="gradient-bg">
       {/* Header */}
       <div className="bg-white/10 backdrop-blur-sm border-b border-white/20">
-        <div className="max-w-7xl mx-auto px-4 py-6">
+        <div className="max-w-7xl mx-auto container-responsive py-6">
           <div className="text-center">
             <div className="flex items-center justify-center gap-3 mb-3">
               <TournamentLogo />
@@ -50,7 +61,7 @@ const Teams = () => {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-8 space-y-8">
+      <div className="max-w-7xl mx-auto container-responsive py-8 space-y-8 mobile-content-spacing">
         {/* Teams Grid */}
         <TeamsGrid 
           teams={teams}
@@ -60,7 +71,7 @@ const Teams = () => {
 
         {/* Enhanced Team Squad (showing selected team's squad with enhanced data) */}
         {selectedTeam && (
-          <div id="team-squad">
+          <div id="team-squad" className="scroll-mt-nav">
             <EnhancedTeamSquad
               teamId={selectedTeam.__id__}
               teamName={selectedTeam.name || 'Unknown Team'}

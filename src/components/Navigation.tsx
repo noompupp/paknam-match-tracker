@@ -20,8 +20,14 @@ const Navigation = ({ activeTab, onTabChange }: NavigationProps) => {
   ];
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-2 pb-safe z-50">
-      <div className="flex justify-between items-center max-w-md mx-auto">
+    <nav 
+      className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-sm border-t border-gray-200 z-50 safe-bottom"
+      style={{
+        paddingBottom: `max(env(safe-area-inset-bottom), 0.5rem)`,
+        height: `calc(70px + env(safe-area-inset-bottom))`
+      }}
+    >
+      <div className="flex justify-between items-center max-w-md mx-auto px-4 py-2 h-[70px]">
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = activeTab === item.id;
@@ -33,7 +39,7 @@ const Navigation = ({ activeTab, onTabChange }: NavigationProps) => {
               variant="ghost"
               size="sm"
               onClick={() => onTabChange(item.id)}
-              className={`flex flex-col items-center gap-1 h-auto py-2 px-3 transition-colors relative ${
+              className={`flex flex-col items-center gap-1 h-auto py-2 px-3 transition-colors relative touch-target ${
                 isActive 
                   ? "text-primary bg-primary/10" 
                   : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
@@ -50,7 +56,7 @@ const Navigation = ({ activeTab, onTabChange }: NavigationProps) => {
           );
         })}
       </div>
-    </div>
+    </nav>
   );
 };
 
