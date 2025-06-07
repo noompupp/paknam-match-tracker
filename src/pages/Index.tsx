@@ -21,28 +21,40 @@ const Index = () => {
       case "dashboard":
         return <Dashboard onNavigateToFixtures={handleNavigateToFixtures} />;
       case "teams":
-        return <Teams />;
+        return (
+          <div className="pb-24 sm:pb-28">
+            <Teams />
+          </div>
+        );
       case "fixtures":
-        return <Fixtures />;
+        return (
+          <div className="pb-24 sm:pb-28">
+            <Fixtures />
+          </div>
+        );
       case "referee":
         return (
-          <ProtectedTabWrapper
-            tabId="referee"
-            title="Referee Tools Access"
-            description="Enter the passcode to access referee tools and match management features."
-          >
-            <RefereeTools />
-          </ProtectedTabWrapper>
+          <div className="pb-24 sm:pb-28">
+            <ProtectedTabWrapper
+              tabId="referee"
+              title="Referee Tools Access"
+              description="Enter the passcode to access referee tools and match management features."
+            >
+              <RefereeTools />
+            </ProtectedTabWrapper>
+          </div>
         );
       case "notifications":
         return (
-          <ProtectedTabWrapper
-            tabId="more"
-            title="Administrative Access"
-            description="Enter the passcode to access system management and debug tools."
-          >
-            <MorePage />
-          </ProtectedTabWrapper>
+          <div className="pb-24 sm:pb-28">
+            <ProtectedTabWrapper
+              tabId="more"
+              title="Administrative Access"
+              description="Enter the passcode to access system management and debug tools."
+            >
+              <MorePage />
+            </ProtectedTabWrapper>
+          </div>
         );
       default:
         return <Dashboard onNavigateToFixtures={handleNavigateToFixtures} />;

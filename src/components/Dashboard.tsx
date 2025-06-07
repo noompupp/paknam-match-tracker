@@ -41,7 +41,7 @@ const Dashboard = ({ onNavigateToFixtures }: DashboardProps) => {
     <div className="min-h-screen gradient-bg">
       <DashboardHeader />
 
-      <div className="max-w-7xl mx-auto px-4 py-8 space-y-8">
+      <div className="max-w-7xl mx-auto px-4 py-8 space-y-8 pb-24 sm:pb-28">
         <LeagueTable teams={teams} isLoading={teamsLoading} />
 
         <div className="grid md:grid-cols-2 gap-8">
