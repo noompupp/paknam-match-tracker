@@ -5,6 +5,7 @@ import IPhoneStoryLayout from "./export/IPhoneStoryLayout";
 import MatchHeaderSection from "./MatchHeaderSection";
 import MatchEventsSection from "./MatchEventsSection";
 import MatchStatisticsSummary from "./MatchStatisticsSummary";
+import CollapsibleMatchTimeline from "./CollapsibleMatchTimeline";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface UnifiedMatchSummaryLayoutProps {
@@ -124,6 +125,13 @@ const UnifiedMatchSummaryLayout = ({
         isCardRed={isCardRed}
         fixture={fixture}
         formatTime={formatTime}
+      />
+
+      {/* Collapsible Enhanced Match Timeline */}
+      <CollapsibleMatchTimeline
+        timelineEvents={timelineEvents}
+        formatTime={formatTime}
+        defaultOpen={false}
       />
 
       {/* Summary Statistics Box */}
