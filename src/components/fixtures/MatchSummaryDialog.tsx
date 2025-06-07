@@ -59,12 +59,12 @@ const MatchSummaryDialog = ({ fixture, isOpen, onClose }: MatchSummaryDialogProp
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="w-[95vw] max-w-[95vw] md:max-w-4xl max-h-[90vh] overflow-y-auto p-4 md:p-6">
-        <DialogHeader>
-          <DialogTitle className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+      <DialogContent className="w-[96vw] max-w-[96vw] md:max-w-5xl lg:max-w-6xl max-h-[95vh] overflow-y-auto p-3 md:p-6 mx-auto">
+        <DialogHeader className="pb-2 md:pb-4">
+          <DialogTitle className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 md:gap-3">
             <div className="flex items-center gap-2">
-              <Trophy className="h-5 w-5" />
-              <span className="text-lg md:text-xl">Match Summary</span>
+              <Trophy className="h-4 w-4 md:h-5 md:w-5" />
+              <span className="text-base md:text-lg lg:text-xl font-bold">Match Summary</span>
             </div>
             <MatchSummaryViewToggle 
               viewStyle={viewStyle} 
@@ -73,41 +73,45 @@ const MatchSummaryDialog = ({ fixture, isOpen, onClose }: MatchSummaryDialogProp
           </DialogTitle>
         </DialogHeader>
 
-        <MatchSummaryContent
-          fixture={fixture}
-          goals={goals}
-          cards={cards}
-          timelineEvents={timelineEvents}
-          enhancedSuccess={enhancedSuccess}
-          enhancedData={enhancedData}
-          viewStyle={viewStyle}
-          formatTime={formatTime}
-          getGoalTeamId={getGoalTeamId}
-          getGoalPlayerName={getGoalPlayerName}
-          getGoalTime={getGoalTime}
-          getCardTeamId={getCardTeamId}
-          getCardPlayerName={getCardPlayerName}
-          getCardTime={getCardTime}
-          getCardType={getCardType}
-          isCardRed={isCardRed}
-        />
+        <div className="max-w-5xl mx-auto">
+          <MatchSummaryContent
+            fixture={fixture}
+            goals={goals}
+            cards={cards}
+            timelineEvents={timelineEvents}
+            enhancedSuccess={enhancedSuccess}
+            enhancedData={enhancedData}
+            viewStyle={viewStyle}
+            formatTime={formatTime}
+            getGoalTeamId={getGoalTeamId}
+            getGoalPlayerName={getGoalPlayerName}
+            getGoalTime={getGoalTime}
+            getCardTeamId={getCardTeamId}
+            getCardPlayerName={getCardPlayerName}
+            getCardTime={getCardTime}
+            getCardType={getCardType}
+            isCardRed={isCardRed}
+          />
 
-        <MatchSummaryExportActions
-          fixture={fixture}
-          matchEvents={matchEvents || []}
-          goals={goals}
-          cards={cards}
-          enhancedSuccess={enhancedSuccess}
-          enhancedData={enhancedData}
-          formatTime={formatTime}
-          getGoalTeamId={getGoalTeamId}
-          getGoalPlayerName={getGoalPlayerName}
-          getGoalTime={getGoalTime}
-          getCardTeamId={getCardTeamId}
-          getCardPlayerName={getCardPlayerName}
-          getCardTime={getCardTime}
-          getCardType={getCardType}
-        />
+          <div className="mt-4 md:mt-6">
+            <MatchSummaryExportActions
+              fixture={fixture}
+              matchEvents={matchEvents || []}
+              goals={goals}
+              cards={cards}
+              enhancedSuccess={enhancedSuccess}
+              enhancedData={enhancedData}
+              formatTime={formatTime}
+              getGoalTeamId={getGoalTeamId}
+              getGoalPlayerName={getGoalPlayerName}
+              getGoalTime={getGoalTime}
+              getCardTeamId={getCardTeamId}
+              getCardPlayerName={getCardPlayerName}
+              getCardTime={getCardTime}
+              getCardType={getCardType}
+            />
+          </div>
+        </div>
       </DialogContent>
     </Dialog>
   );

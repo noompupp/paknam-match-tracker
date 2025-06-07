@@ -55,7 +55,7 @@ const GoalDisplay = ({ goal, index, teamType, teamColor }: GoalDisplayProps) => 
         console.error(`❌ GoalDisplay: Unable to extract player name for goal:`, goal);
         return (
           <div key={goalId} className={teamType === 'home' ? "text-left" : "text-right"}>
-            <div className="text-sm text-muted-foreground italic">
+            <div className="text-xs md:text-sm text-muted-foreground italic">
               Goal recorded but player name unavailable (ID: {goalId})
             </div>
           </div>
@@ -68,27 +68,26 @@ const GoalDisplay = ({ goal, index, teamType, teamColor }: GoalDisplayProps) => 
 
     return (
       <div key={goalId} className={teamType === 'home' ? "text-left" : "text-right"}>
-        <div className={`flex flex-col md:flex-row md:items-center gap-2 md:gap-3 ${teamType === 'away' ? 'md:justify-end' : ''}`}>
-          {/* Mobile: Stack vertically, Desktop: Row layout */}
-          <div className={`flex items-center gap-2 ${teamType === 'away' ? 'justify-end md:flex-row-reverse' : ''}`}>
-            <div className="text-lg md:text-xl">⚽</div>
-            <span className="font-semibold text-sm md:text-base">{displayName}</span>
+        <div className={`flex flex-col gap-1 md:gap-2 ${teamType === 'away' ? 'items-end' : 'items-start'}`}>
+          {/* Goal Info Row - Mobile Optimized */}
+          <div className={`flex items-center gap-2 ${teamType === 'away' ? 'flex-row-reverse' : ''}`}>
+            <div className="text-base md:text-lg">⚽</div>
+            <span className="font-bold text-sm md:text-base leading-tight">{displayName}</span>
+            <Badge variant="outline" className="text-xs font-medium px-1.5 py-0.5">
+              {formatMatchTime(displayTime)}
+            </Badge>
           </div>
           
-          <Badge variant="outline" className="text-xs md:text-sm font-medium w-fit">
-            {formatMatchTime(displayTime)}
-          </Badge>
+          {/* Assist Information - Enhanced for Mobile */}
+          {assistPlayerName && (
+            <div className={`text-xs md:text-sm text-muted-foreground font-medium ${teamType === 'away' ? 'text-right' : 'text-left'}`}>
+              <span className="inline-flex items-center gap-1">
+                <span className="text-xs bg-muted px-1.5 py-0.5 rounded font-bold">A</span>
+                <span className="font-semibold">{assistPlayerName}</span>
+              </span>
+            </div>
+          )}
         </div>
-        
-        {/* Enhanced Premier League Style Assist Display - Mobile Optimized */}
-        {assistPlayerName && (
-          <div className={`text-xs md:text-sm text-muted-foreground mt-1 font-medium ${teamType === 'away' ? 'text-right' : 'text-left'} ${teamType === 'away' ? 'mr-0 md:mr-8' : 'ml-0 md:ml-8'}`}>
-            <span className="inline-flex items-center gap-1">
-              <span className="text-xs bg-muted px-1 py-0.5 rounded font-bold">A</span>
-              {assistPlayerName}
-            </span>
-          </div>
-        )}
       </div>
     );
   } catch (error) {
@@ -99,7 +98,7 @@ const GoalDisplay = ({ goal, index, teamType, teamColor }: GoalDisplayProps) => 
       index 
     });
     return (
-      <div key={`error-${teamType}-${index}`} className="text-sm text-destructive">
+      <div key={`error-${teamType}-${index}`} className="text-xs md:text-sm text-destructive">
         Error displaying goal (ID: {goal?.id || index})
       </div>
     );
