@@ -242,7 +242,7 @@ const Fixtures = () => {
 
         <div className="max-w-7xl mx-auto px-4 py-8 space-y-8">
           {/* Upcoming Fixtures */}
-          <div>
+          <div id="upcoming-fixtures" className="scroll-mt-20">
             <div className="flex items-center gap-2 mb-6">
               <Trophy className="h-6 w-6 text-white" />
               <h2 className="text-2xl font-bold text-white">Upcoming Matches</h2>
@@ -269,7 +269,7 @@ const Fixtures = () => {
           </div>
 
           {/* Recent Results */}
-          <div>
+          <div id="recent-results" className="scroll-mt-20">
             <div className="flex items-center gap-2 mb-6">
               <Trophy className="h-6 w-6 text-white" />
               <h2 className="text-2xl font-bold text-white">Recent Results</h2>
@@ -296,7 +296,7 @@ const Fixtures = () => {
           </div>
 
           {/* All Fixtures */}
-          <div>
+          <div id="all-fixtures" className="scroll-mt-20">
             <div className="flex items-center gap-2 mb-6">
               <Calendar className="h-6 w-6 text-white" />
               <h2 className="text-2xl font-bold text-white">All Fixtures</h2>
