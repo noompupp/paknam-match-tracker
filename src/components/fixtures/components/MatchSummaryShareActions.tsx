@@ -30,24 +30,43 @@ const MatchSummaryShareActions = ({ fixture, goals = [], cards = [] }: MatchSumm
     return `Match Summary: ${matchTitle} - ${date}`;
   };
 
-  const enableExportMode = () => {
+  const findExportElement = () => {
     const element = document.getElementById('match-summary-content');
+    console.log('🔍 Export element search:', {
+      found: !!element,
+      elementId: element?.id,
+      className: element?.className,
+      hasExportMode: element?.hasAttribute('data-export-mode')
+    });
+    return element;
+  };
+
+  const enableExportMode = () => {
+    const element = findExportElement();
     if (element) {
       element.setAttribute('data-export-mode', 'true');
       element.classList.add('export-mode');
       if (isMobile) {
         element.classList.add('export-mode-mobile');
       }
-      console.log('🔧 Export mode enabled for element:', element);
+      console.log('🔧 Export mode enabled for element:', {
+        elementId: element.id,
+        classes: element.className,
+        isMobile
+      });
+      return true;
+    } else {
+      console.error('❌ Export element not found - cannot enable export mode');
+      return false;
     }
   };
 
   const disableExportMode = () => {
-    const element = document.getElementById('match-summary-content');
+    const element = findExportElement();
     if (element) {
       element.removeAttribute('data-export-mode');
       element.classList.remove('export-mode', 'export-mode-mobile');
-      console.log('🔧 Export mode disabled for element:', element);
+      console.log('🔧 Export mode disabled for element:', element.id);
     }
   };
 
@@ -58,7 +77,11 @@ const MatchSummaryShareActions = ({ fixture, goals = [], cards = [] }: MatchSumm
 
     try {
       console.log('💾 Starting save to camera roll process...');
-      enableExportMode();
+      
+      const exportEnabled = enableExportMode();
+      if (!exportEnabled) {
+        throw new Error('Could not find export element');
+      }
       
       // Wait for layout to settle and styles to apply
       await new Promise(resolve => setTimeout(resolve, 300));
@@ -79,7 +102,7 @@ const MatchSummaryShareActions = ({ fixture, goals = [], cards = [] }: MatchSumm
       console.error('❌ Save failed:', error);
       toast({
         title: "❌ Save Failed",
-        description: "Unable to save image. Please try again.",
+        description: `Unable to save image: ${error.message}`,
         variant: "destructive",
       });
     } finally {
@@ -95,7 +118,11 @@ const MatchSummaryShareActions = ({ fixture, goals = [], cards = [] }: MatchSumm
 
     try {
       console.log('📱 Starting share to story process...');
-      enableExportMode();
+      
+      const exportEnabled = enableExportMode();
+      if (!exportEnabled) {
+        throw new Error('Could not find export element');
+      }
       
       // Wait for layout to settle and styles to apply
       await new Promise(resolve => setTimeout(resolve, 300));

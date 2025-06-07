@@ -25,6 +25,7 @@ const MobileExportLayout = ({
 }: MobileExportLayoutProps) => {
   return (
     <div 
+      id="match-summary-content"
       className="w-[375px] bg-white overflow-hidden shadow-xl"
       style={{ 
         fontFamily: 'system-ui, -apple-system, sans-serif',

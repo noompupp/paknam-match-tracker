@@ -14,6 +14,33 @@ const MobileExportHeader = ({
   homeTeamColor,
   awayTeamColor
 }: MobileExportHeaderProps) => {
+  // Enhanced team logo extraction with logoURL priority
+  const getTeamLogo = (team: any) => {
+    if (!team) return null;
+    
+    // Prioritize logoURL field specifically
+    const possibleLogoFields = [
+      team.logoURL,
+      team.logo_url,
+      team.logo,
+      team.teamLogo,
+      team.team_logo,
+      team.logoUrl
+    ];
+    
+    const logo = possibleLogoFields.find(field => field && field.trim() !== '');
+    console.log('🖼️ Mobile Export - Team logo extraction:', {
+      teamName: team.name,
+      logoURL: team.logoURL,
+      selectedLogo: logo
+    });
+    
+    return logo || null;
+  };
+
+  const homeTeamLogo = getTeamLogo(fixture?.home_team);
+  const awayTeamLogo = getTeamLogo(fixture?.away_team);
+
   return (
     <div className="bg-gradient-to-br from-slate-50 via-white to-slate-50 p-6 border-b-2 border-gray-100">
       {/* Match Status Badge */}
@@ -32,7 +59,7 @@ const MobileExportHeader = ({
         <div className="flex items-center gap-3 flex-1 min-w-0">
           <TeamLogoDisplay 
             teamName={fixture.home_team?.name || 'Home'}
-            teamLogo={fixture.home_team?.logoURL}
+            teamLogo={homeTeamLogo}
             teamColor={homeTeamColor}
             size="md"
             showName={false}
@@ -59,7 +86,7 @@ const MobileExportHeader = ({
         <div className="flex items-center gap-3 flex-1 min-w-0 flex-row-reverse">
           <TeamLogoDisplay 
             teamName={fixture.away_team?.name || 'Away'}
-            teamLogo={fixture.away_team?.logoURL}
+            teamLogo={awayTeamLogo}
             teamColor={awayTeamColor}
             size="md"
             showName={false}

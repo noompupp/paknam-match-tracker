@@ -39,14 +39,21 @@ const TeamLogoDisplay = ({
 
   const gapSize = isMobile ? 'gap-3' : 'gap-3';
 
-  // Enhanced team logo source handling
+  // Enhanced team logo source handling with logoURL priority
   const getTeamLogoSource = () => {
-    if (teamLogo) {
-      // Handle different possible logo field names
-      if (typeof teamLogo === 'string' && teamLogo.trim() !== '') {
-        return teamLogo;
-      }
+    if (teamLogo && typeof teamLogo === 'string' && teamLogo.trim() !== '') {
+      console.log('🖼️ TeamLogoDisplay - Using logo source:', {
+        teamName,
+        logoSource: teamLogo,
+        size
+      });
+      return teamLogo;
     }
+    console.log('🖼️ TeamLogoDisplay - No valid logo source found:', {
+      teamName,
+      teamLogo,
+      size
+    });
     return null;
   };
 
@@ -81,8 +88,18 @@ const TeamLogoDisplay = ({
             alt={teamName} 
             className="object-contain p-1"
             onError={(e) => {
-              console.log('Team logo failed to load:', logoSource);
+              console.log('🖼️ TeamLogoDisplay - Logo failed to load:', {
+                teamName,
+                logoSource,
+                error: 'Image load failed'
+              });
               e.currentTarget.style.display = 'none';
+            }}
+            onLoad={() => {
+              console.log('🖼️ TeamLogoDisplay - Logo loaded successfully:', {
+                teamName,
+                logoSource
+              });
             }}
           />
         )}

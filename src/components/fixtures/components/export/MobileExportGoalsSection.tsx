@@ -36,7 +36,7 @@ const MobileExportGoalsSection = ({
         </h3>
       </div>
       
-      <div className="space-y-3">
+      <div className="space-y-2">
         {goals.map((goal, index) => {
           const isHomeGoal = homeGoals.includes(goal);
           const teamColor = isHomeGoal ? homeTeamColor : awayTeamColor;
@@ -47,9 +47,9 @@ const MobileExportGoalsSection = ({
           return (
             <div 
               key={`goal-${goal.id}-${index}`} 
-              className="flex items-center justify-between p-3 bg-slate-50 rounded-lg border"
+              className="flex items-center justify-between p-2 bg-slate-50 rounded-lg border"
             >
-              <div className="flex items-center gap-3 flex-1 min-w-0">
+              <div className="flex items-center gap-2 flex-1 min-w-0">
                 <div 
                   className="w-3 h-3 rounded-full flex-shrink-0"
                   style={{ backgroundColor: teamColor }}
@@ -65,7 +65,7 @@ const MobileExportGoalsSection = ({
                   )}
                 </div>
               </div>
-              <div className="text-sm font-mono text-slate-600 bg-white px-2 py-1 rounded border">
+              <div className="text-sm font-mono text-slate-600 bg-white px-2 py-1 rounded border ml-2">
                 {formatTime(time)}
               </div>
             </div>
