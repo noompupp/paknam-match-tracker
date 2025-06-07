@@ -49,20 +49,23 @@ export const getMobileOptimizedCaptureOptions = (element: HTMLElement): CaptureO
     };
   }
 
-  // Get actual device dimensions for high-quality mobile export
-  const devicePixelRatio = window.devicePixelRatio || 1;
-  const actualWidth = window.screen.width * devicePixelRatio;
-  const actualHeight = window.screen.height * devicePixelRatio;
+  // Enhanced mobile export settings for better quality
+  const devicePixelRatio = window.devicePixelRatio || 2;
+  const exportWidth = 375; // Standard mobile story width
+  const contentHeight = element.scrollHeight;
   
-  // Use actual screen dimensions for mobile story format
+  // Calculate optimal export height while maintaining aspect ratio
+  const optimalHeight = Math.min(Math.max(contentHeight, 600), 1200);
+  
   return {
     scale: devicePixelRatio,
-    width: Math.min(actualWidth, 1170), // Max width for story format
-    height: Math.min(actualHeight, 2532), // Max height for story format
+    width: exportWidth,
+    height: optimalHeight,
     x: 0,
     y: 0,
-    windowWidth: actualWidth,
-    windowHeight: actualHeight,
+    windowWidth: exportWidth,
+    windowHeight: optimalHeight,
+    backgroundColor: '#ffffff'
   };
 };
 
@@ -72,36 +75,65 @@ export const captureImageForSharing = async (elementId: string): Promise<Blob> =
     throw new Error('Element not found for capture');
   }
 
-  // For mobile, temporarily set export mode to optimize layout
   const isMobile = window.innerWidth < 768;
-  let exportModeClass = '';
   
+  // Enhanced mobile export preparation
   if (isMobile) {
-    exportModeClass = 'export-mode-mobile';
-    element.classList.add(exportModeClass);
+    element.classList.add('export-mode-mobile');
     
-    // Wait for layout to settle
-    await new Promise(resolve => setTimeout(resolve, 100));
-  }
+    // Apply temporary styles for better export quality
+    const originalStyles = {
+      width: element.style.width,
+      maxWidth: element.style.maxWidth,
+      padding: element.style.padding,
+      fontSize: element.style.fontSize
+    };
+    
+    // Optimize element for export
+    element.style.width = '375px';
+    element.style.maxWidth = '375px';
+    element.style.fontSize = '14px';
+    
+    // Wait for layout stabilization
+    await new Promise(resolve => setTimeout(resolve, 200));
+    
+    try {
+      const mobileOptions = getMobileOptimizedCaptureOptions(element);
+      const canvas = await createCanvasFromElement(elementId, mobileOptions);
 
-  try {
-    const mobileOptions = getMobileOptimizedCaptureOptions(element);
-    const canvas = await createCanvasFromElement(elementId, mobileOptions);
-
-    return new Promise((resolve) => {
+      return new Promise((resolve, reject) => {
+        canvas.toBlob((blob) => {
+          if (blob) {
+            resolve(blob);
+          } else {
+            reject(new Error('Failed to create image blob'));
+          }
+        }, 'image/jpeg', 0.9);
+      });
+    } finally {
+      // Restore original styles
+      element.style.width = originalStyles.width;
+      element.style.maxWidth = originalStyles.maxWidth;
+      element.style.padding = originalStyles.padding;
+      element.style.fontSize = originalStyles.fontSize;
+      element.classList.remove('export-mode-mobile');
+    }
+  } else {
+    // Desktop capture
+    const canvas = await createCanvasFromElement(elementId, {
+      backgroundColor: '#ffffff',
+      scale: 2
+    });
+    
+    return new Promise((resolve, reject) => {
       canvas.toBlob((blob) => {
         if (blob) {
           resolve(blob);
         } else {
-          throw new Error('Failed to create image blob');
+          reject(new Error('Failed to create image blob'));
         }
       }, 'image/jpeg', 0.9);
     });
-  } finally {
-    // Clean up export mode class
-    if (isMobile && exportModeClass) {
-      element.classList.remove(exportModeClass);
-    }
   }
 };
 
