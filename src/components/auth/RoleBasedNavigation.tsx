@@ -38,7 +38,7 @@ const RoleBasedNavigation = ({ activeTab, onTabChange }: RoleBasedNavigationProp
   const handleProtectedTabClick = (tabId: string) => {
     if (!user) {
       toast({
-        title: "Authentication Required",
+        title: "Sign In Required",
         description: "Please sign in to access referee tools and advanced features.",
         variant: "default"
       });
@@ -127,19 +127,19 @@ const RoleBasedNavigation = ({ activeTab, onTabChange }: RoleBasedNavigationProp
                   ? "text-primary rounded-xl border border-transparent" 
                   : isAccessible
                     ? "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-                    : "text-muted-foreground/50 hover:text-muted-foreground hover:bg-muted/30"
+                    : "text-muted-foreground/60 hover:text-muted-foreground/80 hover:bg-muted/20"
               }`}
               style={isActive ? {
                 background: 'var(--nav-active-bg)',
                 borderColor: 'var(--nav-active-border)',
                 boxShadow: 'var(--nav-active-glow)'
               } : {}}
-              title={isAccessible ? item.description : "Sign in required"}
+              title={isAccessible ? item.description : "Sign in to access this feature"}
             >
               <div className="relative">
                 <Icon className="h-5 w-5" />
                 {!isAccessible && (
-                  <Lock className="h-2 w-2 absolute -top-1 -right-1 text-muted-foreground" />
+                  <Lock className="h-3 w-3 absolute -top-1 -right-1 text-muted-foreground/60" />
                 )}
               </div>
               <span className="text-xs font-medium">{item.label}</span>

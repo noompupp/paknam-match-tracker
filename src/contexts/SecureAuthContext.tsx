@@ -92,7 +92,10 @@ export const SecureAuthProvider = ({ children }: SecureAuthProviderProps) => {
     
     try {
       // Use the current window location for proper redirect handling
-      const redirectUrl = `${window.location.origin}/`;
+      const currentUrl = window.location.href;
+      const redirectUrl = currentUrl.includes('localhost') 
+        ? 'http://localhost:5173/'
+        : `${window.location.origin}/`;
       
       const { data, error } = await supabase.auth.signUp({
         email: email.trim().toLowerCase(),

@@ -1,7 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { useSecureAuth } from "@/contexts/SecureAuthContext";
-import { Button } from "@/components/ui/button";
 import { Shield, Lock, User } from "lucide-react";
 
 interface RoleGuardProps {
@@ -73,8 +72,7 @@ const RoleGuard = ({
               </div>
               <h2 className="text-3xl font-bold">Sign In Required</h2>
               <p className="text-white/80 text-lg leading-relaxed">
-                Please sign in to access referee tools and advanced features. 
-                You can continue browsing as a viewer without signing in.
+                This feature requires authentication. Please sign in to access referee tools and advanced features.
               </p>
               <div className="space-y-3 pt-4">
                 <p className="text-sm text-white/60">
@@ -86,6 +84,11 @@ const RoleGuard = ({
                   <li>• Cards and statistics management</li>
                   <li>• Match summary generation</li>
                 </ul>
+              </div>
+              <div className="pt-4">
+                <p className="text-xs text-white/50">
+                  You can continue browsing public content without signing in.
+                </p>
               </div>
             </div>
           </div>
@@ -102,7 +105,7 @@ const RoleGuard = ({
             </div>
             <h2 className="text-3xl font-bold">Access Restricted</h2>
             <p className="text-white/80 text-lg leading-relaxed">
-              You don't have the required permissions to access this area. 
+              You don't have the required permissions to access this area.
               {requiredRole && (
                 <span className="block mt-2 text-white/60">
                   Required role: <span className="font-semibold capitalize">{requiredRole}</span>

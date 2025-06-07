@@ -54,9 +54,6 @@ const SecureLogin = ({ onSuccess, onClose, showCloseButton = false }: SecureLogi
     setLoading(true);
     
     try {
-      // Use the correct window location for redirect
-      const redirectUrl = `${window.location.origin}/`;
-      
       const { error } = isSignUp 
         ? await signUp(email, password)
         : await signIn(email, password);
@@ -71,7 +68,6 @@ const SecureLogin = ({ onSuccess, onClose, showCloseButton = false }: SecureLogi
             : "You have been successfully signed in.",
         });
         
-        // Call onSuccess callback if provided
         if (onSuccess) {
           onSuccess();
         }
