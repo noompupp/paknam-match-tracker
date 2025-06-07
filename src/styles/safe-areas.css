@@ -42,6 +42,22 @@
   padding-bottom: var(--mobile-nav-total-height);
 }
 
+/* Modal-specific safe area utilities */
+.modal-safe-top {
+  padding-top: max(var(--safe-area-inset-top), 1rem);
+}
+
+.modal-close-safe {
+  top: max(var(--safe-area-inset-top), 0.75rem);
+  right: max(var(--safe-area-inset-right), 0.75rem);
+}
+
+/* Enhanced modal overlay with backdrop blur */
+.modal-overlay-enhanced {
+  backdrop-filter: blur(8px);
+  background: rgba(0, 0, 0, 0.8);
+}
+
 /* Mobile-specific safe area utilities */
 @media (max-width: 768px) {
   .mobile-safe-bottom {
@@ -50,6 +66,19 @@
   
   .mobile-content-spacing {
     padding-bottom: calc(2rem + var(--mobile-nav-total-height));
+  }
+  
+  /* Enhanced modal fullscreen for mobile */
+  .mobile-modal-fullscreen {
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    max-width: none;
+    max-height: none;
+    border-radius: 0;
+    transform: none;
+    top: 0;
+    left: 0;
   }
   
   /* Scroll margin for mobile navigation */

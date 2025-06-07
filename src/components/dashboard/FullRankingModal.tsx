@@ -1,5 +1,5 @@
 
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { EnhancedDialog, EnhancedDialogContent, EnhancedDialogHeader, EnhancedDialogTitle } from "@/components/ui/enhanced-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Trophy, Target } from "lucide-react";
@@ -45,75 +45,76 @@ const FullRankingModal = ({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md max-h-[80vh] overflow-hidden flex flex-col">
-        <DialogHeader className="flex-shrink-0">
-          <DialogTitle className="flex items-center gap-2 text-xl font-bold">
-            <Icon className="h-5 w-5" />
-            {title}
-          </DialogTitle>
-        </DialogHeader>
+    <EnhancedDialog open={isOpen} onOpenChange={onClose}>
+      <EnhancedDialogContent className="w-[100vw] h-[100vh] sm:w-auto sm:h-auto sm:max-w-md sm:max-h-[85vh] overflow-hidden flex flex-col p-4 sm:p-6 sm:rounded-lg">
+        <EnhancedDialogHeader className="flex-shrink-0 pb-4">
+          <EnhancedDialogTitle className="flex items-center gap-3 text-xl sm:text-2xl font-bold">
+            <Icon className="h-6 w-6 sm:h-7 sm:w-7 text-primary" />
+            <span className="truncate">{title}</span>
+          </EnhancedDialogTitle>
+        </EnhancedDialogHeader>
         
         <div className="flex-1 overflow-y-auto">
           {error ? (
-            <div className="text-center text-destructive py-8">
-              <p className="font-medium">Error loading ranking data</p>
-              <p className="text-sm text-muted-foreground mt-1">
+            <div className="text-center text-destructive py-12">
+              <Icon className="h-16 w-16 mx-auto mb-4 opacity-50" />
+              <p className="font-semibold text-lg mb-2">Error loading ranking data</p>
+              <p className="text-sm text-muted-foreground">
                 {error.message || `Unable to fetch ${statType} ranking`}
               </p>
             </div>
           ) : isLoading ? (
             <div className="space-y-3">
               {Array.from({ length: 10 }).map((_, index) => (
-                <div key={index} className="flex items-center justify-between p-3 rounded-lg">
+                <div key={index} className="flex items-center justify-between p-4 rounded-lg border bg-card">
                   <div className="flex items-center space-x-3">
                     <Skeleton className="w-8 h-8 rounded-full" />
-                    <div className="space-y-1">
-                      <Skeleton className="h-4 w-24" />
-                      <Skeleton className="h-3 w-16" />
+                    <div className="space-y-2">
+                      <Skeleton className="h-4 w-28" />
+                      <Skeleton className="h-3 w-20" />
                     </div>
                   </div>
-                  <Skeleton className="h-6 w-8" />
+                  <Skeleton className="h-7 w-10 rounded-full" />
                 </div>
               ))}
             </div>
           ) : players && players.length > 0 ? (
-            <div className="space-y-2">
+            <div className="space-y-3">
               {players.map((player, index) => (
                 <div 
                   key={index} 
-                  className="flex items-center justify-between p-3 rounded-lg hover:bg-muted/30 transition-colors border"
+                  className="flex items-center justify-between p-4 rounded-lg hover:bg-muted/50 transition-colors border bg-card shadow-sm"
                 >
-                  <div className="flex items-center space-x-3">
+                  <div className="flex items-center space-x-4">
                     <Badge 
                       variant="outline" 
-                      className="w-8 h-8 rounded-full flex items-center justify-center font-bold"
+                      className="w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm"
                     >
                       {index + 1}
                     </Badge>
                     <div>
-                      <p className="font-semibold text-sm">{player.name}</p>
-                      <p className="text-xs text-muted-foreground">{player.team}</p>
+                      <p className="font-semibold text-base">{player.name}</p>
+                      <p className="text-sm text-muted-foreground">{player.team}</p>
                     </div>
                   </div>
-                  <Badge className={`${getStatColor()} font-bold`}>
+                  <Badge className={`${getStatColor()} font-bold text-base px-3 py-1`}>
                     {getStatValue(player)}
                   </Badge>
                 </div>
               ))}
             </div>
           ) : (
-            <div className="text-center text-muted-foreground py-12">
-              <Icon className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p className="font-medium">No {statType} data yet</p>
-              <p className="text-sm mt-1">
+            <div className="text-center text-muted-foreground py-16">
+              <Icon className="h-20 w-20 mx-auto mb-6 opacity-30" />
+              <p className="font-semibold text-lg mb-2">No {statType} data yet</p>
+              <p className="text-base">
                 {statType === 'goals' ? 'Goals' : 'Assists'} will appear here once matches are played
               </p>
             </div>
           )}
         </div>
-      </DialogContent>
-    </Dialog>
+      </EnhancedDialogContent>
+    </EnhancedDialog>
   );
 };
 

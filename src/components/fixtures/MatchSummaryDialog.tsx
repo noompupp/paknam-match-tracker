@@ -1,5 +1,5 @@
 
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { EnhancedDialog, EnhancedDialogContent, EnhancedDialogHeader, EnhancedDialogTitle } from "@/components/ui/enhanced-dialog";
 import { Trophy, Database } from "lucide-react";
 import { useMatchEvents } from "@/hooks/useMatchEvents";
 import { useEnhancedMatchSummary } from "@/hooks/useEnhancedMatchSummary";
@@ -55,19 +55,19 @@ const MatchSummaryDialog = ({ fixture, isOpen, onClose }: MatchSummaryDialogProp
   if (!fixture) return null;
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="w-[95vw] max-w-4xl max-h-[95vh] sm:max-h-[90vh] overflow-y-auto p-3 sm:p-6 safe-top sm:pt-6 pt-8">
-        <DialogHeader className="pb-2 sm:pb-4">
-          <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
-            <Trophy className="h-4 w-4 sm:h-5 sm:w-5" />
+    <EnhancedDialog open={isOpen} onOpenChange={onClose}>
+      <EnhancedDialogContent className="w-[100vw] h-[100vh] sm:w-[95vw] sm:h-auto sm:max-w-4xl sm:max-h-[90vh] overflow-y-auto p-4 sm:p-6 sm:rounded-lg">
+        <EnhancedDialogHeader className="pb-3 sm:pb-4">
+          <EnhancedDialogTitle className="flex items-center gap-2 text-lg sm:text-xl font-bold">
+            <Trophy className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
             <span className="truncate">Match Summary</span>
             {enhancedSuccess && enhancedData?.timelineEvents?.length > 0 && (
-              <Database className="h-3 w-3 sm:h-4 sm:w-4 text-green-600 flex-shrink-0" />
+              <Database className="h-4 w-4 sm:h-5 sm:w-5 text-green-600 flex-shrink-0" />
             )}
-          </DialogTitle>
-        </DialogHeader>
+          </EnhancedDialogTitle>
+        </EnhancedDialogHeader>
 
-        <div className="space-y-3 sm:space-y-4">
+        <div className="space-y-4 sm:space-y-6">
           <MatchSummaryContent
             fixture={fixture}
             goals={goals}
@@ -93,8 +93,8 @@ const MatchSummaryDialog = ({ fixture, isOpen, onClose }: MatchSummaryDialogProp
             cards={cards}
           />
         </div>
-      </DialogContent>
-    </Dialog>
+      </EnhancedDialogContent>
+    </EnhancedDialog>
   );
 };
 
