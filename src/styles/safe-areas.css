@@ -48,8 +48,8 @@
 }
 
 .modal-close-safe {
-  top: max(var(--safe-area-inset-top), 0.75rem);
-  right: max(var(--safe-area-inset-right), 0.75rem);
+  top: max(var(--safe-area-inset-top, 0px) + 0.75rem, 0.75rem);
+  right: max(var(--safe-area-inset-right, 0px) + 0.75rem, 0.75rem);
 }
 
 /* Enhanced modal overlay with backdrop blur */
@@ -85,12 +85,29 @@
   .scroll-mt-nav {
     scroll-margin-top: calc(var(--nav-height) + 1rem);
   }
+  
+  /* Mobile modal close button positioning */
+  .modal-close-safe {
+    top: max(var(--safe-area-inset-top, 0px) + 1rem, 1rem);
+    right: max(var(--safe-area-inset-right, 0px) + 1rem, 1rem);
+  }
 }
 
 /* Desktop fallbacks */
 @media (min-width: 769px) {
   .desktop-safe-bottom {
     padding-bottom: 2rem;
+  }
+  
+  /* Desktop modal close button - remove safe area adjustments */
+  .modal-close-safe {
+    top: 0.75rem;
+    right: 0.75rem;
+  }
+  
+  /* Desktop modals don't need safe area padding */
+  .safe-all {
+    padding: 0;
   }
 }
 
@@ -103,4 +120,28 @@
   position: relative;
 }
 
-/* Remove the conflicting pseudo-element - PWA mode handles this */
+/* iOS PWA specific fixes */
+@supports (-webkit-touch-callout: none) {
+  @media (display-mode: standalone) {
+    /* iOS PWA mode - enhanced safe area handling */
+    .modal-close-safe {
+      top: max(var(--safe-area-inset-top, 0px) + 1.25rem, 1.25rem);
+      right: max(var(--safe-area-inset-right, 0px) + 1rem, 1rem);
+    }
+    
+    .modal-safe-top {
+      padding-top: max(var(--safe-area-inset-top, 0px) + 1.5rem, 1.5rem);
+    }
+    
+    /* Ensure modals respect Dynamic Island area on newer iPhones */
+    @media (max-height: 926px) and (min-height: 844px) {
+      .modal-close-safe {
+        top: max(var(--safe-area-inset-top, 0px) + 1.5rem, 1.5rem);
+      }
+      
+      .modal-safe-top {
+        padding-top: max(var(--safe-area-inset-top, 0px) + 2rem, 2rem);
+      }
+    }
+  }
+}
