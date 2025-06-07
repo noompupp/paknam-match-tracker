@@ -1,11 +1,12 @@
 
 import { Card, CardContent } from "@/components/ui/card";
+import { Clock } from "lucide-react";
+import EnhancedMatchEventsTimeline from "../../referee/components/EnhancedMatchEventsTimeline";
 import { extractTeamData, processTeamEvents } from "../utils/teamDataProcessor";
 import IPhoneStoryLayout from "./export/IPhoneStoryLayout";
 import MatchHeaderSection from "./MatchHeaderSection";
 import MatchEventsSection from "./MatchEventsSection";
 import MatchStatisticsSummary from "./MatchStatisticsSummary";
-import CollapsibleMatchTimeline from "./CollapsibleMatchTimeline";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface UnifiedMatchSummaryLayoutProps {
@@ -41,40 +42,9 @@ const UnifiedMatchSummaryLayout = ({
 }: UnifiedMatchSummaryLayoutProps) => {
   const isMobile = useIsMobile();
   
-  console.log('🎯 UnifiedMatchSummaryLayout - Props Analysis:', {
-    fixtureId: fixture?.id,
-    goalsCount: goals.length,
-    cardsCount: cards.length,
-    timelineEventsCount: timelineEvents.length,
-    goalSample: goals.length > 0 ? {
-      id: goals[0].id,
-      playerName: getGoalPlayerName(goals[0]),
-      time: getGoalTime(goals[0]),
-      teamId: getGoalTeamId(goals[0])
-    } : null,
-    cardSample: cards.length > 0 ? {
-      id: cards[0].id,
-      playerName: getCardPlayerName(cards[0]),
-      time: getCardTime(cards[0]),
-      teamId: getCardTeamId(cards[0])
-    } : null
-  });
-
   // Extract team data using the existing utility
   const teamData = extractTeamData(fixture);
   const processedEvents = processTeamEvents(goals, cards, teamData, getCardTeamId);
-
-  console.log('🎯 UnifiedMatchSummaryLayout - Processed Events:', {
-    teamData,
-    processedEvents: {
-      homeGoals: processedEvents.homeGoals.length,
-      awayGoals: processedEvents.awayGoals.length,
-      homeCards: processedEvents.homeCards.length,
-      awayCards: processedEvents.awayCards.length
-    },
-    homeGoalPlayers: processedEvents.homeGoals.map(g => getGoalPlayerName(g)),
-    awayGoalPlayers: processedEvents.awayGoals.map(g => getGoalPlayerName(g))
-  });
 
   // Check if we're in export mode on mobile
   const isExportMode = isMobile && document.getElementById('match-summary-content')?.classList.contains('export-mode-mobile');
@@ -108,11 +78,10 @@ const UnifiedMatchSummaryLayout = ({
         awayTeamColor={teamData.awayTeamColor}
       />
 
-      {/* Match Events Section - Enhanced with debugging and fallback handling */}
+      {/* Match Events Section (replaces Goals Section) */}
       <MatchEventsSection
         goals={goals}
         cards={cards}
-        timelineEvents={timelineEvents}
         processedEvents={processedEvents}
         homeTeamColor={teamData.homeTeamColor}
         awayTeamColor={teamData.awayTeamColor}
@@ -124,14 +93,6 @@ const UnifiedMatchSummaryLayout = ({
         getCardType={getCardType}
         isCardRed={isCardRed}
         fixture={fixture}
-        formatTime={formatTime}
-      />
-
-      {/* Collapsible Enhanced Match Timeline */}
-      <CollapsibleMatchTimeline
-        timelineEvents={timelineEvents}
-        formatTime={formatTime}
-        defaultOpen={false}
       />
 
       {/* Summary Statistics Box */}
@@ -144,6 +105,22 @@ const UnifiedMatchSummaryLayout = ({
         homeTeamColor={teamData.homeTeamColor}
         awayTeamColor={teamData.awayTeamColor}
       />
+
+      {/* Match Timeline Section */}
+      {timelineEvents.length > 0 && (
+        <Card>
+          <CardContent className="pt-6">
+            <h4 className="font-semibold flex items-center gap-2 mb-4">
+              <Clock className="h-4 w-4" />
+              Match Timeline ({timelineEvents.length})
+            </h4>
+            <EnhancedMatchEventsTimeline
+              timelineEvents={timelineEvents}
+              formatTime={formatTime}
+            />
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };
