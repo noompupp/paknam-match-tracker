@@ -42,20 +42,32 @@ const PremierLeagueStyleSummary = ({
 }: PremierLeagueStyleSummaryProps) => {
   const [detailsExpanded, setDetailsExpanded] = useState(true);
 
-  // Process goals from timeline events for enhanced display
-  const timelineGoals = timelineEvents.filter(event => event.type === 'goal');
-  
-  // Group goals by team for display
-  const homeGoals = timelineGoals.filter(goal => 
+  console.log('🎨 PremierLeagueStyleSummary: Received data:', {
+    goals: goals.length,
+    cards: cards.length,
+    timelineEvents: timelineEvents.length,
+    fixture: fixture?.id
+  });
+
+  // Use the already processed goals and cards arrays directly
+  // Filter goals by team for display
+  const homeGoals = goals.filter(goal => 
     getGoalTeamId(goal) === fixture?.home_team_id
   );
-  const awayGoals = timelineGoals.filter(goal => 
+  const awayGoals = goals.filter(goal => 
     getGoalTeamId(goal) === fixture?.away_team_id
   );
 
   // Get cards for each team
   const homeCards = cards.filter(c => getCardTeamId(c) === fixture?.home_team_id);
   const awayCards = cards.filter(c => getCardTeamId(c) === fixture?.away_team_id);
+
+  console.log('🎨 PremierLeagueStyleSummary: Processed team data:', {
+    homeGoals: homeGoals.length,
+    awayGoals: awayGoals.length,
+    homeCards: homeCards.length,
+    awayCards: awayCards.length
+  });
 
   // Enhanced team colors with better defaults
   const homeTeamColor = fixture.home_team?.color || "#1f2937"; // Dark gray default
@@ -70,9 +82,9 @@ const PremierLeagueStyleSummary = ({
         awayTeamColor={awayTeamColor}
       />
 
-      {/* Enhanced Goals Section */}
+      {/* Enhanced Goals Section - Pass the processed goals directly */}
       <GoalsSection 
-        timelineGoals={timelineGoals}
+        goals={goals}
         homeGoals={homeGoals}
         awayGoals={awayGoals}
         homeTeamColor={homeTeamColor}

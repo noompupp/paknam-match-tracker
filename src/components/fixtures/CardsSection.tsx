@@ -36,9 +36,20 @@ const CardsSection = ({
     return `${minutes}'`;
   };
 
+  console.log('🟨 CardsSection: Received data:', {
+    totalCards: cards.length,
+    homeCards: homeCards.length,
+    awayCards: awayCards.length,
+    homeCardsData: homeCards,
+    awayCardsData: awayCards
+  });
+
   const hasCards = cards.length > 0;
 
-  if (!hasCards) return null;
+  if (!hasCards) {
+    console.log('🟨 CardsSection: No cards to display');
+    return null;
+  }
 
   return (
     <Collapsible open={cardsExpanded} onOpenChange={setCardsExpanded}>
@@ -58,23 +69,26 @@ const CardsSection = ({
               {/* Home Team Cards */}
               <div className="flex-1 pr-4">
                 <div className="space-y-3">
-                  {homeCards.map((card, index) => (
-                    <div key={`home-card-${card.id}-${index}`} className="text-left">
-                      <div className="flex items-center gap-3">
-                        <div 
-                          className="w-2 h-2 rounded-full"
-                          style={{ backgroundColor: homeTeamColor }}
-                        />
-                        <Badge variant={isCardRed(card) ? 'destructive' : 'outline'} className="text-sm">
-                          {getCardType(card)}
-                        </Badge>
-                        <span className="font-medium">{getCardPlayerName(card)}</span>
-                        <span className="text-sm text-muted-foreground font-mono">
-                          {formatMatchTime(getCardTime(card))}
-                        </span>
+                  {homeCards.map((card, index) => {
+                    console.log('🟨 CardsSection: Rendering home card:', { card, index });
+                    return (
+                      <div key={`home-card-${card.id}-${index}`} className="text-left">
+                        <div className="flex items-center gap-3">
+                          <div 
+                            className="w-2 h-2 rounded-full"
+                            style={{ backgroundColor: homeTeamColor }}
+                          />
+                          <Badge variant={isCardRed(card) ? 'destructive' : 'outline'} className="text-sm">
+                            {getCardType(card)}
+                          </Badge>
+                          <span className="font-medium">{getCardPlayerName(card)}</span>
+                          <span className="text-sm text-muted-foreground font-mono">
+                            {formatMatchTime(getCardTime(card))}
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                   {homeCards.length === 0 && (
                     <div className="text-sm text-muted-foreground">No cards</div>
                   )}
@@ -89,23 +103,26 @@ const CardsSection = ({
               {/* Away Team Cards */}
               <div className="flex-1 pl-4">
                 <div className="space-y-3">
-                  {awayCards.map((card, index) => (
-                    <div key={`away-card-${card.id}-${index}`} className="text-right">
-                      <div className="flex items-center justify-end gap-3">
-                        <span className="text-sm text-muted-foreground font-mono">
-                          {formatMatchTime(getCardTime(card))}
-                        </span>
-                        <span className="font-medium">{getCardPlayerName(card)}</span>
-                        <Badge variant={isCardRed(card) ? 'destructive' : 'outline'} className="text-sm">
-                          {getCardType(card)}
-                        </Badge>
-                        <div 
-                          className="w-2 h-2 rounded-full"
-                          style={{ backgroundColor: awayTeamColor }}
-                        />
+                  {awayCards.map((card, index) => {
+                    console.log('🟨 CardsSection: Rendering away card:', { card, index });
+                    return (
+                      <div key={`away-card-${card.id}-${index}`} className="text-right">
+                        <div className="flex items-center justify-end gap-3">
+                          <span className="text-sm text-muted-foreground font-mono">
+                            {formatMatchTime(getCardTime(card))}
+                          </span>
+                          <span className="font-medium">{getCardPlayerName(card)}</span>
+                          <Badge variant={isCardRed(card) ? 'destructive' : 'outline'} className="text-sm">
+                            {getCardType(card)}
+                          </Badge>
+                          <div 
+                            className="w-2 h-2 rounded-full"
+                            style={{ backgroundColor: awayTeamColor }}
+                          />
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                   {awayCards.length === 0 && (
                     <div className="text-sm text-muted-foreground">No cards</div>
                   )}

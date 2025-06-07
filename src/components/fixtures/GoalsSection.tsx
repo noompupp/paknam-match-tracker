@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Trophy } from "lucide-react";
 
 interface GoalsSectionProps {
-  timelineGoals: any[];
+  goals: any[];
   homeGoals: any[];
   awayGoals: any[];
   homeTeamColor: string;
@@ -14,7 +14,7 @@ interface GoalsSectionProps {
 }
 
 const GoalsSection = ({
-  timelineGoals,
+  goals,
   homeGoals,
   awayGoals,
   homeTeamColor,
@@ -27,39 +27,53 @@ const GoalsSection = ({
     return `${minutes}'`;
   };
 
-  if (timelineGoals.length === 0) return null;
+  console.log('⚽ GoalsSection: Received data:', {
+    totalGoals: goals.length,
+    homeGoals: homeGoals.length,
+    awayGoals: awayGoals.length,
+    homeGoalsData: homeGoals,
+    awayGoalsData: awayGoals
+  });
+
+  if (goals.length === 0) {
+    console.log('⚽ GoalsSection: No goals to display');
+    return null;
+  }
 
   return (
     <Card>
       <CardContent className="pt-6">
         <h3 className="text-lg font-semibold mb-6 flex items-center gap-2">
           <Trophy className="h-5 w-5 text-yellow-600" />
-          Goals ({timelineGoals.length})
+          Goals ({goals.length})
         </h3>
         
         <div className="flex justify-between items-start">
           {/* Home Team Goals */}
           <div className="flex-1 pr-6">
             <div className="space-y-4">
-              {homeGoals.map((goal, index) => (
-                <div key={`home-goal-${goal.id}-${index}`} className="text-left">
-                  <div className="flex items-center gap-3">
-                    <div 
-                      className="w-3 h-3 rounded-full shadow-md"
-                      style={{ backgroundColor: homeTeamColor }}
-                    />
-                    <span className="font-semibold text-base">{getGoalPlayerName(goal)}</span>
-                    <Badge variant="outline" className="text-sm font-medium">
-                      {formatMatchTime(getGoalTime(goal))}
-                    </Badge>
-                  </div>
-                  {goal.assistPlayerName && (
-                    <div className="text-sm text-muted-foreground ml-6 mt-2 font-medium">
-                      🅰️ Assist: {goal.assistPlayerName}
+              {homeGoals.map((goal, index) => {
+                console.log('⚽ GoalsSection: Rendering home goal:', { goal, index });
+                return (
+                  <div key={`home-goal-${goal.id}-${index}`} className="text-left">
+                    <div className="flex items-center gap-3">
+                      <div 
+                        className="w-3 h-3 rounded-full shadow-md"
+                        style={{ backgroundColor: homeTeamColor }}
+                      />
+                      <span className="font-semibold text-base">{getGoalPlayerName(goal)}</span>
+                      <Badge variant="outline" className="text-sm font-medium">
+                        {formatMatchTime(getGoalTime(goal))}
+                      </Badge>
                     </div>
-                  )}
-                </div>
-              ))}
+                    {goal.assistPlayerName && (
+                      <div className="text-sm text-muted-foreground ml-6 mt-2 font-medium">
+                        🅰️ Assist: {goal.assistPlayerName}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
               {homeGoals.length === 0 && (
                 <div className="text-sm text-muted-foreground italic text-center py-4">No goals scored</div>
               )}
@@ -74,25 +88,28 @@ const GoalsSection = ({
           {/* Away Team Goals */}
           <div className="flex-1 pl-6">
             <div className="space-y-4">
-              {awayGoals.map((goal, index) => (
-                <div key={`away-goal-${goal.id}-${index}`} className="text-right">
-                  <div className="flex items-center justify-end gap-3">
-                    <Badge variant="outline" className="text-sm font-medium">
-                      {formatMatchTime(getGoalTime(goal))}
-                    </Badge>
-                    <span className="font-semibold text-base">{getGoalPlayerName(goal)}</span>
-                    <div 
-                      className="w-3 h-3 rounded-full shadow-md"
-                      style={{ backgroundColor: awayTeamColor }}
-                    />
-                  </div>
-                  {goal.assistPlayerName && (
-                    <div className="text-sm text-muted-foreground mr-6 mt-2 font-medium">
-                      🅰️ Assist: {goal.assistPlayerName}
+              {awayGoals.map((goal, index) => {
+                console.log('⚽ GoalsSection: Rendering away goal:', { goal, index });
+                return (
+                  <div key={`away-goal-${goal.id}-${index}`} className="text-right">
+                    <div className="flex items-center justify-end gap-3">
+                      <Badge variant="outline" className="text-sm font-medium">
+                        {formatMatchTime(getGoalTime(goal))}
+                      </Badge>
+                      <span className="font-semibold text-base">{getGoalPlayerName(goal)}</span>
+                      <div 
+                        className="w-3 h-3 rounded-full shadow-md"
+                        style={{ backgroundColor: awayTeamColor }}
+                      />
                     </div>
-                  )}
-                </div>
-              ))}
+                    {goal.assistPlayerName && (
+                      <div className="text-sm text-muted-foreground mr-6 mt-2 font-medium">
+                        🅰️ Assist: {goal.assistPlayerName}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
               {awayGoals.length === 0 && (
                 <div className="text-sm text-muted-foreground italic text-center py-4">No goals scored</div>
               )}
