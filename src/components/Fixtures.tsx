@@ -19,10 +19,10 @@ const Fixtures = () => {
   if (error) {
     return (
       <div className="gradient-bg flex items-center justify-center min-h-screen">
-        <div className="text-center text-white container-responsive">
+        <div className="text-center text-foreground container-responsive">
           <h2 className="text-2xl font-bold mb-4">Error Loading Fixtures</h2>
-          <p className="text-white/80">Please check your connection and try again.</p>
-          <p className="text-white/60 text-sm mt-2">{error.message}</p>
+          <p className="text-muted-foreground">Please check your connection and try again.</p>
+          <p className="text-muted-foreground text-sm mt-2">{error.message}</p>
         </div>
       </div>
     );

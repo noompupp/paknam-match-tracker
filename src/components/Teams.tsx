@@ -37,10 +37,10 @@ const Teams = () => {
   if (error) {
     return (
       <div className="gradient-bg flex items-center justify-center min-h-screen">
-        <div className="text-center text-white container-responsive">
+        <div className="text-center text-foreground container-responsive">
           <h2 className="text-2xl font-bold mb-4">Error Loading Teams</h2>
-          <p className="text-white/80">Please check your connection and try again.</p>
-          <p className="text-white/60 text-sm mt-2">{error.message}</p>
+          <p className="text-muted-foreground">Please check your connection and try again.</p>
+          <p className="text-muted-foreground text-sm mt-2">{error.message}</p>
         </div>
       </div>
     );
@@ -49,14 +49,21 @@ const Teams = () => {
   return (
     <div className="gradient-bg">
       {/* Header */}
-      <div className="bg-white/10 backdrop-blur-sm border-b border-white/20">
+      <div 
+        className="border-b"
+        style={{
+          background: 'var(--header-background)',
+          backdropFilter: 'var(--header-backdrop-blur)',
+          borderColor: 'var(--header-border)'
+        }}
+      >
         <div className="max-w-7xl mx-auto container-responsive py-6">
           <div className="text-center">
             <div className="flex items-center justify-center gap-3 mb-3">
               <TournamentLogo />
-              <h1 className="text-3xl font-bold text-white">Teams & Players</h1>
+              <h1 className="text-3xl font-bold text-foreground">Teams & Players</h1>
             </div>
-            <p className="text-white/80">Meet our {teams?.length || 0} competing teams</p>
+            <p className="text-muted-foreground">Meet our {teams?.length || 0} competing teams</p>
           </div>
         </div>
       </div>

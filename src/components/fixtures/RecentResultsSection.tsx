@@ -17,8 +17,8 @@ const RecentResultsSection = ({
 }: RecentResultsSectionProps) => (
   <div id="recent-results" className="scroll-mt-20">
     <div className="flex items-center gap-2 mb-6">
-      <Trophy className="h-6 w-6 text-white" />
-      <h2 className="text-2xl font-bold text-white">Recent Results</h2>
+      <Trophy className="h-6 w-6 text-foreground" />
+      <h2 className="text-2xl font-bold text-foreground">Recent Results</h2>
     </div>
     
     <div className="grid gap-4">
