@@ -1,4 +1,3 @@
-
 /**
  * Utility functions for ensuring score color contrast and readability
  */
@@ -113,4 +112,23 @@ export const needsContrastEnhancement = (color: string, background: 'light' | 'd
   } else {
     return darkColors.some(dark => color.toLowerCase().includes(dark.slice(1)));
   }
+};
+
+/**
+ * Gets neutral score styling that works consistently across light and dark modes
+ */
+export const getNeutralScoreStyle = (isMobile: boolean = false) => {
+  // Use semantic CSS custom properties that adapt to theme
+  const mobileEnhancedShadow = isMobile 
+    ? '0 3px 12px rgba(0, 0, 0, 0.4), 0 6px 24px rgba(0, 0, 0, 0.2), 0 1px 0 rgba(255, 255, 255, 0.3)'
+    : '0 1px 3px rgba(0, 0, 0, 0.3), 0 2px 6px rgba(0, 0, 0, 0.15)';
+  
+  return {
+    color: 'hsl(var(--foreground))', // Uses theme-aware foreground color
+    textShadow: mobileEnhancedShadow,
+    WebkitTextStroke: isMobile ? '0.5px rgba(0, 0, 0, 0.1)' : undefined,
+    fontWeight: isMobile ? '800' : 'bold',
+    letterSpacing: isMobile ? '-0.02em' : undefined,
+    filter: isMobile ? 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2))' : 'drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1))'
+  };
 };

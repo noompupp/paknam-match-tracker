@@ -2,9 +2,9 @@
 import { Badge } from "@/components/ui/badge";
 import { Eye } from "lucide-react";
 import { Fixture } from "@/types/database";
-import { formatDateDisplay } from "@/utils/timeUtils";
+import { formatDateDisplay, formatTimeDisplay } from "@/utils/timeUtils";
 import TeamLogo from "../teams/TeamLogo";
-import { getScoreStyle } from "@/utils/scoreColorUtils";
+import { getNeutralScoreStyle } from "@/utils/scoreColorUtils";
 
 interface MobilePortraitFixtureCardProps {
   fixture: Fixture;
@@ -20,8 +20,12 @@ const MobilePortraitFixtureCard = ({ fixture, onClick, showDate = true, classNam
     }
   };
 
-  const homeTeamColor = fixture.home_team?.color || "#3B82F6";
-  const awayTeamColor = fixture.away_team?.color || "#EF4444";
+  // Format date and time consistently with Upcoming Fixtures
+  const formatDateTimeDisplay = (dateString: string, timeString: string) => {
+    const dateFormatted = formatDateDisplay(dateString);
+    const timeFormatted = formatTimeDisplay(timeString);
+    return `${dateFormatted} • ${timeFormatted}`;
+  };
 
   return (
     <div 
@@ -30,33 +34,35 @@ const MobilePortraitFixtureCard = ({ fixture, onClick, showDate = true, classNam
       } ${className}`}
       onClick={handleClick}
     >
-      {/* Match date - top right */}
+      {/* Match date and time - top right */}
       {showDate && (
-        <div className="absolute top-2 right-2 text-xs text-muted-foreground">
-          {formatDateDisplay(fixture.match_date)}
+        <div className="absolute top-2 right-2 text-xs text-muted-foreground max-w-[140px] text-right leading-tight">
+          {formatDateTimeDisplay(fixture.match_date, fixture.match_time || '')}
         </div>
       )}
       
       {/* Eye icon - top right, appears on hover for completed matches */}
       {fixture.status === 'completed' && (
-        <div className="absolute top-2 right-12 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
           <Eye className="h-3 w-3 text-muted-foreground" />
         </div>
       )}
 
       {/* 3-Column Grid Layout for Mobile Portrait */}
-      <div className="grid grid-cols-3 gap-3 items-center min-h-[120px]">
+      <div className="grid grid-cols-3 gap-3 items-center min-h-[120px] mt-6">
         
         {/* Column 1: Home Team */}
         <div className="flex flex-col items-center justify-center space-y-2">
           <TeamLogo team={fixture.home_team} size="small" />
-          <div className="text-center">
-            <div className="text-xs font-medium text-muted-foreground mb-1 leading-tight max-w-[80px] break-words">
-              {fixture.home_team?.name || 'TBD'}
+          <div className="text-center w-full">
+            <div className="text-xs font-medium text-muted-foreground mb-1 leading-tight max-w-[80px] mx-auto">
+              <span className="block truncate" title={fixture.home_team?.name || 'TBD'}>
+                {fixture.home_team?.name || 'TBD'}
+              </span>
             </div>
             <div 
-              className="text-2xl font-bold leading-none"
-              style={getScoreStyle(homeTeamColor, false, true)}
+              className="text-2xl font-bold leading-none mobile-score-enhanced"
+              style={getNeutralScoreStyle(true)}
             >
               {fixture.home_score || 0}
             </div>
@@ -83,13 +89,15 @@ const MobilePortraitFixtureCard = ({ fixture, onClick, showDate = true, classNam
         {/* Column 3: Away Team */}
         <div className="flex flex-col items-center justify-center space-y-2">
           <TeamLogo team={fixture.away_team} size="small" />
-          <div className="text-center">
-            <div className="text-xs font-medium text-muted-foreground mb-1 leading-tight max-w-[80px] break-words">
-              {fixture.away_team?.name || 'TBD'}
+          <div className="text-center w-full">
+            <div className="text-xs font-medium text-muted-foreground mb-1 leading-tight max-w-[80px] mx-auto">
+              <span className="block truncate" title={fixture.away_team?.name || 'TBD'}>
+                {fixture.away_team?.name || 'TBD'}
+              </span>
             </div>
             <div 
-              className="text-2xl font-bold leading-none"
-              style={getScoreStyle(awayTeamColor, false, true)}
+              className="text-2xl font-bold leading-none mobile-score-enhanced"
+              style={getNeutralScoreStyle(true)}
             >
               {fixture.away_score || 0}
             </div>
