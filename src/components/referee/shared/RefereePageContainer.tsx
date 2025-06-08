@@ -25,6 +25,8 @@ const RefereePageContainer = ({
   return (
     <div className={cn(
       "referee-full-background",
+      "w-full",
+      "overflow-x-hidden",
       isMobile && isIOS && "referee-ios-safe",
       isMobile && !isIOS && "referee-mobile-container",
       !isMobile && "min-h-screen bg-background",
@@ -32,7 +34,9 @@ const RefereePageContainer = ({
     )}>
       <div className={cn(
         "referee-content",
-        spacingClasses[spacing]
+        spacingClasses[spacing],
+        "w-full",
+        "max-w-none sm:max-w-7xl"
       )}>
         {children}
       </div>

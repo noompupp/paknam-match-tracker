@@ -1,5 +1,4 @@
 
-
 /* Referee UI Standardized Styles */
 
 /* Layout Components */
@@ -97,10 +96,12 @@
   @apply bg-card/80 border-border/50;
 }
 
-/* Mobile scroll fix - ensure proper background coverage */
+/* Enhanced mobile container with full coverage */
 .referee-mobile-container {
-  @apply min-h-screen bg-background;
+  @apply min-h-screen bg-background w-full overflow-x-hidden;
   padding-bottom: calc(var(--safe-area-inset-bottom) + var(--nav-height));
+  margin: 0;
+  position: relative;
 }
 
 /* iOS safe area handling for referee tools */
@@ -108,13 +109,26 @@
   padding-top: var(--safe-area-inset-top);
   padding-bottom: calc(var(--safe-area-inset-bottom) + var(--nav-height));
   min-height: 100vh;
-  min-height: 100dvh; /* Dynamic viewport height for better mobile support */
+  min-height: 100dvh;
+  @apply bg-background w-full overflow-x-hidden;
+  margin: 0;
+  position: relative;
 }
 
 /* Ensure background extends to edges on mobile */
 .referee-full-background {
-  @apply bg-background;
+  @apply bg-background w-full overflow-x-hidden;
   min-height: 100vh;
   min-height: 100dvh;
+  margin: 0;
+  position: relative;
 }
 
+/* Dark mode specific mobile fixes */
+@media (prefers-color-scheme: dark) {
+  .referee-mobile-container,
+  .referee-ios-safe,
+  .referee-full-background {
+    background-color: hsl(222.2, 84%, 4.9%);
+  }
+}

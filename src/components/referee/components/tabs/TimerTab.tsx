@@ -19,8 +19,7 @@ const TimerTab = ({
   matchTime,
   isRunning,
   formatTime,
-  onToggleTimer,
-  onResetMatch
+  onToggleTimer
 }: TimerTabProps) => {
   return (
     <MatchTimer
@@ -31,7 +30,6 @@ const TimerTab = ({
       isRunning={isRunning}
       formatTime={formatTime}
       onToggleTimer={onToggleTimer}
-      onResetMatch={onResetMatch}
     />
   );
 };

@@ -2,7 +2,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Play, Pause, RotateCcw } from "lucide-react";
+import { Play, Pause } from "lucide-react";
 import { Fixture } from "@/types/database";
 
 interface MatchTimerProps {
@@ -23,8 +23,7 @@ const MatchTimer = ({
   matchTime, 
   isRunning, 
   formatTime,
-  onToggleTimer,
-  onResetMatch
+  onToggleTimer
 }: MatchTimerProps) => {
   return (
     <Card className="card-shadow-lg">
@@ -67,20 +66,12 @@ const MatchTimer = ({
           )}
         </div>
         
-        {(onToggleTimer || onResetMatch) && (
+        {onToggleTimer && (
           <div className="flex gap-2 justify-center mt-4">
-            {onToggleTimer && (
-              <Button onClick={onToggleTimer} variant="default">
-                {isRunning ? <Pause className="h-4 w-4 mr-2" /> : <Play className="h-4 w-4 mr-2" />}
-                {isRunning ? "Pause" : "Start"}
-              </Button>
-            )}
-            {onResetMatch && (
-              <Button onClick={onResetMatch} variant="outline">
-                <RotateCcw className="h-4 w-4 mr-2" />
-                Reset
-              </Button>
-            )}
+            <Button onClick={onToggleTimer} variant="default">
+              {isRunning ? <Pause className="h-4 w-4 mr-2" /> : <Play className="h-4 w-4 mr-2" />}
+              {isRunning ? "Pause" : "Start"}
+            </Button>
           </div>
         )}
       </CardContent>
