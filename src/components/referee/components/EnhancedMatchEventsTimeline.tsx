@@ -1,6 +1,6 @@
 
-import { Badge } from "@/components/ui/badge";
 import { Clock, Goal, UserX, Trophy } from "lucide-react";
+import EnhancedTimeBadge from "../../fixtures/components/EnhancedTimeBadge";
 
 interface TimelineEvent {
   id: number;
@@ -100,18 +100,17 @@ const EnhancedMatchEventsTimeline = ({
     }
   };
 
-  const getEventVariant = (eventType: string): "default" | "secondary" | "destructive" | "outline" => {
+  const getTimeBadgeVariant = (eventType: string): 'goal' | 'yellow' | 'red' | 'default' => {
     switch (eventType) {
       case 'goal':
-        return 'default';
       case 'assist':
-        return 'secondary';
+        return 'goal';
       case 'yellow_card':
-        return 'outline';
+        return 'yellow';
       case 'red_card':
-        return 'destructive';
+        return 'red';
       default:
-        return 'outline';
+        return 'default';
     }
   };
 
@@ -144,31 +143,26 @@ const EnhancedMatchEventsTimeline = ({
                   </p>
                   
                   <div className="flex items-center gap-2 flex-shrink-0">
-                    <Badge 
-                      variant={getEventVariant(event.type)} 
-                      className="text-xs bg-gradient-to-r from-primary/10 to-secondary/10"
-                    >
-                      {getEventTypeLabel(event.type)}
-                    </Badge>
-                    <span className="text-xs text-muted-foreground font-mono bg-muted/20 px-2 py-1 rounded">
-                      {formatTime(event.time)}'
-                    </span>
+                    <EnhancedTimeBadge 
+                      time={`${formatTime(event.time)}'`}
+                      variant={getTimeBadgeVariant(event.type)}
+                    />
                   </div>
                 </div>
                 
                 {event.assistPlayerName && event.type === 'goal' && (
-                  <p className="text-xs text-muted-foreground bg-blue-50 px-2 py-1 rounded border border-blue-200">
+                  <div className="text-xs text-muted-foreground bg-blue-50 px-2 py-1 rounded border border-blue-200 inline-block">
                     🅰️ Assisted by {event.assistPlayerName}
-                  </p>
+                  </div>
                 )}
               </div>
             </div>
           ))}
           
           {sortedEvents.length > 10 && (
-            <p className="text-xs text-muted-foreground text-center pt-2 bg-muted/10 rounded p-2">
+            <div className="text-xs text-muted-foreground text-center pt-2 match-gradient-primary rounded p-2 border border-muted/20">
               Showing all {sortedEvents.length} timeline events
-            </p>
+            </div>
           )}
         </div>
       )}

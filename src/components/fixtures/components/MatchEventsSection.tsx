@@ -1,9 +1,9 @@
 
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Activity } from "lucide-react";
 import { getGoalAssistPlayerName } from "../utils/matchSummaryDataProcessor";
 import { getSimplifiedCardType } from "@/utils/scoreColorUtils";
+import EnhancedTimeBadge from "./EnhancedTimeBadge";
 
 interface MatchEventsSectionProps {
   goals: any[];
@@ -61,7 +61,7 @@ const MatchEventsSection = ({
   };
 
   return (
-    <Card className="premier-card-shadow match-border-gradient">
+    <Card className="premier-card-shadow-lg match-border-gradient">
       <CardContent className="pt-6 match-gradient-events">
         <h4 className="font-semibold flex items-center gap-2 mb-4">
           <Activity className="h-4 w-4" />
@@ -69,7 +69,7 @@ const MatchEventsSection = ({
         </h4>
         
         {allEvents.length === 0 ? (
-          <div className="text-center py-8 timeline-gradient rounded-lg border border-muted/20">
+          <div className="text-center py-8 timeline-gradient rounded-lg border border-muted/20 premier-card-shadow">
             <p className="text-sm text-muted-foreground">No events recorded</p>
           </div>
         ) : (
@@ -84,7 +84,7 @@ const MatchEventsSection = ({
                 return (
                   <div 
                     key={`event-goal-${event.data.id}-${index}`} 
-                    className="flex items-center justify-between p-3 event-item-gradient rounded-lg border border-primary/10 premier-card-shadow"
+                    className="flex items-center justify-between p-3 event-item-gradient rounded-lg border border-primary/10 premier-card-shadow hover:bg-muted/20 transition-colors"
                   >
                     <div className="flex items-center gap-3 flex-1">
                       <div 
@@ -97,15 +97,16 @@ const MatchEventsSection = ({
                           <span>{playerName}</span>
                         </div>
                         {assistName && (
-                          <div className="text-xs text-muted-foreground">
+                          <div className="text-xs text-muted-foreground bg-blue-50 px-2 py-1 rounded border border-blue-200 mt-1 inline-block">
                             Assist: {assistName}
                           </div>
                         )}
                       </div>
                     </div>
-                    <Badge variant="outline" className="text-xs bg-gradient-to-r from-green-50 to-green-100 border-green-200">
-                      {formatTime(event.time)}
-                    </Badge>
+                    <EnhancedTimeBadge 
+                      time={formatTime(event.time)} 
+                      variant="goal"
+                    />
                   </div>
                 );
               } else {
@@ -116,7 +117,7 @@ const MatchEventsSection = ({
                 return (
                   <div 
                     key={`event-card-${event.data.id}-${index}`} 
-                    className="flex items-center justify-between p-3 event-item-gradient rounded-lg border border-primary/10 premier-card-shadow"
+                    className="flex items-center justify-between p-3 event-item-gradient rounded-lg border border-primary/10 premier-card-shadow hover:bg-muted/20 transition-colors"
                   >
                     <div className="flex items-center gap-3 flex-1">
                       <div 
@@ -133,12 +134,10 @@ const MatchEventsSection = ({
                         </div>
                       </div>
                     </div>
-                    <Badge 
-                      variant="outline" 
-                      className={`text-xs ${isRed ? 'bg-gradient-to-r from-red-50 to-red-100 border-red-200' : 'bg-gradient-to-r from-yellow-50 to-yellow-100 border-yellow-200'}`}
-                    >
-                      {formatTime(event.time)}
-                    </Badge>
+                    <EnhancedTimeBadge 
+                      time={formatTime(event.time)} 
+                      variant={isRed ? 'red' : 'yellow'}
+                    />
                   </div>
                 );
               }

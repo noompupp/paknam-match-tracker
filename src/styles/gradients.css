@@ -18,16 +18,16 @@
   
   .match-gradient-events {
     background: linear-gradient(135deg, 
-      hsl(var(--muted) / 0.3) 0%, 
-      hsl(var(--card) / 0.5) 50%, 
-      hsl(var(--muted) / 0.4) 100%);
+      hsl(var(--muted) / 0.2) 0%, 
+      hsl(var(--card) / 0.4) 50%, 
+      hsl(var(--muted) / 0.3) 100%);
   }
   
   .match-gradient-stats {
     background: linear-gradient(135deg, 
-      hsl(var(--secondary) / 0.2) 0%, 
-      hsl(var(--muted) / 0.3) 50%, 
-      hsl(var(--accent) / 0.2) 100%);
+      hsl(var(--secondary) / 0.15) 0%, 
+      hsl(var(--muted) / 0.25) 50%, 
+      hsl(var(--accent) / 0.15) 100%);
   }
   
   /* Enhanced Border Gradients */
@@ -43,7 +43,7 @@
   .event-item-gradient {
     background: linear-gradient(90deg, 
       hsl(var(--muted) / 0.1) 0%, 
-      hsl(var(--card) / 0.2) 50%, 
+      hsl(var(--card) / 0.15) 50%, 
       hsl(var(--muted) / 0.1) 100%);
   }
   
@@ -51,8 +51,16 @@
   .timeline-gradient {
     background: linear-gradient(135deg, 
       hsl(var(--background) / 0.8) 0%, 
-      hsl(var(--muted) / 0.4) 50%, 
+      hsl(var(--muted) / 0.3) 50%, 
       hsl(var(--background) / 0.9) 100%);
+  }
+  
+  /* Interactive Hover Effects */
+  .event-item-gradient:hover {
+    background: linear-gradient(90deg, 
+      hsl(var(--muted) / 0.15) 0%, 
+      hsl(var(--card) / 0.25) 50%, 
+      hsl(var(--muted) / 0.15) 100%);
   }
   
   /* Enhanced Text Shadows for Score Visibility */
@@ -84,6 +92,28 @@
       0 4px 12px rgba(0, 0, 0, 0.08),
       inset 0 1px 0 rgba(255, 255, 255, 0.15);
   }
+
+  /* Badge Enhancements */
+  .badge-gradient-goal {
+    background: linear-gradient(135deg, 
+      rgb(34 197 94 / 0.1) 0%, 
+      rgb(22 163 74 / 0.15) 100%);
+    border-color: rgb(34 197 94 / 0.3);
+  }
+
+  .badge-gradient-yellow {
+    background: linear-gradient(135deg, 
+      rgb(234 179 8 / 0.1) 0%, 
+      rgb(202 138 4 / 0.15) 100%);
+    border-color: rgb(234 179 8 / 0.3);
+  }
+
+  .badge-gradient-red {
+    background: linear-gradient(135deg, 
+      rgb(239 68 68 / 0.1) 0%, 
+      rgb(220 38 38 / 0.15) 100%);
+    border-color: rgb(239 68 68 / 0.3);
+  }
 }
 
 /* Dark mode adjustments */
@@ -100,5 +130,20 @@
     text-shadow: 
       0 1px 3px rgba(255, 255, 255, 0.2),
       0 2px 6px rgba(255, 255, 255, 0.1);
+  }
+
+  /* Enhanced contrast for dark mode gradients */
+  .match-gradient-events {
+    background: linear-gradient(135deg, 
+      hsl(var(--muted) / 0.3) 0%, 
+      hsl(var(--card) / 0.5) 50%, 
+      hsl(var(--muted) / 0.4) 100%);
+  }
+
+  .event-item-gradient {
+    background: linear-gradient(90deg, 
+      hsl(var(--muted) / 0.2) 0%, 
+      hsl(var(--card) / 0.3) 50%, 
+      hsl(var(--muted) / 0.2) 100%);
   }
 }
