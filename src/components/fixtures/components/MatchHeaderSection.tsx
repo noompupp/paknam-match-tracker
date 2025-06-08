@@ -37,73 +37,71 @@ const MatchHeaderSection = ({
   if (isMobile) {
     return (
       <Card className="overflow-hidden premier-card-shadow-lg match-border-gradient w-full">
-        <CardContent className="p-3 match-gradient-header w-full">
-          {/* Mobile Layout */}
-          <div className="flex flex-col w-full space-y-4">
-            {/* Home Team */}
-            <div className="flex items-center justify-between w-full">
-              <div className="flex items-center gap-3 flex-1 min-w-0">
-                <TeamLogoDisplay 
-                  teamName={fixture.home_team?.name || 'Home'}
-                  teamLogo={fixture.home_team?.logoURL}
-                  teamColor={homeTeamColor}
-                  size="md"
-                  showName={false}
-                />
-                <div className="flex-1 min-w-0">
-                  <div className="text-sm font-medium text-muted-foreground mb-1 truncate">
-                    {fixture.home_team?.name || 'Home'}
-                  </div>
+        <CardContent className="p-4 match-gradient-header w-full">
+          {/* Mobile Layout - Symmetric Design */}
+          <div className="flex flex-col w-full space-y-6">
+            {/* Home Team Section */}
+            <div className="flex flex-col items-center w-full">
+              <TeamLogoDisplay 
+                teamName={fixture.home_team?.name || 'Home'}
+                teamLogo={fixture.home_team?.logoURL}
+                teamColor={homeTeamColor}
+                size="md"
+                showName={false}
+              />
+              <div className="mt-3 text-center">
+                <div className="text-sm font-medium text-muted-foreground mb-2 max-w-[200px] truncate">
+                  {fixture.home_team?.name || 'Home'}
                 </div>
-              </div>
-              <div 
-                className="text-2xl font-bold score-text-outline flex-shrink-0"
-                style={getScoreStyle(homeTeamColor)}
-              >
-                {fixture.home_score || 0}
+                <div 
+                  className="text-3xl font-bold score-text-outline"
+                  style={getScoreStyle(homeTeamColor)}
+                >
+                  {fixture.home_score || 0}
+                </div>
               </div>
             </div>
 
-            {/* Center Section */}
-            <div className="text-center px-2 py-3 bg-gradient-to-r from-transparent via-muted/10 to-transparent rounded-lg">
+            {/* VS Section - Centered */}
+            <div className="flex flex-col items-center justify-center px-4 py-4 bg-gradient-to-r from-transparent via-muted/10 to-transparent rounded-lg">
               <Badge 
                 variant={fixture.status === 'completed' ? 'default' : 'outline'}
-                className="mb-2 text-xs px-3 py-1 font-bold bg-gradient-to-r from-primary/80 to-primary/60"
+                className="mb-3 text-xs px-3 py-1 font-bold bg-gradient-to-r from-primary/80 to-primary/60"
               >
                 {fixture.status === 'completed' ? 'FULL TIME' : fixture.status?.toUpperCase() || 'MATCH'}
               </Badge>
-              <div className="text-lg font-light text-muted-foreground mb-2">VS</div>
+              
+              <div className="text-2xl font-light text-muted-foreground mb-3">VS</div>
+              
               <Badge variant="outline" className={`text-xs ${getResultColor()}`}>
                 {getResult()}
               </Badge>
             </div>
 
-            {/* Away Team */}
-            <div className="flex items-center justify-between w-full">
-              <div 
-                className="text-2xl font-bold score-text-outline flex-shrink-0"
-                style={getScoreStyle(awayTeamColor)}
-              >
-                {fixture.away_score || 0}
-              </div>
-              <div className="flex items-center gap-3 flex-1 min-w-0 justify-end">
-                <div className="flex-1 min-w-0 text-right">
-                  <div className="text-sm font-medium text-muted-foreground mb-1 truncate">
-                    {fixture.away_team?.name || 'Away'}
-                  </div>
+            {/* Away Team Section */}
+            <div className="flex flex-col items-center w-full">
+              <TeamLogoDisplay 
+                teamName={fixture.away_team?.name || 'Away'}
+                teamLogo={fixture.away_team?.logoURL}
+                teamColor={awayTeamColor}
+                size="md"
+                showName={false}
+              />
+              <div className="mt-3 text-center">
+                <div className="text-sm font-medium text-muted-foreground mb-2 max-w-[200px] truncate">
+                  {fixture.away_team?.name || 'Away'}
                 </div>
-                <TeamLogoDisplay 
-                  teamName={fixture.away_team?.name || 'Away'}
-                  teamLogo={fixture.away_team?.logoURL}
-                  teamColor={awayTeamColor}
-                  size="md"
-                  showName={false}
-                />
+                <div 
+                  className="text-3xl font-bold score-text-outline"
+                  style={getScoreStyle(awayTeamColor)}
+                >
+                  {fixture.away_score || 0}
+                </div>
               </div>
             </div>
 
-            {/* Match Info Bar */}
-            <div className="flex flex-col items-center gap-2 text-xs text-muted-foreground pt-3 border-t border-primary/20">
+            {/* Match Info Bar - Centered */}
+            <div className="flex flex-col items-center gap-2 text-xs text-muted-foreground pt-4 border-t border-primary/20">
               <div className="flex items-center gap-1">
                 <Calendar className="h-3 w-3" />
                 <span>{fixture.match_date}</span>
@@ -114,7 +112,7 @@ const MatchHeaderSection = ({
               {fixture.venue && (
                 <div className="flex items-center gap-1 text-center">
                   <MapPin className="h-3 w-3 flex-shrink-0" />
-                  <span className="truncate max-w-[200px]">{fixture.venue}</span>
+                  <span className="truncate max-w-[250px]">{fixture.venue}</span>
                 </div>
               )}
             </div>
