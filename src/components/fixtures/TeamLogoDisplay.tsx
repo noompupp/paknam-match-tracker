@@ -1,5 +1,4 @@
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface TeamLogoDisplayProps {
@@ -59,29 +58,26 @@ const TeamLogoDisplay = ({
 
   return (
     <div className={`flex flex-col items-center ${gapSize}`}>
-      <Avatar 
-        className={`${sizeClasses[size]} shadow-lg ring-2 ring-offset-2 ring-gray-200`} 
-        style={{ 
-          borderColor: teamColor
-        }}
-      >
-        {teamLogo && (
-          <AvatarImage 
+      {/* Direct image/logo display without Avatar wrapper */}
+      <div className={`${sizeClasses[size]} flex items-center justify-center`}>
+        {teamLogo ? (
+          <img 
             src={teamLogo} 
             alt={teamName} 
-            className="object-cover"
+            className={`${sizeClasses[size]} object-cover rounded-lg`}
           />
+        ) : (
+          <div 
+            className={`${sizeClasses[size]} rounded-lg flex items-center justify-center font-bold text-white ${fallbackTextSize[size]}`}
+            style={{ 
+              backgroundColor: teamColor,
+              background: `linear-gradient(135deg, ${teamColor} 0%, ${teamColor}dd 100%)`
+            }}
+          >
+            {teamName.slice(0, 2).toUpperCase()}
+          </div>
         )}
-        <AvatarFallback 
-          className={`font-bold text-white shadow-inner ${fallbackTextSize[size]}`}
-          style={{ 
-            backgroundColor: teamColor,
-            background: `linear-gradient(135deg, ${teamColor} 0%, ${teamColor}dd 100%)`
-          }}
-        >
-          {teamName.slice(0, 2).toUpperCase()}
-        </AvatarFallback>
-      </Avatar>
+      </div>
       {showName && (
         <div className="text-center max-w-[120px]">
           {isMultiLine ? (

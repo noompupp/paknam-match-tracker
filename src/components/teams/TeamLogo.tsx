@@ -44,8 +44,6 @@ const TeamLogo = ({ team, size = 'medium', className = '', showColor = false }: 
     
     return {
       background: `linear-gradient(135deg, ${lighterShade} 0%, ${baseColor} 50%, ${darkerShade} 100%)`,
-      borderColor: baseColor,
-      boxShadow: `0 2px 8px ${baseColor}20`,
     };
   };
 
@@ -90,9 +88,7 @@ const TeamLogo = ({ team, size = 'medium', className = '', showColor = false }: 
     return (
       <div className={`flex items-center ${className}`}>
         <div 
-          className={`${sizeClasses.replace(/text-\w+/, '')} rounded-lg border-2 p-1 ${
-            hasColor ? 'border-current' : 'border-gray-200'
-          } overflow-hidden transition-all duration-200`}
+          className={`${sizeClasses.replace(/text-\w+/, '')} rounded-lg overflow-hidden transition-all duration-200`}
           style={gradientStyle}
         >
           <img 
@@ -122,8 +118,8 @@ const TeamLogo = ({ team, size = 'medium', className = '', showColor = false }: 
   return (
     <div className={`flex items-center ${className}`}>
       <div 
-        className={`${sizeClasses.replace(/text-\w+/, '')} rounded-lg border-2 flex items-center justify-center transition-all duration-200 ${
-          hasColor ? 'border-current text-white font-bold' : 'border-gray-200'
+        className={`${sizeClasses.replace(/text-\w+/, '')} rounded-lg flex items-center justify-center transition-all duration-200 ${
+          hasColor ? 'text-white font-bold' : ''
         }`}
         style={gradientStyle}
       >
