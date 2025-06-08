@@ -40,6 +40,8 @@ interface RefereeMatchControlsContainerProps {
   onToggleTimer: () => void;
   onResetMatch: () => void;
   onSaveMatch: () => void;
+  onQuickGoal: (team: 'home' | 'away') => void;
+  onOpenGoalWizard: () => void;
   onAssignGoal: (player: ComponentPlayer) => void;
   onAddCard: (playerName: string, team: string, cardType: 'yellow' | 'red', time: number) => void;
   onAddPlayer: (player: ComponentPlayer) => void;
@@ -92,6 +94,8 @@ const RefereeMatchControlsContainer = (props: RefereeMatchControlsContainerProps
           onToggleTimer={props.onToggleTimer}
           onResetMatch={props.onResetMatch}
           onSaveMatch={props.onSaveMatch}
+          onQuickGoal={props.onQuickGoal}
+          onOpenGoalWizard={props.onOpenGoalWizard}
           onAssignGoal={props.onAssignGoal}
           onAddCard={props.onAddCard}
           onAddPlayer={props.onAddPlayer}
