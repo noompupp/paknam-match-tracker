@@ -91,8 +91,12 @@ export const getScoreStyle = (teamColor: string, isDarkMode: boolean = false, is
  */
 export const getSimplifiedCardType = (card: any): string => {
   const cardType = card?.card_type || card?.type || 'yellow';
-  // Remove "card" from the end if it exists to prevent "YELLOW CARD card"
-  return cardType.toString().replace(/\s*card$/i, '').toUpperCase();
+  // Clean up the card type: remove "card" suffix, replace underscores with spaces, and capitalize properly
+  return cardType.toString()
+    .replace(/\s*card$/i, '') // Remove "card" from the end
+    .replace(/_/g, ' ') // Replace underscores with spaces
+    .toLowerCase() // Convert to lowercase first
+    .replace(/^\w/, (c: string) => c.toUpperCase()); // Capitalize first letter only
 };
 
 /**
