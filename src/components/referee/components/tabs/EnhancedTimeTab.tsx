@@ -9,9 +9,11 @@ interface EnhancedTimeTabProps {
   awayTeamPlayers?: ComponentPlayer[];
   trackedPlayers: any[];
   selectedPlayer: string;
+  selectedTimeTeam: string;
   matchTime: number;
   isTimerRunning: boolean;
   onPlayerSelect: (value: string) => void;
+  onTimeTeamChange: (value: string) => void;
   onAddPlayer: (player: ComponentPlayer) => void;
   onRemovePlayer: (playerId: number) => void;
   onTogglePlayerTime: (playerId: number) => void;
@@ -24,9 +26,11 @@ const EnhancedTimeTab = ({
   awayTeamPlayers,
   trackedPlayers,
   selectedPlayer,
+  selectedTimeTeam,
   matchTime,
   isTimerRunning,
   onPlayerSelect,
+  onTimeTeamChange,
   onAddPlayer,
   onRemovePlayer,
   onTogglePlayerTime,
@@ -69,14 +73,19 @@ const EnhancedTimeTab = ({
       {/* Enhanced Player Time Tracker */}
       <PlayerTimeTracker
         allPlayers={playersForDropdown}
+        homeTeamPlayers={homeTeamPlayers}
+        awayTeamPlayers={awayTeamPlayers}
         trackedPlayers={trackedPlayers}
         selectedPlayer={selectedPlayer}
+        selectedTimeTeam={selectedTimeTeam}
         onPlayerSelect={onPlayerSelect}
+        onTimeTeamChange={onTimeTeamChange}
         onAddPlayer={handleAddPlayer}
         onRemovePlayer={onRemovePlayer}
         onTogglePlayerTime={onTogglePlayerTime}
         formatTime={formatTime}
         matchTime={matchTime}
+        selectedFixtureData={undefined}
       />
     </div>
   );

@@ -64,6 +64,9 @@ const RefereeToolsContainer = () => {
     trackedPlayers,
     selectedTimePlayer,
     setSelectedTimePlayer,
+    addPlayer,
+    removePlayer,
+    togglePlayerTime,
     
     // Events
     events,
@@ -79,6 +82,42 @@ const RefereeToolsContainer = () => {
     awayPlayersCount: awayTeamPlayers?.length || 0,
     hasValidData: enhancedPlayersData.hasValidData
   });
+
+  // Create simplified handlers for the tabs
+  const handleResetMatch = () => {
+    resetTimer();
+    // Add any other reset logic here
+  };
+
+  const handleSaveMatch = () => {
+    // Add save match logic here
+    console.log('Saving match...');
+  };
+
+  const handleAssignGoal = (player: any) => {
+    if (!selectedFixtureData) return;
+    
+    const homeTeam = { 
+      id: selectedFixtureData.home_team_id || 0, 
+      name: selectedFixtureData.home_team?.name || '' 
+    };
+    const awayTeam = { 
+      id: selectedFixtureData.away_team_id || 0, 
+      name: selectedFixtureData.away_team?.name || '' 
+    };
+    
+    assignGoal(player, matchTime, selectedFixtureData.id, homeTeam, awayTeam);
+  };
+
+  const handleAddCard = (playerName: string, team: string, cardType: 'yellow' | 'red', time: number) => {
+    // Add card logic here
+    console.log('Adding card:', { playerName, team, cardType, time });
+  };
+
+  const handleExportSummary = () => {
+    // Add export summary logic here
+    console.log('Exporting summary...');
+  };
 
   if (fixturesLoading) {
     return (
@@ -126,16 +165,23 @@ const RefereeToolsContainer = () => {
               homeScore={homeScore}
               awayScore={awayScore}
               selectedFixtureData={selectedFixtureData}
+              isRunning={isRunning}
+              onToggleTimer={toggleTimer}
+              onResetMatch={handleResetMatch}
+              onSaveMatch={handleSaveMatch}
             />
           </TabsContent>
 
           <TabsContent value="timer" className="mt-6">
             <TimerTab
+              selectedFixtureData={selectedFixtureData}
+              homeScore={homeScore}
+              awayScore={awayScore}
               matchTime={matchTime}
               isRunning={isRunning}
               formatTime={formatTime}
               onToggleTimer={toggleTimer}
-              onResetTimer={resetTimer}
+              onResetMatch={handleResetMatch}
             />
           </TabsContent>
 
@@ -152,7 +198,7 @@ const RefereeToolsContainer = () => {
               onPlayerSelect={setSelectedGoalPlayer}
               onGoalTypeChange={setSelectedGoalType}
               onGoalTeamChange={setSelectedGoalTeam}
-              onAssignGoal={assignGoal}
+              onAssignGoal={handleAssignGoal}
               formatTime={formatTime}
               homeScore={homeScore}
               awayScore={awayScore}
@@ -189,9 +235,9 @@ const RefereeToolsContainer = () => {
               matchTime={matchTime}
               onPlayerSelect={setSelectedTimePlayer}
               onTimeTeamChange={setSelectedTimeTeam}
-              onAddPlayer={() => {}} // This will be handled by the TimeTab component
-              onRemovePlayer={() => {}} // This will be handled by the TimeTab component
-              onTogglePlayerTime={() => {}} // This will be handled by the TimeTab component
+              onAddPlayer={addPlayer}
+              onRemovePlayer={removePlayer}
+              onTogglePlayerTime={togglePlayerTime}
               formatTime={formatTime}
               selectedFixtureData={selectedFixtureData}
             />
@@ -206,8 +252,10 @@ const RefereeToolsContainer = () => {
               cards={cards}
               trackedPlayers={trackedPlayers}
               events={events}
+              allPlayers={allPlayers}
               selectedFixtureData={selectedFixtureData}
               formatTime={formatTime}
+              onExportSummary={handleExportSummary}
             />
           </TabsContent>
         </Tabs>

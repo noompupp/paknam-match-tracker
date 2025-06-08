@@ -21,8 +21,10 @@ interface RefereeTabsContentProps {
   goals: any[];
   selectedGoalPlayer: string;
   selectedGoalType: 'goal' | 'assist';
+  selectedGoalTeam: string;
   setSelectedGoalPlayer: (value: string) => void;
   setSelectedGoalType: (value: 'goal' | 'assist') => void;
+  setSelectedGoalTeam: (value: string) => void;
   selectedPlayer: string;
   selectedTeam: string;
   selectedCardType: 'yellow' | 'red';
@@ -32,7 +34,9 @@ interface RefereeTabsContentProps {
   cards: any[];
   trackedPlayers: any[];
   selectedTimePlayer: string;
+  selectedTimeTeam: string;
   setSelectedTimePlayer: (value: string) => void;
+  setSelectedTimeTeam: (value: string) => void;
   events: any[];
   onAddGoal: (team: 'home' | 'away') => void;
   onRemoveGoal: (team: 'home' | 'away') => void;
@@ -60,8 +64,10 @@ const RefereeTabsContent = ({
   goals,
   selectedGoalPlayer,
   selectedGoalType,
+  selectedGoalTeam,
   setSelectedGoalPlayer,
   setSelectedGoalType,
+  setSelectedGoalTeam,
   selectedPlayer,
   selectedTeam,
   selectedCardType,
@@ -71,7 +77,9 @@ const RefereeTabsContent = ({
   cards,
   trackedPlayers,
   selectedTimePlayer,
+  selectedTimeTeam,
   setSelectedTimePlayer,
+  setSelectedTimeTeam,
   events,
   onAddGoal,
   onRemoveGoal,
@@ -120,9 +128,11 @@ const RefereeTabsContent = ({
           goals={goals}
           selectedPlayer={selectedGoalPlayer}
           selectedGoalType={selectedGoalType}
+          selectedGoalTeam={selectedGoalTeam}
           matchTime={matchTime}
           onPlayerSelect={setSelectedGoalPlayer}
           onGoalTypeChange={setSelectedGoalType}
+          onGoalTeamChange={setSelectedGoalTeam}
           onAssignGoal={onAssignGoal}
           formatTime={formatTime}
           homeScore={homeScore}
@@ -143,9 +153,8 @@ const RefereeTabsContent = ({
           matchTime={matchTime}
           selectedFixtureData={selectedFixtureData}
           onPlayerSelect={setSelectedPlayer}
-          onTeamSelect={setSelectedTeam}
+          onTeamChange={setSelectedTeam}
           onCardTypeChange={setSelectedCardType}
-          onAddCard={onAddCard}
           formatTime={formatTime}
         />
       </TabsContent>
@@ -157,9 +166,11 @@ const RefereeTabsContent = ({
           awayTeamPlayers={awayTeamPlayers}
           trackedPlayers={trackedPlayers}
           selectedPlayer={selectedTimePlayer}
+          selectedTimeTeam={selectedTimeTeam}
           matchTime={matchTime}
           isTimerRunning={isRunning}
           onPlayerSelect={setSelectedTimePlayer}
+          onTimeTeamChange={setSelectedTimeTeam}
           onAddPlayer={onAddPlayer}
           onRemovePlayer={onRemovePlayer}
           onTogglePlayerTime={onTogglePlayerTime}
