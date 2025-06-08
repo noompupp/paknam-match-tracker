@@ -30,8 +30,6 @@ const EnhancedMatchEventsTimeline = ({
     switch (eventType) {
       case 'goal':
         return <Goal className="h-4 w-4 text-green-600" />;
-      case 'assist':
-        return <Trophy className="h-4 w-4 text-blue-600" />;
       case 'yellow_card':
         return <UserX className="h-4 w-4 text-yellow-600" />;
       case 'red_card':
@@ -45,8 +43,6 @@ const EnhancedMatchEventsTimeline = ({
     switch (eventType) {
       case 'goal':
         return '⚽';
-      case 'assist':
-        return '🅰️';
       case 'yellow_card':
         return '🟨';
       case 'red_card':
@@ -71,9 +67,6 @@ const EnhancedMatchEventsTimeline = ({
         }
         return `${emoji} ${time} - ${event.playerName} scores for ${displayTeamName}!`;
       
-      case 'assist':
-        return `${emoji} ${time} - ${event.playerName} (${displayTeamName}) with the assist!`;
-      
       case 'yellow_card':
         return `${emoji} ${time} - Yellow card for ${event.playerName} (${displayTeamName})`;
       
@@ -89,8 +82,6 @@ const EnhancedMatchEventsTimeline = ({
     switch (eventType) {
       case 'goal':
         return 'Goal';
-      case 'assist':
-        return 'Assist';
       case 'yellow_card':
         return 'Yellow Card';
       case 'red_card':
@@ -103,7 +94,6 @@ const EnhancedMatchEventsTimeline = ({
   const getTimeBadgeVariant = (eventType: string): 'goal' | 'yellow' | 'red' | 'default' => {
     switch (eventType) {
       case 'goal':
-      case 'assist':
         return 'goal';
       case 'yellow_card':
         return 'yellow';
@@ -114,12 +104,14 @@ const EnhancedMatchEventsTimeline = ({
     }
   };
 
-  // Sort events by time (chronological order)
-  const sortedEvents = [...timelineEvents].sort((a, b) => a.time - b.time);
+  // Filter out standalone assist events and sort by time (chronological order)
+  const filteredAndSortedEvents = timelineEvents
+    .filter(event => event.type !== 'assist')
+    .sort((a, b) => a.time - b.time);
 
   return (
     <>
-      {sortedEvents.length === 0 ? (
+      {filteredAndSortedEvents.length === 0 ? (
         <div className="text-center py-8 timeline-gradient rounded-lg border border-muted/20 premier-card-shadow">
           <p className="text-sm text-muted-foreground">
             No timeline events recorded for this match
@@ -127,7 +119,7 @@ const EnhancedMatchEventsTimeline = ({
         </div>
       ) : (
         <div className="space-y-3">
-          {sortedEvents.map((event, index) => (
+          {filteredAndSortedEvents.map((event, index) => (
             <div 
               key={`${event.id}-${index}`}
               className="relative flex items-start gap-3 p-3 event-item-gradient rounded-lg border-l-4 border-l-primary/30 hover:bg-muted/20 transition-colors premier-card-shadow"
@@ -149,19 +141,13 @@ const EnhancedMatchEventsTimeline = ({
                     />
                   </div>
                 </div>
-                
-                {event.assistPlayerName && event.type === 'goal' && (
-                  <div className="text-xs text-muted-foreground bg-blue-50 px-2 py-1 rounded border border-blue-200 inline-block">
-                    🅰️ Assisted by {event.assistPlayerName}
-                  </div>
-                )}
               </div>
             </div>
           ))}
           
-          {sortedEvents.length > 10 && (
+          {filteredAndSortedEvents.length > 10 && (
             <div className="text-xs text-muted-foreground text-center pt-2 match-gradient-primary rounded p-2 border border-muted/20">
-              Showing all {sortedEvents.length} timeline events
+              Showing all {filteredAndSortedEvents.length} timeline events
             </div>
           )}
         </div>
