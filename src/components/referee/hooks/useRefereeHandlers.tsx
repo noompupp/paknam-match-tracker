@@ -1,4 +1,3 @@
-
 import { ComponentPlayer, PlayerTimeTrackerPlayer } from "./useRefereeState";
 import { useMatchControlHandlers } from "./handlers/useMatchControlHandlers";
 import { useGoalHandlers } from "./handlers/useGoalHandlers";
@@ -41,6 +40,7 @@ interface UseRefereeHandlersProps {
   togglePlayerTime: (playerId: number, matchTime: number) => any;
   checkForSecondYellow: (playerName: string) => boolean;
   removeGoal: (team: 'home' | 'away') => void;
+  forceRefresh?: () => Promise<void>; // Enhanced refresh function
 }
 
 export const useRefereeHandlers = (props: UseRefereeHandlersProps) => {
@@ -91,7 +91,7 @@ export const useRefereeHandlers = (props: UseRefereeHandlersProps) => {
     addEvent: props.addEvent
   });
 
-  // Match data handlers
+  // Enhanced match data handlers with force refresh
   const matchDataHandlers = useMatchDataHandlers({
     selectedFixtureData: props.selectedFixtureData,
     homeScore: props.homeScore,
@@ -106,7 +106,8 @@ export const useRefereeHandlers = (props: UseRefereeHandlersProps) => {
     resetCards: props.resetCards,
     resetTracking: props.resetTracking,
     resetGoals: props.resetGoals,
-    addEvent: props.addEvent
+    addEvent: props.addEvent,
+    forceRefresh: props.forceRefresh // Pass enhanced refresh function
   });
 
   // Export handlers

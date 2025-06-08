@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { getValidatedTeamId } from '@/utils/teamIdMapping';
 
@@ -14,13 +13,15 @@ interface QuickGoalResult {
   success: boolean;
   goalEventId?: number;
   scoreUpdated?: boolean;
+  homeScore?: number;
+  awayScore?: number;
   message?: string;
   error?: string;
 }
 
 export const quickGoalService = {
   async addQuickGoal(data: QuickGoalData): Promise<QuickGoalResult> {
-    console.log('⚡ QuickGoalService: Adding quick goal:', data);
+    console.log('⚡ QuickGoalService: Adding quick goal with enhanced sync:', data);
     
     try {
       // Validate input data
@@ -84,13 +85,15 @@ export const quickGoalService = {
 
       console.log('✅ QuickGoalService: Goal event created:', goalEvent);
 
-      // Update fixture score
-      const scoreUpdateResult = await this.updateFixtureScore(data.fixtureId, data.homeTeam, data.awayTeam);
+      // Enhanced score update with real-time sync
+      const scoreUpdateResult = await this.updateFixtureScoreWithSync(data.fixtureId, data.homeTeam, data.awayTeam);
 
       return {
         success: true,
         goalEventId: goalEvent.id,
         scoreUpdated: scoreUpdateResult.success,
+        homeScore: scoreUpdateResult.homeScore,
+        awayScore: scoreUpdateResult.awayScore,
         message: `Quick goal added for ${scoringTeam.name}${scoreUpdateResult.success ? ' and score updated' : ''}`
       };
 
@@ -104,8 +107,8 @@ export const quickGoalService = {
     }
   },
 
-  async updateFixtureScore(fixtureId: number, homeTeam: any, awayTeam: any): Promise<{ success: boolean; homeScore: number; awayScore: number }> {
-    console.log('📊 QuickGoalService: Updating fixture score');
+  async updateFixtureScoreWithSync(fixtureId: number, homeTeam: any, awayTeam: any): Promise<{ success: boolean; homeScore: number; awayScore: number }> {
+    console.log('📊 QuickGoalService: Updating fixture score with enhanced sync');
     
     try {
       // Count goals for each team using __id__ for consistency
@@ -129,12 +132,15 @@ export const quickGoalService = {
       const homeScore = (homeGoals || []).length;
       const awayScore = (awayGoals || []).length;
 
-      // Update fixture
+      console.log('📊 QuickGoalService: Calculated scores from events:', { homeScore, awayScore });
+
+      // Update fixture with real-time notification
       const { error: updateError } = await supabase
         .from('fixtures')
         .update({
           home_score: homeScore,
-          away_score: awayScore
+          away_score: awayScore,
+          updated_at: new Date().toISOString() // Force update timestamp for real-time sync
         })
         .eq('id', fixtureId);
 
@@ -143,11 +149,11 @@ export const quickGoalService = {
         return { success: false, homeScore: 0, awayScore: 0 };
       }
 
-      console.log('✅ QuickGoalService: Fixture score updated:', { homeScore, awayScore });
+      console.log('✅ QuickGoalService: Fixture score updated with sync notification:', { homeScore, awayScore });
       return { success: true, homeScore, awayScore };
 
     } catch (error) {
-      console.error('❌ QuickGoalService: Error in updateFixtureScore:', error);
+      console.error('❌ QuickGoalService: Error in updateFixtureScoreWithSync:', error);
       return { success: false, homeScore: 0, awayScore: 0 };
     }
   },

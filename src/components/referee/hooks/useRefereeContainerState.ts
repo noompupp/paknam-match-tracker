@@ -1,4 +1,3 @@
-
 import { useRefereeState } from "./useRefereeState";
 import { useRefereeHandlers } from "./useRefereeHandlers";
 
@@ -30,12 +29,13 @@ export const useRefereeContainerState = () => {
     resetTimer,
     formatTime,
     
-    // Score state
+    // Enhanced score state with force refresh
     homeScore,
     awayScore,
     addGoal,
     removeGoal,
     resetScore,
+    forceRefresh, // Enhanced refresh function
     
     // Goal state
     goals,
@@ -84,7 +84,7 @@ export const useRefereeContainerState = () => {
     updatePlayerStats
   } = useRefereeState();
 
-  // Use the comprehensive referee handlers
+  // Enhanced referee handlers with force refresh capability
   const {
     handleSaveMatch,
     handleResetMatch,
@@ -126,7 +126,8 @@ export const useRefereeContainerState = () => {
     removePlayer,
     togglePlayerTime,
     checkForSecondYellow: () => false, // Placeholder
-    removeGoal
+    removeGoal,
+    forceRefresh // Pass enhanced refresh function
   });
 
   // Create wrapper functions that handle matchTime internally for basic operations
@@ -207,6 +208,7 @@ export const useRefereeContainerState = () => {
     resetTimer,
     assignGoal,
     removePlayer,
-    addPlayer
+    addPlayer,
+    forceRefresh // Expose enhanced refresh function
   };
 };

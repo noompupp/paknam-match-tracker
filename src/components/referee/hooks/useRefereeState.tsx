@@ -170,8 +170,8 @@ export const useRefereeState = () => {
   // Custom hooks
   const { matchTime, isRunning, toggleTimer, resetTimer, formatTime } = useMatchTimer();
   
-  // Updated to use real-time score hook
-  const { homeScore, awayScore, addGoal, removeGoal, resetScore, refreshScore } = useRealTimeScore({ 
+  // Enhanced real-time score hook with force refresh capability
+  const { homeScore, awayScore, addGoal, removeGoal, resetScore, refreshScore, forceRefresh } = useRealTimeScore({ 
     fixtureId: selectedFixtureData ? selectedFixtureData.id : undefined 
   });
   
@@ -243,7 +243,7 @@ export const useRefereeState = () => {
     return [];
   };
 
-  console.log('🎯 useRefereeState Summary:', {
+  console.log('🎯 useRefereeState Summary (Enhanced):', {
     selectedFixture,
     hasSelectedFixtureData: !!selectedFixtureData,
     totalMembers: members?.length || 0,
@@ -256,7 +256,8 @@ export const useRefereeState = () => {
     selectedTimeTeam,
     goalFilteredPlayersCount: getGoalFilteredPlayers().length,
     timeFilteredPlayersCount: getTimeFilteredPlayers().length,
-    realTimeScore: { homeScore, awayScore } // Added for debugging
+    realTimeScore: { homeScore, awayScore },
+    hasForceRefresh: !!forceRefresh // Added for debugging
   });
 
   return {
@@ -299,13 +300,14 @@ export const useRefereeState = () => {
     resetTimer,
     formatTime,
     
-    // Real-time score state (updated)
+    // Enhanced real-time score state with force refresh
     homeScore,
     awayScore,
     addGoal,
     removeGoal,
     resetScore,
-    refreshScore, // Added manual refresh function
+    refreshScore,
+    forceRefresh, // Added enhanced refresh function
     
     // Improved card state
     cards,
