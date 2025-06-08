@@ -9,6 +9,7 @@ interface TrackedPlayersListProps {
   formatTime: (seconds: number) => string;
   onTogglePlayerTime: (playerId: number) => void;
   onRemovePlayer: (playerId: number) => void;
+  matchTime?: number;
 }
 
 const TrackedPlayersList = ({
@@ -16,7 +17,8 @@ const TrackedPlayersList = ({
   allPlayers,
   formatTime,
   onTogglePlayerTime,
-  onRemovePlayer
+  onRemovePlayer,
+  matchTime = 0
 }: TrackedPlayersListProps) => {
   if (trackedPlayers.length === 0) {
     return (
@@ -42,6 +44,7 @@ const TrackedPlayersList = ({
               onTogglePlayerTime={onTogglePlayerTime}
               onRemovePlayer={onRemovePlayer}
               trackedPlayers={trackedPlayers}
+              matchTime={matchTime}
             />
           );
         })}

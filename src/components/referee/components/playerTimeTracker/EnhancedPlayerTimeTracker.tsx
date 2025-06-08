@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -7,17 +7,16 @@ import { Badge } from "@/components/ui/badge";
 import { PlayerTime } from "@/types/database";
 import { ProcessedPlayer } from "@/utils/refereeDataProcessor";
 import { Users, Play, AlertTriangle, Lock, UserPlus } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 import SevenASideValidationPanel from "../SevenASideValidationPanel";
 import TrackedPlayersList from "./TrackedPlayersList";
 import TimeTrackerHeader from "./TimeTrackerHeader";
-import SubstitutionModal from "./SubstitutionModal";
 import InitialPlayerSelection from "./InitialPlayerSelection";
+import SubstitutionFlowManager from "./SubstitutionFlowManager";
 import { 
   validatePlayerCount, 
   validateTeamLock, 
-  canRemovePlayer, 
-  canAddPlayer,
-  getSubstitutionRequiredMessage 
+  canRemovePlayer
 } from "./playerValidationUtils";
 
 interface EnhancedPlayerTimeTrackerProps {
@@ -46,29 +45,10 @@ const EnhancedPlayerTimeTracker = ({
   selectedFixtureData
 }: EnhancedPlayerTimeTrackerProps) => {
   const [showInitialSelection, setShowInitialSelection] = useState(false);
-  const [showSubstitutionModal, setShowSubstitutionModal] = useState(false);
-  const [pendingSubstitution, setPendingSubstitution] = useState<{
-    id: number;
-    name: string;
-    team: string;
-  } | null>(null);
+  const { toast } = useToast();
 
   const playerCountValidation = validatePlayerCount(trackedPlayers);
   const teamLockValidation = validateTeamLock(trackedPlayers);
-  const substitutionMessage = getSubstitutionRequiredMessage(playerCountValidation.activeCount);
-
-  // Get available players for substitution (from the same team, not currently tracked)
-  const getAvailablePlayersForSubstitution = () => {
-    if (!pendingSubstitution) return [];
-    
-    const teamPlayers = pendingSubstitution.team === (selectedFixtureData?.home_team?.name || 'Home')
-      ? homeTeamPlayers || []
-      : awayTeamPlayers || [];
-    
-    return teamPlayers.filter(player => 
-      !trackedPlayers.some(tracked => tracked.id === player.id)
-    );
-  };
 
   const handleStartMatch = (selectedPlayers: ProcessedPlayer[], team: 'home' | 'away') => {
     console.log('🚀 Starting match with initial squad:', {
@@ -87,36 +67,17 @@ const EnhancedPlayerTimeTracker = ({
     const removal = canRemovePlayer(playerId, trackedPlayers);
     
     if (!removal.canRemove) {
-      console.warn('Cannot remove player:', removal.reason);
+      // Show toast notification instead of inline warning
+      toast({
+        title: "Cannot Remove Player",
+        description: removal.reason,
+        variant: "destructive"
+      });
       return;
     }
-
-    const player = trackedPlayers.find(p => p.id === playerId);
-    if (player && player.isPlaying) {
-      // Player is actively playing, trigger substitution modal
-      setPendingSubstitution({
-        id: player.id,
-        name: player.name,
-        team: player.team
-      });
-      setShowSubstitutionModal(true);
-    }
     
-    // Remove the player regardless
+    // Remove the player - substitution flow will be handled automatically
     onRemovePlayer(playerId);
-  };
-
-  const handleSubstitution = (incomingPlayer: ProcessedPlayer) => {
-    console.log('🔄 Making substitution:', {
-      outgoing: pendingSubstitution?.name,
-      incoming: incomingPlayer.name
-    });
-    
-    // Add the incoming player
-    onAddPlayer(incomingPlayer);
-    
-    // Clear pending substitution
-    setPendingSubstitution(null);
   };
 
   const handleQuickAdd = () => {
@@ -130,7 +91,6 @@ const EnhancedPlayerTimeTracker = ({
   };
 
   const isMatchStarted = trackedPlayers.length > 0;
-  const hasActiveTracking = trackedPlayers.some(p => p.isPlaying);
 
   console.log('🎯 EnhancedPlayerTimeTracker Debug:', {
     trackedCount: trackedPlayers.length,
@@ -150,21 +110,20 @@ const EnhancedPlayerTimeTracker = ({
         formatTime={formatTime}
       />
 
-      {/* Player Count Status */}
-      <Alert variant={playerCountValidation.severity === 'error' ? 'destructive' : 'default'}>
-        <Users className="h-4 w-4" />
-        <AlertDescription>
-          <div className="flex items-center justify-between">
-            <span>{playerCountValidation.message}</span>
-            <Badge variant={playerCountValidation.isValid ? 'default' : 'destructive'}>
-              {playerCountValidation.activeCount}/7 on field
-            </Badge>
-          </div>
-          {substitutionMessage && (
-            <p className="text-sm mt-1 font-medium">{substitutionMessage}</p>
-          )}
-        </AlertDescription>
-      </Alert>
+      {/* Single Top-Level Player Count Alert (replaces repetitive warnings) */}
+      {!playerCountValidation.isValid && (
+        <Alert variant={playerCountValidation.severity === 'error' ? 'destructive' : 'default'}>
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription>
+            <div className="flex items-center justify-between">
+              <span>{playerCountValidation.message}</span>
+              <Badge variant={playerCountValidation.isValid ? 'default' : 'destructive'}>
+                {playerCountValidation.activeCount}/7 on field
+              </Badge>
+            </div>
+          </AlertDescription>
+        </Alert>
+      )}
 
       {/* Team Lock Status */}
       {teamLockValidation.isLocked && (
@@ -209,13 +168,14 @@ const EnhancedPlayerTimeTracker = ({
             )}
           </div>
 
-          {/* Tracked Players List */}
+          {/* Tracked Players List with enhanced status badges */}
           <TrackedPlayersList
             trackedPlayers={trackedPlayers}
             allPlayers={allPlayers}
             formatTime={formatTime}
             onTogglePlayerTime={onTogglePlayerTime}
             onRemovePlayer={handlePlayerRemove}
+            matchTime={matchTime}
           />
 
           {!isMatchStarted && (
@@ -238,16 +198,16 @@ const EnhancedPlayerTimeTracker = ({
         selectedFixtureData={selectedFixtureData}
       />
 
-      {/* Substitution Modal */}
-      <SubstitutionModal
-        isOpen={showSubstitutionModal}
-        onClose={() => {
-          setShowSubstitutionModal(false);
-          setPendingSubstitution(null);
+      {/* Automatic Substitution Flow Manager */}
+      <SubstitutionFlowManager
+        trackedPlayers={trackedPlayers}
+        homeTeamPlayers={homeTeamPlayers}
+        awayTeamPlayers={awayTeamPlayers}
+        selectedFixtureData={selectedFixtureData}
+        onAddPlayer={onAddPlayer}
+        onSubstitutionComplete={() => {
+          console.log('✅ Substitution completed successfully');
         }}
-        outgoingPlayer={pendingSubstitution}
-        availablePlayers={getAvailablePlayersForSubstitution()}
-        onSubstitute={handleSubstitution}
       />
     </div>
   );

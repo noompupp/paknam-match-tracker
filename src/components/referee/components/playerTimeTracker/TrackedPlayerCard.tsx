@@ -5,7 +5,9 @@ import { UserMinus } from "lucide-react";
 import { PlayerTime } from "@/types/database";
 import { ProcessedPlayer } from "@/utils/refereeDataProcessor";
 import PlayerRoleBadge from "@/components/ui/player-role-badge";
+import PlayerStatusBadge from "@/components/ui/player-status-badge";
 import { canRemovePlayer } from "./playerValidationUtils";
+import { isSecondHalf, getCurrentHalfTime } from "@/utils/timeUtils";
 
 interface TrackedPlayerCardProps {
   player: PlayerTime;
@@ -13,7 +15,8 @@ interface TrackedPlayerCardProps {
   formatTime: (seconds: number) => string;
   onTogglePlayerTime: (playerId: number) => void;
   onRemovePlayer: (playerId: number) => void;
-  trackedPlayers?: PlayerTime[]; // Added for validation
+  trackedPlayers?: PlayerTime[];
+  matchTime?: number;
 }
 
 const TrackedPlayerCard = ({
@@ -22,18 +25,24 @@ const TrackedPlayerCard = ({
   formatTime,
   onTogglePlayerTime,
   onRemovePlayer,
-  trackedPlayers = []
+  trackedPlayers = [],
+  matchTime = 0
 }: TrackedPlayerCardProps) => {
   const role = playerInfo?.role || 'Starter';
   
   // Check if player can be removed
   const removal = canRemovePlayer(player.id, trackedPlayers);
   
-  console.log('👤 Rendering tracked player:', {
+  // Calculate current half time for status badge
+  const currentHalfTime = getCurrentHalfTime(matchTime);
+  
+  console.log('👤 Rendering tracked player with status:', {
     name: player.name,
     role,
     canRemove: removal.canRemove,
-    isPlaying: player.isPlaying
+    isPlaying: player.isPlaying,
+    currentHalfTime,
+    totalTime: player.totalTime
   });
 
   return (
@@ -62,16 +71,21 @@ const TrackedPlayerCard = ({
           </div>
         </div>
 
-        {/* Inline timer display */}
-        <div className="text-right flex-shrink-0">
+        {/* Timer and Status Display */}
+        <div className="text-right flex-shrink-0 flex flex-col items-end gap-1">
           <div className="font-mono text-sm sm:text-base font-bold leading-tight">
             {formatTime(player.totalTime)}
           </div>
-          <div className="text-xs text-muted-foreground leading-none hidden sm:block">
-            {role === 'S-class' && '20min/half'}
-            {role === 'Starter' && '10min min'}
-            {role === 'Captain' && 'No limit'}
-          </div>
+          
+          {/* Dynamic Player Status Badge */}
+          <PlayerStatusBadge
+            role={role}
+            totalTime={player.totalTime}
+            currentHalfTime={currentHalfTime}
+            isPlaying={player.isPlaying}
+            matchTime={matchTime}
+            className="hidden sm:flex"
+          />
         </div>
 
         {/* Compact action buttons */}
@@ -102,18 +116,15 @@ const TrackedPlayerCard = ({
         </div>
       </div>
 
-      {/* Mobile role constraints and removal warnings */}
-      <div className="sm:hidden mt-1">
-        <p className="text-xs text-muted-foreground leading-none">
-          {role === 'S-class' && 'Max 20min per half'}
-          {role === 'Starter' && 'Min 10min total'}
-          {role === 'Captain' && 'No time limits'}
-        </p>
-        {!removal.canRemove && (
-          <p className="text-xs text-red-500 mt-1 leading-none">
-            {removal.reason}
-          </p>
-        )}
+      {/* Mobile-only status display */}
+      <div className="sm:hidden mt-2">
+        <PlayerStatusBadge
+          role={role}
+          totalTime={player.totalTime}
+          currentHalfTime={currentHalfTime}
+          isPlaying={player.isPlaying}
+          matchTime={matchTime}
+        />
       </div>
     </div>
   );
