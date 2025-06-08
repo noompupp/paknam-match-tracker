@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Team } from "@/types/database";
 import TeamLogo from "../teams/TeamLogo";
-import RankChangeIndicator from "./RankChangeIndicator";
+import AnimatedRankIndicator from "./AnimatedRankIndicator";
 
 interface LeagueTableProps {
   teams: Team[] | undefined;
@@ -52,30 +52,36 @@ const LeagueTable = ({ teams, isLoading }: LeagueTableProps) => {
                 ))
               ) : teams && teams.length > 0 ? (
                 teams.map((team) => (
-                  <tr key={team.id} className="border-b hover:bg-muted/30 transition-colors">
+                  <tr key={team.id} className="border-b hover:bg-muted/30 transition-colors group">
                     <td className="p-3">
-                      <div className="flex items-center gap-1">
-                        <RankChangeIndicator 
+                      <div className="flex items-center gap-2">
+                        <AnimatedRankIndicator 
                           currentPosition={team.position} 
                           previousPosition={team.previous_position} 
                         />
-                        <span className="font-bold">{team.position}</span>
+                        <span className="font-bold group-hover:text-primary transition-colors">
+                          {team.position}
+                        </span>
                       </div>
                     </td>
                     <td className="p-3">
                       <div className="flex items-center gap-3">
                         <TeamLogo team={team} size="small" showColor />
-                        <span className="font-semibold">{team.name}</span>
+                        <span className="font-semibold group-hover:text-primary transition-colors">
+                          {team.name}
+                        </span>
                       </div>
                     </td>
-                    <td className="p-3 text-center">{team.played}</td>
-                    <td className="p-3 text-center">{team.won}</td>
-                    <td className="p-3 text-center">{team.drawn}</td>
-                    <td className="p-3 text-center">{team.lost}</td>
+                    <td className="p-3 text-center font-medium">{team.played}</td>
+                    <td className="p-3 text-center font-medium text-green-600 dark:text-green-400">{team.won}</td>
+                    <td className="p-3 text-center font-medium text-yellow-600 dark:text-yellow-400">{team.drawn}</td>
+                    <td className="p-3 text-center font-medium text-red-600 dark:text-red-400">{team.lost}</td>
                     <td className="p-3 text-center font-semibold">
-                      {team.goal_difference > 0 ? `+${team.goal_difference}` : team.goal_difference}
+                      <span className={team.goal_difference > 0 ? "text-green-600 dark:text-green-400" : team.goal_difference < 0 ? "text-red-600 dark:text-red-400" : ""}>
+                        {team.goal_difference > 0 ? `+${team.goal_difference}` : team.goal_difference}
+                      </span>
                     </td>
-                    <td className="p-3 text-center font-bold text-primary">{team.points}</td>
+                    <td className="p-3 text-center font-bold text-lg text-primary">{team.points}</td>
                   </tr>
                 ))
               ) : (

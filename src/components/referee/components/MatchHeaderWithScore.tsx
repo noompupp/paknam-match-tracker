@@ -1,13 +1,15 @@
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Clock, Trophy } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Clock } from "lucide-react"
+import TeamLogo from "../../teams/TeamLogo"
 
 interface MatchHeaderWithScoreProps {
-  selectedFixtureData: any;
-  homeScore: number;
-  awayScore: number;
-  matchTime: number;
-  formatTime: (seconds: number) => string;
+  selectedFixtureData: any
+  homeScore: number
+  awayScore: number
+  matchTime: number
+  formatTime: (seconds: number) => string
 }
 
 const MatchHeaderWithScore = ({
@@ -17,40 +19,46 @@ const MatchHeaderWithScore = ({
   matchTime,
   formatTime
 }: MatchHeaderWithScoreProps) => {
-  const homeTeam = selectedFixtureData.home_team?.name || 'Home Team';
-  const awayTeam = selectedFixtureData.away_team?.name || 'Away Team';
-
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center justify-between">
-          <span className="flex items-center gap-2">
-            <Trophy className="h-5 w-5" />
-            Match Summary
-          </span>
-          <div className="flex items-center gap-2">
-            <Clock className="h-4 w-4" />
-            <span className="text-sm font-mono">{formatTime(matchTime)}</span>
-          </div>
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="text-center">
-          <div className="flex items-center justify-center gap-8">
-            <div className="text-center">
-              <h3 className="font-semibold text-lg">{homeTeam}</h3>
-              <div className="text-3xl font-bold text-primary">{homeScore}</div>
+    <Card className="bg-gradient-to-r from-primary/10 to-secondary/10 border-primary/20">
+      <CardContent className="p-6">
+        <div className="flex items-center justify-between">
+          {/* Home Team */}
+          <div className="flex-1 text-center">
+            <div className="flex items-center justify-center gap-3 mb-2">
+              <TeamLogo team={selectedFixtureData.home_team} size="medium" />
+              <h3 className="text-lg font-bold">{selectedFixtureData.home_team?.name}</h3>
             </div>
-            <div className="text-2xl font-bold text-muted-foreground">-</div>
-            <div className="text-center">
-              <h3 className="font-semibold text-lg">{awayTeam}</h3>
-              <div className="text-3xl font-bold text-primary">{awayScore}</div>
+            <div className="text-5xl font-bold text-primary drop-shadow-lg">
+              {homeScore}
+            </div>
+          </div>
+
+          {/* Match Info */}
+          <div className="mx-8 text-center min-w-[120px]">
+            <div className="flex items-center justify-center gap-2 mb-2">
+              <Clock className="h-4 w-4 text-muted-foreground" />
+              <span className="text-xl font-mono font-bold">{formatTime(matchTime)}</span>
+            </div>
+            <Badge variant="outline" className="text-xs font-medium">
+              {new Date(selectedFixtureData.match_date).toLocaleDateString()}
+            </Badge>
+          </div>
+
+          {/* Away Team */}
+          <div className="flex-1 text-center">
+            <div className="flex items-center justify-center gap-3 mb-2">
+              <h3 className="text-lg font-bold">{selectedFixtureData.away_team?.name}</h3>
+              <TeamLogo team={selectedFixtureData.away_team} size="medium" />
+            </div>
+            <div className="text-5xl font-bold text-primary drop-shadow-lg">
+              {awayScore}
             </div>
           </div>
         </div>
       </CardContent>
     </Card>
-  );
-};
+  )
+}
 
-export default MatchHeaderWithScore;
+export default MatchHeaderWithScore

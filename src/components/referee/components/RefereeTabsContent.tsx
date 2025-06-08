@@ -4,7 +4,7 @@ import ScoreTab from "./tabs/ScoreTab";
 import TimerTab from "./tabs/TimerTab";
 import GoalsTab from "./tabs/GoalsTab";
 import CardsTab from "./tabs/CardsTab";
-import TimeTab from "./tabs/TimeTab";
+import EnhancedTimeTab from "./tabs/EnhancedTimeTab";
 import SummaryTab from "./tabs/SummaryTab";
 import { ComponentPlayer } from "../hooks/useRefereeState";
 
@@ -151,13 +151,14 @@ const RefereeTabsContent = ({
       </TabsContent>
 
       <TabsContent value="time">
-        <TimeTab
+        <EnhancedTimeTab
           allPlayers={allPlayers}
           homeTeamPlayers={homeTeamPlayers}
           awayTeamPlayers={awayTeamPlayers}
           trackedPlayers={trackedPlayers}
           selectedPlayer={selectedTimePlayer}
           matchTime={matchTime}
+          isTimerRunning={isRunning}
           onPlayerSelect={setSelectedTimePlayer}
           onAddPlayer={onAddPlayer}
           onRemovePlayer={onRemovePlayer}

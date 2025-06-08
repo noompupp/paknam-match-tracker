@@ -1,39 +1,57 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 interface UseScrollOpacityOptions {
   threshold?: number;
   maxScroll?: number;
 }
 
-export const useScrollOpacity = ({ 
-  threshold = 20, 
-  maxScroll = 100 
-}: UseScrollOpacityOptions = {}) => {
-  const [scrollY, setScrollY] = useState(0);
+export const useScrollOpacity = ({ threshold = 20, maxScroll = 100 }: UseScrollOpacityOptions = {}) => {
   const [opacity, setOpacity] = useState(0);
 
+  const updateOpacity = useCallback(() => {
+    const scrollY = window.scrollY;
+    
+    // Prevent negative values and ensure smooth calculation
+    const clampedScroll = Math.max(0, scrollY - threshold);
+    const effectiveRange = Math.max(1, maxScroll - threshold); // Prevent division by zero
+    
+    // Calculate opacity with smooth transitions
+    let newOpacity = Math.min(1, clampedScroll / effectiveRange);
+    
+    // Apply easing for smoother transitions
+    newOpacity = newOpacity * newOpacity; // Quadratic easing
+    
+    setOpacity(newOpacity);
+  }, [threshold, maxScroll]);
+
   useEffect(() => {
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-      setScrollY(currentScrollY);
-      
-      if (currentScrollY <= threshold) {
-        setOpacity(0);
-      } else if (currentScrollY >= maxScroll) {
-        setOpacity(1);
-      } else {
-        // Linear interpolation between threshold and maxScroll
-        const progress = (currentScrollY - threshold) / (maxScroll - threshold);
-        setOpacity(Math.min(1, Math.max(0, progress)));
+    // Use passive listener for better performance
+    const options = { passive: true };
+    
+    // Add throttling to prevent excessive updates
+    let ticking = false;
+    const throttledUpdate = () => {
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          updateOpacity();
+          ticking = false;
+        });
+        ticking = true;
       }
     };
 
-    handleScroll(); // Set initial state
-    window.addEventListener('scroll', handleScroll, { passive: true });
+    // Initial calculation
+    updateOpacity();
     
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [threshold, maxScroll]);
+    window.addEventListener('scroll', throttledUpdate, options);
+    window.addEventListener('resize', throttledUpdate, options);
 
-  return { scrollY, opacity };
+    return () => {
+      window.removeEventListener('scroll', throttledUpdate);
+      window.removeEventListener('resize', throttledUpdate);
+    };
+  }, [updateOpacity]);
+
+  return { opacity };
 };
