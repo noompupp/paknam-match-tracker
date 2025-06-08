@@ -20,8 +20,8 @@ const TeamLogoDisplay = ({
 
   const sizeClasses = {
     sm: 'h-10 w-10',
-    md: isMobile ? 'h-14 w-14' : 'h-16 w-16',
-    lg: isMobile ? 'h-18 w-18' : 'h-20 w-20'
+    md: isMobile ? 'h-16 w-16' : 'h-16 w-16',
+    lg: isMobile ? 'h-20 w-20' : 'h-24 w-24'
   };
 
   const textSizeClasses = {
@@ -32,15 +32,15 @@ const TeamLogoDisplay = ({
 
   const fallbackTextSize = {
     sm: 'text-xs',
-    md: isMobile ? 'text-sm' : 'text-sm',
-    lg: isMobile ? 'text-base' : 'text-lg'
+    md: isMobile ? 'text-base' : 'text-base',
+    lg: isMobile ? 'text-xl' : 'text-2xl'
   };
 
   const gapSize = isMobile ? 'gap-3' : 'gap-3';
 
-  // Break long team names into multiple lines on mobile
+  // Enhanced team name formatting for mobile
   const formatTeamName = (name: string) => {
-    if (!isMobile || name.length <= 12) return name;
+    if (!isMobile || name.length <= 14) return name;
     
     const words = name.split(' ');
     if (words.length === 1) return name;
@@ -58,8 +58,8 @@ const TeamLogoDisplay = ({
 
   return (
     <div className={`flex flex-col items-center ${gapSize}`}>
-      {/* Direct image/logo display without Avatar wrapper */}
-      <div className={`${sizeClasses[size]} flex items-center justify-center`}>
+      {/* Enhanced logo display with better mobile sizing */}
+      <div className={`${sizeClasses[size]} flex items-center justify-center premier-card-shadow`}>
         {teamLogo ? (
           <img 
             src={teamLogo} 
@@ -68,7 +68,7 @@ const TeamLogoDisplay = ({
           />
         ) : (
           <div 
-            className={`${sizeClasses[size]} rounded-lg flex items-center justify-center font-bold text-white ${fallbackTextSize[size]}`}
+            className={`${sizeClasses[size]} rounded-lg flex items-center justify-center font-bold text-white ${fallbackTextSize[size]} premier-card-shadow`}
             style={{ 
               backgroundColor: teamColor,
               background: `linear-gradient(135deg, ${teamColor} 0%, ${teamColor}dd 100%)`
@@ -79,7 +79,7 @@ const TeamLogoDisplay = ({
         )}
       </div>
       {showName && (
-        <div className="text-center max-w-[120px]">
+        <div className="text-center max-w-[140px]">
           {isMultiLine ? (
             <div className={`${textSizeClasses[size]} font-semibold leading-tight`}>
               <div className="break-words">{formattedName.firstLine}</div>
