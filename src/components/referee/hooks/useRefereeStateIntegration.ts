@@ -21,13 +21,13 @@ export const useRefereeStateIntegration = () => {
     matchTime: baseState.matchTime
   });
 
-  // Player data with enhanced processing - use matchState.trackedPlayers instead of playerData.playersForTimeTracker
+  // Player data with enhanced processing - pass trackedPlayers directly, conversion happens inside the hook
   const playerData = useRefereePlayerData({
     selectedFixture: baseState.selectedFixture,
     selectedFixtureData: baseState.selectedFixtureData,
     fixtures: baseState.fixtures,
     members: baseState.members,
-    trackedPlayers: matchState.trackedPlayers // Fix: use matchState.trackedPlayers instead of playerData.playersForTimeTracker
+    trackedPlayers: matchState.trackedPlayers // Pass PlayerTime[] directly - conversion happens in the hook
   });
 
   // Team selection management
