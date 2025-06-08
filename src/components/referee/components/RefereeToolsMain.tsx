@@ -185,11 +185,17 @@ const RefereeToolsMain = (props: RefereeToolsMainProps) => {
           awayScore={props.awayScore}
           selectedFixtureData={props.selectedFixtureData}
           isRunning={props.isRunning}
+          goals={props.goals}
+          matchTime={props.matchTime}
+          homeTeamPlayers={props.homeTeamPlayers}
+          awayTeamPlayers={props.awayTeamPlayers}
+          formatTime={props.formatTime}
           onToggleTimer={props.toggleTimer}
           onResetMatch={handleResetMatch}
           onSaveMatch={handleSaveMatch}
           onQuickGoal={handleQuickGoal}
           onOpenGoalWizard={() => setShowGoalWizard(true)}
+          onAssignGoal={handleAssignGoal}
         />
       </TabsContent>
 
