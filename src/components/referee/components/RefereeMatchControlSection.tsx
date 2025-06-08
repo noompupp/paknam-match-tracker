@@ -1,5 +1,7 @@
 
-import { useStableScoreSync } from "@/hooks/useStableScoreSync";
+import { useLocalMatchState } from "@/hooks/useLocalMatchState";
+import { useBatchSaveManager } from "@/hooks/useBatchSaveManager";
+import { AlertCircle, Save, RotateCcw, Clock } from "lucide-react";
 
 interface RefereeMatchControlSectionProps {
   selectedFixtureData: any;
@@ -16,36 +18,82 @@ const RefereeMatchControlSection = ({
   onSaveMatch,
   onResetMatch
 }: RefereeMatchControlSectionProps) => {
-  // Use stable score sync to prevent flickering during timer activity
-  const { homeScore, awayScore } = useStableScoreSync({
+  // Get the local match state
+  const { localState, markAsSaved, resetLocalState } = useLocalMatchState({
+    fixtureId: selectedFixtureData?.id
+  });
+
+  // Get batch save functionality
+  const { batchSave, hasUnsavedChanges, unsavedItemsCount } = useBatchSaveManager({
     fixtureId: selectedFixtureData?.id,
-    onScoreUpdate: (newHome, newAway) => {
-      console.log('📊 RefereeMatchControlSection: Stable score update:', { newHome, newAway });
+    localState,
+    onSaveComplete: markAsSaved,
+    homeTeamData: {
+      id: selectedFixtureData?.home_team?.__id__ || selectedFixtureData?.home_team_id,
+      name: selectedFixtureData?.home_team?.name || 'Home Team'
+    },
+    awayTeamData: {
+      id: selectedFixtureData?.away_team?.__id__ || selectedFixtureData?.away_team_id,
+      name: selectedFixtureData?.away_team?.name || 'Away Team'
     }
   });
 
   if (!selectedFixtureData) return null;
 
+  const handleSave = async () => {
+    await batchSave();
+    onSaveMatch(); // Keep backward compatibility
+  };
+
+  const handleReset = () => {
+    resetLocalState();
+    onResetMatch();
+  };
+
+  const totalUnsavedItems = Object.values(unsavedItemsCount).reduce((total, count) => total + count, 0);
+
   return (
     <div className="bg-card p-4 rounded-lg border">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="font-semibold">Match Control</h3>
-          <p className="text-sm text-muted-foreground">
-            Save attempts: {saveAttempts} | Score: {homeScore}-{awayScore}
+          <h3 className="font-semibold flex items-center gap-2">
+            Match Control
+            {hasUnsavedChanges && (
+              <span className="text-xs bg-orange-100 text-orange-700 px-2 py-1 rounded-full">
+                {totalUnsavedItems} unsaved
+              </span>
+            )}
+          </h3>
+          <p className="text-sm text-muted-foreground flex items-center gap-2">
+            <Clock className="h-3 w-3" />
+            Save attempts: {saveAttempts} | Local Score: {localState.homeScore}-{localState.awayScore}
           </p>
+          {hasUnsavedChanges && (
+            <p className="text-xs text-orange-600 mt-1 flex items-center gap-1">
+              <AlertCircle className="h-3 w-3" />
+              {unsavedItemsCount.goals} goals, {unsavedItemsCount.cards} cards, {unsavedItemsCount.playerTimes} player times pending
+            </p>
+          )}
         </div>
         <div className="flex gap-2">
           <button
-            onClick={onSaveMatch}
-            className="px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90"
+            onClick={handleSave}
+            disabled={!hasUnsavedChanges}
+            className={`px-4 py-2 rounded hover:opacity-90 transition-colors ${
+              hasUnsavedChanges 
+                ? 'bg-primary text-primary-foreground' 
+                : 'bg-muted text-muted-foreground cursor-not-allowed'
+            }`}
           >
+            <Save className="h-4 w-4 mr-2 inline" />
             Save Match Data
+            {hasUnsavedChanges && ` (${totalUnsavedItems})`}
           </button>
           <button
-            onClick={onResetMatch}
+            onClick={handleReset}
             className="px-4 py-2 bg-destructive text-destructive-foreground rounded hover:bg-destructive/90"
           >
+            <RotateCcw className="h-4 w-4 mr-2 inline" />
             Reset Match
           </button>
         </div>

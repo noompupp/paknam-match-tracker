@@ -1,17 +1,17 @@
+
 import { useState } from "react";
 import { ComponentPlayer } from "../../hooks/useRefereeState";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Clock, Timer, Save, RotateCcw } from "lucide-react";
+import { Clock, Timer, Save, RotateCcw, AlertCircle } from "lucide-react";
 import GoalEntryWizard from "../GoalEntryWizard";
 import TeamSelectionModal from "../TeamSelectionModal";
 import QuickGoalSelectionModal from "../QuickGoalSelectionModal";
 import QuickGoalEditWizard from "../QuickGoalEditWizard";
-import { quickGoalService } from "@/services/quickGoalService";
 import { useToast } from "@/hooks/use-toast";
 import SimplifiedQuickGoalSection from "./components/SimplifiedQuickGoalSection";
-import { useUnassignedGoals } from "@/hooks/useUnassignedGoals";
-import { useStableScoreSync } from "@/hooks/useStableScoreSync";
+import { useLocalMatchState } from "@/hooks/useLocalMatchState";
+import { useBatchSaveManager } from "@/hooks/useBatchSaveManager";
 
 interface ScoreTabProps {
   homeScore: number;
@@ -35,7 +35,6 @@ interface ScoreTabProps {
 const ScoreTab = ({
   selectedFixtureData,
   isRunning,
-  goals,
   matchTime,
   homeTeamPlayers,
   awayTeamPlayers,
@@ -52,84 +51,80 @@ const ScoreTab = ({
   const [showQuickGoalEdit, setShowQuickGoalEdit] = useState(false);
   const [selectedQuickGoal, setSelectedQuickGoal] = useState<any>(null);
   const [isProcessingQuickGoal, setIsProcessingQuickGoal] = useState(false);
-  const [refreshTrigger, setRefreshTrigger] = useState(0);
   const { toast } = useToast();
 
   const homeTeamName = selectedFixtureData?.home_team?.name || 'Home Team';
   const awayTeamName = selectedFixtureData?.away_team?.name || 'Away Team';
+  const homeTeamId = selectedFixtureData?.home_team?.__id__ || selectedFixtureData?.home_team_id;
+  const awayTeamId = selectedFixtureData?.away_team?.__id__ || selectedFixtureData?.away_team_id;
 
-  // Use stable score sync instead of props to prevent glitches
-  const { homeScore, awayScore, forceRefresh: forceScoreRefresh } = useStableScoreSync({
+  // Initialize local match state
+  const {
+    localState,
+    unassignedGoalsCount,
+    addLocalGoal,
+    addLocalEvent,
+    resetLocalState,
+    markAsSaved
+  } = useLocalMatchState({
     fixtureId: selectedFixtureData?.id,
-    onScoreUpdate: (newHome, newAway) => {
-      console.log('📊 ScoreTab: Stable score update received:', { newHome, newAway });
-    }
+    initialHomeScore: selectedFixtureData?.home_score || 0,
+    initialAwayScore: selectedFixtureData?.away_score || 0
   });
 
-  // Use the database-driven unassigned goals hook with enhanced refresh
-  const { unassignedGoalsCount, refreshUnassignedGoals } = useUnassignedGoals({
+  // Initialize batch save manager
+  const { batchSave, hasUnsavedChanges, unsavedItemsCount } = useBatchSaveManager({
     fixtureId: selectedFixtureData?.id,
-    refreshTrigger
+    localState,
+    onSaveComplete: markAsSaved,
+    homeTeamData: { id: homeTeamId, name: homeTeamName },
+    awayTeamData: { id: awayTeamId, name: awayTeamName }
   });
 
-  console.log('📊 ScoreTab: Using stable scores:', { homeScore, awayScore, unassignedGoalsCount });
+  console.log('📊 ScoreTab: Using local state:', { 
+    localHomeScore: localState.homeScore, 
+    localAwayScore: localState.awayScore, 
+    unassignedGoalsCount,
+    hasUnsavedChanges,
+    unsavedItemsCount
+  });
 
-  // Enhanced quick goal handler with stable sync
+  // Enhanced quick goal handler with local state
   const handleQuickGoal = async (team: 'home' | 'away') => {
     if (!selectedFixtureData || isProcessingQuickGoal) return;
 
     setIsProcessingQuickGoal(true);
 
     try {
-      console.log('⚡ ScoreTab: Adding quick goal for team:', team);
+      console.log('⚡ ScoreTab: Adding quick goal locally for team:', team);
       
-      const homeTeamId = selectedFixtureData.home_team?.__id__ || selectedFixtureData.home_team_id;
-      const awayTeamId = selectedFixtureData.away_team?.__id__ || selectedFixtureData.away_team_id;
+      const teamId = team === 'home' ? homeTeamId : awayTeamId;
+      const teamName = team === 'home' ? homeTeamName : awayTeamName;
 
-      const result = await quickGoalService.addQuickGoal({
-        fixtureId: selectedFixtureData.id,
+      // Add goal to local state only
+      const localGoal = addLocalGoal({
+        playerName: 'Quick Goal',
         team,
-        matchTime,
-        homeTeam: {
-          id: homeTeamId,
-          name: selectedFixtureData.home_team?.name,
-          __id__: homeTeamId
-        },
-        awayTeam: {
-          id: awayTeamId,
-          name: selectedFixtureData.away_team?.name,
-          __id__: awayTeamId
-        }
+        teamId,
+        teamName,
+        type: 'goal',
+        time: matchTime
       });
 
-      if (result.success) {
-        toast({
-          title: "⚡ Quick Goal Added!",
-          description: result.message,
-        });
-        
-        // Trigger refresh of unassigned goals count and stable score sync
-        setRefreshTrigger(prev => prev + 1);
-        
-        // Use stable score refresh instead of legacy force refresh
-        setTimeout(() => {
-          forceScoreRefresh();
-          refreshUnassignedGoals();
-        }, 300);
-        
-        onSaveMatch();
-      } else {
-        toast({
-          title: "Quick Goal Failed",
-          description: result.error || 'Failed to add quick goal',
-          variant: "destructive"
-        });
-      }
+      addLocalEvent('Quick Goal', `Quick goal added for ${teamName}`, matchTime);
+
+      toast({
+        title: "⚡ Quick Goal Added!",
+        description: `Goal added locally for ${teamName}. Don't forget to save!`,
+      });
+
+      console.log('✅ ScoreTab: Quick goal added to local state:', localGoal);
+      
     } catch (error) {
       console.error('❌ ScoreTab: Error adding quick goal:', error);
       toast({
         title: "Quick Goal Failed",
-        description: "An unexpected error occurred",
+        description: "Failed to add quick goal locally",
         variant: "destructive"
       });
     } finally {
@@ -164,14 +159,6 @@ const ScoreTab = ({
   const handleQuickGoalUpdated = (updatedGoal: any) => {
     console.log('✅ ScoreTab: Quick goal updated:', updatedGoal);
     
-    // Trigger refresh of unassigned goals count and stable score sync
-    setRefreshTrigger(prev => prev + 1);
-    
-    setTimeout(() => {
-      forceScoreRefresh();
-      refreshUnassignedGoals();
-    }, 300);
-    
     setShowQuickGoalEdit(false);
     setSelectedQuickGoal(null);
     
@@ -189,23 +176,62 @@ const ScoreTab = ({
     assistPlayer?: ComponentPlayer;
   }) => {
     console.log('🎯 ScoreTab: Goal assigned via wizard:', goalData);
-    onAssignGoal(goalData.player);
     
+    const teamId = goalData.team === 'home' ? homeTeamId : awayTeamId;
+    const teamName = goalData.team === 'home' ? homeTeamName : awayTeamName;
+
+    // Add goal to local state
+    addLocalGoal({
+      playerId: goalData.player.id,
+      playerName: goalData.player.name,
+      team: goalData.team,
+      teamId,
+      teamName,
+      type: goalData.goalType,
+      time: matchTime,
+      isOwnGoal: goalData.isOwnGoal
+    });
+
+    // Add assist if provided
     if (goalData.assistPlayer && !goalData.isOwnGoal) {
-      setTimeout(() => {
-        onAssignGoal(goalData.assistPlayer!);
-      }, 100);
+      addLocalGoal({
+        playerId: goalData.assistPlayer.id,
+        playerName: goalData.assistPlayer.name,
+        team: goalData.team,
+        teamId,
+        teamName,
+        type: 'assist',
+        time: matchTime
+      });
     }
-    
-    // Trigger refresh of unassigned goals count and stable score sync
-    setRefreshTrigger(prev => prev + 1);
-    
-    setTimeout(() => {
-      forceScoreRefresh();
-      refreshUnassignedGoals();
-    }, 300);
+
+    addLocalEvent('Goal Assignment', `${goalData.goalType} assigned to ${goalData.player.name}`, matchTime);
     
     setShowWizard(false);
+  };
+
+  // Enhanced save handler using batch save
+  const handleSaveMatch = async () => {
+    console.log('💾 ScoreTab: Save match triggered');
+    await batchSave();
+    
+    // Also trigger the original save for backward compatibility
+    onSaveMatch();
+  };
+
+  // Enhanced reset handler
+  const handleResetMatch = () => {
+    const confirmed = window.confirm(
+      '⚠️ RESET MATCH DATA\n\n' +
+      'This will reset all local match data and the database.\n\n' +
+      'This action CANNOT be undone!\n\n' +
+      'Are you sure you want to proceed?'
+    );
+
+    if (confirmed) {
+      resetLocalState();
+      onResetMatch();
+    }
   };
 
   if (showQuickGoalEdit && selectedQuickGoal) {
@@ -246,13 +272,13 @@ const ScoreTab = ({
 
   return (
     <div className="space-y-6">
-      {/* Live Score Display with Stable Sync */}
+      {/* Local State Score Display */}
       <Card>
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
             <div className="text-center flex-1">
               <h3 className="text-lg font-medium text-muted-foreground mb-2">{homeTeamName}</h3>
-              <div className="text-5xl font-bold text-primary">{homeScore}</div>
+              <div className="text-5xl font-bold text-primary">{localState.homeScore}</div>
             </div>
             
             <div className="text-center px-6">
@@ -269,17 +295,22 @@ const ScoreTab = ({
                 }`} />
                 {isRunning ? 'Live' : 'Paused'}
               </div>
+              {hasUnsavedChanges && (
+                <div className="mt-1 text-xs text-orange-600 bg-orange-50 px-2 py-1 rounded">
+                  Local changes pending
+                </div>
+              )}
             </div>
             
             <div className="text-center flex-1">
               <h3 className="text-lg font-medium text-muted-foreground mb-2">{awayTeamName}</h3>
-              <div className="text-5xl font-bold text-primary">{awayScore}</div>
+              <div className="text-5xl font-bold text-primary">{localState.awayScore}</div>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Enhanced Simplified Goal Recording with Modal Flow */}
+      {/* Enhanced Goal Recording with Local State */}
       <SimplifiedQuickGoalSection
         unassignedGoalsCount={unassignedGoalsCount}
         isProcessingQuickGoal={isProcessingQuickGoal}
@@ -287,6 +318,30 @@ const ScoreTab = ({
         onFullGoalEntry={handleFullGoalEntryClick}
         onAddDetailsToGoals={handleAddDetailsToGoalsClick}
       />
+
+      {/* Unsaved Changes Indicator */}
+      {hasUnsavedChanges && (
+        <Card className="border-orange-200 bg-orange-50">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <AlertCircle className="h-5 w-5 text-orange-600" />
+              <div>
+                <div className="font-medium text-orange-800">Unsaved Changes</div>
+                <div className="text-sm text-orange-700">
+                  {unsavedItemsCount.goals} goals, {unsavedItemsCount.cards} cards, {unsavedItemsCount.playerTimes} player times
+                </div>
+              </div>
+              <Button 
+                onClick={handleSaveMatch}
+                className="ml-auto"
+                size="sm"
+              >
+                Save Now
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Team Selection Modal */}
       <TeamSelectionModal
@@ -310,12 +365,17 @@ const ScoreTab = ({
         awayTeamName={awayTeamName}
       />
 
-      {/* Match Controls */}
+      {/* Enhanced Match Controls */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Timer className="h-5 w-5" />
             Match Controls
+            {hasUnsavedChanges && (
+              <span className="ml-auto text-xs bg-orange-100 text-orange-700 px-2 py-1 rounded">
+                Unsaved changes
+              </span>
+            )}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -329,17 +389,18 @@ const ScoreTab = ({
             </Button>
             
             <Button
-              onClick={onSaveMatch}
+              onClick={handleSaveMatch}
               variant="outline"
               className="h-12"
+              disabled={!hasUnsavedChanges}
             >
               <Save className="h-4 w-4 mr-2" />
-              Save Match
+              Save Match {hasUnsavedChanges && `(${Object.values(unsavedItemsCount).reduce((a, b) => a + b, 0)})`}
             </Button>
           </div>
           
           <Button
-            onClick={onResetMatch}
+            onClick={handleResetMatch}
             variant="outline"
             className="w-full h-12"
           >
