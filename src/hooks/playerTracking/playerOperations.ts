@@ -91,11 +91,50 @@ export const usePlayerOperations = () => {
           });
         }
 
+        console.log(`🔄 PlayerOperations: Toggled ${player.name} - now ${newIsPlaying ? 'playing' : 'not playing'}`);
         return updatedPlayer;
       }
       return player;
     }));
     return updatedPlayer;
+  };
+
+  // New method for forced substitutions
+  const performForcedSubstitution = (playerInId: number, playerOutId: number, matchTime: number) => {
+    console.log('🔄 PlayerOperations: Performing forced substitution:', {
+      playerIn: playerInId,
+      playerOut: playerOutId,
+      matchTime
+    });
+
+    setTrackedPlayers(prev => prev.map(player => {
+      if (player.id === playerOutId && player.isPlaying) {
+        // Sub out the current player
+        console.log(`🔄 Subbing out: ${player.name}`);
+        return {
+          ...player,
+          isPlaying: false,
+          startTime: null
+        };
+      } else if (player.id === playerInId && !player.isPlaying) {
+        // Sub in the re-entering player
+        console.log(`🔄 Subbing in: ${player.name}`);
+        
+        // Clear role-based stop when manually toggling
+        setRoleBasedStops(prevStops => {
+          const newMap = new Map(prevStops);
+          newMap.set(playerInId, false);
+          return newMap;
+        });
+
+        return {
+          ...player,
+          isPlaying: true,
+          startTime: matchTime
+        };
+      }
+      return player;
+    }));
   };
 
   const resetTracking = () => {
@@ -117,6 +156,7 @@ export const usePlayerOperations = () => {
     addPlayer,
     removePlayer,
     togglePlayerTime,
+    performForcedSubstitution,
     resetTracking
   };
 };

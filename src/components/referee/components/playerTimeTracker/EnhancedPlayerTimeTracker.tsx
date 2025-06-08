@@ -13,6 +13,7 @@ import TrackedPlayersList from "./TrackedPlayersList";
 import TimeTrackerHeader from "./TimeTrackerHeader";
 import InitialPlayerSelection from "./InitialPlayerSelection";
 import SubstitutionFlowManager from "./SubstitutionFlowManager";
+import { useReEntryManager } from "./ReEntryManager";
 import { 
   validatePlayerCount, 
   validateTeamLock, 
@@ -46,6 +47,30 @@ const EnhancedPlayerTimeTracker = ({
 }: EnhancedPlayerTimeTrackerProps) => {
   const [showInitialSelection, setShowInitialSelection] = useState(false);
   const { toast } = useToast();
+
+  // Handle forced substitutions for re-entering players
+  const handleForcedSubstitution = (playerInId: number, playerOutId: number) => {
+    console.log('🔄 EnhancedPlayerTimeTracker: Performing forced substitution:', {
+      playerIn: playerInId,
+      playerOut: playerOutId
+    });
+    
+    // First sub out the current player
+    onTogglePlayerTime(playerOutId);
+    
+    // Then sub in the re-entering player
+    setTimeout(() => {
+      onTogglePlayerTime(playerInId);
+    }, 100); // Small delay to ensure state updates
+  };
+
+  // Initialize re-entry manager
+  const { handlePlayerToggleRequest, ForcedSubstitutionModalComponent } = useReEntryManager(
+    trackedPlayers,
+    allPlayers,
+    onTogglePlayerTime,
+    handleForcedSubstitution
+  );
 
   const playerCountValidation = validatePlayerCount(trackedPlayers);
   const teamLockValidation = validateTeamLock(trackedPlayers);
@@ -173,7 +198,7 @@ const EnhancedPlayerTimeTracker = ({
             trackedPlayers={trackedPlayers}
             allPlayers={allPlayers}
             formatTime={formatTime}
-            onTogglePlayerTime={onTogglePlayerTime}
+            onTogglePlayerTime={handlePlayerToggleRequest} // Use re-entry manager handler
             onRemovePlayer={handlePlayerRemove}
             matchTime={matchTime}
           />
@@ -209,6 +234,9 @@ const EnhancedPlayerTimeTracker = ({
           console.log('✅ Substitution completed successfully');
         }}
       />
+
+      {/* Re-Entry Manager with Forced Substitution Modal */}
+      <ForcedSubstitutionModalComponent />
     </div>
   );
 };

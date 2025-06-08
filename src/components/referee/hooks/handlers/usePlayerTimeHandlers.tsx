@@ -9,6 +9,7 @@ interface UsePlayerTimeHandlersProps {
   addPlayer: (player: ComponentPlayer, matchTime: number) => any;
   removePlayer: (playerId: number) => void;
   togglePlayerTime: (playerId: number, matchTime: number) => any;
+  performForcedSubstitution?: (playerInId: number, playerOutId: number, matchTime: number) => void;
   addEvent: (type: string, description: string, time: number) => void;
 }
 
@@ -88,6 +89,53 @@ export const usePlayerTimeHandlers = (props: UsePlayerTimeHandlersProps) => {
     }
   };
 
+  const handleForcedSubstitution = async (playerInId: number, playerOutId: number) => {
+    const playerIn = props.playersForTimeTracker.find(p => p.id === playerInId);
+    const playerOut = props.playersForTimeTracker.find(p => p.id === playerOutId);
+    
+    if (!playerIn || !playerOut) {
+      toast({
+        title: "Substitution Failed",
+        description: "Player not found",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      console.log('🔄 usePlayerTimeHandlers: Performing forced substitution:', {
+        playerIn: playerIn.name,
+        playerOut: playerOut.name
+      });
+      
+      if (props.performForcedSubstitution) {
+        await props.performForcedSubstitution(playerInId, playerOutId, props.matchTime);
+      } else {
+        // Fallback to sequential toggles
+        await props.togglePlayerTime(playerOutId, props.matchTime);
+        setTimeout(async () => {
+          await props.togglePlayerTime(playerInId, props.matchTime);
+        }, 100);
+      }
+      
+      props.addEvent('Forced Substitution', `${playerOut.name} → ${playerIn.name} (forced re-entry)`, props.matchTime);
+      
+      toast({
+        title: "🔄 Forced Substitution Complete",
+        description: `${playerOut.name} → ${playerIn.name}`,
+      });
+      
+      console.log('✅ usePlayerTimeHandlers: Forced substitution completed successfully');
+    } catch (error) {
+      console.error('❌ usePlayerTimeHandlers: Failed to perform forced substitution:', error);
+      toast({
+        title: "Forced Substitution Failed",
+        description: error instanceof Error ? error.message : "Failed to complete substitution",
+        variant: "destructive"
+      });
+    }
+  };
+
   const handleSaveAllPlayerTimes = async () => {
     if (!props.selectedFixtureData) {
       toast({
@@ -134,6 +182,7 @@ export const usePlayerTimeHandlers = (props: UsePlayerTimeHandlersProps) => {
     handleAddPlayer,
     handleRemovePlayer,
     handleTogglePlayerTime,
+    handleForcedSubstitution,
     handleSaveAllPlayerTimes
   };
 };
