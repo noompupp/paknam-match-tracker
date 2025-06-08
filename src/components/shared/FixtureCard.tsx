@@ -5,7 +5,9 @@ import { Eye } from "lucide-react";
 import { Fixture } from "@/types/database";
 import { formatDateDisplay } from "@/utils/timeUtils";
 import { getResponsiveTeamName } from "@/utils/teamNameUtils";
+import { useDeviceOrientation } from "@/hooks/useDeviceOrientation";
 import TeamLogo from "../teams/TeamLogo";
+import MobilePortraitFixtureCard from "./MobilePortraitFixtureCard";
 
 interface FixtureCardProps {
   fixture: Fixture;
@@ -15,6 +17,23 @@ interface FixtureCardProps {
 }
 
 const FixtureCard = ({ fixture, onClick, showDate = true, className = "" }: FixtureCardProps) => {
+  const { isMobile, isPortrait } = useDeviceOrientation();
+  
+  // Use mobile portrait layout for screens ≤ 480px in portrait mode
+  const shouldUseMobilePortrait = isMobile && isPortrait && window.innerWidth <= 480;
+
+  if (shouldUseMobilePortrait) {
+    return (
+      <MobilePortraitFixtureCard 
+        fixture={fixture}
+        onClick={onClick}
+        showDate={showDate}
+        className={className}
+      />
+    );
+  }
+
+  // Default layout for larger screens and landscape
   const handleClick = () => {
     if (onClick && fixture.status === 'completed') {
       onClick(fixture);

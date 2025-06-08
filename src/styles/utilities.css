@@ -65,3 +65,49 @@
     transition: all 0.3s ease-in-out;
   }
 }
+
+/* Mobile Portrait Fixture Card Optimizations */
+@media (max-width: 480px) and (orientation: portrait) {
+  .mobile-fixture-card-portrait {
+    padding: 1rem;
+  }
+  
+  .mobile-fixture-card-portrait .team-logo {
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+  
+  .mobile-fixture-card-portrait .team-name {
+    font-size: 0.75rem;
+    line-height: 1.2;
+    max-width: 5rem;
+  }
+  
+  .mobile-fixture-card-portrait .score-text {
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1;
+  }
+  
+  .mobile-fixture-card-portrait .match-status {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+  }
+  
+  .mobile-fixture-card-portrait .vs-text {
+    font-size: 1.125rem;
+    font-weight: 300;
+  }
+}
+
+/* Enhanced mobile score styling */
+@media (max-width: 480px) {
+  .mobile-score-enhanced {
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    letter-spacing: -0.025em;
+  }
+  
+  .mobile-score-glow {
+    filter: drop-shadow(0 0 4px rgba(59, 130, 246, 0.15));
+  }
+}
