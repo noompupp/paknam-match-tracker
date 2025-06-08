@@ -1,6 +1,5 @@
 
 import { useQuickGoalHandler } from "./QuickGoalHandler";
-import { realTimeDataSync } from "@/services/realTimeDataSync";
 
 interface QuickGoalActionsProps {
   selectedFixtureData: any;
@@ -28,12 +27,7 @@ const QuickGoalActions = ({
     matchTime,
     formatTime,
     forceRefresh: async () => {
-      console.log('🔄 QuickGoalActions: Enhanced force refresh with comprehensive sync');
-      
-      // Enhanced refresh with real-time sync
-      if (selectedFixtureData?.id) {
-        await realTimeDataSync.forceGoalResync(selectedFixtureData.id);
-      }
+      console.log('🔄 QuickGoalActions: Enhanced force refresh');
       
       // Trigger original force refresh
       if (forceRefresh) {

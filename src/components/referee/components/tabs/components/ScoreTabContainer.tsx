@@ -2,14 +2,13 @@
 import React, { useEffect } from "react";
 import { ComponentPlayer } from "../../../hooks/useRefereeState";
 import LiveScoreHeader from "./LiveScoreHeader";
-import SimplifiedQuickGoalSection from "./SimplifiedQuickGoalSection";
+import SimplifiedGoalRecording from "./SimplifiedGoalRecording";
 import GoalsSummary from "./GoalsSummary";
 import MatchControlsSection from "./MatchControlsSection";
 import GoalMerger from "./GoalMerger";
 import UnassignedGoalsDetector from "./UnassignedGoalsDetector";
 import QuickGoalActions from "./QuickGoalActions";
 import DetailedGoalActions from "./DetailedGoalActions";
-import GoalWizardManager from "./GoalWizardManager";
 import { useMatchStore } from "@/stores/useMatchStore";
 
 interface ScoreTabContainerProps {
@@ -56,6 +55,11 @@ const ScoreTabContainer = ({
     console.log('🔄 ScoreTabContainer: Auto-refresh triggered by lastUpdated:', lastUpdated);
   }, [lastUpdated]);
 
+  const handleRecordGoal = () => {
+    console.log('🎯 ScoreTabContainer: Record goal clicked - simplified workflow');
+    // This would trigger the goal entry wizard
+  };
+
   return (
     <GoalMerger goals={goals}>
       {({ mergedGoals }) => (
@@ -75,63 +79,31 @@ const ScoreTabContainer = ({
                   onAssignGoal={onAssignGoal}
                 >
                   {({ handleWizardGoalAssigned }) => (
-                    <GoalWizardManager
-                      selectedFixtureData={selectedFixtureData}
-                      homeTeamPlayers={homeTeamPlayers}
-                      awayTeamPlayers={awayTeamPlayers}
-                      matchTime={matchTime}
-                      formatTime={formatTime}
-                      unassignedGoals={unassignedGoals}
-                      forceRefresh={forceRefresh}
-                      onWizardGoalComplete={async (goalData) => {
-                        await handleWizardGoalAssigned(goalData);
-                        
-                        // Additional UI refresh after wizard completion
-                        setTimeout(() => {
-                          triggerUIUpdate();
-                          console.log('🔄 ScoreTabContainer: Post-wizard UI refresh triggered');
-                        }, 150);
-                      }}
-                    >
-                      {({
-                        showDetailedEntry,
-                        handleFullGoalEntry,
-                        handleAddDetailsToGoals
-                      }) => {
-                        if (showDetailedEntry) {
-                          return null; // GoalWizardManager handles the wizard rendering
-                        }
+                    <div className="space-y-6">
+                      <LiveScoreHeader
+                        homeTeamName={homeTeamName}
+                        awayTeamName={awayTeamName}
+                        matchTime={matchTime}
+                        isRunning={isRunning}
+                        formatTime={formatTime}
+                      />
 
-                        return (
-                          <div className="space-y-6">
-                            <LiveScoreHeader
-                              homeTeamName={homeTeamName}
-                              awayTeamName={awayTeamName}
-                              matchTime={matchTime}
-                              isRunning={isRunning}
-                              formatTime={formatTime}
-                            />
+                      <SimplifiedGoalRecording
+                        homeTeamName={homeTeamName}
+                        awayTeamName={awayTeamName}
+                        onRecordGoal={handleRecordGoal}
+                        isDisabled={false}
+                      />
 
-                            <SimplifiedQuickGoalSection
-                              unassignedGoalsCount={unassignedGoalsCount}
-                              isProcessingQuickGoal={isProcessingQuickGoal}
-                              onQuickGoal={() => handleQuickGoal('home')}
-                              onFullGoalEntry={handleFullGoalEntry}
-                              onAddDetailsToGoals={handleAddDetailsToGoals}
-                            />
+                      <GoalsSummary goals={mergedGoals} formatTime={formatTime} />
 
-                            <GoalsSummary goals={mergedGoals} formatTime={formatTime} />
-
-                            <MatchControlsSection
-                              isRunning={isRunning}
-                              onToggleTimer={onToggleTimer}
-                              onSaveMatch={onSaveMatch}
-                              onResetMatch={onResetMatch}
-                            />
-                          </div>
-                        );
-                      }}
-                    </GoalWizardManager>
+                      <MatchControlsSection
+                        isRunning={isRunning}
+                        onToggleTimer={onToggleTimer}
+                        onSaveMatch={onSaveMatch}
+                        onResetMatch={onResetMatch}
+                      />
+                    </div>
                   )}
                 </DetailedGoalActions>
               )}

@@ -1,6 +1,5 @@
 
 import { useDetailedGoalHandler } from "./DetailedGoalHandler";
-import { realTimeDataSync } from "@/services/realTimeDataSync";
 import { useMatchStore } from "@/stores/useMatchStore";
 import { ComponentPlayer } from "../../../hooks/useRefereeState";
 
@@ -29,18 +28,11 @@ const DetailedGoalActions = ({
 }: DetailedGoalActionsProps) => {
   const { triggerUIUpdate } = useMatchStore();
 
-  // Enhanced detailed goal handling with comprehensive real-time sync
+  // Enhanced detailed goal handling
   const { handleWizardGoalAssigned } = useDetailedGoalHandler({
     onAssignGoal,
     forceRefresh: async () => {
-      console.log('🔄 DetailedGoalActions: Enhanced detailed goal refresh with comprehensive sync');
-      
-      // Multi-layer refresh approach
-      if (selectedFixtureData?.id) {
-        // Force comprehensive goal resync
-        const syncResult = await realTimeDataSync.forceGoalResync(selectedFixtureData.id);
-        console.log('🔄 DetailedGoalActions: Comprehensive sync result:', syncResult);
-      }
+      console.log('🔄 DetailedGoalActions: Enhanced detailed goal refresh');
       
       // Original force refresh
       if (forceRefresh) {
