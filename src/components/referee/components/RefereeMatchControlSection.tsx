@@ -1,4 +1,6 @@
 
+import { useStableScoreSync } from "@/hooks/useStableScoreSync";
+
 interface RefereeMatchControlSectionProps {
   selectedFixtureData: any;
   homeScore: number;
@@ -10,12 +12,18 @@ interface RefereeMatchControlSectionProps {
 
 const RefereeMatchControlSection = ({
   selectedFixtureData,
-  homeScore,
-  awayScore,
   saveAttempts,
   onSaveMatch,
   onResetMatch
 }: RefereeMatchControlSectionProps) => {
+  // Use stable score sync to prevent flickering during timer activity
+  const { homeScore, awayScore } = useStableScoreSync({
+    fixtureId: selectedFixtureData?.id,
+    onScoreUpdate: (newHome, newAway) => {
+      console.log('📊 RefereeMatchControlSection: Stable score update:', { newHome, newAway });
+    }
+  });
+
   if (!selectedFixtureData) return null;
 
   return (

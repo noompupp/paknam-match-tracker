@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { ComponentPlayer } from "../../hooks/useRefereeState";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Clock, Timer, Save, RotateCcw } from "lucide-react";
 import GoalEntryWizard from "../GoalEntryWizard";
 import TeamSelectionModal from "../TeamSelectionModal";
+import QuickGoalSelectionModal from "../QuickGoalSelectionModal";
+import QuickGoalEditWizard from "../QuickGoalEditWizard";
 import { quickGoalService } from "@/services/quickGoalService";
 import { useToast } from "@/hooks/use-toast";
 import SimplifiedQuickGoalSection from "./components/SimplifiedQuickGoalSection";
@@ -47,6 +48,9 @@ const ScoreTab = ({
 }: ScoreTabProps) => {
   const [showWizard, setShowWizard] = useState(false);
   const [showTeamSelection, setShowTeamSelection] = useState(false);
+  const [showQuickGoalSelection, setShowQuickGoalSelection] = useState(false);
+  const [showQuickGoalEdit, setShowQuickGoalEdit] = useState(false);
+  const [selectedQuickGoal, setSelectedQuickGoal] = useState<any>(null);
   const [isProcessingQuickGoal, setIsProcessingQuickGoal] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const { toast } = useToast();
@@ -142,12 +146,39 @@ const ScoreTab = ({
   };
 
   const handleAddDetailsToGoalsClick = () => {
-    console.log('📝 ScoreTab: Add details to goals clicked, unassigned count:', unassignedGoalsCount);
-    setShowWizard(true);
+    console.log('📝 ScoreTab: Add details to goals clicked, opening selection modal');
+    setShowQuickGoalSelection(true);
   };
 
   const handleTeamSelected = (team: 'home' | 'away') => {
     handleQuickGoal(team);
+  };
+
+  const handleQuickGoalSelected = (goal: any) => {
+    console.log('🎯 ScoreTab: Quick goal selected for editing:', goal);
+    setSelectedQuickGoal(goal);
+    setShowQuickGoalSelection(false);
+    setShowQuickGoalEdit(true);
+  };
+
+  const handleQuickGoalUpdated = (updatedGoal: any) => {
+    console.log('✅ ScoreTab: Quick goal updated:', updatedGoal);
+    
+    // Trigger refresh of unassigned goals count and stable score sync
+    setRefreshTrigger(prev => prev + 1);
+    
+    setTimeout(() => {
+      forceScoreRefresh();
+      refreshUnassignedGoals();
+    }, 300);
+    
+    setShowQuickGoalEdit(false);
+    setSelectedQuickGoal(null);
+    
+    toast({
+      title: "Goal Updated!",
+      description: `Goal assigned to ${updatedGoal.player?.name}`,
+    });
   };
 
   const handleWizardGoalAssigned = (goalData: {
@@ -176,6 +207,26 @@ const ScoreTab = ({
     
     setShowWizard(false);
   };
+
+  if (showQuickGoalEdit && selectedQuickGoal) {
+    return (
+      <div className="space-y-6">
+        <QuickGoalEditWizard
+          quickGoal={selectedQuickGoal}
+          homeTeamPlayers={homeTeamPlayers}
+          awayTeamPlayers={awayTeamPlayers}
+          formatTime={formatTime}
+          onGoalUpdated={handleQuickGoalUpdated}
+          onCancel={() => {
+            setShowQuickGoalEdit(false);
+            setSelectedQuickGoal(null);
+          }}
+          homeTeamName={homeTeamName}
+          awayTeamName={awayTeamName}
+        />
+      </div>
+    );
+  }
 
   if (showWizard) {
     return (
@@ -228,7 +279,7 @@ const ScoreTab = ({
         </CardContent>
       </Card>
 
-      {/* Enhanced Simplified Goal Recording with Proper Add Details Behavior */}
+      {/* Enhanced Simplified Goal Recording with Modal Flow */}
       <SimplifiedQuickGoalSection
         unassignedGoalsCount={unassignedGoalsCount}
         isProcessingQuickGoal={isProcessingQuickGoal}
@@ -246,6 +297,17 @@ const ScoreTab = ({
         awayTeamName={awayTeamName}
         title="Select Team for Quick Goal"
         description="Which team scored the goal?"
+      />
+
+      {/* Quick Goal Selection Modal */}
+      <QuickGoalSelectionModal
+        isOpen={showQuickGoalSelection}
+        onClose={() => setShowQuickGoalSelection(false)}
+        onGoalSelected={handleQuickGoalSelected}
+        fixtureId={selectedFixtureData?.id}
+        formatTime={formatTime}
+        homeTeamName={homeTeamName}
+        awayTeamName={awayTeamName}
       />
 
       {/* Match Controls */}

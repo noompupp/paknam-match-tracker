@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import GoalEntryWizard from "../GoalEntryWizard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,6 +6,8 @@ import { Trophy, Clock } from "lucide-react";
 import { quickGoalService } from "@/services/quickGoalService";
 import { useToast } from "@/hooks/use-toast";
 import TeamSelectionModal from "../TeamSelectionModal";
+import QuickGoalSelectionModal from "../QuickGoalSelectionModal";
+import QuickGoalEditWizard from "../QuickGoalEditWizard";
 import SimplifiedQuickGoalSection from "./components/SimplifiedQuickGoalSection";
 import { useUnassignedGoals } from "@/hooks/useUnassignedGoals";
 import { useStableScoreSync } from "@/hooks/useStableScoreSync";
@@ -33,6 +34,9 @@ interface GoalsTabProps {
 
 const GoalsTab = (props: GoalsTabProps) => {
   const [showWizard, setShowWizard] = useState(false);
+  const [showQuickGoalSelection, setShowQuickGoalSelection] = useState(false);
+  const [showQuickGoalEdit, setShowQuickGoalEdit] = useState(false);
+  const [selectedQuickGoal, setSelectedQuickGoal] = useState<any>(null);
   const [wizardInitialTeam, setWizardInitialTeam] = useState<'home' | 'away' | undefined>(undefined);
   const [wizardMode, setWizardMode] = useState<'quick' | 'detailed' | 'assign'>('quick');
   const [isProcessingQuickGoal, setIsProcessingQuickGoal] = useState(false);
@@ -132,12 +136,11 @@ const GoalsTab = (props: GoalsTabProps) => {
     setShowWizard(true);
   };
 
-  // Enhanced add details to goals button click with proper logging
+  // Updated to open the quick goal selection modal instead of wizard
   const handleAddDetailsToGoalsClick = () => {
-    console.log('📝 GoalsTab: Add details to goals clicked, unassigned count:', unassignedGoalsCount);
+    console.log('📝 GoalsTab: Add details to goals clicked, opening selection modal');
     if (unassignedGoalsCount > 0) {
-      setWizardMode('assign');
-      setShowWizard(true);
+      setShowQuickGoalSelection(true);
     } else {
       console.log('⚠️ GoalsTab: No unassigned goals to add details to');
       toast({
@@ -157,6 +160,35 @@ const GoalsTab = (props: GoalsTabProps) => {
       setWizardMode('detailed');
       setShowWizard(true);
     }
+  };
+
+  // Handle quick goal selection from modal
+  const handleQuickGoalSelected = (goal: any) => {
+    console.log('🎯 GoalsTab: Quick goal selected for editing:', goal);
+    setSelectedQuickGoal(goal);
+    setShowQuickGoalSelection(false);
+    setShowQuickGoalEdit(true);
+  };
+
+  // Handle quick goal update completion
+  const handleQuickGoalUpdated = (updatedGoal: any) => {
+    console.log('✅ GoalsTab: Quick goal updated:', updatedGoal);
+    
+    // Trigger refresh of unassigned goals count and stable score sync
+    setRefreshTrigger(prev => prev + 1);
+    
+    setTimeout(() => {
+      forceScoreRefresh();
+      refreshUnassignedGoals();
+    }, 300);
+    
+    setShowQuickGoalEdit(false);
+    setSelectedQuickGoal(null);
+    
+    toast({
+      title: "Goal Updated!",
+      description: `Goal assigned to ${updatedGoal.player?.name}`,
+    });
   };
 
   const handleWizardGoalAssigned = (goalData: {
@@ -186,6 +218,27 @@ const GoalsTab = (props: GoalsTabProps) => {
     setShowWizard(false);
     setWizardInitialTeam(undefined);
   };
+
+  // Show quick goal edit wizard
+  if (showQuickGoalEdit && selectedQuickGoal) {
+    return (
+      <div className="space-y-6">
+        <QuickGoalEditWizard
+          quickGoal={selectedQuickGoal}
+          homeTeamPlayers={props.homeTeamPlayers}
+          awayTeamPlayers={props.awayTeamPlayers}
+          formatTime={props.formatTime}
+          onGoalUpdated={handleQuickGoalUpdated}
+          onCancel={() => {
+            setShowQuickGoalEdit(false);
+            setSelectedQuickGoal(null);
+          }}
+          homeTeamName={homeTeamName}
+          awayTeamName={awayTeamName}
+        />
+      </div>
+    );
+  }
 
   if (showWizard) {
     return (
@@ -234,7 +287,7 @@ const GoalsTab = (props: GoalsTabProps) => {
         </CardContent>
       </Card>
 
-      {/* Enhanced Simplified Goal Recording Section with Proper Add Details Behavior */}
+      {/* Enhanced Simplified Goal Recording Section with Modal Flow */}
       <SimplifiedQuickGoalSection
         unassignedGoalsCount={unassignedGoalsCount}
         isProcessingQuickGoal={isProcessingQuickGoal}
@@ -252,6 +305,17 @@ const GoalsTab = (props: GoalsTabProps) => {
         awayTeamName={awayTeamName}
         title="Select Team for Quick Goal"
         description="Which team scored the goal?"
+      />
+
+      {/* Quick Goal Selection Modal */}
+      <QuickGoalSelectionModal
+        isOpen={showQuickGoalSelection}
+        onClose={() => setShowQuickGoalSelection(false)}
+        onGoalSelected={handleQuickGoalSelected}
+        fixtureId={props.selectedFixtureData?.id}
+        formatTime={props.formatTime}
+        homeTeamName={homeTeamName}
+        awayTeamName={awayTeamName}
       />
 
       {/* Goals Summary */}

@@ -22,6 +22,7 @@ const SimplifiedQuickGoalSection = ({
 
   const handleAddDetailsClick = () => {
     console.log('📝 SimplifiedQuickGoalSection: Add details button clicked, count:', unassignedGoalsCount);
+    // This will now open the QuickGoalSelectionModal instead of the regular wizard
     onAddDetailsToGoals();
   };
 
@@ -75,7 +76,7 @@ const SimplifiedQuickGoalSection = ({
           </Button>
         </div>
 
-        {/* Enhanced Add Details to Earlier Goals - Always show if there are unassigned goals */}
+        {/* Enhanced Add Details to Earlier Goals - Now opens selection modal */}
         {unassignedGoalsCount > 0 && (
           <div className="space-y-2 border-t pt-4">
             <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
