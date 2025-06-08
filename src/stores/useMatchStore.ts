@@ -1,4 +1,3 @@
-
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 
@@ -81,10 +80,11 @@ interface MatchState {
   markAsSaved: () => void;
   resetState: () => void;
   
-  // Computed
+  // Enhanced Computed
   getUnsavedGoalsCount: () => number;
   getUnsavedCardsCount: () => number;
   getUnassignedGoalsCount: () => number;
+  getUnassignedGoals: () => MatchGoal[];
   getUnsavedItemsCount: () => { goals: number; cards: number; playerTimes: number };
 }
 
@@ -305,7 +305,7 @@ export const useMatchStore = create<MatchState>()(
       console.log('🏪 MatchStore: State reset');
     },
 
-    // Computed getters
+    // Enhanced computed getters
     getUnsavedGoalsCount: () => {
       return get().goals.filter(g => !g.synced).length;
     },
@@ -316,11 +316,26 @@ export const useMatchStore = create<MatchState>()(
 
     getUnassignedGoalsCount: () => {
       // Enhanced detection: check for "Quick Goal" OR goals without proper player details
-      return get().goals.filter(g => 
+      const unassignedCount = get().goals.filter(g => 
         g.playerName === 'Quick Goal' || 
         g.playerName === 'Unknown Player' ||
         (!g.playerId && g.type === 'goal')
       ).length;
+      
+      console.log('🏪 MatchStore: Unassigned goals count:', unassignedCount);
+      return unassignedCount;
+    },
+
+    getUnassignedGoals: () => {
+      // New method to get the actual unassigned goals for detailed inspection
+      const unassignedGoals = get().goals.filter(g => 
+        g.playerName === 'Quick Goal' || 
+        g.playerName === 'Unknown Player' ||
+        (!g.playerId && g.type === 'goal')
+      );
+      
+      console.log('🏪 MatchStore: Unassigned goals:', unassignedGoals);
+      return unassignedGoals;
     },
 
     getUnsavedItemsCount: () => {

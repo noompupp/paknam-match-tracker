@@ -8,6 +8,7 @@ import GoalsSummary from "./GoalsSummary";
 import MatchControlsSection from "./MatchControlsSection";
 import { useQuickGoalHandler } from "./QuickGoalHandler";
 import { useDetailedGoalHandler } from "./DetailedGoalHandler";
+import { useMatchStore } from "@/stores/useMatchStore";
 
 interface QuickGoal {
   id: number | string;
@@ -62,6 +63,24 @@ const ScoreTabContainer = ({
   const homeTeamName = selectedFixtureData?.home_team?.name || 'Home Team';
   const awayTeamName = selectedFixtureData?.away_team?.name || 'Away Team';
 
+  // Get goals from global store for real-time updates
+  const { goals: storeGoals, getUnassignedGoalsCount } = useMatchStore();
+
+  // Enhanced goal merging: prioritize store goals, then fall back to props
+  const mergedGoals = React.useMemo(() => {
+    console.log('🔄 ScoreTabContainer: Merging goals - Store:', storeGoals.length, 'Props:', goals.length);
+    
+    // If we have store goals, prioritize them as they're more up-to-date
+    if (storeGoals.length > 0) {
+      console.log('✅ ScoreTabContainer: Using store goals for real-time updates');
+      return storeGoals;
+    }
+    
+    // Fall back to props goals if store is empty (initial load)
+    console.log('📥 ScoreTabContainer: Using props goals as fallback');
+    return goals;
+  }, [storeGoals, goals]);
+
   // Quick goal handling
   const { isProcessingQuickGoal, handleQuickGoal } = useQuickGoalHandler({
     selectedFixtureData,
@@ -71,10 +90,16 @@ const ScoreTabContainer = ({
     onSaveMatch
   });
 
-  // Detailed goal handling
+  // Detailed goal handling with enhanced refresh
   const { handleWizardGoalAssigned } = useDetailedGoalHandler({
     onAssignGoal,
-    forceRefresh
+    forceRefresh: async () => {
+      console.log('🔄 ScoreTabContainer: Enhanced refresh triggered');
+      if (forceRefresh) {
+        await forceRefresh();
+      }
+      // Additional state refresh can be added here if needed
+    }
   });
 
   const handleFullGoalEntry = () => {
@@ -83,12 +108,12 @@ const ScoreTabContainer = ({
     setShowDetailedEntry(true);
   };
 
-  // Enhanced handler for adding details to unassigned goals
+  // Enhanced handler for adding details to unassigned goals with real-time detection
   const handleAddDetailsToGoals = () => {
     console.log('📝 ScoreTabContainer: Add details to goals requested');
     
-    // Find the first unassigned goal (including both database and local store goals)
-    const unassignedGoal = goals.find(goal => 
+    // Use real-time merged goals for detection
+    const unassignedGoal = mergedGoals.find(goal => 
       goal.playerName === 'Quick Goal' || 
       goal.playerName === 'Unknown Player' ||
       (!goal.playerId && goal.type === 'goal')
@@ -123,12 +148,17 @@ const ScoreTabContainer = ({
     setEditingGoal(null);
   };
 
-  // Get unassigned goals for the indicator (enhanced detection)
-  const unassignedGoals = goals.filter(goal => 
-    goal.playerName === 'Quick Goal' || 
-    goal.playerName === 'Unknown Player' ||
-    (!goal.playerId && goal.type === 'goal')
-  );
+  // Enhanced unassigned goals detection using merged goals
+  const unassignedGoals = React.useMemo(() => {
+    const unassigned = mergedGoals.filter(goal => 
+      goal.playerName === 'Quick Goal' || 
+      goal.playerName === 'Unknown Player' ||
+      (!goal.playerId && goal.type === 'goal')
+    );
+    
+    console.log('📊 ScoreTabContainer: Unassigned goals detected:', unassigned.length);
+    return unassigned;
+  }, [mergedGoals]);
 
   if (showDetailedEntry) {
     return (
@@ -170,7 +200,7 @@ const ScoreTabContainer = ({
         onAddDetailsToGoals={handleAddDetailsToGoals}
       />
 
-      <GoalsSummary goals={goals} formatTime={formatTime} />
+      <GoalsSummary goals={mergedGoals} formatTime={formatTime} />
 
       <MatchControlsSection
         isRunning={isRunning}
