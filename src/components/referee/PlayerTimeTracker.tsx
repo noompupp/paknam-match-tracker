@@ -102,7 +102,9 @@ const PlayerTimeTracker = ({
                             number: player.number || '?',
                             position: player.position
                           }}
-                        />
+                        >
+                          {player.name}
+                        </EnhancedRefereeSelectItem>
                       ))
                     )}
                   </EnhancedRefereeSelectContent>
