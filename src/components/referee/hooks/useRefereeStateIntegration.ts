@@ -21,13 +21,13 @@ export const useRefereeStateIntegration = () => {
     matchTime: baseState.matchTime
   });
 
-  // Player data with enhanced processing
+  // Player data with enhanced processing - use matchState.trackedPlayers instead of playerData.playersForTimeTracker
   const playerData = useRefereePlayerData({
     selectedFixture: baseState.selectedFixture,
     selectedFixtureData: baseState.selectedFixtureData,
     fixtures: baseState.fixtures,
     members: baseState.members,
-    trackedPlayers: playerData.playersForTimeTracker // Use the converted format
+    trackedPlayers: matchState.trackedPlayers // Fix: use matchState.trackedPlayers instead of playerData.playersForTimeTracker
   });
 
   // Team selection management
