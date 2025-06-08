@@ -17,36 +17,36 @@ const ResponsiveRefereeTabsNavigation = () => {
 
   if (isMobile) {
     return (
-      <div className="w-full">
-        {/* Two-row layout for mobile */}
-        <TabsList className="grid w-full grid-cols-3 mb-2">
+      <div className="w-full space-y-2 referee-tabs-mobile">
+        {/* First row - 3 tabs */}
+        <TabsList className="grid w-full grid-cols-3 h-auto bg-muted/50 p-1">
           {tabs.slice(0, 3).map((tab) => {
             const IconComponent = tab.icon;
             return (
               <TabsTrigger 
                 key={tab.value} 
                 value={tab.value}
-                className="flex flex-col gap-1 h-12 text-xs"
+                className="flex flex-col items-center justify-center gap-1 h-12 min-h-[44px] px-2 py-1.5 text-xs font-medium rounded-sm data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all"
               >
-                <IconComponent className="h-4 w-4" />
-                <span className="hidden sm:inline">{tab.shortLabel}</span>
-                <span className="sm:hidden">{tab.shortLabel.slice(0, 3)}</span>
+                <IconComponent className="h-4 w-4 flex-shrink-0" />
+                <span className="leading-none truncate max-w-full">{tab.shortLabel}</span>
               </TabsTrigger>
             );
           })}
         </TabsList>
-        <TabsList className="grid w-full grid-cols-3">
+        
+        {/* Second row - 3 tabs */}
+        <TabsList className="grid w-full grid-cols-3 h-auto bg-muted/50 p-1">
           {tabs.slice(3).map((tab) => {
             const IconComponent = tab.icon;
             return (
               <TabsTrigger 
                 key={tab.value} 
                 value={tab.value}
-                className="flex flex-col gap-1 h-12 text-xs"
+                className="flex flex-col items-center justify-center gap-1 h-12 min-h-[44px] px-2 py-1.5 text-xs font-medium rounded-sm data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all"
               >
-                <IconComponent className="h-4 w-4" />
-                <span className="hidden sm:inline">{tab.shortLabel}</span>
-                <span className="sm:hidden">{tab.shortLabel.slice(0, 3)}</span>
+                <IconComponent className="h-4 w-4 flex-shrink-0" />
+                <span className="leading-none truncate max-w-full">{tab.shortLabel}</span>
               </TabsTrigger>
             );
           })}
@@ -55,11 +55,15 @@ const ResponsiveRefereeTabsNavigation = () => {
     );
   }
 
-  // Desktop layout
+  // Desktop layout - single row with full labels
   return (
-    <TabsList className="grid w-full grid-cols-6">
+    <TabsList className="grid w-full grid-cols-6 h-10 bg-muted p-1">
       {tabs.map((tab) => (
-        <TabsTrigger key={tab.value} value={tab.value}>
+        <TabsTrigger 
+          key={tab.value} 
+          value={tab.value}
+          className="text-sm font-medium px-3 py-1.5 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all"
+        >
           {tab.label}
         </TabsTrigger>
       ))}

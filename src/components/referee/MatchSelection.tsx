@@ -36,7 +36,7 @@ const MatchSelection = ({ fixtures, selectedFixture, onFixtureChange }: MatchSel
   };
 
   return (
-    <Card className="card-shadow-lg">
+    <Card className="card-shadow-lg mobile-referee-portrait">
       <CardHeader>
         <CardTitle>Select Match</CardTitle>
       </CardHeader>
@@ -44,23 +44,23 @@ const MatchSelection = ({ fixtures, selectedFixture, onFixtureChange }: MatchSel
         <div className="space-y-3">
           <Label htmlFor="fixtureSelect">Choose a fixture to referee</Label>
           <Select value={selectedFixture} onValueChange={onFixtureChange}>
-            <SelectTrigger className="bg-background border-input">
+            <SelectTrigger className="bg-background border-input referee-select-dropdown select-trigger">
               <SelectValue placeholder="Select a match" />
             </SelectTrigger>
-            <SelectContent className="bg-popover border border-border shadow-lg max-h-60 z-50">
+            <SelectContent className="bg-popover border border-border shadow-lg max-h-60 z-[100] mobile-select-content">
               {sortedFixtures.map((fixture) => (
                 <SelectItem 
                   key={fixture.id} 
                   value={fixture.id.toString()}
-                  className="hover:bg-accent focus:bg-accent cursor-pointer"
+                  className="hover:bg-accent focus:bg-accent cursor-pointer mobile-select-item"
                 >
-                  <div className="flex items-center gap-2 py-1 w-full min-w-0">
+                  <div className="flex items-center gap-2 py-1 w-full min-w-0 team-info">
                     <TeamLogo team={fixture.home_team} size="small" className="flex-shrink-0" />
-                    <span className="font-medium truncate max-w-[4rem] sm:max-w-none">
+                    <span className="font-medium truncate max-w-[4rem] sm:max-w-none team-name">
                       {truncateTeamName(fixture.home_team?.name || 'TBD', 8)}
                     </span>
                     <span className="text-muted-foreground flex-shrink-0">vs</span>
-                    <span className="font-medium truncate max-w-[4rem] sm:max-w-none">
+                    <span className="font-medium truncate max-w-[4rem] sm:max-w-none team-name">
                       {truncateTeamName(fixture.away_team?.name || 'TBD', 8)}
                     </span>
                     <TeamLogo team={fixture.away_team} size="small" className="flex-shrink-0" />
