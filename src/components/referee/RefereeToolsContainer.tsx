@@ -110,12 +110,12 @@ const RefereeToolsContainer = () => {
   };
 
   // Fixed function signatures to match the expected calls from useGoalHandlers
-  const handleAddGoal = (team: 'home' | 'away') => {
+  const handleAddGoal = (team: 'home' | 'away', additionalParam?: any) => {
     // Add goal logic here
     console.log('Adding goal for team:', team);
   };
 
-  const handleRemoveGoal = (team: 'home' | 'away') => {
+  const handleRemoveGoal = (team: 'home' | 'away', additionalParam?: any) => {
     // Remove goal logic here
     console.log('Removing goal for team:', team);
   };
