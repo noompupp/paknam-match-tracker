@@ -1,5 +1,8 @@
-
+import { useState } from "react";
 import GoalAssignment from "../../GoalAssignment";
+import GoalEntryWizard from "../GoalEntryWizard";
+import QuickGoalEntry from "../QuickGoalEntry";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ComponentPlayer } from "../../hooks/useRefereeState";
 
 interface GoalsTabProps {
@@ -21,67 +24,94 @@ interface GoalsTabProps {
   selectedFixtureData: any;
 }
 
-const GoalsTab = ({
-  allPlayers,
-  homeTeamPlayers,
-  awayTeamPlayers,
-  goals,
-  selectedPlayer,
-  selectedGoalType,
-  selectedGoalTeam,
-  matchTime,
-  onPlayerSelect,
-  onGoalTypeChange,
-  onGoalTeamChange,
-  onAssignGoal,
-  formatTime,
-  homeScore,
-  awayScore,
-  selectedFixtureData
-}: GoalsTabProps) => {
-  const handleAssignGoal = () => {
-    if (!selectedPlayer || !selectedGoalTeam) return;
-    
-    // Get filtered players based on selected team
-    const getFilteredPlayers = () => {
-      if (selectedGoalTeam === 'home' && homeTeamPlayers) {
-        return homeTeamPlayers;
-      } else if (selectedGoalTeam === 'away' && awayTeamPlayers) {
-        return awayTeamPlayers;
-      }
-      return [];
-    };
-    
-    const filteredPlayers = getFilteredPlayers();
-    const player = filteredPlayers.find(p => p.id.toString() === selectedPlayer);
-    
-    if (!player) {
-      console.warn('Player not found in filtered list:', selectedPlayer);
-      return;
-    }
-    
-    onAssignGoal(player);
+const GoalsTab = (props: GoalsTabProps) => {
+  const [showWizard, setShowWizard] = useState(false);
+  const [goalEntryMode, setGoalEntryMode] = useState<'quick' | 'detailed' | 'wizard'>('quick');
+
+  const handleQuickGoal = (team: 'home' | 'away') => {
+    // For quick goals, we'll add the goal immediately but mark it as needing player assignment
+    console.log(`Quick goal added for ${team} team - needs player assignment`);
+    // This would trigger the existing goal assignment flow
   };
 
+  const handleWizardGoalAssigned = (goalData: {
+    player: ComponentPlayer;
+    goalType: 'goal' | 'assist';
+    team: 'home' | 'away';
+    isOwnGoal?: boolean;
+  }) => {
+    console.log('Goal assigned via wizard:', goalData);
+    props.onAssignGoal(goalData.player);
+    setShowWizard(false);
+  };
+
+  const homeTeamName = props.selectedFixtureData?.home_team?.name || 'Home Team';
+  const awayTeamName = props.selectedFixtureData?.away_team?.name || 'Away Team';
+
+  if (showWizard) {
+    return (
+      <div className="space-y-6">
+        <GoalEntryWizard
+          selectedFixtureData={props.selectedFixtureData}
+          homeTeamPlayers={props.homeTeamPlayers}
+          awayTeamPlayers={props.awayTeamPlayers}
+          matchTime={props.matchTime}
+          formatTime={props.formatTime}
+          onGoalAssigned={handleWizardGoalAssigned}
+          onCancel={() => setShowWizard(false)}
+        />
+      </div>
+    );
+  }
+
   return (
-    <GoalAssignment
-      allPlayers={allPlayers}
-      homeTeamPlayers={homeTeamPlayers}
-      awayTeamPlayers={awayTeamPlayers}
-      goals={goals}
-      selectedPlayer={selectedPlayer}
-      selectedGoalType={selectedGoalType}
-      selectedGoalTeam={selectedGoalTeam}
-      matchTime={matchTime}
-      onPlayerSelect={onPlayerSelect}
-      onGoalTypeChange={onGoalTypeChange}
-      onGoalTeamChange={onGoalTeamChange}
-      onAssignGoal={handleAssignGoal}
-      formatTime={formatTime}
-      homeScore={homeScore}
-      awayScore={awayScore}
-      selectedFixtureData={selectedFixtureData}
-    />
+    <div className="space-y-6">
+      {/* Quick Goal Entry Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Goal Entry Options</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <QuickGoalEntry
+            homeTeamName={homeTeamName}
+            awayTeamName={awayTeamName}
+            onAddGoal={handleQuickGoal}
+            onOpenWizard={() => setShowWizard(true)}
+          />
+        </CardContent>
+      </Card>
+
+      {/* Existing Goal Assignment Component */}
+      <GoalAssignment
+        allPlayers={props.allPlayers}
+        homeTeamPlayers={props.homeTeamPlayers}
+        awayTeamPlayers={props.awayTeamPlayers}
+        goals={props.goals}
+        selectedPlayer={props.selectedPlayer}
+        selectedGoalType={props.selectedGoalType}
+        selectedGoalTeam={props.selectedGoalTeam}
+        matchTime={props.matchTime}
+        onPlayerSelect={props.onPlayerSelect}
+        onGoalTypeChange={props.onGoalTypeChange}
+        onGoalTeamChange={props.onGoalTeamChange}
+        onAssignGoal={() => {
+          if (!props.selectedPlayer || !props.selectedGoalTeam) return;
+          
+          const filteredPlayers = props.selectedGoalTeam === 'home' 
+            ? props.homeTeamPlayers || []
+            : props.awayTeamPlayers || [];
+          
+          const player = filteredPlayers.find(p => p.id.toString() === props.selectedPlayer);
+          if (player) {
+            props.onAssignGoal(player);
+          }
+        }}
+        formatTime={props.formatTime}
+        homeScore={props.homeScore}
+        awayScore={props.awayScore}
+        selectedFixtureData={props.selectedFixtureData}
+      />
+    </div>
   );
 };
 

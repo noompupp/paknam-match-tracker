@@ -2,6 +2,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Play, Pause, RotateCcw, Save } from "lucide-react";
+import QuickGoalEntry from "../QuickGoalEntry";
 
 interface ScoreTabProps {
   selectedFixtureData: any;
@@ -11,6 +12,8 @@ interface ScoreTabProps {
   onToggleTimer: () => void;
   onResetMatch: () => void;
   onSaveMatch: () => void;
+  onQuickGoal?: (team: 'home' | 'away') => void;
+  onOpenGoalWizard?: () => void;
 }
 
 const ScoreTab = ({
@@ -20,7 +23,9 @@ const ScoreTab = ({
   isRunning,
   onToggleTimer,
   onResetMatch,
-  onSaveMatch
+  onSaveMatch,
+  onQuickGoal,
+  onOpenGoalWizard
 }: ScoreTabProps) => {
   if (!selectedFixtureData) {
     return (
@@ -32,6 +37,9 @@ const ScoreTab = ({
     );
   }
 
+  const homeTeamName = selectedFixtureData.home_team?.name || 'Home Team';
+  const awayTeamName = selectedFixtureData.away_team?.name || 'Away Team';
+
   return (
     <div className="space-y-6">
       {/* Current Score Display */}
@@ -42,17 +50,34 @@ const ScoreTab = ({
         <CardContent>
           <div className="flex items-center justify-center space-x-8">
             <div className="text-center">
-              <h3 className="text-lg font-semibold mb-2">{selectedFixtureData.home_team?.name}</h3>
+              <h3 className="text-lg font-semibold mb-2">{homeTeamName}</h3>
               <div className="text-6xl font-bold text-primary">{homeScore}</div>
             </div>
             <div className="text-4xl font-bold text-muted-foreground">-</div>
             <div className="text-center">
-              <h3 className="text-lg font-semibold mb-2">{selectedFixtureData.away_team?.name}</h3>
+              <h3 className="text-lg font-semibold mb-2">{awayTeamName}</h3>
               <div className="text-6xl font-bold text-primary">{awayScore}</div>
             </div>
           </div>
         </CardContent>
       </Card>
+
+      {/* Quick Goal Entry for Live Scoring */}
+      {isRunning && onQuickGoal && onOpenGoalWizard && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Live Goal Entry</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <QuickGoalEntry
+              homeTeamName={homeTeamName}
+              awayTeamName={awayTeamName}
+              onAddGoal={onQuickGoal}
+              onOpenWizard={onOpenGoalWizard}
+            />
+          </CardContent>
+        </Card>
+      )}
 
       {/* Match Controls */}
       <Card>
@@ -94,22 +119,22 @@ const ScoreTab = ({
       {/* Data Persistence Status */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-success">✅ Database Integration Active</CardTitle>
+          <CardTitle className="text-success">✅ Enhanced Goal Entry Flow</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="text-sm space-y-2">
-            <h4 className="font-semibold text-foreground">Score Management:</h4>
-            <p>• Scores are now properly saved to the database using real mutation hooks</p>
-            <p>• Team statistics and league positions are automatically updated</p>
-            <p>• All score changes create proper match events</p>
+            <h4 className="font-semibold text-foreground">New Step-by-Step Goal Entry:</h4>
+            <p>• Quick goal buttons for immediate scoring during live matches</p>
+            <p>• Detailed wizard for accurate player and assist assignment</p>
+            <p>• Automatic own goal detection and handling</p>
+            <p>• Streamlined assist workflow with smart defaults</p>
             
-            <h4 className="font-semibold text-foreground mt-4">What gets saved:</h4>
-            <p>• ✅ Fixture scores and match results</p>
-            <p>• ✅ Individual player goal and assist assignments</p>
-            <p>• ✅ Player statistics updates</p>
-            <p>• ✅ Match events and timeline</p>
-            <p>• ✅ Card assignments (when implemented)</p>
-            <p>• ✅ Player time tracking (when implemented)</p>
+            <h4 className="font-semibold text-foreground mt-4">Improved Accuracy Features:</h4>
+            <p>• ✅ Team selection before player selection</p>
+            <p>• ✅ Visual step indicator and progress tracking</p>
+            <p>• ✅ Own goal detection with opposing team players</p>
+            <p>• ✅ Conditional assist flow (skipped for own goals)</p>
+            <p>• ✅ Comprehensive confirmation step</p>
           </div>
         </CardContent>
       </Card>

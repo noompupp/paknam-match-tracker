@@ -1,4 +1,4 @@
-
+import { useState } from "react";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import RefereeTabsNavigation from "./RefereeTabsNavigation";
 import ScoreTab from "./tabs/ScoreTab";
@@ -7,8 +7,8 @@ import GoalsTab from "./tabs/GoalsTab";
 import CardsTab from "./tabs/CardsTab";
 import TimeTab from "./tabs/TimeTab";
 import SummaryTab from "./tabs/SummaryTab";
+import GoalEntryWizard from "./GoalEntryWizard";
 import { ComponentPlayer } from "../hooks/useRefereeState";
-import { useRefereeMatchHandlers } from "./RefereeMatchHandlers";
 
 interface RefereeToolsMainProps {
   selectedFixtureData: any;
@@ -49,6 +49,37 @@ interface RefereeToolsMainProps {
 }
 
 const RefereeToolsMain = (props: RefereeToolsMainProps) => {
+  const [showGoalWizard, setShowGoalWizard] = useState(false);
+  const [goalWizardInitialTeam, setGoalWizardInitialTeam] = useState<'home' | 'away' | undefined>(undefined);
+
+  // Handle quick goal from Score tab
+  const handleQuickGoal = (team: 'home' | 'away') => {
+    setGoalWizardInitialTeam(team);
+    setShowGoalWizard(true);
+  };
+
+  const handleGoalWizardAssigned = (goalData: {
+    player: ComponentPlayer;
+    goalType: 'goal' | 'assist';
+    team: 'home' | 'away';
+    isOwnGoal?: boolean;
+  }) => {
+    if (!props.selectedFixtureData) return;
+    
+    const homeTeam = { 
+      id: String(props.selectedFixtureData.home_team_id || ''), 
+      name: props.selectedFixtureData.home_team?.name || '' 
+    };
+    const awayTeam = { 
+      id: String(props.selectedFixtureData.away_team_id || ''), 
+      name: props.selectedFixtureData.away_team?.name || '' 
+    };
+    
+    props.assignGoal(goalData.player, props.matchTime, props.selectedFixtureData.id, homeTeam, awayTeam);
+    setShowGoalWizard(false);
+    setGoalWizardInitialTeam(undefined);
+  };
+
   // We need access to the database mutation hooks from the container
   // This is a temporary solution - ideally these would be passed as props
   // For now, we'll create placeholder handlers that log the need for database integration
@@ -97,6 +128,38 @@ const RefereeToolsMain = (props: RefereeToolsMainProps) => {
     console.log('📄 RefereeToolsMain: Export summary functionality');
   };
 
+  // Show goal wizard overlay if active
+  if (showGoalWizard) {
+    return (
+      <div className="relative">
+        <div className="absolute inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <GoalEntryWizard
+            selectedFixtureData={props.selectedFixtureData}
+            homeTeamPlayers={props.homeTeamPlayers}
+            awayTeamPlayers={props.awayTeamPlayers}
+            matchTime={props.matchTime}
+            formatTime={props.formatTime}
+            onGoalAssigned={handleGoalWizardAssigned}
+            onCancel={() => {
+              setShowGoalWizard(false);
+              setGoalWizardInitialTeam(undefined);
+            }}
+          />
+        </div>
+        
+        {/* Background content (blurred) */}
+        <div className="pointer-events-none opacity-50">
+          <Tabs defaultValue="score" className="w-full">
+            <RefereeTabsNavigation />
+            <div className="mt-6">
+              <p className="text-center text-muted-foreground">Goal Entry Wizard Active...</p>
+            </div>
+          </Tabs>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <Tabs defaultValue="score" className="w-full">
       <RefereeTabsNavigation />
@@ -110,6 +173,8 @@ const RefereeToolsMain = (props: RefereeToolsMainProps) => {
           onToggleTimer={props.toggleTimer}
           onResetMatch={handleResetMatch}
           onSaveMatch={handleSaveMatch}
+          onQuickGoal={handleQuickGoal}
+          onOpenGoalWizard={() => setShowGoalWizard(true)}
         />
       </TabsContent>
 
