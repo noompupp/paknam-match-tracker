@@ -81,18 +81,18 @@ const InitialPlayerSelection = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
-        <DialogHeader>
+      <DialogContent className="w-full max-w-2xl h-[90vh] max-h-[90vh] overflow-hidden flex flex-col p-0 sm:p-6 sm:h-auto sm:max-h-[80vh]">
+        <DialogHeader className="p-4 sm:p-0 flex-shrink-0">
           <DialogTitle className="flex items-center gap-2">
             <Play className="h-5 w-5" />
             Select Starting Squad ({REQUIRED_PLAYERS} players)
           </DialogTitle>
         </DialogHeader>
         
-        <div className="space-y-4 flex-1 overflow-hidden">
+        <div className="flex-1 overflow-hidden flex flex-col px-4 sm:px-0">
           {!selectedTeam ? (
             // Team Selection Step
-            <div className="space-y-4">
+            <div className="space-y-4 flex-1 flex flex-col justify-center">
               <Alert>
                 <Users className="h-4 w-4" />
                 <AlertDescription>
@@ -134,33 +134,37 @@ const InitialPlayerSelection = ({
             </div>
           ) : (
             // Player Selection Step
-            <div className="space-y-4 flex-1 overflow-hidden flex flex-col">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Badge variant="outline" className="text-lg px-3 py-1">
-                    {getTeamName(selectedTeam)}
-                  </Badge>
+            <div className="flex-1 overflow-hidden flex flex-col min-h-0">
+              {/* Header Section - Fixed */}
+              <div className="flex-shrink-0 space-y-3 pb-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline" className="text-lg px-3 py-1">
+                      {getTeamName(selectedTeam)}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge 
+                      variant={isValidSelection ? "default" : "secondary"}
+                      className="text-sm"
+                    >
+                      {selectedCount}/{REQUIRED_PLAYERS} selected
+                    </Badge>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Badge 
-                    variant={isValidSelection ? "default" : "secondary"}
-                    className="text-sm"
-                  >
-                    {selectedCount}/{REQUIRED_PLAYERS} selected
-                  </Badge>
-                </div>
+
+                {selectedCount === REQUIRED_PLAYERS && (
+                  <Alert>
+                    <Users className="h-4 w-4" />
+                    <AlertDescription>
+                      Perfect! You have selected exactly {REQUIRED_PLAYERS} players for the starting squad.
+                    </AlertDescription>
+                  </Alert>
+                )}
               </div>
 
-              {selectedCount === REQUIRED_PLAYERS && (
-                <Alert>
-                  <Users className="h-4 w-4" />
-                  <AlertDescription>
-                    Perfect! You have selected exactly {REQUIRED_PLAYERS} players for the starting squad.
-                  </AlertDescription>
-                </Alert>
-              )}
-
-              <div className="flex-1 overflow-y-auto space-y-2 pr-2">
+              {/* Players List - Scrollable */}
+              <div className="flex-1 overflow-y-auto space-y-2 pr-2 min-h-0">
                 {availablePlayers.map((player) => {
                   const isSelected = selectedPlayerIds.has(player.id);
                   const canSelect = selectedCount < REQUIRED_PLAYERS || isSelected;
@@ -201,26 +205,32 @@ const InitialPlayerSelection = ({
                 })}
               </div>
 
-              <div className="flex gap-3 pt-2 border-t">
-                <Button
-                  variant="outline"
-                  onClick={() => setSelectedTeam(null)}
-                  className="flex-1"
-                >
-                  Back to Team Selection
-                </Button>
-                <Button
-                  onClick={handleStartMatch}
-                  disabled={!isValidSelection}
-                  className="flex-1"
-                >
-                  <Play className="h-4 w-4 mr-2" />
-                  Start Match Tracking
-                </Button>
+              {/* Action Buttons - Fixed at bottom */}
+              <div className="flex-shrink-0 pt-3 border-t bg-background">
+                <div className="flex gap-3">
+                  <Button
+                    variant="outline"
+                    onClick={() => setSelectedTeam(null)}
+                    className="flex-1"
+                  >
+                    Back to Team Selection
+                  </Button>
+                  <Button
+                    onClick={handleStartMatch}
+                    disabled={!isValidSelection}
+                    className="flex-1"
+                  >
+                    <Play className="h-4 w-4 mr-2" />
+                    Start Match Tracking
+                  </Button>
+                </div>
               </div>
             </div>
           )}
         </div>
+
+        {/* Mobile Safe Area Bottom Padding */}
+        <div className="h-4 sm:h-0 flex-shrink-0"></div>
       </DialogContent>
     </Dialog>
   );
