@@ -130,7 +130,7 @@ const MatchEventsSection = ({
                           <span>{playerName}</span>
                         </div>
                         <div className="text-xs text-muted-foreground">
-                          {cardType}
+                          {cardType} Card
                         </div>
                       </div>
                     </div>
