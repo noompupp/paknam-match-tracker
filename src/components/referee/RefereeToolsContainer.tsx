@@ -109,13 +109,13 @@ const RefereeToolsContainer = () => {
     assignGoal(player, matchTime, selectedFixtureData.id, homeTeam, awayTeam);
   };
 
-  // Fixed function signatures to match interface expectations
-  const handleAddGoal = (team: 'home' | 'away') => {
+  // Fixed function signatures to match the expected calls from useGoalHandlers
+  const handleAddGoal = (team: 'home' | 'away', additionalParam?: any) => {
     // Add goal logic here
     console.log('Adding goal for team:', team);
   };
 
-  const handleRemoveGoal = (team: 'home' | 'away') => {
+  const handleRemoveGoal = (team: 'home' | 'away', additionalParam?: any) => {
     // Remove goal logic here
     console.log('Removing goal for team:', team);
   };
