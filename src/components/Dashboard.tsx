@@ -27,7 +27,7 @@ const Dashboard = ({ onNavigateToResults, onNavigateToFixtures }: DashboardProps
     }
   };
 
-  const handleViewAllFixtures = () => {
+  const handleViewAllUpcomingFixtures = () => {
     if (onNavigateToFixtures) {
       onNavigateToFixtures();
     }
@@ -73,7 +73,7 @@ const Dashboard = ({ onNavigateToResults, onNavigateToFixtures }: DashboardProps
         <UpcomingFixturesCard 
           upcomingFixtures={upcomingFixtures} 
           isLoading={upcomingLoading}
-          onViewAll={handleViewAllFixtures}
+          onViewAll={handleViewAllUpcomingFixtures}
         />
       </div>
     </div>

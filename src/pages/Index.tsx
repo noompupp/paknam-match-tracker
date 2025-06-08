@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import Dashboard from "@/components/Dashboard";
 import Teams from "@/components/Teams";
@@ -26,30 +27,6 @@ const Index = () => {
 
   const handleNavigateToFixtures = () => {
     setActiveTab("fixtures");
-    // Small delay to ensure tab content is rendered
-    setTimeout(() => {
-      const element = document.getElementById("upcoming-fixtures");
-      if (element) {
-        // Enhanced mobile navigation offset calculation
-        const navHeight = 70;
-        const safeAreaBottom = parseInt(getComputedStyle(document.documentElement)
-          .getPropertyValue('--safe-area-inset-bottom').replace('px', '')) || 0;
-        const totalOffset = navHeight + safeAreaBottom + 20; // Extra padding for better UX
-        
-        const elementPosition = element.getBoundingClientRect().top + window.scrollY - totalOffset;
-        
-        window.scrollTo({
-          top: Math.max(0, elementPosition),
-          behavior: 'smooth'
-        });
-        
-        // Add visual feedback
-        element.classList.add('highlight-section');
-        setTimeout(() => {
-          element.classList.remove('highlight-section');
-        }, 2000);
-      }
-    }, 100);
   };
 
   const handleNavigateToRecentResults = () => {
