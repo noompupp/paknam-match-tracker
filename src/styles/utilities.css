@@ -1,3 +1,4 @@
+
 /* Enhanced responsive utilities */
 @media (max-width: 640px) {
   .text-responsive {
@@ -102,7 +103,6 @@
 /* Enhanced mobile score styling */
 @media (max-width: 480px) {
   .mobile-score-enhanced {
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
     letter-spacing: -0.025em;
   }
   
@@ -160,18 +160,32 @@
   }
 }
 
-/* Consistent neutral score styling for results */
+/* Theme-aware neutral score styling for results */
 .neutral-score-mobile {
   color: hsl(var(--foreground));
-  text-shadow: 
-    0 2px 8px rgba(0, 0, 0, 0.3),
-    0 4px 16px rgba(0, 0, 0, 0.15),
-    0 1px 0 rgba(255, 255, 255, 0.3);
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
   font-weight: 800;
   letter-spacing: -0.02em;
 }
 
+/* Light mode: minimal shadows */
+@media (prefers-color-scheme: light) {
+  .neutral-score-mobile {
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  }
+}
+
+/* Dark mode: enhanced shadows */
+@media (prefers-color-scheme: dark) {
+  .neutral-score-mobile {
+    text-shadow: 
+      0 2px 8px rgba(0, 0, 0, 0.6),
+      0 4px 16px rgba(0, 0, 0, 0.3),
+      0 1px 0 rgba(255, 255, 255, 0.2);
+    filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.4));
+  }
+}
+
+/* Force dark mode styling when .dark class is present */
 .dark .neutral-score-mobile {
   text-shadow: 
     0 2px 8px rgba(0, 0, 0, 0.6),
