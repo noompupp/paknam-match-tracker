@@ -50,7 +50,6 @@ const EnhancedRefereeSelect = React.forwardRef<HTMLButtonElement, EnhancedRefere
     }, [])
 
     const handleSelect = (itemValue: string, label: string) => {
-      console.log('🎯 EnhancedRefereeSelect: handleSelect called', { itemValue, label })
       onValueChange(itemValue)
       setSelectedLabel(label)
       setOpen(false)
@@ -120,57 +119,20 @@ const EnhancedRefereeSelectItem = React.forwardRef<HTMLDivElement, EnhancedRefer
   ({ value, children, disabled, className, playerData, onSelect, ...props }, ref) => {
     const displayLabel = playerData ? `${playerData.name} (${playerData.team})` : (typeof children === 'string' ? children : value)
     
-    // Simplified click handler that works with any part of the item
-    const handleClick = (event: React.MouseEvent) => {
-      event.preventDefault()
-      event.stopPropagation()
-      
-      console.log('🎯 EnhancedRefereeSelectItem: handleClick called', { 
-        value, 
-        displayLabel, 
-        disabled,
-        target: event.target,
-        currentTarget: event.currentTarget
-      })
-      
-      if (!disabled && onSelect) {
-        onSelect(value, displayLabel)
-      }
-    }
-
-    // Also handle keyboard events for accessibility
-    const handleKeyDown = (event: React.KeyboardEvent) => {
-      if (event.key === 'Enter' || event.key === ' ') {
-        event.preventDefault()
-        event.stopPropagation()
-        
-        console.log('🎯 EnhancedRefereeSelectItem: handleKeyDown called', { value, key: event.key })
-        
-        if (!disabled && onSelect) {
-          onSelect(value, displayLabel)
-        }
-      }
-    }
-
     return (
       <div
         ref={ref}
-        role="option"
-        tabIndex={disabled ? -1 : 0}
-        aria-selected={false}
-        aria-disabled={disabled}
         className={cn(
           "relative flex w-full cursor-pointer select-none items-center rounded-sm py-2 px-3 text-sm outline-none hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground transition-colors",
           "dark:hover:bg-accent dark:hover:text-accent-foreground",
           disabled && "pointer-events-none opacity-50",
           className
         )}
-        onClick={handleClick}
-        onKeyDown={handleKeyDown}
+        onClick={() => !disabled && onSelect?.(value, displayLabel)}
         {...props}
       >
         {playerData ? (
-          <div className="flex items-center justify-between w-full pointer-events-none">
+          <div className="flex items-center justify-between w-full">
             <div className="flex items-center gap-3">
               <div className="w-7 h-7 bg-primary/10 rounded-full flex items-center justify-center text-xs font-bold text-primary">
                 {playerData.number || '?'}
@@ -185,9 +147,7 @@ const EnhancedRefereeSelectItem = React.forwardRef<HTMLDivElement, EnhancedRefer
             </Badge>
           </div>
         ) : (
-          <div className="pointer-events-none">
-            {children}
-          </div>
+          children
         )}
       </div>
     )

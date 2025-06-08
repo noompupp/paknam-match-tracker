@@ -6,7 +6,7 @@ import { PlayerTime } from "@/types/database";
 import { ProcessedPlayer } from "@/utils/refereeDataProcessor";
 import PlayerRoleBadge from "@/components/ui/player-role-badge";
 import PlayerStatusBadge from "@/components/ui/player-status-badge";
-import { canRemovePlayer, validateSubstitution } from "./playerValidationUtils";
+import { canRemovePlayer } from "./playerValidationUtils";
 import { isSecondHalf, getCurrentHalfTime } from "@/utils/timeUtils";
 
 interface TrackedPlayerCardProps {
@@ -30,74 +30,19 @@ const TrackedPlayerCard = ({
 }: TrackedPlayerCardProps) => {
   const role = playerInfo?.role || 'Starter';
   
-  // Enhanced validation checks
+  // Check if player can be removed
   const removal = canRemovePlayer(player.id, trackedPlayers);
-  const toggleValidation = validateSubstitution('toggle', player.id, trackedPlayers);
   
   // Calculate current half time for status badge
   const currentHalfTime = getCurrentHalfTime(matchTime);
   
-  // Determine button appearance based on validation
-  const getToggleButtonProps = () => {
-    const baseProps = {
-      size: "sm" as const,
-      className: "h-7 px-2 text-xs",
-      onClick: () => onTogglePlayerTime(player.id)
-    };
-
-    if (player.isPlaying) {
-      return {
-        ...baseProps,
-        variant: "destructive" as const,
-        children: (
-          <>
-            <span className="hidden sm:inline">Sub Out</span>
-            <span className="sm:hidden">Out</span>
-          </>
-        ),
-        title: toggleValidation.requiresSubstitution 
-          ? "Will require substitution - field cannot go below 7 players"
-          : "Substitute player out"
-      };
-    } else {
-      const isFieldFull = trackedPlayers.filter(p => p.isPlaying).length >= 7;
-      const isReSubstitution = toggleValidation.isReSubstitution;
-      
-      return {
-        ...baseProps,
-        variant: isFieldFull ? "outline" as const : "default" as const,
-        children: (
-          <>
-            <span className="hidden sm:inline">
-              {isReSubstitution ? "Re-Sub In" : "Sub In"}
-            </span>
-            <span className="sm:hidden">
-              {isReSubstitution ? "Re-In" : "In"}
-            </span>
-          </>
-        ),
-        title: isFieldFull 
-          ? isReSubstitution 
-            ? "Field is full - will require another player to be substituted out first"
-            : "Field is full - will require substitution"
-          : isReSubstitution 
-            ? "Re-substitute player in"
-            : "Substitute player in",
-        disabled: isFieldFull && !toggleValidation.canSubIn
-      };
-    }
-  };
-
-  const toggleButtonProps = getToggleButtonProps();
-
-  console.log('👤 Enhanced tracked player card:', {
+  console.log('👤 Rendering tracked player with status:', {
     name: player.name,
     role,
     canRemove: removal.canRemove,
     isPlaying: player.isPlaying,
-    toggleValidation: toggleValidation.actionType,
-    requiresSubstitution: toggleValidation.requiresSubstitution,
-    isReSubstitution: toggleValidation.isReSubstitution
+    currentHalfTime,
+    totalTime: player.totalTime
   });
 
   return (
@@ -123,16 +68,6 @@ const TrackedPlayerCard = ({
             >
               {player.isPlaying ? "ON" : "OFF"}
             </Badge>
-            {toggleValidation.requiresSubstitution && (
-              <Badge variant="outline" className="text-xs px-1.5 py-0 h-4">
-                SUB REQ
-              </Badge>
-            )}
-            {toggleValidation.isReSubstitution && !player.isPlaying && (
-              <Badge variant="outline" className="text-xs px-1.5 py-0 h-4 bg-blue-50">
-                RE-SUB
-              </Badge>
-            )}
           </div>
         </div>
 
@@ -153,11 +88,21 @@ const TrackedPlayerCard = ({
           />
         </div>
 
-        {/* Enhanced action buttons with validation feedback */}
+        {/* Compact action buttons */}
         <div className="flex gap-1 flex-shrink-0">
           <Button
-            {...toggleButtonProps}
-          />
+            size="sm"
+            variant={player.isPlaying ? "destructive" : "default"}
+            onClick={() => onTogglePlayerTime(player.id)}
+            className="h-7 px-2 text-xs"
+          >
+            <span className="hidden sm:inline">
+              {player.isPlaying ? "Sub Out" : "Sub In"}
+            </span>
+            <span className="sm:hidden">
+              {player.isPlaying ? "Out" : "In"}
+            </span>
+          </Button>
           <Button
             size="sm"
             variant="outline"
@@ -172,7 +117,7 @@ const TrackedPlayerCard = ({
       </div>
 
       {/* Mobile-only status display */}
-      <div className="sm:hidden mt-2 flex items-center gap-2">
+      <div className="sm:hidden mt-2">
         <PlayerStatusBadge
           role={role}
           totalTime={player.totalTime}
@@ -180,11 +125,6 @@ const TrackedPlayerCard = ({
           isPlaying={player.isPlaying}
           matchTime={matchTime}
         />
-        {toggleValidation.isReSubstitution && !player.isPlaying && (
-          <Badge variant="outline" className="text-xs px-1.5 py-0 h-4 bg-blue-50">
-            Available for Re-substitution
-          </Badge>
-        )}
       </div>
     </div>
   );

@@ -1,24 +1,23 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { PlayerTime } from "@/types/database";
 import { ProcessedPlayer } from "@/utils/refereeDataProcessor";
-import { Users, Play, AlertTriangle, Lock, UserPlus, RotateCcw } from "lucide-react";
+import { Users, Play, AlertTriangle, Lock, UserPlus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import SevenASideValidationPanel from "../SevenASideValidationPanel";
 import TrackedPlayersList from "./TrackedPlayersList";
 import TimeTrackerHeader from "./TimeTrackerHeader";
 import InitialPlayerSelection from "./InitialPlayerSelection";
-import SmartSubstitutionManager from "./SmartSubstitutionManager";
+import SubstitutionFlowManager from "./SubstitutionFlowManager";
 import { 
   validatePlayerCount, 
   validateTeamLock, 
   canRemovePlayer
 } from "./playerValidationUtils";
-import { canAllowReSubstitution } from "./reSubstitutionUtils";
 
 interface EnhancedPlayerTimeTrackerProps {
   trackedPlayers: PlayerTime[];
@@ -50,31 +49,6 @@ const EnhancedPlayerTimeTracker = ({
 
   const playerCountValidation = validatePlayerCount(trackedPlayers);
   const teamLockValidation = validateTeamLock(trackedPlayers);
-  const canReSubstitute = canAllowReSubstitution(trackedPlayers);
-
-  // Enhanced substitution management with automatic detection
-  const smartSubstitutionManager = SmartSubstitutionManager({
-    trackedPlayers,
-    homeTeamPlayers,
-    awayTeamPlayers,
-    selectedFixtureData,
-    onAddPlayer,
-    onTogglePlayerTime
-  });
-
-  // Monitor for automatic substitution triggers
-  useEffect(() => {
-    const activeCount = trackedPlayers.filter(p => p.isPlaying).length;
-    
-    console.log('🔄 EnhancedPlayerTimeTracker: Monitoring substitution triggers:', {
-      activeCount,
-      trackedCount: trackedPlayers.length,
-      canReSubstitute
-    });
-
-    // The SmartSubstitutionManager handles all substitution logic internally
-    // No need for additional automatic detection here
-  }, [trackedPlayers, canReSubstitute]);
 
   const handleStartMatch = (selectedPlayers: ProcessedPlayer[], team: 'home' | 'away') => {
     console.log('🚀 Starting match with initial squad:', {
@@ -102,18 +76,8 @@ const EnhancedPlayerTimeTracker = ({
       return;
     }
     
-    // Remove the player - substitution flow will be handled automatically by SmartSubstitutionManager
+    // Remove the player - substitution flow will be handled automatically
     onRemovePlayer(playerId);
-  };
-
-  const handleEnhancedPlayerToggle = (playerId: number) => {
-    // Use smart substitution manager for enhanced validation
-    smartSubstitutionManager.handlePlayerToggle(playerId);
-  };
-
-  const handleEnhancedPlayerAdd = (player: ProcessedPlayer) => {
-    // Use smart substitution manager for enhanced validation
-    smartSubstitutionManager.handlePlayerAdd(player);
   };
 
   const handleQuickAdd = () => {
@@ -127,16 +91,13 @@ const EnhancedPlayerTimeTracker = ({
   };
 
   const isMatchStarted = trackedPlayers.length > 0;
-  const playersOffField = trackedPlayers.filter(p => !p.isPlaying).length;
 
-  console.log('🎯 EnhancedPlayerTimeTracker (Enhanced Substitution Only):', {
+  console.log('🎯 EnhancedPlayerTimeTracker Debug:', {
     trackedCount: trackedPlayers.length,
     activeCount: playerCountValidation.activeCount,
-    playersOffField,
     isValid: playerCountValidation.isValid,
     teamLocked: teamLockValidation.isLocked,
-    lockedTeam: teamLockValidation.lockedTeam,
-    canReSubstitute
+    lockedTeam: teamLockValidation.lockedTeam
   });
 
   return (
@@ -148,29 +109,6 @@ const EnhancedPlayerTimeTracker = ({
         matchTime={matchTime}
         formatTime={formatTime}
       />
-
-      {/* Re-substitution Feature Status */}
-      {canReSubstitute && (
-        <Alert>
-          <RotateCcw className="h-4 w-4" />
-          <AlertDescription>
-            <div className="flex items-center justify-between">
-              <div>
-                <span className="font-medium">Re-substitution Available</span>
-                <p className="text-sm mt-1">8+ players have participated. Players marked OFF can be brought back in.</p>
-              </div>
-              <div className="flex gap-2">
-                <Badge variant="outline" className="text-xs">
-                  {trackedPlayers.length} tracked
-                </Badge>
-                <Badge variant="outline" className="text-xs">
-                  {playersOffField} off field
-                </Badge>
-              </div>
-            </div>
-          </AlertDescription>
-        </Alert>
-      )}
 
       {/* Single Top-Level Player Count Alert (replaces repetitive warnings) */}
       {!playerCountValidation.isValid && (
@@ -226,21 +164,16 @@ const EnhancedPlayerTimeTracker = ({
               >
                 <UserPlus className="h-4 w-4 mr-2" />
                 Add Player to Squad
-                {canReSubstitute && (
-                  <Badge variant="outline" className="ml-2 text-xs">
-                    Re-sub available
-                  </Badge>
-                )}
               </Button>
             )}
           </div>
 
-          {/* Tracked Players List with enhanced substitution controls */}
+          {/* Tracked Players List with enhanced status badges */}
           <TrackedPlayersList
             trackedPlayers={trackedPlayers}
             allPlayers={allPlayers}
             formatTime={formatTime}
-            onTogglePlayerTime={handleEnhancedPlayerToggle}
+            onTogglePlayerTime={onTogglePlayerTime}
             onRemovePlayer={handlePlayerRemove}
             matchTime={matchTime}
           />
@@ -265,8 +198,17 @@ const EnhancedPlayerTimeTracker = ({
         selectedFixtureData={selectedFixtureData}
       />
 
-      {/* Smart Substitution Modal with Re-substitution Support */}
-      {smartSubstitutionManager.substitutionModal}
+      {/* Automatic Substitution Flow Manager */}
+      <SubstitutionFlowManager
+        trackedPlayers={trackedPlayers}
+        homeTeamPlayers={homeTeamPlayers}
+        awayTeamPlayers={awayTeamPlayers}
+        selectedFixtureData={selectedFixtureData}
+        onAddPlayer={onAddPlayer}
+        onSubstitutionComplete={() => {
+          console.log('✅ Substitution completed successfully');
+        }}
+      />
     </div>
   );
 };
