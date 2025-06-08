@@ -3,6 +3,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Clock } from "lucide-react"
 import TeamLogo from "../../teams/TeamLogo"
+import { getScoreStyle } from "@/utils/scoreColorUtils"
 
 interface MatchHeaderWithScoreProps {
   selectedFixtureData: any
@@ -19,16 +20,12 @@ const MatchHeaderWithScore = ({
   matchTime,
   formatTime
 }: MatchHeaderWithScoreProps) => {
-  // Enhanced score styling for better visibility across themes
-  const getScoreStyle = () => ({
-    color: 'hsl(var(--primary))', // Use semantic primary color
-    textShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-    filter: 'drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1))'
-  });
+  const homeTeamColor = selectedFixtureData?.home_team?.primaryColor || '#2563eb';
+  const awayTeamColor = selectedFixtureData?.away_team?.primaryColor || '#16a34a';
 
   return (
-    <Card className="bg-gradient-to-r from-primary/10 to-secondary/10 border-primary/20">
-      <CardContent className="p-6">
+    <Card className="premier-card-shadow-lg match-border-gradient">
+      <CardContent className="p-6 match-gradient-header">
         <div className="flex items-center justify-between">
           {/* Home Team */}
           <div className="flex-1 text-center">
@@ -36,7 +33,10 @@ const MatchHeaderWithScore = ({
               <TeamLogo team={selectedFixtureData.home_team} size="medium" />
               <h3 className="text-lg font-bold">{selectedFixtureData.home_team?.name}</h3>
             </div>
-            <div className="text-5xl font-bold" style={getScoreStyle()}>
+            <div 
+              className="text-5xl font-bold score-text-outline"
+              style={getScoreStyle(homeTeamColor)}
+            >
               {homeScore}
             </div>
           </div>
@@ -47,7 +47,10 @@ const MatchHeaderWithScore = ({
               <Clock className="h-4 w-4 text-muted-foreground" />
               <span className="text-xl font-mono font-bold">{formatTime(matchTime)}</span>
             </div>
-            <Badge variant="outline" className="text-xs font-medium">
+            <Badge 
+              variant="outline" 
+              className="text-xs font-medium bg-gradient-to-r from-primary/10 to-secondary/10 border-primary/20"
+            >
               {new Date(selectedFixtureData.match_date).toLocaleDateString()}
             </Badge>
           </div>
@@ -58,7 +61,10 @@ const MatchHeaderWithScore = ({
               <h3 className="text-lg font-bold">{selectedFixtureData.away_team?.name}</h3>
               <TeamLogo team={selectedFixtureData.away_team} size="medium" />
             </div>
-            <div className="text-5xl font-bold" style={getScoreStyle()}>
+            <div 
+              className="text-5xl font-bold score-text-outline"
+              style={getScoreStyle(awayTeamColor)}
+            >
               {awayScore}
             </div>
           </div>

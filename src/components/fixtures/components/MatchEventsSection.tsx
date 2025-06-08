@@ -3,6 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Activity } from "lucide-react";
 import { getGoalAssistPlayerName } from "../utils/matchSummaryDataProcessor";
+import { getSimplifiedCardType } from "@/utils/scoreColorUtils";
 
 interface MatchEventsSectionProps {
   goals: any[];
@@ -59,23 +60,18 @@ const MatchEventsSection = ({
     return `${minutes}'`;
   };
 
-  // Fixed card type function to return only the color without redundant "card" text
-  const getSimplifiedCardType = (card: any) => {
-    const cardType = getCardType(card);
-    // Remove "card" from the end if it exists to prevent "YELLOW CARD card"
-    return cardType?.replace(/\s*card$/i, '').toUpperCase() || 'YELLOW';
-  };
-
   return (
-    <Card>
-      <CardContent className="pt-6">
+    <Card className="premier-card-shadow match-border-gradient">
+      <CardContent className="pt-6 match-gradient-events">
         <h4 className="font-semibold flex items-center gap-2 mb-4">
           <Activity className="h-4 w-4" />
           Match Events ({allEvents.length})
         </h4>
         
         {allEvents.length === 0 ? (
-          <p className="text-sm text-muted-foreground text-center py-8">No events recorded</p>
+          <div className="text-center py-8 timeline-gradient rounded-lg border border-muted/20">
+            <p className="text-sm text-muted-foreground">No events recorded</p>
+          </div>
         ) : (
           <div className="space-y-3">
             {allEvents.map((event, index) => {
@@ -88,12 +84,12 @@ const MatchEventsSection = ({
                 return (
                   <div 
                     key={`event-goal-${event.data.id}-${index}`} 
-                    className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
+                    className="flex items-center justify-between p-3 event-item-gradient rounded-lg border border-primary/10 premier-card-shadow"
                   >
                     <div className="flex items-center gap-3 flex-1">
                       <div 
-                        className="w-3 h-3 rounded-full"
-                        style={{ backgroundColor: teamColor }}
+                        className="w-3 h-3 rounded-full shadow-sm"
+                        style={{ backgroundColor: teamColor, boxShadow: `0 0 8px ${teamColor}40` }}
                       />
                       <div className="flex-1">
                         <div className="font-medium text-sm flex items-center gap-2">
@@ -107,7 +103,7 @@ const MatchEventsSection = ({
                         )}
                       </div>
                     </div>
-                    <Badge variant="outline" className="text-xs">
+                    <Badge variant="outline" className="text-xs bg-gradient-to-r from-green-50 to-green-100 border-green-200">
                       {formatTime(event.time)}
                     </Badge>
                   </div>
@@ -120,12 +116,12 @@ const MatchEventsSection = ({
                 return (
                   <div 
                     key={`event-card-${event.data.id}-${index}`} 
-                    className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
+                    className="flex items-center justify-between p-3 event-item-gradient rounded-lg border border-primary/10 premier-card-shadow"
                   >
                     <div className="flex items-center gap-3 flex-1">
                       <div 
-                        className="w-3 h-3 rounded-full"
-                        style={{ backgroundColor: teamColor }}
+                        className="w-3 h-3 rounded-full shadow-sm"
+                        style={{ backgroundColor: teamColor, boxShadow: `0 0 8px ${teamColor}40` }}
                       />
                       <div className="flex-1">
                         <div className="font-medium text-sm flex items-center gap-2">
@@ -137,7 +133,10 @@ const MatchEventsSection = ({
                         </div>
                       </div>
                     </div>
-                    <Badge variant="outline" className="text-xs">
+                    <Badge 
+                      variant="outline" 
+                      className={`text-xs ${isRed ? 'bg-gradient-to-r from-red-50 to-red-100 border-red-200' : 'bg-gradient-to-r from-yellow-50 to-yellow-100 border-yellow-200'}`}
+                    >
                       {formatTime(event.time)}
                     </Badge>
                   </div>

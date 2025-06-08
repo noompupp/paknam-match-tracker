@@ -58,10 +58,8 @@ const EnhancedMatchEventsTimeline = ({
 
   const formatEventDescription = (event: TimelineEvent) => {
     const emoji = getEventEmoji(event.type);
-    // Use the passed formatTime function directly with the time value
     const time = formatTime(event.time);
     
-    // Use teamName with fallback to teamId only if teamName is empty or equals teamId
     const displayTeamName = event.teamName && event.teamName !== event.teamId 
       ? event.teamName 
       : event.teamId;
@@ -123,17 +121,19 @@ const EnhancedMatchEventsTimeline = ({
   return (
     <>
       {sortedEvents.length === 0 ? (
-        <p className="text-sm text-muted-foreground text-center py-8">
-          No timeline events recorded for this match
-        </p>
+        <div className="text-center py-8 timeline-gradient rounded-lg border border-muted/20 premier-card-shadow">
+          <p className="text-sm text-muted-foreground">
+            No timeline events recorded for this match
+          </p>
+        </div>
       ) : (
         <div className="space-y-3">
           {sortedEvents.map((event, index) => (
             <div 
               key={`${event.id}-${index}`}
-              className="relative flex items-start gap-3 p-3 bg-muted/10 rounded-lg border-l-4 border-l-blue-200 hover:bg-muted/20 transition-colors"
+              className="relative flex items-start gap-3 p-3 event-item-gradient rounded-lg border-l-4 border-l-primary/30 hover:bg-muted/20 transition-colors premier-card-shadow"
             >
-              <div className="flex-shrink-0 mt-0.5">
+              <div className="flex-shrink-0 mt-0.5 p-1 rounded-full bg-background shadow-sm">
                 {getEventIcon(event.type)}
               </div>
               
@@ -146,18 +146,18 @@ const EnhancedMatchEventsTimeline = ({
                   <div className="flex items-center gap-2 flex-shrink-0">
                     <Badge 
                       variant={getEventVariant(event.type)} 
-                      className="text-xs"
+                      className="text-xs bg-gradient-to-r from-primary/10 to-secondary/10"
                     >
                       {getEventTypeLabel(event.type)}
                     </Badge>
-                    <span className="text-xs text-muted-foreground font-mono">
+                    <span className="text-xs text-muted-foreground font-mono bg-muted/20 px-2 py-1 rounded">
                       {formatTime(event.time)}'
                     </span>
                   </div>
                 </div>
                 
                 {event.assistPlayerName && event.type === 'goal' && (
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs text-muted-foreground bg-blue-50 px-2 py-1 rounded border border-blue-200">
                     🅰️ Assisted by {event.assistPlayerName}
                   </p>
                 )}
@@ -166,7 +166,7 @@ const EnhancedMatchEventsTimeline = ({
           ))}
           
           {sortedEvents.length > 10 && (
-            <p className="text-xs text-muted-foreground text-center pt-2">
+            <p className="text-xs text-muted-foreground text-center pt-2 bg-muted/10 rounded p-2">
               Showing all {sortedEvents.length} timeline events
             </p>
           )}

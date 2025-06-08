@@ -3,6 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, MapPin } from "lucide-react";
 import TeamLogoDisplay from "../TeamLogoDisplay";
+import { getScoreStyle } from "@/utils/scoreColorUtils";
 
 interface MatchHeaderSectionProps {
   fixture: any;
@@ -31,26 +32,9 @@ const MatchHeaderSection = ({
     return 'text-yellow-600';
   };
 
-  // Enhanced score display with better contrast
-  const getScoreStyle = (teamColor: string) => {
-    // Ensure good contrast while maintaining team identity
-    if (!teamColor || teamColor === '#ffffff' || teamColor === '#FFFFFF') {
-      return {
-        color: '#1e293b', // slate-800 for visibility
-        textShadow: '0 1px 2px rgba(0, 0, 0, 0.1)'
-      };
-    }
-    
-    return {
-      color: teamColor,
-      textShadow: '0 1px 3px rgba(0, 0, 0, 0.3)', // Add shadow for better visibility
-      WebkitTextStroke: '0.5px rgba(255, 255, 255, 0.8)' // Subtle outline for contrast
-    };
-  };
-
   return (
-    <Card className="overflow-hidden">
-      <CardContent className="p-6">
+    <Card className="overflow-hidden premier-card-shadow-lg match-border-gradient">
+      <CardContent className="p-6 match-gradient-header">
         {/* Teams and Score */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4 flex-1">
@@ -66,7 +50,7 @@ const MatchHeaderSection = ({
                 {fixture.home_team?.name || 'Home'}
               </div>
               <div 
-                className="text-4xl font-bold"
+                className="text-4xl font-bold score-text-outline"
                 style={getScoreStyle(homeTeamColor)}
               >
                 {fixture.home_score || 0}
@@ -78,7 +62,7 @@ const MatchHeaderSection = ({
           <div className="text-center px-8">
             <Badge 
               variant={fixture.status === 'completed' ? 'default' : 'outline'}
-              className="mb-3 text-sm px-4 py-1 font-bold"
+              className="mb-3 text-sm px-4 py-1 font-bold bg-gradient-to-r from-primary/80 to-primary/60"
             >
               {fixture.status === 'completed' ? 'FULL TIME' : fixture.status?.toUpperCase() || 'MATCH'}
             </Badge>
@@ -94,7 +78,7 @@ const MatchHeaderSection = ({
                 {fixture.away_team?.name || 'Away'}
               </div>
               <div 
-                className="text-4xl font-bold"
+                className="text-4xl font-bold score-text-outline"
                 style={getScoreStyle(awayTeamColor)}
               >
                 {fixture.away_score || 0}
@@ -110,8 +94,8 @@ const MatchHeaderSection = ({
           </div>
         </div>
 
-        {/* Match Info Bar - Now positioned after teams */}
-        <div className="flex items-center justify-center gap-4 text-sm text-muted-foreground mt-6 pt-4 border-t">
+        {/* Match Info Bar - Enhanced with gradient */}
+        <div className="flex items-center justify-center gap-4 text-sm text-muted-foreground mt-6 pt-4 border-t border-primary/20 bg-gradient-to-r from-transparent via-muted/10 to-transparent rounded-lg p-2">
           <div className="flex items-center gap-1">
             <Calendar className="h-4 w-4" />
             <span>{fixture.match_date}</span>

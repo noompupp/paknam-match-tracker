@@ -1,0 +1,104 @@
+
+/* Premier League-style gradient design system */
+@layer utilities {
+  /* Primary Match Gradients */
+  .match-gradient-primary {
+    background: linear-gradient(135deg, 
+      hsl(var(--primary) / 0.05) 0%, 
+      hsl(var(--secondary) / 0.08) 50%, 
+      hsl(var(--accent) / 0.05) 100%);
+  }
+  
+  .match-gradient-header {
+    background: linear-gradient(135deg, 
+      hsl(var(--primary) / 0.1) 0%, 
+      hsl(var(--secondary) / 0.15) 50%, 
+      hsl(var(--primary) / 0.08) 100%);
+  }
+  
+  .match-gradient-events {
+    background: linear-gradient(135deg, 
+      hsl(var(--muted) / 0.3) 0%, 
+      hsl(var(--card) / 0.5) 50%, 
+      hsl(var(--muted) / 0.4) 100%);
+  }
+  
+  .match-gradient-stats {
+    background: linear-gradient(135deg, 
+      hsl(var(--secondary) / 0.2) 0%, 
+      hsl(var(--muted) / 0.3) 50%, 
+      hsl(var(--accent) / 0.2) 100%);
+  }
+  
+  /* Enhanced Border Gradients */
+  .match-border-gradient {
+    border: 1px solid;
+    border-image: linear-gradient(135deg, 
+      hsl(var(--primary) / 0.2), 
+      hsl(var(--secondary) / 0.3), 
+      hsl(var(--primary) / 0.2)) 1;
+  }
+  
+  /* Event Item Gradients */
+  .event-item-gradient {
+    background: linear-gradient(90deg, 
+      hsl(var(--muted) / 0.1) 0%, 
+      hsl(var(--card) / 0.2) 50%, 
+      hsl(var(--muted) / 0.1) 100%);
+  }
+  
+  /* Timeline Gradients */
+  .timeline-gradient {
+    background: linear-gradient(135deg, 
+      hsl(var(--background) / 0.8) 0%, 
+      hsl(var(--muted) / 0.4) 50%, 
+      hsl(var(--background) / 0.9) 100%);
+  }
+  
+  /* Enhanced Text Shadows for Score Visibility */
+  .score-text-shadow {
+    text-shadow: 
+      0 1px 3px rgba(0, 0, 0, 0.3),
+      0 2px 6px rgba(0, 0, 0, 0.15),
+      1px 1px 0 rgba(255, 255, 255, 0.8);
+  }
+  
+  .score-text-outline {
+    -webkit-text-stroke: 0.5px rgba(255, 255, 255, 0.9);
+    text-shadow: 
+      0 1px 3px rgba(0, 0, 0, 0.4),
+      0 2px 6px rgba(0, 0, 0, 0.2);
+  }
+  
+  /* Card Shadows and Depth */
+  .premier-card-shadow {
+    box-shadow: 
+      0 4px 12px rgba(0, 0, 0, 0.1),
+      0 2px 6px rgba(0, 0, 0, 0.05),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  }
+  
+  .premier-card-shadow-lg {
+    box-shadow: 
+      0 8px 24px rgba(0, 0, 0, 0.12),
+      0 4px 12px rgba(0, 0, 0, 0.08),
+      inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  }
+}
+
+/* Dark mode adjustments */
+.dark {
+  .score-text-shadow {
+    text-shadow: 
+      0 1px 3px rgba(0, 0, 0, 0.5),
+      0 2px 6px rgba(0, 0, 0, 0.3),
+      1px 1px 0 rgba(255, 255, 255, 0.1);
+  }
+  
+  .score-text-outline {
+    -webkit-text-stroke: 0.5px rgba(0, 0, 0, 0.8);
+    text-shadow: 
+      0 1px 3px rgba(255, 255, 255, 0.2),
+      0 2px 6px rgba(255, 255, 255, 0.1);
+  }
+}

@@ -1,5 +1,6 @@
 
 import { Card, CardContent } from "@/components/ui/card";
+import { getScoreStyle } from "@/utils/scoreColorUtils";
 
 interface MatchStatisticsSummaryProps {
   fixture: any;
@@ -21,33 +22,41 @@ const MatchStatisticsSummary = ({
   awayTeamColor
 }: MatchStatisticsSummaryProps) => {
   return (
-    <Card className="bg-gradient-to-r from-muted/30 via-muted/20 to-muted/30">
-      <CardContent className="pt-6">
+    <Card className="premier-card-shadow match-border-gradient">
+      <CardContent className="pt-6 match-gradient-stats">
         <div className="grid grid-cols-3 gap-6 text-center">
-          <div>
-            <div className="text-2xl font-bold mb-1" style={{ color: homeTeamColor }}>
+          <div className="p-4 rounded-lg bg-gradient-to-br from-primary/5 to-primary/10 border border-primary/10">
+            <div 
+              className="text-2xl font-bold mb-1 score-text-outline"
+              style={getScoreStyle(homeTeamColor)}
+            >
               {homeGoalsCount}
             </div>
-            <div className="text-sm text-muted-foreground mb-2">Goals</div>
-            <div className="text-xs text-muted-foreground truncate">
+            <div className="text-sm text-muted-foreground mb-2 font-medium">Goals</div>
+            <div className="text-xs text-muted-foreground truncate font-medium">
               {fixture.home_team?.name || 'Home'}
             </div>
           </div>
-          <div>
-            <div className="text-2xl font-bold mb-1 text-amber-600">
+          
+          <div className="p-4 rounded-lg bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200">
+            <div className="text-2xl font-bold mb-1 text-amber-600 score-text-shadow">
               {cardsCount}
             </div>
-            <div className="text-sm text-muted-foreground mb-2">Cards</div>
-            <div className="text-xs text-muted-foreground">
+            <div className="text-sm text-muted-foreground mb-2 font-medium">Cards</div>
+            <div className="text-xs text-muted-foreground font-medium">
               {timelineEventsCount} Events
             </div>
           </div>
-          <div>
-            <div className="text-2xl font-bold mb-1" style={{ color: awayTeamColor }}>
+          
+          <div className="p-4 rounded-lg bg-gradient-to-br from-secondary/5 to-secondary/10 border border-secondary/10">
+            <div 
+              className="text-2xl font-bold mb-1 score-text-outline"
+              style={getScoreStyle(awayTeamColor)}
+            >
               {awayGoalsCount}
             </div>
-            <div className="text-sm text-muted-foreground mb-2">Goals</div>
-            <div className="text-xs text-muted-foreground truncate">
+            <div className="text-sm text-muted-foreground mb-2 font-medium">Goals</div>
+            <div className="text-xs text-muted-foreground truncate font-medium">
               {fixture.away_team?.name || 'Away'}
             </div>
           </div>
