@@ -82,10 +82,10 @@ const QuickGoalEditWizard = ({
   console.log('🎯 QuickGoalEditWizard: Editing quick goal:', {
     goalId: quickGoal.id,
     teamId: quickGoal.team_id,
-    teamName: quickGoal.teamName,
+    goalTeamName: quickGoal.teamName,
     team: quickGoal.team,
     isHomeTeam,
-    teamName: teamName,
+    assignedTeamName: teamName,
     playersCount: teamPlayers.length,
     eventTime
   });
@@ -122,7 +122,7 @@ const QuickGoalEditWizard = ({
         .update({
           player_name: selectedPlayer.name
         })
-        .eq('id', quickGoal.id)
+        .eq('id', Number(quickGoal.id))
         .select()
         .single();
 
