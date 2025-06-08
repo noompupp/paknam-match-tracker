@@ -8,12 +8,15 @@ interface TimeTabProps {
   awayTeamPlayers?: ComponentPlayer[];
   trackedPlayers: any[];
   selectedPlayer: string;
+  selectedTimeTeam: string;
   matchTime: number;
   onPlayerSelect: (value: string) => void;
+  onTimeTeamChange: (value: string) => void;
   onAddPlayer: (player: ComponentPlayer) => void;
   onRemovePlayer: (playerId: number) => void;
   onTogglePlayerTime: (playerId: number) => void;
   formatTime: (seconds: number) => string;
+  selectedFixtureData: any;
 }
 
 const TimeTab = ({
@@ -22,49 +25,63 @@ const TimeTab = ({
   awayTeamPlayers,
   trackedPlayers,
   selectedPlayer,
+  selectedTimeTeam,
   onPlayerSelect,
+  onTimeTeamChange,
   onAddPlayer,
   onRemovePlayer,
   onTogglePlayerTime,
   formatTime,
-  matchTime
+  matchTime,
+  selectedFixtureData
 }: TimeTabProps) => {
   const handleAddPlayer = () => {
-    if (!selectedPlayer) return;
+    if (!selectedPlayer || !selectedTimeTeam) return;
     
-    // Use match-specific players first, fallback to all players
-    const playersToSearch = homeTeamPlayers && awayTeamPlayers 
-      ? [...homeTeamPlayers, ...awayTeamPlayers]
-      : allPlayers;
+    // Get filtered players based on selected team
+    const getFilteredPlayers = () => {
+      if (selectedTimeTeam === 'home' && homeTeamPlayers) {
+        return homeTeamPlayers;
+      } else if (selectedTimeTeam === 'away' && awayTeamPlayers) {
+        return awayTeamPlayers;
+      }
+      return [];
+    };
     
-    const player = playersToSearch.find(p => p.id.toString() === selectedPlayer);
-    if (!player) return;
+    const filteredPlayers = getFilteredPlayers();
+    const player = filteredPlayers.find(p => p.id.toString() === selectedPlayer);
+    
+    if (!player) {
+      console.warn('Player not found in filtered list:', selectedPlayer);
+      return;
+    }
     
     console.log('⏱️ TimeTab: Adding player to time tracking:', {
       player: player.name,
       team: player.team,
-      source: homeTeamPlayers && awayTeamPlayers ? 'match-specific' : 'all-players'
+      selectedTeam: selectedTimeTeam,
+      source: 'team-filtered'
     });
     
     onAddPlayer(player);
   };
 
-  // Use match-specific players for the dropdown
-  const playersForDropdown = homeTeamPlayers && awayTeamPlayers 
-    ? [...homeTeamPlayers, ...awayTeamPlayers]
-    : allPlayers;
-
   return (
     <PlayerTimeTracker
-      allPlayers={playersForDropdown}
+      allPlayers={allPlayers}
+      homeTeamPlayers={homeTeamPlayers}
+      awayTeamPlayers={awayTeamPlayers}
       trackedPlayers={trackedPlayers}
       selectedPlayer={selectedPlayer}
+      selectedTimeTeam={selectedTimeTeam}
       onPlayerSelect={onPlayerSelect}
+      onTimeTeamChange={onTimeTeamChange}
       onAddPlayer={handleAddPlayer}
       onRemovePlayer={onRemovePlayer}
       onTogglePlayerTime={onTogglePlayerTime}
       formatTime={formatTime}
       matchTime={matchTime}
+      selectedFixtureData={selectedFixtureData}
     />
   );
 };

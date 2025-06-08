@@ -23,9 +23,11 @@ interface GoalAssignmentProps {
   goals: GoalData[];
   selectedPlayer: string;
   selectedGoalType: 'goal' | 'assist';
+  selectedGoalTeam: string;
   matchTime: number;
   onPlayerSelect: (value: string) => void;
   onGoalTypeChange: (value: 'goal' | 'assist') => void;
+  onGoalTeamChange: (value: string) => void;
   onAssignGoal: () => void;
   formatTime: (seconds: number) => string;
   homeScore: number;
@@ -40,9 +42,11 @@ const GoalAssignment = ({
   goals,
   selectedPlayer,
   selectedGoalType,
+  selectedGoalTeam,
   matchTime,
   onPlayerSelect,
   onGoalTypeChange,
+  onGoalTeamChange,
   onAssignGoal,
   formatTime,
   homeScore,
@@ -79,13 +83,17 @@ const GoalAssignment = ({
           awayTeamPlayers={awayTeamPlayers}
           selectedPlayer={selectedPlayer}
           selectedGoalType={selectedGoalType}
+          selectedGoalTeam={selectedGoalTeam}
           onPlayerSelect={onPlayerSelect}
           onGoalTypeChange={onGoalTypeChange}
+          onGoalTeamChange={onGoalTeamChange}
+          selectedFixtureData={selectedFixtureData}
         />
 
         <GoalAssignmentButton
           selectedPlayer={selectedPlayer}
           selectedGoalType={selectedGoalType}
+          selectedGoalTeam={selectedGoalTeam}
           matchTime={matchTime}
           formatTime={formatTime}
           onAssignGoal={onAssignGoal}

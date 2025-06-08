@@ -1,192 +1,218 @@
 
+import { Tabs, TabsContent } from "@/components/ui/tabs";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertTriangle } from "lucide-react";
 import MatchSelection from "./MatchSelection";
-import RefereeHeader from "./components/RefereeHeader";
-import RefereeMatchControls from "./components/RefereeMatchControls";
+import RefereeTabsNavigation from "./components/RefereeTabsNavigation";
+import ScoreTab from "./components/tabs/ScoreTab";
+import TimerTab from "./components/tabs/TimerTab";
+import GoalsTab from "./components/tabs/GoalsTab";
+import CardsTab from "./components/tabs/CardsTab";
+import TimeTab from "./components/tabs/TimeTab";
+import SummaryTab from "./components/tabs/SummaryTab";
 import { useRefereeState } from "./hooks/useRefereeState";
-import { useRefereeHandlers } from "./hooks/useRefereeHandlers";
-import { useUpdateMemberStatsFromMatch } from "@/hooks/useEnhancedMatchSummary";
-import { useBackgroundTimer } from "@/hooks/useBackgroundTimer";
-import { Button } from "@/components/ui/button";
-import { Save, Database, RotateCcw, Trash2, TrendingUp } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import ScrollSafeContainer from "@/components/ui/scroll-safe-container";
-import TimerProtectionAlert from "./components/TimerProtectionAlert";
 
 const RefereeToolsContainer = () => {
-  const state = useRefereeState();
-  const handlers = useRefereeHandlers(state);
-  const updateMemberStats = useUpdateMemberStatsFromMatch();
-  const { toast } = useToast();
+  const {
+    // Data
+    fixtures,
+    fixturesLoading,
+    selectedFixture,
+    setSelectedFixture,
+    selectedFixtureData,
+    
+    // Enhanced player data with team filtering
+    allPlayers,
+    homeTeamPlayers,
+    awayTeamPlayers,
+    
+    // Team selection for Goals and Time tabs
+    selectedGoalTeam,
+    setSelectedGoalTeam,
+    selectedTimeTeam,
+    setSelectedTimeTeam,
+    
+    // Timer state
+    matchTime,
+    isRunning,
+    toggleTimer,
+    resetTimer,
+    formatTime,
+    
+    // Score state
+    homeScore,
+    awayScore,
+    
+    // Goal state
+    goals,
+    selectedGoalPlayer,
+    selectedGoalType,
+    setSelectedGoalPlayer,
+    setSelectedGoalType,
+    assignGoal,
+    
+    // Card state
+    cards,
+    selectedPlayer,
+    selectedTeam,
+    selectedCardType,
+    setSelectedPlayer,
+    setSelectedTeam,
+    setSelectedCardType,
+    
+    // Player tracking state
+    trackedPlayers,
+    selectedTimePlayer,
+    setSelectedTimePlayer,
+    
+    // Events
+    events,
+    
+    // Enhanced data status
+    enhancedPlayersData
+  } = useRefereeState();
 
-  // Enhanced background timer
-  const backgroundTimer = useBackgroundTimer({
-    onTimerTick: (time) => {
-      // Sync with main timer if needed
-      if (Math.abs(time - state.matchTime) > 2) {
-        console.log('🕐 Background timer syncing:', time, 'vs', state.matchTime);
-      }
-    },
-    enableNotifications: true
+  console.log('🎮 RefereeToolsContainer: Enhanced team selection state:', {
+    selectedGoalTeam,
+    selectedTimeTeam,
+    homePlayersCount: homeTeamPlayers?.length || 0,
+    awayPlayersCount: awayTeamPlayers?.length || 0,
+    hasValidData: enhancedPlayersData.hasValidData
   });
 
-  const handleUpdateMemberStats = async () => {
-    if (!state.selectedFixtureData) {
-      toast({
-        title: "Error",
-        description: "No fixture selected for stats update",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    try {
-      const result = await updateMemberStats(state.selectedFixtureData.id);
-      
-      if (result.success) {
-        toast({
-          title: "Stats Updated Successfully!",
-          description: result.message,
-        });
-      } else {
-        toast({
-          title: "Stats Update Failed",
-          description: result.message,
-          variant: "destructive"
-        });
-      }
-    } catch (error) {
-      console.error('❌ RefereeToolsContainer: Error updating member stats:', error);
-      toast({
-        title: "Update Failed",
-        description: "Failed to update member stats. Please try again.",
-        variant: "destructive"
-      });
-    }
-  };
-
-  if (state.fixturesLoading) {
+  if (fixturesLoading) {
     return (
-      <ScrollSafeContainer className="gradient-bg flex items-center justify-center">
-        <div className="text-center text-white">
-          <h2 className="text-2xl font-bold mb-4">Loading...</h2>
+      <div className="container mx-auto p-4">
+        <div className="flex items-center justify-center h-32">
+          <p>Loading fixtures...</p>
         </div>
-      </ScrollSafeContainer>
+      </div>
     );
   }
 
-  const hasActiveTracking = state.trackedPlayers.some(p => p.isPlaying);
-
   return (
-    <ScrollSafeContainer className="gradient-bg">
-      <div className="container mx-auto px-4 py-6 space-y-6">
-        {/* Timer Protection Alert */}
-        <TimerProtectionAlert
-          isTimerRunning={state.isRunning}
-          hasActiveTracking={hasActiveTracking}
-        />
+    <div className="container mx-auto p-4 space-y-6">
+      <h1 className="text-2xl font-bold text-center">Referee Tools</h1>
+      
+      <MatchSelection
+        fixtures={fixtures || []}
+        selectedFixture={selectedFixture}
+        onFixtureChange={setSelectedFixture}
+      />
 
-        <RefereeHeader
-          saveAttempts={state.saveAttempts}
-          playersNeedingAttention={state.playersNeedingAttention}
-        />
-
-        <MatchSelection
-          fixtures={state.fixtures || []}
-          selectedFixture={state.selectedFixture}
-          onFixtureChange={state.setSelectedFixture}
-        />
-
-        {state.selectedFixtureData && (
-          <>
-            <RefereeMatchControls
-              selectedFixtureData={state.selectedFixtureData}
-              homeScore={state.homeScore}
-              awayScore={state.awayScore}
-              matchTime={state.matchTime}
-              isRunning={state.isRunning}
-              formatTime={state.formatTime}
-              allPlayers={state.allPlayers}
-              homeTeamPlayers={state.homeTeamPlayers}
-              awayTeamPlayers={state.awayTeamPlayers}
-              playersForTimeTracker={state.playersForTimeTracker}
-              goals={state.goals}
-              selectedGoalPlayer={state.selectedGoalPlayer}
-              selectedGoalType={state.selectedGoalType}
-              setSelectedGoalPlayer={state.setSelectedGoalPlayer}
-              setSelectedGoalType={state.setSelectedGoalType}
-              selectedPlayer={state.selectedPlayer}
-              selectedTeam={state.selectedTeam}
-              selectedCardType={state.selectedCardType}
-              setSelectedPlayer={state.setSelectedPlayer}
-              setSelectedTeam={state.setSelectedTeam}
-              setSelectedCardType={state.setSelectedCardType}
-              cards={state.cards}
-              trackedPlayers={state.trackedPlayers}
-              selectedTimePlayer={state.selectedTimePlayer}
-              setSelectedTimePlayer={state.setSelectedTimePlayer}
-              events={state.events}
-              updateFixtureScore={state.updateFixtureScore}
-              onAddGoal={handlers.handleAddGoal}
-              onRemoveGoal={handlers.handleRemoveGoal}
-              onToggleTimer={handlers.handleToggleTimer}
-              onResetMatch={handlers.handleResetMatch}
-              onSaveMatch={handlers.handleSaveMatch}
-              onAssignGoal={(player) => handlers.handleAssignGoal(player)}
-              onAddCard={(playerName: string, team: string, cardType: 'yellow' | 'red', time: number) => 
-                handlers.handleAddCard(playerName, team, cardType, time)
-              }
-              onAddPlayer={(player) => handlers.handleAddPlayer(player)}
-              onRemovePlayer={(playerId: number) => handlers.handleRemovePlayer(playerId)}
-              onTogglePlayerTime={(playerId: number) => handlers.handleTogglePlayerTime(playerId)}
-              onExportSummary={handlers.handleExportSummary}
-            />
-
-            {/* Enhanced Controls for Database Integration */}
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-              <Button 
-                onClick={handlers.handleSaveAllPlayerTimes}
-                variant="outline"
-                className="flex items-center gap-2"
-              >
-                <Database className="h-4 w-4" />
-                Save Player Times
-              </Button>
-              <Button 
-                onClick={handlers.handleSaveMatch}
-                className="flex items-center gap-2"
-              >
-                <Save className="h-4 w-4" />
-                Save Match
-              </Button>
-              <Button 
-                onClick={handleUpdateMemberStats}
-                variant="secondary"
-                className="flex items-center gap-2"
-              >
-                <TrendingUp className="h-4 w-4" />
-                Update Member Stats
-              </Button>
-              <Button 
-                onClick={handlers.handleCleanupDuplicates}
-                variant="outline"
-                className="flex items-center gap-2"
-              >
-                <RotateCcw className="h-4 w-4" />
-                Cleanup Duplicates
-              </Button>
-              <Button 
-                onClick={handlers.handleResetMatchData}
-                variant="destructive"
-                className="flex items-center gap-2"
-              >
-                <Trash2 className="h-4 w-4" />
-                Reset Match Data
-              </Button>
+      {/* Data validation alerts */}
+      {selectedFixture && !enhancedPlayersData.hasValidData && (
+        <Alert variant="destructive">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription>
+            <div className="space-y-1">
+              <p>Issues detected with player data:</p>
+              <ul className="list-disc list-inside text-sm">
+                {enhancedPlayersData.dataIssues.map((issue, index) => (
+                  <li key={index}>{issue}</li>
+                ))}
+              </ul>
             </div>
-          </>
-        )}
-      </div>
-    </ScrollSafeContainer>
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {selectedFixture && (
+        <Tabs defaultValue="score" className="w-full">
+          <RefereeTabsNavigation />
+          
+          <TabsContent value="score" className="mt-6">
+            <ScoreTab
+              homeScore={homeScore}
+              awayScore={awayScore}
+              selectedFixtureData={selectedFixtureData}
+            />
+          </TabsContent>
+
+          <TabsContent value="timer" className="mt-6">
+            <TimerTab
+              matchTime={matchTime}
+              isRunning={isRunning}
+              formatTime={formatTime}
+              onToggleTimer={toggleTimer}
+              onResetTimer={resetTimer}
+            />
+          </TabsContent>
+
+          <TabsContent value="goals" className="mt-6">
+            <GoalsTab
+              allPlayers={allPlayers}
+              homeTeamPlayers={homeTeamPlayers}
+              awayTeamPlayers={awayTeamPlayers}
+              goals={goals}
+              selectedPlayer={selectedGoalPlayer}
+              selectedGoalType={selectedGoalType}
+              selectedGoalTeam={selectedGoalTeam}
+              matchTime={matchTime}
+              onPlayerSelect={setSelectedGoalPlayer}
+              onGoalTypeChange={setSelectedGoalType}
+              onGoalTeamChange={setSelectedGoalTeam}
+              onAssignGoal={assignGoal}
+              formatTime={formatTime}
+              homeScore={homeScore}
+              awayScore={awayScore}
+              selectedFixtureData={selectedFixtureData}
+            />
+          </TabsContent>
+
+          <TabsContent value="cards" className="mt-6">
+            <CardsTab
+              allPlayers={allPlayers}
+              homeTeamPlayers={homeTeamPlayers}
+              awayTeamPlayers={awayTeamPlayers}
+              cards={cards}
+              selectedPlayer={selectedPlayer}
+              selectedTeam={selectedTeam}
+              selectedCardType={selectedCardType}
+              matchTime={matchTime}
+              onPlayerSelect={setSelectedPlayer}
+              onTeamChange={setSelectedTeam}
+              onCardTypeChange={setSelectedCardType}
+              formatTime={formatTime}
+              selectedFixtureData={selectedFixtureData}
+            />
+          </TabsContent>
+
+          <TabsContent value="time" className="mt-6">
+            <TimeTab
+              allPlayers={allPlayers}
+              homeTeamPlayers={homeTeamPlayers}
+              awayTeamPlayers={awayTeamPlayers}
+              trackedPlayers={trackedPlayers}
+              selectedPlayer={selectedTimePlayer}
+              selectedTimeTeam={selectedTimeTeam}
+              matchTime={matchTime}
+              onPlayerSelect={setSelectedTimePlayer}
+              onTimeTeamChange={setSelectedTimeTeam}
+              onAddPlayer={() => {}} // This will be handled by the TimeTab component
+              onRemovePlayer={() => {}} // This will be handled by the TimeTab component
+              onTogglePlayerTime={() => {}} // This will be handled by the TimeTab component
+              formatTime={formatTime}
+              selectedFixtureData={selectedFixtureData}
+            />
+          </TabsContent>
+
+          <TabsContent value="summary" className="mt-6">
+            <SummaryTab
+              matchTime={matchTime}
+              homeScore={homeScore}
+              awayScore={awayScore}
+              goals={goals}
+              cards={cards}
+              trackedPlayers={trackedPlayers}
+              events={events}
+              selectedFixtureData={selectedFixtureData}
+              formatTime={formatTime}
+            />
+          </TabsContent>
+        </Tabs>
+      )}
+    </div>
   );
 };
 

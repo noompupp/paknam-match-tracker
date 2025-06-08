@@ -37,6 +37,11 @@ export const useRefereeState = () => {
 
   const [selectedFixture, setSelectedFixture] = useState("");
   const [saveAttempts, setSaveAttempts] = useState(0);
+  
+  // Add team selection state for Goals and Time tabs
+  const [selectedGoalTeam, setSelectedGoalTeam] = useState("");
+  const [selectedTimeTeam, setSelectedTimeTeam] = useState("");
+  
   const [enhancedPlayersData, setEnhancedPlayersData] = useState<{
     allPlayers: ComponentPlayer[];
     homeTeamPlayers: ComponentPlayer[];
@@ -155,6 +160,14 @@ export const useRefereeState = () => {
     loadEnhancedPlayerData();
   }, [selectedFixtureData, members]);
 
+  // Reset team selections when fixture changes
+  useEffect(() => {
+    if (selectedFixture) {
+      setSelectedGoalTeam("");
+      setSelectedTimeTeam("");
+    }
+  }, [selectedFixture]);
+
   // Custom hooks
   const { matchTime, isRunning, toggleTimer, resetTimer, formatTime } = useMatchTimer();
   const { homeScore, awayScore, addGoal, removeGoal, resetScore } = useScoreManagement();
@@ -200,6 +213,32 @@ export const useRefereeState = () => {
   // Check for players needing attention
   const playersNeedingAttention = getPlayersNeedingAttention(playersForTimeTracker, matchTime);
 
+  // Get filtered players for Goals tab based on selected team
+  const getGoalFilteredPlayers = () => {
+    if (!selectedGoalTeam) return [];
+    
+    if (selectedGoalTeam === 'home') {
+      return enhancedPlayersData.homeTeamPlayers;
+    } else if (selectedGoalTeam === 'away') {
+      return enhancedPlayersData.awayTeamPlayers;
+    }
+    
+    return [];
+  };
+
+  // Get filtered players for Time tab based on selected team
+  const getTimeFilteredPlayers = () => {
+    if (!selectedTimeTeam) return [];
+    
+    if (selectedTimeTeam === 'home') {
+      return enhancedPlayersData.homeTeamPlayers;
+    } else if (selectedTimeTeam === 'away') {
+      return enhancedPlayersData.awayTeamPlayers;
+    }
+    
+    return [];
+  };
+
   console.log('🎯 useRefereeState Summary:', {
     selectedFixture,
     hasSelectedFixtureData: !!selectedFixtureData,
@@ -208,7 +247,11 @@ export const useRefereeState = () => {
     awayPlayersCount: enhancedPlayersData.awayTeamPlayers.length,
     totalPlayersCount: enhancedPlayersData.allPlayers.length,
     enhancedDataValid: enhancedPlayersData.hasValidData,
-    dataIssues: enhancedPlayersData.dataIssues
+    dataIssues: enhancedPlayersData.dataIssues,
+    selectedGoalTeam,
+    selectedTimeTeam,
+    goalFilteredPlayersCount: getGoalFilteredPlayers().length,
+    timeFilteredPlayersCount: getTimeFilteredPlayers().length
   });
 
   return {
@@ -226,6 +269,14 @@ export const useRefereeState = () => {
     awayTeamPlayers: enhancedPlayersData.awayTeamPlayers,
     playersForTimeTracker,
     playersNeedingAttention,
+    
+    // Team selection for Goals and Time tabs
+    selectedGoalTeam,
+    setSelectedGoalTeam,
+    selectedTimeTeam,
+    setSelectedTimeTeam,
+    getGoalFilteredPlayers,
+    getTimeFilteredPlayers,
     
     saveAttempts,
     setSaveAttempts,

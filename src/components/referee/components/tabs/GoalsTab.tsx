@@ -9,9 +9,11 @@ interface GoalsTabProps {
   goals: any[];
   selectedPlayer: string;
   selectedGoalType: 'goal' | 'assist';
+  selectedGoalTeam: string;
   matchTime: number;
   onPlayerSelect: (value: string) => void;
   onGoalTypeChange: (value: 'goal' | 'assist') => void;
+  onGoalTeamChange: (value: string) => void;
   onAssignGoal: (player: ComponentPlayer) => void;
   formatTime: (seconds: number) => string;
   homeScore: number;
@@ -26,9 +28,11 @@ const GoalsTab = ({
   goals,
   selectedPlayer,
   selectedGoalType,
+  selectedGoalTeam,
   matchTime,
   onPlayerSelect,
   onGoalTypeChange,
+  onGoalTeamChange,
   onAssignGoal,
   formatTime,
   homeScore,
@@ -36,15 +40,25 @@ const GoalsTab = ({
   selectedFixtureData
 }: GoalsTabProps) => {
   const handleAssignGoal = () => {
-    if (!selectedPlayer) return;
+    if (!selectedPlayer || !selectedGoalTeam) return;
     
-    // Check both filtered and all players arrays
-    const playersToSearch = homeTeamPlayers && awayTeamPlayers 
-      ? [...homeTeamPlayers, ...awayTeamPlayers]
-      : allPlayers;
+    // Get filtered players based on selected team
+    const getFilteredPlayers = () => {
+      if (selectedGoalTeam === 'home' && homeTeamPlayers) {
+        return homeTeamPlayers;
+      } else if (selectedGoalTeam === 'away' && awayTeamPlayers) {
+        return awayTeamPlayers;
+      }
+      return [];
+    };
     
-    const player = playersToSearch.find(p => p.id.toString() === selectedPlayer);
-    if (!player) return;
+    const filteredPlayers = getFilteredPlayers();
+    const player = filteredPlayers.find(p => p.id.toString() === selectedPlayer);
+    
+    if (!player) {
+      console.warn('Player not found in filtered list:', selectedPlayer);
+      return;
+    }
     
     onAssignGoal(player);
   };
@@ -57,9 +71,11 @@ const GoalsTab = ({
       goals={goals}
       selectedPlayer={selectedPlayer}
       selectedGoalType={selectedGoalType}
+      selectedGoalTeam={selectedGoalTeam}
       matchTime={matchTime}
       onPlayerSelect={onPlayerSelect}
       onGoalTypeChange={onGoalTypeChange}
+      onGoalTeamChange={onGoalTeamChange}
       onAssignGoal={handleAssignGoal}
       formatTime={formatTime}
       homeScore={homeScore}
