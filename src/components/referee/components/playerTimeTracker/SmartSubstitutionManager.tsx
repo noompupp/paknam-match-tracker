@@ -4,6 +4,7 @@ import { ProcessedPlayer } from "@/utils/refereeDataProcessor";
 import { PlayerTime } from "@/types/database";
 import { useToast } from "@/hooks/use-toast";
 import { validateSubstitution } from "./substitutionValidationUtils";
+import { getEnhancedAvailablePlayers } from "./reSubstitutionUtils";
 import SubstitutionModal from "./SubstitutionModal";
 
 interface SmartSubstitutionManagerProps {
@@ -116,16 +117,14 @@ const SmartSubstitutionManager = ({
     }
   };
 
-  const getAvailablePlayersForSubstitution = () => {
-    if (!pendingAction) return [];
+  const getEnhancedAvailablePlayersForSubstitution = () => {
+    if (!pendingAction) return { newPlayers: [], reSubstitutionPlayers: [], canReSubstitute: false };
     
     const teamPlayers = pendingAction.playerToRemove?.team === (selectedFixtureData?.home_team?.name || 'Home')
       ? homeTeamPlayers || []
       : awayTeamPlayers || [];
     
-    return teamPlayers.filter(player => 
-      !trackedPlayers.some(tracked => tracked.id === player.id)
-    );
+    return getEnhancedAvailablePlayers(trackedPlayers, teamPlayers);
   };
 
   const handleSubstitution = (incomingPlayer: ProcessedPlayer) => {
@@ -142,12 +141,20 @@ const SmartSubstitutionManager = ({
       onTogglePlayerTime(pendingAction.playerId);
     }
 
-    // Add the incoming player
-    onAddPlayer(incomingPlayer);
+    // Add the incoming player (or re-activate if it's a re-substitution)
+    const existingPlayer = trackedPlayers.find(p => p.id === incomingPlayer.id);
+    if (existingPlayer && !existingPlayer.isPlaying) {
+      // This is a re-substitution - toggle the existing player back on
+      onTogglePlayerTime(incomingPlayer.id);
+    } else {
+      // This is a new player
+      onAddPlayer(incomingPlayer);
+    }
     
-    // Show success toast
+    // Show success toast with re-substitution indicator
+    const isReSubstitution = trackedPlayers.some(p => p.id === incomingPlayer.id);
     toast({
-      title: "🔄 Substitution Complete",
+      title: isReSubstitution ? "🔄 Re-substitution Complete" : "🔄 Substitution Complete",
       description: `${pendingAction.playerToRemove?.name || 'Player'} → ${incomingPlayer.name} (${incomingPlayer.team})`,
     });
     
@@ -172,6 +179,8 @@ const SmartSubstitutionManager = ({
     setShowSubstitutionModal(false);
   };
 
+  const enhancedAvailablePlayers = getEnhancedAvailablePlayersForSubstitution();
+
   return {
     handlePlayerToggle,
     handlePlayerAdd,
@@ -180,7 +189,7 @@ const SmartSubstitutionManager = ({
         isOpen={showSubstitutionModal}
         onClose={handleSkipSubstitution}
         outgoingPlayer={pendingAction?.playerToRemove || null}
-        availablePlayers={getAvailablePlayersForSubstitution()}
+        enhancedAvailablePlayers={enhancedAvailablePlayers}
         onSubstitute={handleSubstitution}
       />
     )

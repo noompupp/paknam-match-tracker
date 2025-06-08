@@ -6,7 +6,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { PlayerTime } from "@/types/database";
 import { ProcessedPlayer } from "@/utils/refereeDataProcessor";
-import { Users, Play, AlertTriangle, Lock, UserPlus } from "lucide-react";
+import { Users, Play, AlertTriangle, Lock, UserPlus, RotateCcw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import SevenASideValidationPanel from "../SevenASideValidationPanel";
 import TrackedPlayersList from "./TrackedPlayersList";
@@ -19,6 +19,7 @@ import {
   validateTeamLock, 
   canRemovePlayer
 } from "./playerValidationUtils";
+import { canAllowReSubstitution } from "./reSubstitutionUtils";
 
 interface EnhancedPlayerTimeTrackerProps {
   trackedPlayers: PlayerTime[];
@@ -50,6 +51,7 @@ const EnhancedPlayerTimeTracker = ({
 
   const playerCountValidation = validatePlayerCount(trackedPlayers);
   const teamLockValidation = validateTeamLock(trackedPlayers);
+  const canReSubstitute = canAllowReSubstitution(trackedPlayers);
 
   // Enhanced substitution management
   const smartSubstitutionManager = SmartSubstitutionManager({
@@ -112,13 +114,16 @@ const EnhancedPlayerTimeTracker = ({
   };
 
   const isMatchStarted = trackedPlayers.length > 0;
+  const playersOffField = trackedPlayers.filter(p => !p.isPlaying).length;
 
-  console.log('🎯 EnhancedPlayerTimeTracker (Enhanced Substitution):', {
+  console.log('🎯 EnhancedPlayerTimeTracker (Re-substitution Enhanced):', {
     trackedCount: trackedPlayers.length,
     activeCount: playerCountValidation.activeCount,
+    playersOffField,
     isValid: playerCountValidation.isValid,
     teamLocked: teamLockValidation.isLocked,
-    lockedTeam: teamLockValidation.lockedTeam
+    lockedTeam: teamLockValidation.lockedTeam,
+    canReSubstitute
   });
 
   return (
@@ -130,6 +135,29 @@ const EnhancedPlayerTimeTracker = ({
         matchTime={matchTime}
         formatTime={formatTime}
       />
+
+      {/* Re-substitution Feature Status */}
+      {canReSubstitute && (
+        <Alert>
+          <RotateCcw className="h-4 w-4" />
+          <AlertDescription>
+            <div className="flex items-center justify-between">
+              <div>
+                <span className="font-medium">Re-substitution Available</span>
+                <p className="text-sm mt-1">8+ players have participated. Players marked OFF can be brought back in.</p>
+              </div>
+              <div className="flex gap-2">
+                <Badge variant="outline" className="text-xs">
+                  {trackedPlayers.length} tracked
+                </Badge>
+                <Badge variant="outline" className="text-xs">
+                  {playersOffField} off field
+                </Badge>
+              </div>
+            </div>
+          </AlertDescription>
+        </Alert>
+      )}
 
       {/* Single Top-Level Player Count Alert (replaces repetitive warnings) */}
       {!playerCountValidation.isValid && (
@@ -185,6 +213,11 @@ const EnhancedPlayerTimeTracker = ({
               >
                 <UserPlus className="h-4 w-4 mr-2" />
                 Add Player to Squad
+                {canReSubstitute && (
+                  <Badge variant="outline" className="ml-2 text-xs">
+                    Re-sub available
+                  </Badge>
+                )}
               </Button>
             )}
           </div>
@@ -231,7 +264,7 @@ const EnhancedPlayerTimeTracker = ({
         }}
       />
 
-      {/* Smart Substitution Modal */}
+      {/* Smart Substitution Modal with Re-substitution Support */}
       {smartSubstitutionManager.substitutionModal}
     </div>
   );

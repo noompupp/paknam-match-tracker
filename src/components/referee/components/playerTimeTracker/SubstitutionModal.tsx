@@ -5,8 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { EnhancedRefereeSelect, EnhancedRefereeSelectContent, EnhancedRefereeSelectItem } from "@/components/ui/enhanced-referee-select";
 import { ProcessedPlayer } from "@/utils/refereeDataProcessor";
-import { Users, UserPlus, AlertTriangle } from "lucide-react";
+import { Users, UserPlus, AlertTriangle, RotateCcw } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { EnhancedAvailablePlayers } from "./reSubstitutionUtils";
 
 interface SubstitutionModalProps {
   isOpen: boolean;
@@ -16,7 +19,7 @@ interface SubstitutionModalProps {
     name: string;
     team: string;
   } | null;
-  availablePlayers: ProcessedPlayer[];
+  enhancedAvailablePlayers: EnhancedAvailablePlayers;
   onSubstitute: (incomingPlayer: ProcessedPlayer) => void;
 }
 
@@ -24,15 +27,19 @@ const SubstitutionModal = ({
   isOpen,
   onClose,
   outgoingPlayer,
-  availablePlayers,
+  enhancedAvailablePlayers,
   onSubstitute
 }: SubstitutionModalProps) => {
   const [selectedIncomingPlayer, setSelectedIncomingPlayer] = useState("");
 
+  const { newPlayers, reSubstitutionPlayers, canReSubstitute } = enhancedAvailablePlayers;
+  const allAvailablePlayers = [...newPlayers, ...reSubstitutionPlayers];
+  const hasAnyPlayers = allAvailablePlayers.length > 0;
+
   const handleSubstitute = () => {
     if (!selectedIncomingPlayer) return;
     
-    const incomingPlayer = availablePlayers.find(p => p.id.toString() === selectedIncomingPlayer);
+    const incomingPlayer = allAvailablePlayers.find(p => p.id.toString() === selectedIncomingPlayer);
     if (incomingPlayer) {
       onSubstitute(incomingPlayer);
       setSelectedIncomingPlayer("");
@@ -43,6 +50,10 @@ const SubstitutionModal = ({
   const handleSkipSubstitution = () => {
     setSelectedIncomingPlayer("");
     onClose();
+  };
+
+  const isReSubstitutionPlayer = (playerId: string) => {
+    return reSubstitutionPlayers.some(p => p.id.toString() === playerId);
   };
 
   if (!outgoingPlayer) return null;
@@ -66,6 +77,21 @@ const SubstitutionModal = ({
             </AlertDescription>
           </Alert>
 
+          {/* Re-substitution feature indicator */}
+          {canReSubstitute && (
+            <Alert>
+              <RotateCcw className="h-4 w-4" />
+              <AlertDescription>
+                <div className="flex items-center justify-between">
+                  <span>Re-substitution available - 8+ players have participated</span>
+                  <Badge variant="outline" className="text-xs">
+                    Enhanced Mode
+                  </Badge>
+                </div>
+              </AlertDescription>
+            </Alert>
+          )}
+
           <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
             <div className="flex items-center gap-2 text-red-800">
               <span className="text-sm font-medium">Outgoing Player:</span>
@@ -82,32 +108,82 @@ const SubstitutionModal = ({
               value={selectedIncomingPlayer} 
               onValueChange={setSelectedIncomingPlayer}
               placeholder={
-                availablePlayers.length > 0 
+                hasAnyPlayers 
                   ? "Choose replacement player" 
                   : "No available players"
               }
-              disabled={availablePlayers.length === 0}
+              disabled={!hasAnyPlayers}
             >
               <EnhancedRefereeSelectContent>
-                {availablePlayers.length === 0 ? (
+                {!hasAnyPlayers ? (
                   <EnhancedRefereeSelectItem value="no-players" disabled>
                     No available players for substitution
                   </EnhancedRefereeSelectItem>
                 ) : (
-                  availablePlayers.map((player) => (
-                    <EnhancedRefereeSelectItem 
-                      key={`sub-player-${player.id}`}
-                      value={player.id.toString()}
-                      playerData={{
-                        name: player.name,
-                        team: player.team,
-                        number: player.number || '?',
-                        position: player.role
-                      }}
-                    >
-                      {player.name}
-                    </EnhancedRefereeSelectItem>
-                  ))
+                  <>
+                    {/* New Players Section */}
+                    {newPlayers.length > 0 && (
+                      <>
+                        <div className="px-3 py-2 text-xs font-medium text-muted-foreground bg-muted/50">
+                          <div className="flex items-center gap-2">
+                            <UserPlus className="h-3 w-3" />
+                            New Players ({newPlayers.length})
+                          </div>
+                        </div>
+                        {newPlayers.map((player) => (
+                          <EnhancedRefereeSelectItem 
+                            key={`new-player-${player.id}`}
+                            value={player.id.toString()}
+                            playerData={{
+                              name: player.name,
+                              team: player.team,
+                              number: player.number || '?',
+                              position: player.role
+                            }}
+                          >
+                            {player.name}
+                          </EnhancedRefereeSelectItem>
+                        ))}
+                      </>
+                    )}
+
+                    {/* Re-substitution Section */}
+                    {canReSubstitute && reSubstitutionPlayers.length > 0 && (
+                      <>
+                        {newPlayers.length > 0 && (
+                          <div className="px-3">
+                            <Separator />
+                          </div>
+                        )}
+                        <div className="px-3 py-2 text-xs font-medium text-muted-foreground bg-blue-50">
+                          <div className="flex items-center gap-2">
+                            <RotateCcw className="h-3 w-3" />
+                            Re-substitution ({reSubstitutionPlayers.length})
+                          </div>
+                        </div>
+                        {reSubstitutionPlayers.map((player) => (
+                          <EnhancedRefereeSelectItem 
+                            key={`resub-player-${player.id}`}
+                            value={player.id.toString()}
+                            playerData={{
+                              name: player.name,
+                              team: player.team,
+                              number: player.number || '?',
+                              position: player.role
+                            }}
+                            className="bg-blue-50/50"
+                          >
+                            <div className="flex items-center justify-between w-full">
+                              <span>{player.name}</span>
+                              <Badge variant="outline" className="text-xs ml-2">
+                                Re-sub
+                              </Badge>
+                            </div>
+                          </EnhancedRefereeSelectItem>
+                        ))}
+                      </>
+                    )}
+                  </>
                 )}
               </EnhancedRefereeSelectContent>
             </EnhancedRefereeSelect>
@@ -116,11 +192,14 @@ const SubstitutionModal = ({
           <div className="flex gap-3">
             <Button
               onClick={handleSubstitute}
-              disabled={!selectedIncomingPlayer || availablePlayers.length === 0}
+              disabled={!selectedIncomingPlayer || !hasAnyPlayers}
               className="flex-1"
             >
               <UserPlus className="h-4 w-4 mr-2" />
-              Make Substitution
+              {selectedIncomingPlayer && isReSubstitutionPlayer(selectedIncomingPlayer) 
+                ? "Re-substitute" 
+                : "Make Substitution"
+              }
             </Button>
             <Button
               variant="outline"
@@ -131,10 +210,20 @@ const SubstitutionModal = ({
             </Button>
           </div>
 
-          {availablePlayers.length === 0 && (
+          {!hasAnyPlayers && (
             <p className="text-xs text-muted-foreground text-center">
               All eligible players are already being tracked
             </p>
+          )}
+
+          {/* Enhanced feedback */}
+          {canReSubstitute && (
+            <div className="text-xs text-center text-muted-foreground">
+              <div className="flex items-center justify-center gap-1">
+                <RotateCcw className="h-3 w-3" />
+                <span>Players marked OFF can now be re-substituted back in</span>
+              </div>
+            </div>
           )}
         </div>
       </DialogContent>
