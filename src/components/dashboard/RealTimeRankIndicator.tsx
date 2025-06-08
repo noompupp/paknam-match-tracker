@@ -38,7 +38,7 @@ const RealTimeRankIndicator = ({
   if (!previousPosition || previousPosition === currentPosition) {
     return (
       <div className={cn("flex items-center justify-center w-5 h-5", className)}>
-        <span className="text-muted-foreground opacity-50 text-sm">—</span>
+        <span className="text-muted-foreground opacity-50 text-sm">▬</span>
       </div>
     )
   }
@@ -62,13 +62,13 @@ const RealTimeRankIndicator = ({
         <span className={cn(
           "text-green-600 dark:text-green-400 text-base font-semibold transition-transform duration-300",
           isAnimating && "animate-bounce"
-        )}>↑</span>
+        )}>▲</span>
       )}
       {isMovingDown && (
         <span className={cn(
           "text-red-600 dark:text-red-400 text-base font-semibold transition-transform duration-300",
           isAnimating && "animate-pulse"
-        )}>↓</span>
+        )}>▼</span>
       )}
     </div>
   )

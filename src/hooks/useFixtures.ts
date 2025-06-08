@@ -75,8 +75,22 @@ export const useUpdateFixtureScore = () => {
     mutationFn: ({ id, homeScore, awayScore }: { id: number; homeScore: number; awayScore: number }) =>
       fixturesApi.updateScore(id, homeScore, awayScore),
     onSuccess: () => {
+      console.log('🏆 useUpdateFixtureScore: Score update successful, invalidating queries...');
+      
+      // Invalidate all data that depends on match results
       queryClient.invalidateQueries({ queryKey: ['fixtures'] });
       queryClient.invalidateQueries({ queryKey: ['teams'] });
+      queryClient.invalidateQueries({ queryKey: ['topScorers'] });
+      queryClient.invalidateQueries({ queryKey: ['topAssists'] });
+      queryClient.invalidateQueries({ queryKey: ['playerStats'] });
+      
+      // Force immediate refetch of teams data for league table
+      queryClient.refetchQueries({ queryKey: ['teams'] });
+      
+      console.log('✅ useUpdateFixtureScore: All queries invalidated and teams refetched');
     },
+    onError: (error) => {
+      console.error('❌ useUpdateFixtureScore: Score update failed:', error);
+    }
   });
 };
