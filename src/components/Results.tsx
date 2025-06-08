@@ -3,7 +3,7 @@ import { useRecentFixtures } from "@/hooks/useFixtures";
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Clock } from "lucide-react";
-import FixtureCard from "./fixtures/FixtureCard";
+import FixtureCard from "./shared/FixtureCard";
 import LoadingCard from "./fixtures/LoadingCard";
 import MatchSummaryDialog from "./fixtures/MatchSummaryDialog";
 import ResultsHeader from "./results/ResultsHeader";
@@ -54,8 +54,7 @@ const Results = () => {
                   <FixtureCard 
                     key={fixture.id} 
                     fixture={fixture} 
-                    showScore 
-                    onFixtureClick={handleFixtureClick}
+                    onClick={handleFixtureClick}
                   />
                 ))
               ) : (
