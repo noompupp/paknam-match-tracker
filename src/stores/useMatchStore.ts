@@ -66,6 +66,7 @@ interface MatchState {
   events: MatchEvent[];
   lastSaved: number | null;
   hasUnsavedChanges: boolean;
+  lastUpdated: number; // New field for tracking UI update triggers
   
   // Actions
   setFixtureId: (id: number | null) => void;
@@ -79,6 +80,7 @@ interface MatchState {
   addEvent: (type: string, description: string, time: number) => void;
   markAsSaved: () => void;
   resetState: () => void;
+  triggerUIUpdate: () => void; // New action to manually trigger UI updates
   
   // Enhanced Computed
   getUnsavedGoalsCount: () => number;
@@ -102,6 +104,7 @@ export const useMatchStore = create<MatchState>()(
     events: [],
     lastSaved: null,
     hasUnsavedChanges: false,
+    lastUpdated: Date.now(),
 
     setFixtureId: (id) => {
       const state = get();
@@ -116,7 +119,8 @@ export const useMatchStore = create<MatchState>()(
           playerTimes: [],
           events: [],
           lastSaved: null,
-          hasUnsavedChanges: false
+          hasUnsavedChanges: false,
+          lastUpdated: Date.now()
         });
         console.log('🏪 MatchStore: Fixture changed, state reset for fixture:', id);
       }
@@ -139,13 +143,15 @@ export const useMatchStore = create<MatchState>()(
           goals: [...state.goals, newGoal],
           homeScore: newHomeScore,
           awayScore: newAwayScore,
-          hasUnsavedChanges: true
+          hasUnsavedChanges: true,
+          lastUpdated: Date.now() // Trigger UI update
         };
 
-        console.log('🏪 MatchStore: Goal added:', {
+        console.log('🏪 MatchStore: Goal added with UI update trigger:', {
           goal: newGoal,
           newScore: `${newHomeScore}-${newAwayScore}`,
-          totalGoals: updatedState.goals.length
+          totalGoals: updatedState.goals.length,
+          lastUpdated: updatedState.lastUpdated
         });
 
         return updatedState;
@@ -166,13 +172,15 @@ export const useMatchStore = create<MatchState>()(
       set((state) => {
         const updatedState = {
           goals: [...state.goals, newAssist],
-          hasUnsavedChanges: true
+          hasUnsavedChanges: true,
+          lastUpdated: Date.now() // Trigger UI update
           // NOTE: No score increment for assists
         };
 
-        console.log('🏪 MatchStore: Assist added (no score change):', {
+        console.log('🏪 MatchStore: Assist added with UI update trigger:', {
           assist: newAssist,
-          totalGoalsAndAssists: updatedState.goals.length
+          totalGoalsAndAssists: updatedState.goals.length,
+          lastUpdated: updatedState.lastUpdated
         });
 
         return updatedState;
@@ -189,16 +197,20 @@ export const useMatchStore = create<MatchState>()(
             : goal
         );
 
-        console.log('🏪 MatchStore: Goal updated:', {
+        const updatedState = {
+          goals: updatedGoals,
+          hasUnsavedChanges: true,
+          lastUpdated: Date.now() // Trigger UI update
+        };
+
+        console.log('🏪 MatchStore: Goal updated with UI update trigger:', {
           goalId,
           updates,
-          updatedGoal: updatedGoals.find(g => g.id === goalId)
+          updatedGoal: updatedGoals.find(g => g.id === goalId),
+          lastUpdated: updatedState.lastUpdated
         });
 
-        return {
-          goals: updatedGoals,
-          hasUnsavedChanges: true
-        };
+        return updatedState;
       });
     },
 
@@ -215,7 +227,8 @@ export const useMatchStore = create<MatchState>()(
           goals: state.goals.filter(g => g.id !== goalId),
           homeScore: Math.max(0, newHomeScore),
           awayScore: Math.max(0, newAwayScore),
-          hasUnsavedChanges: true
+          hasUnsavedChanges: true,
+          lastUpdated: Date.now() // Trigger UI update
         };
       });
     },
@@ -230,7 +243,8 @@ export const useMatchStore = create<MatchState>()(
 
       set((state) => ({
         cards: [...state.cards, newCard],
-        hasUnsavedChanges: true
+        hasUnsavedChanges: true,
+        lastUpdated: Date.now() // Trigger UI update
       }));
 
       console.log('🏪 MatchStore: Card added:', newCard);
@@ -246,7 +260,8 @@ export const useMatchStore = create<MatchState>()(
 
       set((state) => ({
         playerTimes: [...state.playerTimes, newPlayerTime],
-        hasUnsavedChanges: true
+        hasUnsavedChanges: true,
+        lastUpdated: Date.now()
       }));
 
       return newPlayerTime;
@@ -259,7 +274,8 @@ export const useMatchStore = create<MatchState>()(
             ? { ...pt, ...updates, synced: false }
             : pt
         ),
-        hasUnsavedChanges: true
+        hasUnsavedChanges: true,
+        lastUpdated: Date.now()
       }));
     },
 
@@ -274,7 +290,8 @@ export const useMatchStore = create<MatchState>()(
 
       set((state) => ({
         events: [...state.events, newEvent],
-        hasUnsavedChanges: true
+        hasUnsavedChanges: true,
+        lastUpdated: Date.now()
       }));
 
       return newEvent;
@@ -286,9 +303,10 @@ export const useMatchStore = create<MatchState>()(
         cards: state.cards.map(c => ({ ...c, synced: true })),
         playerTimes: state.playerTimes.map(pt => ({ ...pt, synced: true })),
         lastSaved: Date.now(),
-        hasUnsavedChanges: false
+        hasUnsavedChanges: false,
+        lastUpdated: Date.now() // Trigger UI update
       }));
-      console.log('🏪 MatchStore: All data marked as saved');
+      console.log('🏪 MatchStore: All data marked as saved with UI update trigger');
     },
 
     resetState: () => {
@@ -300,9 +318,17 @@ export const useMatchStore = create<MatchState>()(
         playerTimes: [],
         events: [],
         lastSaved: null,
-        hasUnsavedChanges: false
+        hasUnsavedChanges: false,
+        lastUpdated: Date.now() // Trigger UI update
       });
-      console.log('🏪 MatchStore: State reset');
+      console.log('🏪 MatchStore: State reset with UI update trigger');
+    },
+
+    triggerUIUpdate: () => {
+      set((state) => ({
+        lastUpdated: Date.now()
+      }));
+      console.log('🏪 MatchStore: Manual UI update triggered');
     },
 
     // Enhanced computed getters
@@ -315,26 +341,26 @@ export const useMatchStore = create<MatchState>()(
     },
 
     getUnassignedGoalsCount: () => {
-      // Enhanced detection: check for "Quick Goal" OR goals without proper player details
+      // Enhanced detection with real-time updates
       const unassignedCount = get().goals.filter(g => 
         g.playerName === 'Quick Goal' || 
         g.playerName === 'Unknown Player' ||
         (!g.playerId && g.type === 'goal')
       ).length;
       
-      console.log('🏪 MatchStore: Unassigned goals count:', unassignedCount);
+      console.log('🏪 MatchStore: Real-time unassigned goals count:', unassignedCount);
       return unassignedCount;
     },
 
     getUnassignedGoals: () => {
-      // New method to get the actual unassigned goals for detailed inspection
+      // Enhanced method with real-time updates
       const unassignedGoals = get().goals.filter(g => 
         g.playerName === 'Quick Goal' || 
         g.playerName === 'Unknown Player' ||
         (!g.playerId && g.type === 'goal')
       );
       
-      console.log('🏪 MatchStore: Unassigned goals:', unassignedGoals);
+      console.log('🏪 MatchStore: Real-time unassigned goals:', unassignedGoals);
       return unassignedGoals;
     },
 

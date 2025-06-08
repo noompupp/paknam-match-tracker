@@ -3,6 +3,7 @@ import { useToast } from "@/hooks/use-toast";
 import { ComponentPlayer } from "../../../hooks/useRefereeState";
 import { supabase } from "@/integrations/supabase/client";
 import { useMatchStore } from "@/stores/useMatchStore";
+import { realTimeDataSync } from "@/services/realTimeDataSync";
 
 interface DetailedGoalHandlerProps {
   onAssignGoal: (player: ComponentPlayer) => void;
@@ -25,13 +26,14 @@ export const useDetailedGoalHandler = ({
     isEdit?: boolean;
     originalGoalId?: string | number;
   }) => {
-    console.log('🎯 DetailedGoalHandler: Processing goal assignment:', goalData);
+    console.log('🎯 DetailedGoalHandler: Processing goal assignment with enhanced sync:', goalData);
 
     try {
       if (goalData.isEdit && goalData.originalGoalId) {
-        // Handle editing existing goal - update the match event
-        console.log('✏️ DetailedGoalHandler: Updating existing goal:', goalData.originalGoalId);
+        // Handle editing existing goal with enhanced real-time sync
+        console.log('✏️ DetailedGoalHandler: Updating existing goal with real-time sync:', goalData.originalGoalId);
         
+        // Update database first
         const { data: updatedEvent, error } = await supabase
           .from('match_events')
           .update({
@@ -42,18 +44,18 @@ export const useDetailedGoalHandler = ({
           .single();
 
         if (error) {
-          console.error('❌ DetailedGoalHandler: Error updating goal:', error);
+          console.error('❌ DetailedGoalHandler: Database update failed:', error);
           toast({
             title: "Update Failed",
-            description: "Failed to update the goal with player details",
+            description: "Failed to update the goal in database",
             variant: "destructive"
           });
           return;
         }
 
-        console.log('✅ DetailedGoalHandler: Goal updated successfully:', updatedEvent);
+        console.log('✅ DetailedGoalHandler: Database updated successfully:', updatedEvent);
 
-        // Update player stats (goals) - handle missing goals property by defaulting to 0
+        // Update player stats
         const { error: statsError } = await supabase
           .from('members')
           .update({
@@ -62,60 +64,29 @@ export const useDetailedGoalHandler = ({
           .eq('id', goalData.player.id);
 
         if (statsError) {
-          console.error('❌ DetailedGoalHandler: Error updating player stats:', statsError);
-          // Don't fail the whole operation for stats update failure
+          console.error('❌ DetailedGoalHandler: Player stats update failed:', statsError);
         } else {
           console.log('✅ DetailedGoalHandler: Player stats updated');
         }
 
-        // Enhanced local store update with multiple matching strategies
-        console.log('🔄 DetailedGoalHandler: Updating local store with enhanced matching');
-        const currentGoals = useMatchStore.getState().goals;
-        console.log('📊 DetailedGoalHandler: Current goals in store:', currentGoals.length);
-
-        // Strategy 1: Find by exact database ID match
-        let goalToUpdate = currentGoals.find(g => 
-          g.id === String(goalData.originalGoalId) || 
-          g.id === goalData.originalGoalId
+        // Enhanced real-time local store sync
+        const syncResult = await realTimeDataSync.syncGoalDetailsUpdate(
+          goalData.originalGoalId,
+          goalData.player.name
         );
 
-        // Strategy 2: Find "Quick Goal" by time match (with tolerance)
-        if (!goalToUpdate) {
-          const eventTime = updatedEvent.event_time || 0;
-          goalToUpdate = currentGoals.find(g => 
-            g.playerName === 'Quick Goal' && 
-            Math.abs(g.time - eventTime) <= 5 // 5 second tolerance
-          );
-          console.log('🔍 DetailedGoalHandler: Time-based match found:', !!goalToUpdate, 'for event time:', eventTime);
-        }
-
-        // Strategy 3: Find any unassigned goal for this team
-        if (!goalToUpdate) {
-          goalToUpdate = currentGoals.find(g => 
-            (g.playerName === 'Quick Goal' || g.playerName === 'Unknown Player') &&
-            g.team === goalData.team &&
-            g.type === 'goal'
-          );
-          console.log('🔍 DetailedGoalHandler: Team-based unassigned match found:', !!goalToUpdate);
-        }
-
-        if (goalToUpdate) {
-          console.log('✅ DetailedGoalHandler: Updating local store goal:', goalToUpdate.id);
-          updateGoal(goalToUpdate.id, {
-            playerId: goalData.player.id,
-            playerName: goalData.player.name,
-            synced: true
-          });
-          
+        if (syncResult.success && syncResult.localStoreUpdated) {
+          console.log('🚀 DetailedGoalHandler: Real-time sync successful');
           toast({
             title: "Goal Updated!",
-            description: `Goal assigned to ${goalData.player.name}`,
+            description: `Goal assigned to ${goalData.player.name} and synced in real-time`,
           });
         } else {
-          console.warn('⚠️ DetailedGoalHandler: Could not find matching goal in local store for update');
-          // Force a complete refresh if we can't find the goal to update
+          console.warn('⚠️ DetailedGoalHandler: Real-time sync had issues:', syncResult.errors);
+          
+          // Fallback: Force refresh if real-time sync fails
           if (forceRefresh) {
-            console.log('🔄 DetailedGoalHandler: Forcing complete refresh due to matching failure');
+            console.log('🔄 DetailedGoalHandler: Triggering fallback refresh');
             setTimeout(() => {
               forceRefresh();
             }, 100);
@@ -123,15 +94,14 @@ export const useDetailedGoalHandler = ({
           
           toast({
             title: "Goal Updated!",
-            description: `Goal assigned to ${goalData.player.name}. Refreshing data...`,
+            description: `Goal assigned to ${goalData.player.name}. Syncing...`,
           });
         }
 
         // Handle assist player if provided and not an own goal
         if (goalData.assistPlayer && !goalData.isOwnGoal) {
-          console.log('🎯 DetailedGoalHandler: Recording assist (without incrementing score):', goalData.assistPlayer);
+          console.log('🎯 DetailedGoalHandler: Recording assist:', goalData.assistPlayer);
           
-          // Update assist player stats directly without calling onAssignGoal
           const { error: assistStatsError } = await supabase
             .from('members')
             .update({
@@ -140,32 +110,31 @@ export const useDetailedGoalHandler = ({
             .eq('id', goalData.assistPlayer.id);
 
           if (assistStatsError) {
-            console.error('❌ DetailedGoalHandler: Error updating assist player stats:', assistStatsError);
+            console.error('❌ DetailedGoalHandler: Assist stats update failed:', assistStatsError);
           } else {
-            console.log('✅ DetailedGoalHandler: Assist player stats updated');
+            console.log('✅ DetailedGoalHandler: Assist stats updated');
             
             // Add assist to local store
             addAssist({
               playerId: goalData.assistPlayer.id,
               playerName: goalData.assistPlayer.name,
               team: goalData.team,
-              teamId: goalToUpdate?.teamId || '',
-              teamName: goalToUpdate?.teamName || '',
+              teamId: updatedEvent.team_id || '',
+              teamName: '', // Will be resolved by the store
               type: 'assist',
               time: updatedEvent.event_time || 0
             });
           }
         }
       } else {
-        // Handle new goal creation - ONLY call onAssignGoal for the goal scorer
-        console.log('🆕 DetailedGoalHandler: Creating new goal for scorer only');
+        // Handle new goal creation
+        console.log('🆕 DetailedGoalHandler: Creating new goal');
         onAssignGoal(goalData.player);
 
-        // Handle assist player if provided and not an own goal - DON'T call onAssignGoal for assists
+        // Handle assist player if provided and not an own goal
         if (goalData.assistPlayer && !goalData.isOwnGoal) {
-          console.log('🎯 DetailedGoalHandler: Recording assist (without incrementing score):', goalData.assistPlayer);
+          console.log('🎯 DetailedGoalHandler: Recording assist for new goal:', goalData.assistPlayer);
           
-          // Update assist player stats directly without calling onAssignGoal to prevent score increment
           const { error: assistStatsError } = await supabase
             .from('members')
             .update({
@@ -174,19 +143,19 @@ export const useDetailedGoalHandler = ({
             .eq('id', goalData.assistPlayer.id);
 
           if (assistStatsError) {
-            console.error('❌ DetailedGoalHandler: Error updating assist player stats:', assistStatsError);
+            console.error('❌ DetailedGoalHandler: Assist stats update failed:', assistStatsError);
           } else {
-            console.log('✅ DetailedGoalHandler: Assist player stats updated without score increment');
+            console.log('✅ DetailedGoalHandler: Assist stats updated for new goal');
           }
         }
       }
 
       // Enhanced refresh with shorter delay for immediate feedback
       if (forceRefresh) {
-        console.log('🔄 DetailedGoalHandler: Triggering enhanced refresh after goal processing');
+        console.log('🔄 DetailedGoalHandler: Triggering enhanced refresh after processing');
         setTimeout(() => {
           forceRefresh();
-        }, 100); // Reduced from 200ms to 100ms for faster feedback
+        }, 50); // Reduced from 100ms to 50ms for faster feedback
       }
 
     } catch (error) {
