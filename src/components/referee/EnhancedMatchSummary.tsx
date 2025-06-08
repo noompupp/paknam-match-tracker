@@ -2,7 +2,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Download, Trophy, Database } from "lucide-react";
+import { Download, Trophy, Database, RefreshCw } from "lucide-react";
 import { PlayerTime } from "@/types/database";
 import EnhancedMatchHeader from "./components/EnhancedMatchHeader";
 import KeyStatistics from "./components/KeyStatistics";
@@ -13,6 +13,7 @@ import EnhancedPlayerTimeSummary from "./components/EnhancedPlayerTimeSummary";
 import MatchEventsTimeline from "./components/MatchEventsTimeline";
 import EnhancedMatchEventsTimeline from "./components/EnhancedMatchEventsTimeline";
 import { useEnhancedMatchSummary } from '@/hooks/useEnhancedMatchSummary';
+import { useResetState } from '@/hooks/useResetState';
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface EnhancedMatchSummaryProps {
@@ -27,6 +28,11 @@ interface EnhancedMatchSummaryProps {
   allPlayers: any[];
   onExportSummary: () => void;
   formatTime: (seconds: number) => string;
+  resetState?: {
+    shouldUseLocalState: () => boolean;
+    isInFreshResetState: () => boolean;
+    lastResetTimestamp: string | null;
+  };
 }
 
 const EnhancedMatchSummary = ({
@@ -40,14 +46,34 @@ const EnhancedMatchSummary = ({
   trackedPlayers,
   allPlayers,
   onExportSummary,
-  formatTime
+  formatTime,
+  resetState
 }: EnhancedMatchSummaryProps) => {
 
   // Use the enhanced match summary service
   const { data: enhancedData, isLoading, isSuccess } = useEnhancedMatchSummary(selectedFixtureData?.id);
+  
+  // Use local reset state if not provided
+  const localResetState = useResetState({ fixtureId: selectedFixtureData?.id });
+  const activeResetState = resetState || localResetState;
 
-  // Use enhanced data when available, fallback to local data
-  const displayData = isSuccess && enhancedData ? {
+  // Enhanced data prioritization logic
+  const shouldUseLocalState = activeResetState.shouldUseLocalState();
+  const isInFreshResetState = activeResetState.isInFreshResetState();
+  
+  console.log('📊 EnhancedMatchSummary: Data prioritization decision:', {
+    fixture: selectedFixtureData?.id,
+    shouldUseLocalState,
+    isInFreshResetState,
+    hasEnhancedData: !!enhancedData,
+    enhancedDataSuccess: isSuccess,
+    lastResetTimestamp: activeResetState.lastResetTimestamp
+  });
+
+  // Use enhanced data when available, BUT prioritize local data immediately after reset
+  const shouldUseEnhancedData = isSuccess && enhancedData && !shouldUseLocalState;
+  
+  const displayData = shouldUseEnhancedData ? {
     goals: enhancedData.goals,
     cards: enhancedData.cards,
     trackedPlayers: enhancedData.playerTimes,
@@ -69,18 +95,31 @@ const EnhancedMatchSummary = ({
         <CardTitle className="flex items-center gap-2">
           <Trophy className="h-5 w-5" />
           Enhanced Match Summary
-          {isSuccess && enhancedData && (
+          {shouldUseEnhancedData && (
             <Database className="h-4 w-4 text-green-600" />
+          )}
+          {isInFreshResetState && (
+            <RefreshCw className="h-4 w-4 text-blue-600" />
           )}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Enhanced Service Status */}
-        {isSuccess && enhancedData && (
+        {shouldUseEnhancedData && (
           <Alert>
             <Database className="h-4 w-4" />
             <AlertDescription>
               Enhanced data service active - displaying comprehensive match analytics from optimized database queries.
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {/* Fresh Reset State Indicator */}
+        {isInFreshResetState && (
+          <Alert>
+            <RefreshCw className="h-4 w-4" />
+            <AlertDescription>
+              Match data recently reset - displaying fresh local state. Database sync will update automatically.
             </AlertDescription>
           </Alert>
         )}
@@ -145,7 +184,7 @@ const EnhancedMatchSummary = ({
         <Separator />
 
         {/* Enhanced Match Events Timeline */}
-        {isSuccess && enhancedData && enhancedData.timelineEvents && enhancedData.timelineEvents.length > 0 ? (
+        {shouldUseEnhancedData && enhancedData.timelineEvents && enhancedData.timelineEvents.length > 0 ? (
           <EnhancedMatchEventsTimeline
             timelineEvents={enhancedData.timelineEvents}
             formatTime={formatTime}

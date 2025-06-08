@@ -1,3 +1,4 @@
+
 import { ComponentPlayer, PlayerTimeTrackerPlayer } from "./useRefereeState";
 import { useMatchControlHandlers } from "./handlers/useMatchControlHandlers";
 import { useGoalHandlers } from "./handlers/useGoalHandlers";
@@ -40,7 +41,7 @@ interface UseRefereeHandlersProps {
   togglePlayerTime: (playerId: number, matchTime: number) => any;
   checkForSecondYellow: (playerName: string) => boolean;
   removeGoal: (team: 'home' | 'away') => void;
-  forceRefresh?: () => Promise<void>; // Enhanced refresh function
+  forceRefresh?: () => Promise<void>;
 }
 
 export const useRefereeHandlers = (props: UseRefereeHandlersProps) => {
@@ -91,7 +92,7 @@ export const useRefereeHandlers = (props: UseRefereeHandlersProps) => {
     addEvent: props.addEvent
   });
 
-  // Enhanced match data handlers with force refresh
+  // Enhanced match data handlers with reset state coordination
   const matchDataHandlers = useMatchDataHandlers({
     selectedFixtureData: props.selectedFixtureData,
     homeScore: props.homeScore,
@@ -107,7 +108,7 @@ export const useRefereeHandlers = (props: UseRefereeHandlersProps) => {
     resetTracking: props.resetTracking,
     resetGoals: props.resetGoals,
     addEvent: props.addEvent,
-    forceRefresh: props.forceRefresh // Pass enhanced refresh function
+    forceRefresh: props.forceRefresh
   });
 
   // Export handlers
@@ -134,6 +135,7 @@ export const useRefereeHandlers = (props: UseRefereeHandlersProps) => {
     handleExportSummary: exportHandlers.handleExportSummary,
     handleSaveAllPlayerTimes: playerTimeHandlers.handleSaveAllPlayerTimes,
     handleResetMatchData: matchDataHandlers.handleResetMatchData,
-    handleCleanupDuplicates: matchDataHandlers.handleCleanupDuplicates
+    handleCleanupDuplicates: matchDataHandlers.handleCleanupDuplicates,
+    resetState: matchDataHandlers.resetState // Expose reset state for coordination
   };
 };

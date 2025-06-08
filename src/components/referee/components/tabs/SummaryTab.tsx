@@ -16,6 +16,11 @@ interface SummaryTabProps {
   allPlayers: ComponentPlayer[];
   onExportSummary: () => void;
   formatTime: (seconds: number) => string;
+  resetState?: {
+    shouldUseLocalState: () => boolean;
+    isInFreshResetState: () => boolean;
+    lastResetTimestamp: string | null;
+  };
 }
 
 const SummaryTab = ({
@@ -29,7 +34,8 @@ const SummaryTab = ({
   trackedPlayers,
   allPlayers,
   onExportSummary,
-  formatTime
+  formatTime,
+  resetState
 }: SummaryTabProps) => {
   
   // Add data validation for this component
@@ -54,6 +60,7 @@ const SummaryTab = ({
         allPlayers={allPlayers}
         onExportSummary={onExportSummary}
         formatTime={formatTime}
+        resetState={resetState}
       />
       
       {/* Traditional Match Events */}

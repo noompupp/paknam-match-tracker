@@ -6,8 +6,9 @@ import GoalsSummaryDisplay from "./GoalsSummaryDisplay";
 import CardsSummaryDisplay from "./CardsSummaryDisplay";
 import PlayerTimeTrackingDisplay from "./PlayerTimeTrackingDisplay";
 import { useEnhancedMatchSummary } from '@/hooks/useEnhancedMatchSummary';
+import { useResetState } from '@/hooks/useResetState';
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2, CheckCircle, AlertTriangle } from "lucide-react";
+import { Loader2, CheckCircle, AlertTriangle, RefreshCw } from "lucide-react";
 
 interface EnhancedMatchSummaryDisplayProps {
   selectedFixtureData: any;
@@ -19,6 +20,11 @@ interface EnhancedMatchSummaryDisplayProps {
   trackedPlayers: any[];
   allPlayers: ComponentPlayer[];
   formatTime: (seconds: number) => string;
+  resetState?: {
+    shouldUseLocalState: () => boolean;
+    isInFreshResetState: () => boolean;
+    lastResetTimestamp: string | null;
+  };
 }
 
 const EnhancedMatchSummaryDisplay = ({
@@ -30,11 +36,16 @@ const EnhancedMatchSummaryDisplay = ({
   cards,
   trackedPlayers,
   allPlayers,
-  formatTime
+  formatTime,
+  resetState
 }: EnhancedMatchSummaryDisplayProps) => {
   
   // Fetch enhanced match summary data from the improved service
   const { data: enhancedData, isLoading, error, isSuccess } = useEnhancedMatchSummary(selectedFixtureData?.id);
+  
+  // Use local reset state if not provided
+  const localResetState = useResetState({ fixtureId: selectedFixtureData?.id });
+  const activeResetState = resetState || localResetState;
 
   if (!selectedFixtureData) {
     return <NoMatchSelectedPlaceholder />;
@@ -47,17 +58,20 @@ const EnhancedMatchSummaryDisplay = ({
     return remainingSeconds > 0 ? `${minutes}:${remainingSeconds.toString().padStart(2, '0')}` : `${minutes}'`;
   };
 
-  // Use enhanced data if available, with intelligent fallback to local data
-  const shouldUseEnhancedData = enhancedData && isSuccess;
+  // Enhanced data prioritization with reset state coordination
+  const shouldUseLocalState = activeResetState.shouldUseLocalState();
+  const isInFreshResetState = activeResetState.isInFreshResetState();
+  const shouldUseEnhancedData = enhancedData && isSuccess && !shouldUseLocalState;
+  
   const goalsToDisplay = shouldUseEnhancedData ? enhancedData.goals : goals;
   const cardsToDisplay = shouldUseEnhancedData ? enhancedData.cards : cards;
   const playerTimesToDisplay = shouldUseEnhancedData ? enhancedData.playerTimes : trackedPlayers;
 
-  // Calculate scores from enhanced data if available
+  // Calculate scores with reset state priority
   const calculatedHomeScore = shouldUseEnhancedData ? enhancedData.summary.homeTeamGoals : homeScore;
   const calculatedAwayScore = shouldUseEnhancedData ? enhancedData.summary.awayTeamGoals : awayScore;
 
-  console.log('📊 EnhancedMatchSummaryDisplay: Rendering with enhanced service integration:', {
+  console.log('📊 EnhancedMatchSummaryDisplay: Rendering with reset state coordination:', {
     fixture: selectedFixtureData.id,
     homeScore: calculatedHomeScore,
     awayScore: calculatedAwayScore,
@@ -66,6 +80,8 @@ const EnhancedMatchSummaryDisplay = ({
     enhancedCardsCount: enhancedData?.cards.length || 0,
     localCardsCount: cards.length,
     usingEnhancedData: shouldUseEnhancedData,
+    shouldUseLocalState,
+    isInFreshResetState,
     dataSource: shouldUseEnhancedData ? 'enhanced-service' : 'local-state'
   });
 
@@ -80,12 +96,32 @@ const EnhancedMatchSummaryDisplay = ({
 
   return (
     <div className="space-y-6">
+      {/* Fresh Reset State Indicator */}
+      {isInFreshResetState && (
+        <Alert>
+          <RefreshCw className="h-4 w-4" />
+          <AlertDescription>
+            ✅ Match data recently reset - displaying fresh local state with immediate UI updates. Database will sync automatically.
+          </AlertDescription>
+        </Alert>
+      )}
+
       {/* Enhanced Data Status Indicator */}
       {shouldUseEnhancedData && (
         <Alert>
           <CheckCircle className="h-4 w-4" />
           <AlertDescription>
             ✅ Enhanced match data loaded successfully from improved database service with {enhancedData.goals.length} goals/assists, {enhancedData.cards.length} cards, and {enhancedData.playerTimes.length} player time records.
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {/* Local State Priority Indicator */}
+      {shouldUseLocalState && !isInFreshResetState && (
+        <Alert>
+          <RefreshCw className="h-4 w-4" />
+          <AlertDescription>
+            🔄 Using local match state for immediate responsiveness. Enhanced data will sync automatically.
           </AlertDescription>
         </Alert>
       )}
@@ -128,7 +164,7 @@ const EnhancedMatchSummaryDisplay = ({
       <PlayerTimeTrackingDisplay
         trackedPlayers={playerTimesToDisplay.map(player => ({
           ...player,
-          totalTime: Math.floor((player.totalMinutes || player.totalTime || 0) * 60), // Convert to seconds for display consistency
+          totalTime: Math.floor((player.totalMinutes || player.totalTime || 0) * 60),
           displayTime: formatTimeInMinutes((player.totalMinutes || player.totalTime || 0) * 60)
         }))}
         formatTime={formatTimeInMinutes}
@@ -158,7 +194,7 @@ const EnhancedMatchSummaryDisplay = ({
             </div>
           </div>
           <div className="mt-4 text-xs text-muted-foreground text-center">
-            Data source: Enhanced database service
+            Data source: {shouldUseLocalState ? 'Local state (priority after reset)' : 'Enhanced database service'}
           </div>
         </div>
       )}

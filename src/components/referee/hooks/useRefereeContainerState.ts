@@ -36,7 +36,7 @@ export const useRefereeContainerState = () => {
     addGoal,
     removeGoal,
     resetScore,
-    forceRefresh, // Enhanced refresh function
+    forceRefresh,
     
     // Goal state
     goals,
@@ -85,7 +85,7 @@ export const useRefereeContainerState = () => {
     updatePlayerStats
   } = useRefereeState();
 
-  // Enhanced referee handlers with force refresh capability
+  // Enhanced referee handlers with reset state coordination
   const {
     handleSaveMatch,
     handleResetMatch,
@@ -93,7 +93,9 @@ export const useRefereeContainerState = () => {
     handleAddCard,
     handleAddPlayer: handleAddPlayerWithSave,
     handleRemovePlayer,
-    handleTogglePlayerTime: handleTogglePlayerTimeWithSave
+    handleTogglePlayerTime: handleTogglePlayerTimeWithSave,
+    handleResetMatchData,
+    resetState // Get reset state from handlers
   } = useRefereeHandlers({
     selectedFixtureData,
     matchTime,
@@ -126,19 +128,19 @@ export const useRefereeContainerState = () => {
     addPlayer,
     removePlayer,
     togglePlayerTime,
-    checkForSecondYellow: () => false, // Placeholder
+    checkForSecondYellow: () => false,
     removeGoal,
-    forceRefresh // Pass enhanced refresh function
+    forceRefresh
   });
 
-  // Enhanced reset handler that coordinates all reset operations
+  // Enhanced reset handler that uses the coordinated reset from handlers
   const handleEnhancedResetMatch = async () => {
-    console.log('🔄 useRefereeContainerState: Starting enhanced reset with cache invalidation...');
+    console.log('🔄 useRefereeContainerState: Starting enhanced reset with state coordination...');
     
-    // Use the enhanced reset handler from match data handlers
-    await handleResetMatch();
+    // Use the enhanced reset handler with state coordination
+    await handleResetMatchData();
     
-    console.log('✅ useRefereeContainerState: Enhanced reset completed with cache invalidation');
+    console.log('✅ useRefereeContainerState: Enhanced reset completed with state coordination');
   };
 
   // Create wrapper functions that handle matchTime internally for basic operations
@@ -207,9 +209,9 @@ export const useRefereeContainerState = () => {
     // Save attempts
     saveAttempts,
     
-    // Enhanced handlers
+    // Enhanced handlers with reset state coordination
     handleSaveMatch,
-    handleResetMatch: handleEnhancedResetMatch, // Use enhanced reset
+    handleResetMatch: handleEnhancedResetMatch,
     handleAssignGoal,
     handleAddCard,
     handleAddPlayer,
@@ -220,6 +222,7 @@ export const useRefereeContainerState = () => {
     assignGoal,
     removePlayer,
     addPlayer,
-    forceRefresh // Expose enhanced refresh function
+    forceRefresh,
+    resetState // Expose reset state for components
   };
 };

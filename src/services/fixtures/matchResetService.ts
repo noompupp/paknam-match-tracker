@@ -14,6 +14,7 @@ interface ResetResult {
   errors: string[];
   eventsDeleted: number;
   playerTimeRecordsDeleted: number;
+  timestamp: string; // Added for cache busting
 }
 
 export const matchResetService = {
@@ -56,7 +57,7 @@ export const matchResetService = {
       }
 
       return {
-        canReset: true, // We allow reset in most cases, but show warnings
+        canReset: true,
         warnings,
         matchEvents,
         playerTimeRecords
@@ -79,6 +80,7 @@ export const matchResetService = {
     const errors: string[] = [];
     let eventsDeleted = 0;
     let playerTimeRecordsDeleted = 0;
+    const timestamp = new Date().toISOString();
 
     try {
       // 1. Delete all match events
@@ -120,7 +122,7 @@ export const matchResetService = {
         .update({
           home_score: 0,
           away_score: 0,
-          updated_at: new Date().toISOString()
+          updated_at: timestamp
         })
         .eq('id', fixtureId);
 
@@ -141,7 +143,8 @@ export const matchResetService = {
         success: isFullSuccess,
         eventsDeleted,
         playerTimeRecordsDeleted,
-        errors
+        errors,
+        timestamp
       });
 
       return {
@@ -149,7 +152,8 @@ export const matchResetService = {
         message,
         errors,
         eventsDeleted,
-        playerTimeRecordsDeleted
+        playerTimeRecordsDeleted,
+        timestamp
       };
 
     } catch (error) {
@@ -159,7 +163,8 @@ export const matchResetService = {
         message: 'Critical error during reset operation',
         errors: [error instanceof Error ? error.message : 'Unknown error'],
         eventsDeleted,
-        playerTimeRecordsDeleted
+        playerTimeRecordsDeleted,
+        timestamp
       };
     }
   }
