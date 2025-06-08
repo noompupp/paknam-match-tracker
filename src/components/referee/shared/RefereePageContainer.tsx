@@ -1,6 +1,7 @@
 
 import { cn } from "@/lib/utils";
 import { ReactNode } from "react";
+import { usePlatformDetection } from "@/hooks/usePlatformDetection";
 
 interface RefereePageContainerProps {
   children: ReactNode;
@@ -13,6 +14,8 @@ const RefereePageContainer = ({
   className,
   spacing = 'normal'
 }: RefereePageContainerProps) => {
+  const { isMobile, isIOS } = usePlatformDetection();
+  
   const spacingClasses = {
     tight: "space-y-4",
     normal: "space-y-6", 
@@ -21,7 +24,10 @@ const RefereePageContainer = ({
 
   return (
     <div className={cn(
-      "min-h-screen bg-background",
+      "referee-full-background",
+      isMobile && isIOS && "referee-ios-safe",
+      isMobile && !isIOS && "referee-mobile-container",
+      !isMobile && "min-h-screen bg-background",
       className
     )}>
       <div className={cn(

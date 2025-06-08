@@ -36,6 +36,9 @@ const RefereeButton = ({
         "hover:scale-[1.02] active:scale-[0.98]",
         fullWidth && "w-full",
         loading && "cursor-wait",
+        // Apply dark mode polish classes
+        variant === 'default' && "referee-button-primary",
+        variant === 'secondary' && "referee-button-secondary",
         className
       )}
       {...props}

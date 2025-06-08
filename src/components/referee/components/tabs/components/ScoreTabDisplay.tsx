@@ -44,7 +44,7 @@ const ScoreTabDisplay = ({
             {formatTime(matchTime)}
           </div>
           {hasUnsavedChanges && (
-            <div className="referee-status-indicator bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400">
+            <div className="referee-status-indicator bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300">
               Unsaved
             </div>
           )}
@@ -63,9 +63,9 @@ const ScoreTabDisplay = ({
             </div>
             <div className={cn(
               "text-sm font-medium px-3 py-1 rounded-full",
-              isHomeWinning ? "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400" :
-              isDraw ? "bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400" :
-              "bg-gray-50 text-gray-600 dark:bg-gray-900/10 dark:text-gray-500"
+              isHomeWinning ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300" :
+              isDraw ? "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300" :
+              "bg-gray-50 text-gray-600 dark:bg-gray-900/20 dark:text-gray-400"
             )}>
               {homeTeamName}
             </div>
@@ -90,9 +90,9 @@ const ScoreTabDisplay = ({
             </div>
             <div className={cn(
               "text-sm font-medium px-3 py-1 rounded-full",
-              isAwayWinning ? "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400" :
-              isDraw ? "bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400" :
-              "bg-gray-50 text-gray-600 dark:bg-gray-900/10 dark:text-gray-500"
+              isAwayWinning ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300" :
+              isDraw ? "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300" :
+              "bg-gray-50 text-gray-600 dark:bg-gray-900/20 dark:text-gray-400"
             )}>
               {awayTeamName}
             </div>

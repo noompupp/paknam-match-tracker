@@ -23,14 +23,14 @@ const RefereeCard = ({
   variant = 'default'
 }: RefereeCardProps) => {
   const variants = {
-    default: "border-border bg-card",
-    highlighted: "border-primary/20 bg-primary/5 shadow-md",
-    compact: "border-border bg-card p-4"
+    default: "referee-card",
+    highlighted: "referee-card border-primary/20 bg-primary/5 shadow-md dark:bg-primary/3 dark:border-primary/15",
+    compact: "referee-card p-4"
   };
 
   return (
     <Card className={cn(
-      "referee-card transition-all duration-200 hover:shadow-sm",
+      "transition-all duration-200 hover:shadow-sm",
       variants[variant],
       className
     )}>

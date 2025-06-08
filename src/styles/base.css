@@ -150,6 +150,8 @@
     -webkit-text-size-adjust: 100%;
     -ms-text-size-adjust: 100%;
     scroll-behavior: smooth;
+    /* Ensure no background gaps on mobile */
+    background-color: hsl(var(--background));
   }
   
   body {
@@ -158,5 +160,18 @@
     padding-left: var(--safe-area-inset-left);
     padding-right: var(--safe-area-inset-right);
     /* PWA mode will override these with full safe area support */
+    
+    /* Ensure body extends full height on mobile to prevent white bars */
+    min-height: 100vh;
+    min-height: 100dvh;
+    background-color: hsl(var(--background));
+  }
+  
+  /* Mobile scroll behavior improvements */
+  @supports (-webkit-touch-callout: none) {
+    body {
+      /* iOS specific fixes for viewport handling */
+      min-height: -webkit-fill-available;
+    }
   }
 }
