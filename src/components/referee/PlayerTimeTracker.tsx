@@ -60,14 +60,15 @@ const PlayerTimeTracker = ({
 
   const filteredPlayers = getFilteredPlayers();
 
-  console.log('⏱️ PlayerTimeTracker Debug:');
+  console.log('⏱️ PlayerTimeTracker Debug (Role-Based):');
   console.log('  - Selected team:', selectedTimeTeam);
   console.log('  - Filtered players count:', filteredPlayers.length);
   console.log('  - Home team players:', homeTeamPlayers?.length || 0);
   console.log('  - Away team players:', awayTeamPlayers?.length || 0);
   console.log('  - Tracked players:', trackedPlayers.length);
+  console.log('  - Roles in filtered players:', [...new Set(filteredPlayers.map(p => p.role))]);
   
-  debugPlayerDropdownData(filteredPlayers, "Player Time Tracker - Team Filtered");
+  debugPlayerDropdownData(filteredPlayers, "Player Time Tracker - Team Filtered (Role-Based)");
 
   const currentHalf = isSecondHalf(matchTime) ? 2 : 1;
   const halfProgress = getCurrentHalfTime(matchTime);
@@ -93,7 +94,7 @@ const PlayerTimeTracker = ({
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Timer className="h-5 w-5" />
-            Player Time Tracker (7-a-Side)
+            Player Time Tracker (7-a-Side Role-Based)
           </CardTitle>
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
             <div className="flex items-center gap-2">
@@ -175,7 +176,7 @@ const PlayerTimeTracker = ({
                             name: player.name,
                             team: player.team,
                             number: player.number || '?',
-                            position: player.position
+                            position: player.role // Use role instead of position for display
                           }}
                         >
                           {player.name}
@@ -211,7 +212,13 @@ const PlayerTimeTracker = ({
               <h4 className="font-semibold text-sm">Tracked Players ({trackedPlayers.length})</h4>
               {trackedPlayers.map((player) => {
                 const playerInfo = allPlayers.find(p => p.id === player.id);
-                const role = playerInfo?.position || 'Starter';
+                const role = playerInfo?.role || 'Starter'; // Use role field instead of position
+                
+                console.log('👤 Rendering tracked player:', {
+                  name: player.name,
+                  role,
+                  playerInfo: !!playerInfo
+                });
                 
                 return (
                   <div key={player.id} className="p-4 rounded-lg border bg-card hover:shadow-md transition-shadow">

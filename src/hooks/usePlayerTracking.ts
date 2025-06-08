@@ -26,14 +26,9 @@ export const usePlayerTracking = (isTimerRunning: boolean) => {
         setTrackedPlayers(prev => prev.map(player => {
           if (player.isPlaying) {
             const newTotalTime = player.totalTime + 1;
-            
-            // Check if this player should be automatically stopped due to role limits
-            const shouldAutoStop = checkRoleBasedAutoStop(player.id, newTotalTime);
-            
             return { 
               ...player, 
-              totalTime: newTotalTime,
-              isPlaying: shouldAutoStop ? false : player.isPlaying
+              totalTime: newTotalTime
             };
           }
           return player;
@@ -62,18 +57,15 @@ export const usePlayerTracking = (isTimerRunning: boolean) => {
 
       return () => clearInterval(interval);
     }
-  }, [isTimerRunning]);
+  }, [isTimerRunning, trackedPlayers]);
 
-  // Check if a player should be automatically stopped based on role limits
-  const checkRoleBasedAutoStop = (playerId: number, newTotalTime: number): boolean => {
-    // This would need access to player role data - for now return false
-    // In a real implementation, you'd check if the player is S-Class and has reached 20 minutes in current half
-    return false;
-  };
-
-  // Enhanced role-based constraints checking
+  // Enhanced role-based constraints checking using actual role field
   const getRoleConstraints = (role: string): PlayerConstraints => {
-    switch (role.toLowerCase()) {
+    const normalizedRole = role?.toLowerCase() || 'starter';
+    
+    console.log('🎯 Role constraints for:', { role, normalizedRole });
+    
+    switch (normalizedRole) {
       case 'captain':
         return { 
           maxPerHalf: null, 
@@ -93,9 +85,10 @@ export const usePlayerTracking = (isTimerRunning: boolean) => {
           warningPerHalf: null 
         };
       default:
+        console.warn('⚠️ Unknown role, defaulting to Starter constraints:', role);
         return { 
           maxPerHalf: null, 
-          minTotal: 0, 
+          minTotal: 10 * 60, // Default to Starter constraints
           warningPerHalf: null 
         };
     }
@@ -108,18 +101,22 @@ export const usePlayerTracking = (isTimerRunning: boolean) => {
     // Calculate current half time for this player
     const currentHalfTime = isSecondHalf(matchTime) ? halfTimes.secondHalf : halfTimes.firstHalf;
     
-    // Check S-class per-half limits with automatic stopping
+    console.log('🔍 Time status check:', {
+      playerName: player.name,
+      role,
+      currentHalfTime,
+      totalTime: player.totalTime,
+      constraints
+    });
+    
+    // Check S-class per-half limits
     if (role.toLowerCase() === 's-class' && constraints.maxPerHalf) {
       if (currentHalfTime >= constraints.maxPerHalf) {
-        // Mark player for automatic stop
-        setRoleBasedStops(prev => {
-          const newMap = new Map(prev);
-          newMap.set(player.id, true);
-          return newMap;
-        });
+        console.log('🚨 S-Class limit exceeded:', player.name);
         return 'exceeded';
       }
       if (constraints.warningPerHalf && currentHalfTime >= constraints.warningPerHalf) {
+        console.log('⚠️ S-Class warning threshold reached:', player.name);
         return 'critical';
       }
     }
@@ -128,6 +125,7 @@ export const usePlayerTracking = (isTimerRunning: boolean) => {
     if (role.toLowerCase() === 'starter' && constraints.minTotal) {
       const remainingTime = SEVEN_A_SIDE_CONSTANTS.STANDARD_MATCH_DURATION - matchTime;
       if (remainingTime < 300 && player.totalTime < constraints.minTotal) { // 5 minutes remaining
+        console.log('⚠️ Starter minimum time warning:', player.name);
         return 'insufficient';
       }
     }
@@ -173,7 +171,7 @@ export const usePlayerTracking = (isTimerRunning: boolean) => {
     
     setSelectedPlayer("");
     
-    console.log(`🎯 Role-based timer: Added ${player.name} (${player.position || 'Starter'}) to tracking`);
+    console.log(`🎯 Role-based timer: Added ${player.name} (${player.role || 'Starter'}) to tracking`);
     return newPlayerTime;
   };
 
@@ -232,21 +230,21 @@ export const usePlayerTracking = (isTimerRunning: boolean) => {
     setRoleBasedStops(new Map());
   };
 
-  // Get players who need attention based on 7-a-side rules
+  // Get players who need attention based on 7-a-side rules using role field
   const getPlayersNeedingAttention = (allPlayers: any[], matchTime: number) => {
     return trackedPlayers.filter(player => {
       const playerInfo = allPlayers.find(p => p.id === player.id);
-      const role = playerInfo?.position || 'Starter';
+      const role = playerInfo?.role || 'Starter'; // Use role field instead of position
       const status = getTimeStatus(player, role, matchTime);
       return status === 'critical' || status === 'exceeded' || status === 'insufficient';
     });
   };
 
-  // Enhanced validation with role-based logic
+  // Enhanced validation with role-based logic using role field
   const validateAllPlayers = (allPlayers: any[], matchTime: number) => {
     const validationResults = trackedPlayers.map(player => {
       const playerInfo = allPlayers.find(p => p.id === player.id);
-      const role = playerInfo?.position as 'Captain' | 'S-class' | 'Starter' || 'Starter';
+      const role = playerInfo?.role as 'Captain' | 'S-class' | 'Starter' || 'Starter'; // Use role field
       const halfTimes = playerHalfTimes.get(player.id) || { firstHalf: 0, secondHalf: 0 };
       const wasAutoStopped = roleBasedStops.get(player.id) || false;
       
@@ -261,7 +259,7 @@ export const usePlayerTracking = (isTimerRunning: boolean) => {
     return validationResults;
   };
 
-  // Get role-based timer notifications
+  // Get role-based timer notifications using role field
   const getRoleBasedNotifications = (allPlayers: any[], matchTime: number) => {
     const notifications: Array<{
       playerId: number;
@@ -273,9 +271,16 @@ export const usePlayerTracking = (isTimerRunning: boolean) => {
 
     trackedPlayers.forEach(player => {
       const playerInfo = allPlayers.find(p => p.id === player.id);
-      const role = playerInfo?.position || 'Starter';
+      const role = playerInfo?.role || 'Starter'; // Use role field instead of position
       const status = getTimeStatus(player, role, matchTime);
       const wasAutoStopped = roleBasedStops.get(player.id) || false;
+
+      console.log('🔔 Notification check:', {
+        playerName: player.name,
+        role,
+        status,
+        wasAutoStopped
+      });
 
       if (wasAutoStopped) {
         notifications.push({
@@ -304,6 +309,7 @@ export const usePlayerTracking = (isTimerRunning: boolean) => {
       }
     });
 
+    console.log('🔔 Generated notifications:', notifications);
     return notifications;
   };
 

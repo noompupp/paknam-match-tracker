@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { operationLoggingService } from './operationLoggingService';
 
@@ -9,6 +8,7 @@ export interface DropdownPlayerData {
   team_id: string;
   number: string;
   position: string;
+  role: string; // Added role field
 }
 
 export const playerDropdownService = {
@@ -16,7 +16,7 @@ export const playerDropdownService = {
     console.log('🎯 PlayerDropdownService: Fetching players specifically for dropdowns...');
     
     try {
-      // Strategy 1: Try the most reliable query first
+      // Strategy 1: Try the most reliable query first - now including role field
       const { data: membersData, error: membersError } = await supabase
         .from('members')
         .select(`
@@ -24,7 +24,8 @@ export const playerDropdownService = {
           name,
           team_id,
           number,
-          position
+          position,
+          role
         `)
         .not('name', 'is', null)
         .order('name', { ascending: true });
@@ -60,7 +61,8 @@ export const playerDropdownService = {
             team: team?.name || 'Unknown Team',
             team_id: member.team_id || '',
             number: member.number || '',
-            position: member.position || 'Player'
+            position: member.position || 'Player',
+            role: member.role || 'Starter' // Use role field with fallback to Starter
           };
         })
         .sort((a, b) => a.name.localeCompare(b.name));
@@ -79,7 +81,8 @@ export const playerDropdownService = {
       console.log('✅ PlayerDropdownService: Successfully processed players for dropdown:', {
         totalMembers: membersData?.length || 0,
         validPlayers: playersWithTeams.length,
-        totalTeams: teamsData?.length || 0
+        totalTeams: teamsData?.length || 0,
+        rolesFound: [...new Set(playersWithTeams.map(p => p.role))]
       });
 
       return playersWithTeams;
@@ -120,7 +123,8 @@ export const playerDropdownService = {
       console.log('✅ PlayerDropdownService: Team players filtered:', {
         total: allPlayers.length,
         home: homeTeamPlayers.length,
-        away: awayTeamPlayers.length
+        away: awayTeamPlayers.length,
+        rolesFound: [...new Set(allPlayers.map(p => p.role))]
       });
 
       return {
@@ -147,6 +151,7 @@ export const playerDropdownService = {
       playersWithoutNames: number;
       playersWithoutTeams: number;
       teamsFound: number;
+      rolesFound: number;
     };
   }> {
     console.log('🔍 PlayerDropdownService: Validating player dropdown data...');
@@ -158,6 +163,7 @@ export const playerDropdownService = {
       const playersWithoutNames = allPlayers.filter(p => !p.name || p.name.trim() === '').length;
       const playersWithoutTeams = allPlayers.filter(p => !p.team || p.team === 'Unknown Team').length;
       const uniqueTeams = new Set(allPlayers.map(p => p.team)).size;
+      const uniqueRoles = new Set(allPlayers.map(p => p.role)).size;
 
       if (allPlayers.length === 0) {
         issues.push('No players found in database');
@@ -175,16 +181,29 @@ export const playerDropdownService = {
         issues.push(`Only ${uniqueTeams} unique teams found, need at least 2 for matches`);
       }
 
+      if (uniqueRoles === 0) {
+        issues.push('No player roles found in database');
+      }
+
       const isValid = issues.length === 0 && allPlayers.length > 0;
 
       const summary = {
         totalPlayers: allPlayers.length,
         playersWithoutNames,
         playersWithoutTeams,
-        teamsFound: uniqueTeams
+        teamsFound: uniqueTeams,
+        rolesFound: uniqueRoles
       };
 
-      console.log('📋 PlayerDropdownService: Validation complete:', { isValid, issues, summary });
+      console.log('📋 PlayerDropdownService: Validation complete:', { 
+        isValid, 
+        issues, 
+        summary,
+        rolesDistribution: [...new Set(allPlayers.map(p => p.role))].map(role => ({
+          role,
+          count: allPlayers.filter(p => p.role === role).length
+        }))
+      });
 
       return { isValid, issues, summary };
 
@@ -197,7 +216,8 @@ export const playerDropdownService = {
           totalPlayers: 0,
           playersWithoutNames: 0,
           playersWithoutTeams: 0,
-          teamsFound: 0
+          teamsFound: 0,
+          rolesFound: 0
         }
       };
     }

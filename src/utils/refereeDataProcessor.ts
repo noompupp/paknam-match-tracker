@@ -1,3 +1,4 @@
+
 import { playerDropdownService, type DropdownPlayerData } from '@/services/playerDropdownService';
 
 export interface ProcessedPlayer {
@@ -7,6 +8,7 @@ export interface ProcessedPlayer {
   team_id: string;
   number: string;
   position: string;
+  role: string; // Added role field
 }
 
 export interface ProcessedFixtureData {
@@ -44,7 +46,7 @@ export function processFixtureAndPlayers(
     };
   }
 
-  // Enhanced member processing with better validation
+  // Enhanced member processing with better validation including role
   const validMembers = (members || []).filter(member => {
     const isValid = member && 
                    member.name && 
@@ -56,7 +58,8 @@ export function processFixtureAndPlayers(
       console.log(`⚠️ Filtering out invalid member:`, {
         id: member?.id,
         name: member?.name,
-        hasTeam: !!member?.team
+        hasTeam: !!member?.team,
+        role: member?.role
       });
     }
     
@@ -69,7 +72,8 @@ export function processFixtureAndPlayers(
     team: member.team?.name || 'Unknown Team',
     team_id: member.team_id || member.team?.id?.toString() || '',
     number: member.number || '',
-    position: member.position || 'Player'
+    position: member.position || 'Player',
+    role: member.role || 'Starter' // Use role field with fallback
   }));
 
   const homeTeamPlayers = allPlayers.filter(player => player.team === homeTeamName);
@@ -96,7 +100,8 @@ export function processFixtureAndPlayers(
     homeTeamPlayers: homeTeamPlayers.length,
     awayTeamPlayers: awayTeamPlayers.length,
     hasValidData,
-    dataIssues
+    dataIssues,
+    rolesFound: [...new Set(allPlayers.map(p => p.role))]
   });
 
   return {
@@ -165,7 +170,8 @@ export async function processPlayersForDropdowns(
       homeTeamPlayers: homeTeamPlayers.length,
       awayTeamPlayers: awayTeamPlayers.length,
       hasValidData,
-      dataIssues
+      dataIssues,
+      rolesFound: [...new Set(allPlayers.map(p => p.role))]
     });
 
     return {
@@ -175,7 +181,8 @@ export async function processPlayersForDropdowns(
         team: p.team,
         team_id: p.team_id,
         number: p.number,
-        position: p.position
+        position: p.position,
+        role: p.role // Ensure role is included
       })),
       homeTeamPlayers: homeTeamPlayers.map(p => ({
         id: p.id,
@@ -183,7 +190,8 @@ export async function processPlayersForDropdowns(
         team: p.team,
         team_id: p.team_id,
         number: p.number,
-        position: p.position
+        position: p.position,
+        role: p.role // Ensure role is included
       })),
       awayTeamPlayers: awayTeamPlayers.map(p => ({
         id: p.id,
@@ -191,7 +199,8 @@ export async function processPlayersForDropdowns(
         team: p.team,
         team_id: p.team_id,
         number: p.number,
-        position: p.position
+        position: p.position,
+        role: p.role // Ensure role is included
       })),
       hasValidData,
       dataIssues
@@ -215,11 +224,17 @@ export function debugPlayerDropdownData(players: ProcessedPlayer[], context: str
     playersWithNames: players.filter(p => p.name && p.name.trim() !== '').length,
     playersWithTeams: players.filter(p => p.team && p.team !== 'Unknown Team').length,
     uniqueTeams: [...new Set(players.map(p => p.team))],
+    uniqueRoles: [...new Set(players.map(p => p.role))],
+    rolesDistribution: [...new Set(players.map(p => p.role))].map(role => ({
+      role,
+      count: players.filter(p => p.role === role).length
+    })),
     samplePlayers: players.slice(0, 3).map(p => ({
       id: p.id,
       name: p.name,
       team: p.team,
-      number: p.number
+      number: p.number,
+      role: p.role
     }))
   });
   

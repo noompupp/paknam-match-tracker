@@ -65,21 +65,30 @@ const TimeTab = ({
       return;
     }
     
-    console.log('⏱️ TimeTab: Adding player to time tracking:', {
+    console.log('⏱️ TimeTab: Adding player to time tracking (Role-Based):', {
       player: player.name,
       team: player.team,
       selectedTeam: selectedTimeTeam,
-      role: player.position,
+      role: player.role, // Use role field instead of position
       source: 'team-filtered'
     });
     
     onAddPlayer(player);
   };
 
-  // Get role-based notifications
+  // Get role-based notifications using role field
   const roleNotifications = getRoleBasedNotifications 
     ? getRoleBasedNotifications(allPlayers, matchTime)
     : [];
+
+  console.log('📋 TimeTab: Role-based notifications:', {
+    count: roleNotifications.length,
+    notifications: roleNotifications.map(n => ({
+      player: n.playerName,
+      role: n.role,
+      type: n.type
+    }))
+  });
 
   return (
     <div className="space-y-6">
