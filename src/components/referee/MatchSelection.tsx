@@ -30,6 +30,11 @@ const MatchSelection = ({ fixtures, selectedFixture, onFixtureChange }: MatchSel
     return dateB.getTime() - dateA.getTime();
   }) || [];
 
+  const truncateTeamName = (name: string, maxLength: number = 12) => {
+    if (name.length <= maxLength) return name;
+    return name.substring(0, maxLength - 3) + '...';
+  };
+
   return (
     <Card className="card-shadow-lg">
       <CardHeader>
@@ -49,22 +54,28 @@ const MatchSelection = ({ fixtures, selectedFixture, onFixtureChange }: MatchSel
                   value={fixture.id.toString()}
                   className="hover:bg-accent focus:bg-accent cursor-pointer"
                 >
-                  <div className="flex items-center gap-2 py-1">
-                    <TeamLogo team={fixture.home_team} size="small" />
-                    <span className="font-medium">{fixture.home_team?.name || 'TBD'}</span>
-                    <span className="text-muted-foreground">vs</span>
-                    <span className="font-medium">{fixture.away_team?.name || 'TBD'}</span>
-                    <TeamLogo team={fixture.away_team} size="small" />
-                    <span className="text-xs text-muted-foreground ml-2">
-                      ({new Date(fixture.match_date).toLocaleDateString()})
+                  <div className="flex items-center gap-2 py-1 w-full min-w-0">
+                    <TeamLogo team={fixture.home_team} size="small" className="flex-shrink-0" />
+                    <span className="font-medium truncate max-w-[4rem] sm:max-w-none">
+                      {truncateTeamName(fixture.home_team?.name || 'TBD', 8)}
                     </span>
-                    <span className={`text-xs px-2 py-1 rounded ml-2 ${
-                      fixture.status === 'completed' ? 'bg-green-100 text-green-800' : 
-                      fixture.status === 'live' ? 'bg-red-100 text-red-800' :
-                      'bg-blue-100 text-blue-800'
-                    }`}>
-                      {fixture.status}
+                    <span className="text-muted-foreground flex-shrink-0">vs</span>
+                    <span className="font-medium truncate max-w-[4rem] sm:max-w-none">
+                      {truncateTeamName(fixture.away_team?.name || 'TBD', 8)}
                     </span>
+                    <TeamLogo team={fixture.away_team} size="small" className="flex-shrink-0" />
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 ml-auto flex-shrink-0">
+                      <span className="text-xs text-muted-foreground">
+                        {new Date(fixture.match_date).toLocaleDateString()}
+                      </span>
+                      <span className={`text-xs px-2 py-1 rounded whitespace-nowrap ${
+                        fixture.status === 'completed' ? 'bg-green-100 text-green-800' : 
+                        fixture.status === 'live' ? 'bg-red-100 text-red-800' :
+                        'bg-blue-100 text-blue-800'
+                      }`}>
+                        {fixture.status}
+                      </span>
+                    </div>
                   </div>
                 </SelectItem>
               ))}

@@ -193,3 +193,45 @@
     0 1px 0 rgba(255, 255, 255, 0.2);
   filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.4));
 }
+
+/* Mobile Referee Tabs Optimizations */
+@media (max-width: 768px) {
+  .referee-tabs-mobile {
+    gap: 0.25rem;
+  }
+  
+  .referee-tabs-mobile .tab-trigger {
+    padding: 0.5rem 0.25rem;
+    font-size: 0.75rem;
+    min-height: 3rem;
+  }
+  
+  .referee-tabs-mobile .tab-icon {
+    margin-bottom: 0.25rem;
+  }
+}
+
+/* Select dropdown mobile optimizations */
+@media (max-width: 640px) {
+  .mobile-select-content {
+    max-width: calc(100vw - 2rem);
+    margin-left: 1rem;
+    margin-right: 1rem;
+  }
+  
+  .mobile-select-item {
+    padding: 0.75rem 0.5rem;
+  }
+  
+  .mobile-select-item .team-info {
+    flex-wrap: wrap;
+    gap: 0.25rem;
+  }
+  
+  .mobile-select-item .team-name {
+    max-width: 4rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
