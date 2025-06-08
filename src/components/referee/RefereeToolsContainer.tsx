@@ -74,6 +74,15 @@ const RefereeToolsContainer = () => {
     hasValidData: enhancedPlayersData.hasValidData
   });
 
+  // Create wrapper functions that handle matchTime internally
+  const handleAddPlayer = (player: any) => {
+    addPlayer(player, matchTime);
+  };
+
+  const handleTogglePlayerTime = (playerId: number) => {
+    togglePlayerTime(playerId, matchTime);
+  };
+
   if (fixturesLoading) {
     return (
       <div className="container mx-auto p-4">
@@ -127,9 +136,9 @@ const RefereeToolsContainer = () => {
           toggleTimer={toggleTimer}
           resetTimer={resetTimer}
           assignGoal={assignGoal}
-          addPlayer={addPlayer}
+          addPlayer={handleAddPlayer}
           removePlayer={removePlayer}
-          togglePlayerTime={togglePlayerTime}
+          togglePlayerTime={handleTogglePlayerTime}
         />
       )}
     </div>
