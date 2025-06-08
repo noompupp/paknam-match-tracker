@@ -68,10 +68,10 @@ const EnhancedMatchEventsTimeline = ({
         return `${emoji} ${time} - ${event.playerName} scores for ${displayTeamName}!`;
       
       case 'yellow_card':
-        return `${emoji} ${time} - Yellow card for ${event.playerName} (${displayTeamName})`;
+        return `${emoji} ${time} - Yellow for ${event.playerName} (${displayTeamName})`;
       
       case 'red_card':
-        return `${emoji} ${time} - Red card for ${event.playerName} (${displayTeamName})`;
+        return `${emoji} ${time} - Red for ${event.playerName} (${displayTeamName})`;
       
       default:
         return `${emoji} ${time} - ${event.description}`;
@@ -83,9 +83,9 @@ const EnhancedMatchEventsTimeline = ({
       case 'goal':
         return 'Goal';
       case 'yellow_card':
-        return 'Yellow Card';
+        return 'Yellow';
       case 'red_card':
-        return 'Red Card';
+        return 'Red';
       default:
         return eventType;
     }

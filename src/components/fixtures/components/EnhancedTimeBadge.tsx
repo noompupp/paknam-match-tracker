@@ -30,7 +30,7 @@ const EnhancedTimeBadge = ({
   return (
     <Badge 
       variant="outline" 
-      className={`text-xs font-mono font-medium premier-card-shadow ${getVariantStyles()} ${className}`}
+      className={`text-sm font-mono font-semibold premier-card-shadow ${getVariantStyles()} ${className}`}
     >
       {time}
     </Badge>

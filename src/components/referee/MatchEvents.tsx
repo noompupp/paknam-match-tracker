@@ -16,6 +16,11 @@ interface MatchEventsProps {
 }
 
 const MatchEvents = ({ events, formatTime }: MatchEventsProps) => {
+  const formatEventType = (type: string) => {
+    // Clean up event type display
+    return type.replace(/_/g, ' ').replace(/\s+card$/i, '').toUpperCase();
+  };
+
   return (
     <Card className="card-shadow-lg">
       <CardHeader>
@@ -29,7 +34,7 @@ const MatchEvents = ({ events, formatTime }: MatchEventsProps) => {
             {events.slice().reverse().map((event) => (
               <div key={event.id} className="flex items-center justify-between p-3 bg-muted/20 rounded-lg">
                 <div className="flex items-center gap-3">
-                  <Badge variant="outline">
+                  <Badge variant="outline" className="text-sm font-mono">
                     <Clock className="h-3 w-3 mr-1" />
                     {formatTime(event.time)}
                   </Badge>
@@ -37,11 +42,11 @@ const MatchEvents = ({ events, formatTime }: MatchEventsProps) => {
                 </div>
                 <Badge variant={
                   event.type === 'goal' ? 'default' : 
-                  event.type === 'card' ? 'destructive' :
+                  event.type === 'card' || event.type.includes('card') ? 'destructive' :
                   event.type.includes('player') ? 'secondary' :
                   'outline'
                 }>
-                  {event.type.replace('_', ' ')}
+                  {formatEventType(event.type)}
                 </Badge>
               </div>
             ))}

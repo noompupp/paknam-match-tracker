@@ -97,7 +97,7 @@ const MatchEventsSection = ({
                           <span>{playerName}</span>
                         </div>
                         {assistName && (
-                          <div className="text-xs text-muted-foreground bg-blue-50 px-2 py-1 rounded border border-blue-200 mt-1 inline-block">
+                          <div className="text-xs text-muted-foreground italic mt-1">
                             Assist: {assistName}
                           </div>
                         )}
@@ -130,7 +130,7 @@ const MatchEventsSection = ({
                           <span>{playerName}</span>
                         </div>
                         <div className="text-xs text-muted-foreground">
-                          {cardType} Card
+                          {cardType}
                         </div>
                       </div>
                     </div>
