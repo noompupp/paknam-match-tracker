@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ProcessedPlayer } from "@/utils/refereeDataProcessor";
 import { PlayerTime } from "@/types/database";
 import { useToast } from "@/hooks/use-toast";
@@ -25,13 +25,46 @@ const SmartSubstitutionManager = ({
   onTogglePlayerTime
 }: SmartSubstitutionManagerProps) => {
   const [pendingAction, setPendingAction] = useState<{
-    type: 'toggle' | 'add';
+    type: 'toggle' | 'add' | 'automatic';
     playerId?: number;
     playerToAdd?: ProcessedPlayer;
     playerToRemove?: { id: number; name: string; team: string };
   } | null>(null);
   const [showSubstitutionModal, setShowSubstitutionModal] = useState(false);
   const { toast } = useToast();
+
+  // Monitor for automatic substitution triggers (from legacy SubstitutionFlowManager)
+  useEffect(() => {
+    const activeCount = trackedPlayers.filter(p => p.isPlaying).length;
+    
+    console.log('🔄 SmartSubstitutionManager: Monitoring automatic substitution triggers:', {
+      activeCount,
+      trackedCount: trackedPlayers.length,
+      pendingAction: pendingAction?.type
+    });
+    
+    // If we have less than 7 active players and there was a recent substitution
+    if (activeCount < 7 && !pendingAction) {
+      // Find the most recently stopped player
+      const stoppedPlayers = trackedPlayers.filter(p => !p.isPlaying);
+      if (stoppedPlayers.length > 0) {
+        const lastStopped = stoppedPlayers[stoppedPlayers.length - 1];
+        
+        console.log('🚨 SmartSubstitutionManager: Triggering automatic substitution for:', lastStopped.name);
+        
+        // Trigger substitution flow
+        setPendingAction({
+          type: 'automatic',
+          playerToRemove: {
+            id: lastStopped.id,
+            name: lastStopped.name,
+            team: lastStopped.team
+          }
+        });
+        setShowSubstitutionModal(true);
+      }
+    }
+  }, [trackedPlayers, pendingAction]);
 
   const handlePlayerToggle = (playerId: number) => {
     const validation = validateSubstitution('toggle', playerId, trackedPlayers);
@@ -120,9 +153,23 @@ const SmartSubstitutionManager = ({
   const getEnhancedAvailablePlayersForSubstitution = () => {
     if (!pendingAction) return { newPlayers: [], reSubstitutionPlayers: [], canReSubstitute: false };
     
-    const teamPlayers = pendingAction.playerToRemove?.team === (selectedFixtureData?.home_team?.name || 'Home')
-      ? homeTeamPlayers || []
-      : awayTeamPlayers || [];
+    // Determine team based on the action type
+    let teamPlayers: ProcessedPlayer[] = [];
+    
+    if (pendingAction.playerToRemove?.team) {
+      // Use the team of the player being removed
+      teamPlayers = pendingAction.playerToRemove.team === (selectedFixtureData?.home_team?.name || 'Home')
+        ? homeTeamPlayers || []
+        : awayTeamPlayers || [];
+    } else if (pendingAction.playerToAdd?.team) {
+      // Use the team of the player being added
+      teamPlayers = pendingAction.playerToAdd.team === (selectedFixtureData?.home_team?.name || 'Home')
+        ? homeTeamPlayers || []
+        : awayTeamPlayers || [];
+    } else {
+      // Fallback: combine both teams
+      teamPlayers = [...(homeTeamPlayers || []), ...(awayTeamPlayers || [])];
+    }
     
     return getEnhancedAvailablePlayers(trackedPlayers, teamPlayers);
   };
@@ -153,8 +200,10 @@ const SmartSubstitutionManager = ({
     
     // Show success toast with re-substitution indicator
     const isReSubstitution = trackedPlayers.some(p => p.id === incomingPlayer.id);
+    const actionType = pendingAction.type === 'automatic' ? 'Automatic Substitution' : 'Substitution';
+    
     toast({
-      title: isReSubstitution ? "🔄 Re-substitution Complete" : "🔄 Substitution Complete",
+      title: isReSubstitution ? `🔄 Re-${actionType} Complete` : `🔄 ${actionType} Complete`,
       description: `${pendingAction.playerToRemove?.name || 'Player'} → ${incomingPlayer.name} (${incomingPlayer.team})`,
     });
     

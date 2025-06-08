@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -18,8 +19,7 @@ interface SubstitutionModalProps {
     name: string;
     team: string;
   } | null;
-  enhancedAvailablePlayers?: EnhancedAvailablePlayers;
-  availablePlayers?: ProcessedPlayer[]; // Legacy support
+  enhancedAvailablePlayers: EnhancedAvailablePlayers;
   onSubstitute: (incomingPlayer: ProcessedPlayer) => void;
 }
 
@@ -28,26 +28,35 @@ const SubstitutionModal = ({
   onClose,
   outgoingPlayer,
   enhancedAvailablePlayers,
-  availablePlayers = [], // Legacy fallback
   onSubstitute
 }: SubstitutionModalProps) => {
   const [selectedIncomingPlayer, setSelectedIncomingPlayer] = useState("");
 
-  // Handle both new enhanced format and legacy format
-  const { newPlayers = [], reSubstitutionPlayers = [], canReSubstitute = false } = enhancedAvailablePlayers || {
-    newPlayers: availablePlayers,
-    reSubstitutionPlayers: [],
-    canReSubstitute: false
-  };
+  // Use the enhanced available players format only
+  const { newPlayers = [], reSubstitutionPlayers = [], canReSubstitute = false } = enhancedAvailablePlayers;
 
   const allAvailablePlayers = [...newPlayers, ...reSubstitutionPlayers];
   const hasAnyPlayers = allAvailablePlayers.length > 0;
+
+  console.log('🔄 SubstitutionModal: Rendering with enhanced players:', {
+    newPlayers: newPlayers.length,
+    reSubstitutionPlayers: reSubstitutionPlayers.length,
+    canReSubstitute,
+    hasAnyPlayers,
+    selectedPlayer: selectedIncomingPlayer
+  });
 
   const handleSubstitute = () => {
     if (!selectedIncomingPlayer) return;
     
     const incomingPlayer = allAvailablePlayers.find(p => p.id.toString() === selectedIncomingPlayer);
     if (incomingPlayer) {
+      console.log('✅ SubstitutionModal: Making substitution:', {
+        outgoing: outgoingPlayer?.name,
+        incoming: incomingPlayer.name,
+        isReSubstitution: reSubstitutionPlayers.some(p => p.id.toString() === selectedIncomingPlayer)
+      });
+      
       onSubstitute(incomingPlayer);
       setSelectedIncomingPlayer("");
       onClose();
@@ -113,7 +122,10 @@ const SubstitutionModal = ({
             <Label htmlFor="incomingPlayer">Select Replacement Player</Label>
             <EnhancedRefereeSelect 
               value={selectedIncomingPlayer} 
-              onValueChange={setSelectedIncomingPlayer}
+              onValueChange={(value) => {
+                console.log('🎯 SubstitutionModal: Player selected:', value);
+                setSelectedIncomingPlayer(value);
+              }}
               placeholder={
                 hasAnyPlayers 
                   ? "Choose replacement player" 
