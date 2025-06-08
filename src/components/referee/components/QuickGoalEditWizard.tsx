@@ -103,11 +103,11 @@ const QuickGoalEditWizard = ({
 
       console.log('✅ QuickGoalEditWizard: Goal updated successfully:', updatedEvent);
 
-      // Update player stats (goals)
+      // Update player stats (goals) - handle missing goals property by defaulting to 0
       const { error: statsError } = await supabase
         .from('members')
         .update({
-          goals: (selectedPlayer.goals || 0) + 1
+          goals: ((selectedPlayer as any).goals || 0) + 1
         })
         .eq('id', selectedPlayer.id);
 
