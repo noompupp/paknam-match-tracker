@@ -10,26 +10,24 @@ import TeamLogo from "../teams/TeamLogo";
 interface UpcomingFixturesCardProps {
   upcomingFixtures: Fixture[] | undefined;
   isLoading: boolean;
-  onNavigateToFixtures?: () => void;
+  onViewAll?: () => void;
 }
 
-const UpcomingFixturesCard = ({ upcomingFixtures, isLoading, onNavigateToFixtures }: UpcomingFixturesCardProps) => {
+const UpcomingFixturesCard = ({ upcomingFixtures, isLoading, onViewAll }: UpcomingFixturesCardProps) => {
   return (
     <Card className="card-shadow-lg animate-fade-in">
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="text-xl font-bold">Upcoming Fixtures</CardTitle>
-        {onNavigateToFixtures && (
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={onNavigateToFixtures}
-            className="flex items-center gap-2 h-auto hover:bg-muted/50 transition-colors"
-          >
-            <Eye className="h-4 w-4" />
-            <span className="text-sm">View All</span>
-            <ArrowRight className="h-4 w-4" />
-          </Button>
-        )}
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          onClick={onViewAll}
+          className="flex items-center gap-2 h-auto hover:bg-muted/50 transition-colors"
+        >
+          <Eye className="h-4 w-4" />
+          <span className="text-sm">View All</span>
+          <ArrowRight className="h-4 w-4" />
+        </Button>
       </CardHeader>
       <CardContent className="space-y-4">
         {isLoading ? (
