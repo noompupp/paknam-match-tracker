@@ -51,7 +51,21 @@ const CardManagementDropdown = ({
   console.log('  - Home team players:', homeTeamPlayers?.length || 0);
   console.log('  - Away team players:', awayTeamPlayers?.length || 0);
   console.log('  - Selected team:', selectedTeam);
+  console.log('  - Selected fixture data:', selectedFixtureData);
   
+  // Early return if no fixture data is available
+  if (!selectedFixtureData) {
+    return (
+      <Card className="card-shadow-lg">
+        <CardContent className="p-6">
+          <div className="text-center text-muted-foreground">
+            <p>Please select a fixture to manage cards</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   // Use filtered players when available, otherwise filter from all players
   let teamPlayers: ProcessedPlayer[] = [];
   
@@ -59,12 +73,12 @@ const CardManagementDropdown = ({
     teamPlayers = homeTeamPlayers || allPlayers.filter(player => 
       player.team === selectedFixtureData.home_team?.name
     );
-    console.log(`  - Home team (${selectedFixtureData.home_team?.name}) players:`, teamPlayers.length);
+    console.log(`  - Home team (${selectedFixtureData.home_team?.name || 'Unknown'}) players:`, teamPlayers.length);
   } else if (selectedTeam === 'away') {
     teamPlayers = awayTeamPlayers || allPlayers.filter(player => 
       player.team === selectedFixtureData.away_team?.name
     );
-    console.log(`  - Away team (${selectedFixtureData.away_team?.name}) players:`, teamPlayers.length);
+    console.log(`  - Away team (${selectedFixtureData.away_team?.name || 'Unknown'}) players:`, teamPlayers.length);
   }
   
   // Debug filtered players
