@@ -1,12 +1,10 @@
 
-import { useLocalMatchState } from "@/hooks/useLocalMatchState";
-import { useBatchSaveManager } from "@/hooks/useBatchSaveManager";
+import { useMatchStore } from "@/stores/useMatchStore";
+import { useGlobalBatchSaveManager } from "@/hooks/useGlobalBatchSaveManager";
 import { AlertCircle, Save, RotateCcw, Clock } from "lucide-react";
 
 interface RefereeMatchControlSectionProps {
   selectedFixtureData: any;
-  homeScore: number;
-  awayScore: number;
   saveAttempts: number;
   onSaveMatch: () => void;
   onResetMatch: () => void;
@@ -18,16 +16,17 @@ const RefereeMatchControlSection = ({
   onSaveMatch,
   onResetMatch
 }: RefereeMatchControlSectionProps) => {
-  // Get the local match state
-  const { localState, markAsSaved, resetLocalState } = useLocalMatchState({
-    fixtureId: selectedFixtureData?.id
-  });
+  // Get global match state
+  const {
+    homeScore,
+    awayScore,
+    hasUnsavedChanges,
+    resetState,
+    getUnsavedItemsCount
+  } = useMatchStore();
 
   // Get batch save functionality
-  const { batchSave, hasUnsavedChanges, unsavedItemsCount } = useBatchSaveManager({
-    fixtureId: selectedFixtureData?.id,
-    localState,
-    onSaveComplete: markAsSaved,
+  const { batchSave, unsavedItemsCount } = useGlobalBatchSaveManager({
     homeTeamData: {
       id: selectedFixtureData?.home_team?.__id__ || selectedFixtureData?.home_team_id,
       name: selectedFixtureData?.home_team?.name || 'Home Team'
@@ -46,7 +45,7 @@ const RefereeMatchControlSection = ({
   };
 
   const handleReset = () => {
-    resetLocalState();
+    resetState();
     onResetMatch();
   };
 
@@ -66,7 +65,7 @@ const RefereeMatchControlSection = ({
           </h3>
           <p className="text-sm text-muted-foreground flex items-center gap-2">
             <Clock className="h-3 w-3" />
-            Save attempts: {saveAttempts} | Local Score: {localState.homeScore}-{localState.awayScore}
+            Save attempts: {saveAttempts} | Global Score: {homeScore}-{awayScore}
           </p>
           {hasUnsavedChanges && (
             <p className="text-xs text-orange-600 mt-1 flex items-center gap-1">

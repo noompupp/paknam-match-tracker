@@ -1,12 +1,11 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Clock, Wifi } from "lucide-react";
+import { useMatchStore } from "@/stores/useMatchStore";
 
 interface LiveScoreHeaderProps {
   homeTeamName: string;
   awayTeamName: string;
-  homeScore: number;
-  awayScore: number;
   matchTime: number;
   isRunning: boolean;
   formatTime: (seconds: number) => string;
@@ -15,12 +14,13 @@ interface LiveScoreHeaderProps {
 const LiveScoreHeader = ({
   homeTeamName,
   awayTeamName,
-  homeScore,
-  awayScore,
   matchTime,
   isRunning,
   formatTime
 }: LiveScoreHeaderProps) => {
+  // Use global store for scores
+  const { homeScore, awayScore, hasUnsavedChanges } = useMatchStore();
+
   return (
     <Card>
       <CardContent className="p-6">
@@ -41,10 +41,11 @@ const LiveScoreHeader = ({
             }`}>
               {isRunning ? '● LIVE' : '⏸ PAUSED'}
             </div>
-            {/* Real-time indicator */}
+            {/* Global state indicator */}
             <div className="mt-1 flex items-center justify-center gap-1 text-xs text-muted-foreground">
               <Wifi className="h-3 w-3 text-green-500" />
-              <span>Real-time</span>
+              <span>Global State</span>
+              {hasUnsavedChanges && <span className="text-orange-500">• Pending</span>}
             </div>
           </div>
           
