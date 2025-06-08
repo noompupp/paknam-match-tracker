@@ -20,6 +20,11 @@ const SimplifiedQuickGoalSection = ({
 }: SimplifiedQuickGoalSectionProps) => {
   console.log('📊 SimplifiedQuickGoalSection: Rendering with unassigned goals count:', unassignedGoalsCount);
 
+  const handleAddDetailsClick = () => {
+    console.log('📝 SimplifiedQuickGoalSection: Add details button clicked, count:', unassignedGoalsCount);
+    onAddDetailsToGoals();
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -70,7 +75,7 @@ const SimplifiedQuickGoalSection = ({
           </Button>
         </div>
 
-        {/* Add Details to Earlier Goals - Only show if there are unassigned goals */}
+        {/* Enhanced Add Details to Earlier Goals - Always show if there are unassigned goals */}
         {unassignedGoalsCount > 0 && (
           <div className="space-y-2 border-t pt-4">
             <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
@@ -86,7 +91,7 @@ const SimplifiedQuickGoalSection = ({
                 </div>
               </div>
               <Button
-                onClick={onAddDetailsToGoals}
+                onClick={handleAddDetailsClick}
                 variant="outline"
                 className="w-full hover:bg-orange-100 hover:border-orange-300 border-orange-200"
                 disabled={isProcessingQuickGoal}

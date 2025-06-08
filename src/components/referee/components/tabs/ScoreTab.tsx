@@ -10,6 +10,7 @@ import { quickGoalService } from "@/services/quickGoalService";
 import { useToast } from "@/hooks/use-toast";
 import SimplifiedQuickGoalSection from "./components/SimplifiedQuickGoalSection";
 import { useUnassignedGoals } from "@/hooks/useUnassignedGoals";
+import { useStableScoreSync } from "@/hooks/useStableScoreSync";
 
 interface ScoreTabProps {
   homeScore: number;
@@ -31,8 +32,6 @@ interface ScoreTabProps {
 }
 
 const ScoreTab = ({
-  homeScore,
-  awayScore,
   selectedFixtureData,
   isRunning,
   goals,
@@ -55,15 +54,23 @@ const ScoreTab = ({
   const homeTeamName = selectedFixtureData?.home_team?.name || 'Home Team';
   const awayTeamName = selectedFixtureData?.away_team?.name || 'Away Team';
 
-  // Use the new database-driven unassigned goals hook
-  const { unassignedGoalsCount } = useUnassignedGoals({
+  // Use stable score sync instead of props to prevent glitches
+  const { homeScore, awayScore, forceRefresh: forceScoreRefresh } = useStableScoreSync({
+    fixtureId: selectedFixtureData?.id,
+    onScoreUpdate: (newHome, newAway) => {
+      console.log('📊 ScoreTab: Stable score update received:', { newHome, newAway });
+    }
+  });
+
+  // Use the database-driven unassigned goals hook with enhanced refresh
+  const { unassignedGoalsCount, refreshUnassignedGoals } = useUnassignedGoals({
     fixtureId: selectedFixtureData?.id,
     refreshTrigger
   });
 
-  console.log('📊 ScoreTab: Database-driven unassigned goals count:', unassignedGoalsCount);
+  console.log('📊 ScoreTab: Using stable scores:', { homeScore, awayScore, unassignedGoalsCount });
 
-  // Enhanced quick goal handler
+  // Enhanced quick goal handler with stable sync
   const handleQuickGoal = async (team: 'home' | 'away') => {
     if (!selectedFixtureData || isProcessingQuickGoal) return;
 
@@ -97,14 +104,14 @@ const ScoreTab = ({
           description: result.message,
         });
         
-        // Trigger refresh of unassigned goals count
+        // Trigger refresh of unassigned goals count and stable score sync
         setRefreshTrigger(prev => prev + 1);
         
-        if (forceRefresh) {
-          setTimeout(() => {
-            forceRefresh();
-          }, 500);
-        }
+        // Use stable score refresh instead of legacy force refresh
+        setTimeout(() => {
+          forceScoreRefresh();
+          refreshUnassignedGoals();
+        }, 300);
         
         onSaveMatch();
       } else {
@@ -135,6 +142,7 @@ const ScoreTab = ({
   };
 
   const handleAddDetailsToGoalsClick = () => {
+    console.log('📝 ScoreTab: Add details to goals clicked, unassigned count:', unassignedGoalsCount);
     setShowWizard(true);
   };
 
@@ -149,6 +157,7 @@ const ScoreTab = ({
     isOwnGoal?: boolean;
     assistPlayer?: ComponentPlayer;
   }) => {
+    console.log('🎯 ScoreTab: Goal assigned via wizard:', goalData);
     onAssignGoal(goalData.player);
     
     if (goalData.assistPlayer && !goalData.isOwnGoal) {
@@ -157,8 +166,13 @@ const ScoreTab = ({
       }, 100);
     }
     
-    // Trigger refresh of unassigned goals count
+    // Trigger refresh of unassigned goals count and stable score sync
     setRefreshTrigger(prev => prev + 1);
+    
+    setTimeout(() => {
+      forceScoreRefresh();
+      refreshUnassignedGoals();
+    }, 300);
     
     setShowWizard(false);
   };
@@ -181,7 +195,7 @@ const ScoreTab = ({
 
   return (
     <div className="space-y-6">
-      {/* Live Score Display */}
+      {/* Live Score Display with Stable Sync */}
       <Card>
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
@@ -214,7 +228,7 @@ const ScoreTab = ({
         </CardContent>
       </Card>
 
-      {/* Simplified Goal Recording with Database-Driven Count */}
+      {/* Enhanced Simplified Goal Recording with Proper Add Details Behavior */}
       <SimplifiedQuickGoalSection
         unassignedGoalsCount={unassignedGoalsCount}
         isProcessingQuickGoal={isProcessingQuickGoal}

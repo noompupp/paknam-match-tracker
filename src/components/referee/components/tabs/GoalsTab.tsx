@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import TeamSelectionModal from "../TeamSelectionModal";
 import SimplifiedQuickGoalSection from "./components/SimplifiedQuickGoalSection";
 import { useUnassignedGoals } from "@/hooks/useUnassignedGoals";
+import { useStableScoreSync } from "@/hooks/useStableScoreSync";
 
 interface GoalsTabProps {
   allPlayers: ComponentPlayer[];
@@ -43,15 +44,23 @@ const GoalsTab = (props: GoalsTabProps) => {
   const homeTeamName = props.selectedFixtureData?.home_team?.name || 'Home Team';
   const awayTeamName = props.selectedFixtureData?.away_team?.name || 'Away Team';
 
-  // Use the new database-driven unassigned goals hook
+  // Use stable score sync instead of props to prevent glitches
+  const { homeScore, awayScore, forceRefresh: forceScoreRefresh } = useStableScoreSync({
+    fixtureId: props.selectedFixtureData?.id,
+    onScoreUpdate: (newHome, newAway) => {
+      console.log('📊 GoalsTab: Stable score update received:', { newHome, newAway });
+    }
+  });
+
+  // Use the database-driven unassigned goals hook with enhanced refresh
   const { unassignedGoalsCount, refreshUnassignedGoals } = useUnassignedGoals({
     fixtureId: props.selectedFixtureData?.id,
     refreshTrigger
   });
 
-  console.log('📊 GoalsTab: Database-driven unassigned goals count:', unassignedGoalsCount);
+  console.log('📊 GoalsTab: Using stable scores:', { homeScore, awayScore, unassignedGoalsCount });
 
-  // Enhanced quick goal handler with team selection and refresh trigger
+  // Enhanced quick goal handler with stable sync
   const handleQuickGoal = async (team: 'home' | 'away') => {
     if (!props.selectedFixtureData || isProcessingQuickGoal) return;
 
@@ -85,15 +94,13 @@ const GoalsTab = (props: GoalsTabProps) => {
           description: `Goal recorded for ${team === 'home' ? homeTeamName : awayTeamName} at ${props.formatTime(props.matchTime)}. Score updated automatically.`,
         });
         
-        // Trigger refresh of unassigned goals count
+        // Trigger refresh of unassigned goals count and stable score sync
         setRefreshTrigger(prev => prev + 1);
         
-        // Also trigger force refresh if available
-        if (props.forceRefresh) {
-          setTimeout(() => {
-            props.forceRefresh!();
-          }, 500);
-        }
+        setTimeout(() => {
+          forceScoreRefresh();
+          refreshUnassignedGoals();
+        }, 300);
       } else {
         toast({
           title: "Quick Goal Failed",
@@ -125,10 +132,20 @@ const GoalsTab = (props: GoalsTabProps) => {
     setShowWizard(true);
   };
 
-  // Handle add details to goals button click
+  // Enhanced add details to goals button click with proper logging
   const handleAddDetailsToGoalsClick = () => {
-    setWizardMode('assign');
-    setShowWizard(true);
+    console.log('📝 GoalsTab: Add details to goals clicked, unassigned count:', unassignedGoalsCount);
+    if (unassignedGoalsCount > 0) {
+      setWizardMode('assign');
+      setShowWizard(true);
+    } else {
+      console.log('⚠️ GoalsTab: No unassigned goals to add details to');
+      toast({
+        title: "No Unassigned Goals",
+        description: "There are no quick goals that need player details added.",
+        variant: "default"
+      });
+    }
   };
 
   // Handle team selection from modal
@@ -158,8 +175,13 @@ const GoalsTab = (props: GoalsTabProps) => {
       }, 100);
     }
     
-    // Trigger refresh of unassigned goals count
+    // Trigger refresh of unassigned goals count and stable score sync
     setRefreshTrigger(prev => prev + 1);
+    
+    setTimeout(() => {
+      forceScoreRefresh();
+      refreshUnassignedGoals();
+    }, 300);
     
     setShowWizard(false);
     setWizardInitialTeam(undefined);
@@ -187,13 +209,13 @@ const GoalsTab = (props: GoalsTabProps) => {
 
   return (
     <div className="space-y-6">
-      {/* Current Score Display */}
+      {/* Current Score Display with Stable Sync */}
       <Card>
         <CardContent className="p-4">
           <div className="flex items-center justify-between">
             <div className="text-center flex-1">
               <h3 className="text-sm font-medium text-muted-foreground">{homeTeamName}</h3>
-              <div className="text-3xl font-bold text-primary">{props.homeScore}</div>
+              <div className="text-3xl font-bold text-primary">{homeScore}</div>
             </div>
             
             <div className="text-center px-4">
@@ -206,13 +228,13 @@ const GoalsTab = (props: GoalsTabProps) => {
             
             <div className="text-center flex-1">
               <h3 className="text-sm font-medium text-muted-foreground">{awayTeamName}</h3>
-              <div className="text-3xl font-bold text-primary">{props.awayScore}</div>
+              <div className="text-3xl font-bold text-primary">{awayScore}</div>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Simplified Goal Recording Section with Database-Driven Count */}
+      {/* Enhanced Simplified Goal Recording Section with Proper Add Details Behavior */}
       <SimplifiedQuickGoalSection
         unassignedGoalsCount={unassignedGoalsCount}
         isProcessingQuickGoal={isProcessingQuickGoal}
