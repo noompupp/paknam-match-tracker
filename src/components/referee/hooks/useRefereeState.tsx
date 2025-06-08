@@ -4,11 +4,12 @@ import { useMembers } from "@/hooks/useMembers";
 import { useUpdateFixtureScore } from "@/hooks/useFixtures";
 import { useCreateMatchEvent, useUpdatePlayerStats } from "@/hooks/useMatchEvents";
 import { useMatchTimer } from "@/hooks/useMatchTimer";
-import { useRealTimeScore } from "@/hooks/useRealTimeScore";
+import { useMatchStateSync } from "@/hooks/useMatchStateSync";
 import { usePlayerTracking } from "@/hooks/usePlayerTracking";
 import { useGoalManagement } from "@/hooks/useGoalManagement";
 import { useLocalMatchEvents } from "@/hooks/useMatchEvents";
 import { useCardManagementImproved } from "@/hooks/useCardManagementImproved";
+import { useResetState } from "@/hooks/useResetState";
 import { processFixtureAndPlayers, processPlayersForDropdowns, debugPlayerDropdownData, type ProcessedPlayer } from "@/utils/refereeDataProcessor";
 import { playerDropdownService } from "@/services/playerDropdownService";
 import { debugRefereeToolsData } from "@/utils/refereeToolsDebug";
@@ -41,6 +42,10 @@ export const useRefereeState = () => {
   const [selectedGoalTeam, setSelectedGoalTeam] = useState("");
   const [selectedTimeTeam, setSelectedTimeTeam] = useState("");
   
+  // Database-driven score state (replacing legacy local state)
+  const [homeScore, setHomeScore] = useState(0);
+  const [awayScore, setAwayScore] = useState(0);
+  
   const [enhancedPlayersData, setEnhancedPlayersData] = useState<{
     allPlayers: ComponentPlayer[];
     homeTeamPlayers: ComponentPlayer[];
@@ -56,6 +61,50 @@ export const useRefereeState = () => {
   });
 
   const selectedFixtureData = fixtures?.find(f => f.id.toString() === selectedFixture);
+
+  // Initialize reset state for coordinated state management
+  const resetState = useResetState({ fixtureId: selectedFixtureData?.id });
+
+  // Enhanced real-time score sync with immediate updates
+  const { syncScoreFromEvents, forceRefresh } = useMatchStateSync({
+    fixtureId: selectedFixtureData?.id,
+    onScoreUpdate: (newHomeScore: number, newAwayScore: number) => {
+      console.log('🔄 useRefereeState: Real-time score update received:', {
+        oldScores: { home: homeScore, away: awayScore },
+        newScores: { home: newHomeScore, away: newAwayScore }
+      });
+      setHomeScore(newHomeScore);
+      setAwayScore(newAwayScore);
+    },
+    onMatchEventUpdate: (event: any) => {
+      console.log('🎯 useRefereeState: Match event update received:', event);
+      // Trigger immediate score sync when goals are added
+      if (event.new?.event_type === 'goal') {
+        console.log('⚽ useRefereeState: Goal event detected, triggering immediate sync');
+        syncScoreFromEvents();
+      }
+    }
+  });
+
+  // Initialize scores from database when fixture changes
+  useEffect(() => {
+    if (selectedFixtureData) {
+      console.log('🔄 useRefereeState: Initializing scores from fixture data:', {
+        fixture: selectedFixtureData.id,
+        homeScore: selectedFixtureData.home_score,
+        awayScore: selectedFixtureData.away_score
+      });
+      
+      setHomeScore(selectedFixtureData.home_score || 0);
+      setAwayScore(selectedFixtureData.away_score || 0);
+      
+      // Trigger initial sync to ensure consistency
+      syncScoreFromEvents();
+    } else {
+      setHomeScore(0);
+      setAwayScore(0);
+    }
+  }, [selectedFixtureData?.id, selectedFixtureData?.home_score, selectedFixtureData?.away_score, syncScoreFromEvents]);
 
   // Debug data when fixture is selected
   if (selectedFixture && selectedFixtureData && members) {
@@ -170,11 +219,6 @@ export const useRefereeState = () => {
   // Custom hooks
   const { matchTime, isRunning, toggleTimer, resetTimer, formatTime } = useMatchTimer();
   
-  // Enhanced real-time score hook with force refresh capability
-  const { homeScore, awayScore, addGoal, removeGoal, resetScore, refreshScore, forceRefresh } = useRealTimeScore({ 
-    fixtureId: selectedFixtureData ? selectedFixtureData.id : undefined 
-  });
-  
   const { 
     trackedPlayers, 
     selectedPlayer: selectedTimePlayer, 
@@ -201,6 +245,37 @@ export const useRefereeState = () => {
     resetCards,
     checkForSecondYellow 
   } = useCardManagementImproved({ selectedFixtureData });
+
+  // Database-driven score functions (replacing legacy local state functions)
+  const addGoal = async (team: 'home' | 'away') => {
+    if (team === 'home') {
+      const newScore = homeScore + 1;
+      setHomeScore(newScore);
+      console.log('📊 useRefereeState: Local home score updated to:', newScore);
+    } else {
+      const newScore = awayScore + 1;
+      setAwayScore(newScore);
+      console.log('📊 useRefereeState: Local away score updated to:', newScore);
+    }
+  };
+
+  const removeGoal = (team: 'home' | 'away') => {
+    if (team === 'home' && homeScore > 0) {
+      const newScore = homeScore - 1;
+      setHomeScore(newScore);
+      console.log('📊 useRefereeState: Local home score decreased to:', newScore);
+    } else if (team === 'away' && awayScore > 0) {
+      const newScore = awayScore - 1;
+      setAwayScore(newScore);
+      console.log('📊 useRefereeState: Local away score decreased to:', newScore);
+    }
+  };
+
+  const resetScore = () => {
+    console.log('🔄 useRefereeState: Resetting scores to 0-0');
+    setHomeScore(0);
+    setAwayScore(0);
+  };
 
   // Create players specifically for PlayerTimeTracker with extended properties
   const playersForTimeTracker: PlayerTimeTrackerPlayer[] = trackedPlayers.map(trackedPlayer => ({
@@ -243,7 +318,7 @@ export const useRefereeState = () => {
     return [];
   };
 
-  console.log('🎯 useRefereeState Summary (Enhanced):', {
+  console.log('🎯 useRefereeState Summary (Database-Driven Scores):', {
     selectedFixture,
     hasSelectedFixtureData: !!selectedFixtureData,
     totalMembers: members?.length || 0,
@@ -256,8 +331,8 @@ export const useRefereeState = () => {
     selectedTimeTeam,
     goalFilteredPlayersCount: getGoalFilteredPlayers().length,
     timeFilteredPlayersCount: getTimeFilteredPlayers().length,
-    realTimeScore: { homeScore, awayScore },
-    hasForceRefresh: !!forceRefresh // Added for debugging
+    databaseDrivenScore: { homeScore, awayScore },
+    hasRealTimeSync: !!forceRefresh
   });
 
   return {
@@ -300,14 +375,13 @@ export const useRefereeState = () => {
     resetTimer,
     formatTime,
     
-    // Enhanced real-time score state with force refresh
+    // Database-driven score state with real-time sync
     homeScore,
     awayScore,
     addGoal,
     removeGoal,
     resetScore,
-    refreshScore,
-    forceRefresh, // Added enhanced refresh function
+    forceRefresh, // Enhanced refresh function for immediate sync
     
     // Improved card state
     cards,
@@ -342,7 +416,10 @@ export const useRefereeState = () => {
     // Events state
     events,
     addEvent,
-    resetEvents
+    resetEvents,
+    
+    // Reset state coordination
+    resetState
   };
 };
 

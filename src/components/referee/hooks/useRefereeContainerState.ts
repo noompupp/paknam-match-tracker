@@ -30,7 +30,7 @@ export const useRefereeContainerState = () => {
     resetTimer,
     formatTime,
     
-    // Enhanced score state with force refresh
+    // Database-driven score state with real-time sync
     homeScore,
     awayScore,
     addGoal,
@@ -82,7 +82,10 @@ export const useRefereeContainerState = () => {
     // Database mutation hooks
     updateFixtureScore,
     createMatchEvent,
-    updatePlayerStats
+    updatePlayerStats,
+    
+    // Reset state coordination
+    resetState
   } = useRefereeState();
 
   // Enhanced referee handlers with reset state coordination
@@ -95,7 +98,7 @@ export const useRefereeContainerState = () => {
     handleRemovePlayer,
     handleTogglePlayerTime: handleTogglePlayerTimeWithSave,
     handleResetMatchData,
-    resetState // Get reset state from handlers
+    resetState: handlersResetState
   } = useRefereeHandlers({
     selectedFixtureData,
     matchTime,
@@ -178,7 +181,7 @@ export const useRefereeContainerState = () => {
     isRunning,
     formatTime,
     
-    // Score
+    // Database-driven score with real-time sync
     homeScore,
     awayScore,
     
@@ -209,7 +212,7 @@ export const useRefereeContainerState = () => {
     // Save attempts
     saveAttempts,
     
-    // Enhanced handlers with reset state coordination
+    // Enhanced handlers with database-driven scores and real-time sync
     handleSaveMatch,
     handleResetMatch: handleEnhancedResetMatch,
     handleAssignGoal,
@@ -222,7 +225,7 @@ export const useRefereeContainerState = () => {
     assignGoal,
     removePlayer,
     addPlayer,
-    forceRefresh,
-    resetState // Expose reset state for components
+    forceRefresh, // Expose immediate refresh for components
+    resetState: resetState || handlersResetState // Expose reset state for components
   };
 };

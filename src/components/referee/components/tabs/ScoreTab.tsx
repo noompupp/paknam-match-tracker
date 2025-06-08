@@ -25,6 +25,7 @@ interface ScoreTabProps {
   onQuickGoal: (team: 'home' | 'away') => void;
   onOpenGoalWizard: () => void;
   onAssignGoal: (player: ComponentPlayer) => void;
+  forceRefresh?: () => Promise<void>;
 }
 
 const ScoreTab = ({
@@ -40,7 +41,8 @@ const ScoreTab = ({
   onToggleTimer,
   onResetMatch,
   onSaveMatch,
-  onAssignGoal
+  onAssignGoal,
+  forceRefresh
 }: ScoreTabProps) => {
   const [showDetailedEntry, setShowDetailedEntry] = useState(false);
   const [quickGoalTeam, setQuickGoalTeam] = useState<'home' | 'away' | null>(null);
@@ -83,6 +85,14 @@ const ScoreTab = ({
           description: result.message,
         });
         
+        // Trigger immediate score refresh after quick goal
+        if (forceRefresh) {
+          console.log('🔄 ScoreTab: Triggering immediate score refresh after quick goal');
+          setTimeout(() => {
+            forceRefresh();
+          }, 500); // Slightly longer delay for quick goal processing
+        }
+        
         if (onSaveMatch) {
           onSaveMatch();
         }
@@ -124,6 +134,14 @@ const ScoreTab = ({
       setTimeout(() => {
         onAssignGoal(goalData.assistPlayer!);
       }, 100);
+    }
+    
+    // Trigger immediate score refresh after wizard goal assignment
+    if (forceRefresh && goalData.goalType === 'goal') {
+      console.log('🔄 ScoreTab: Triggering immediate score refresh after wizard goal assignment');
+      setTimeout(() => {
+        forceRefresh();
+      }, 200);
     }
     
     setShowDetailedEntry(false);

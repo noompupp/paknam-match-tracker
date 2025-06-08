@@ -1,5 +1,5 @@
 
-import { Trophy, Users } from "lucide-react";
+import { Trophy, Users, Wifi } from "lucide-react";
 import { getScoreStyle } from "@/utils/scoreColorUtils";
 
 interface LiveScoreDisplayProps {
@@ -10,6 +10,7 @@ interface LiveScoreDisplayProps {
   homeTeamGoals: number;
   awayTeamGoals: number;
   totalAssists: number;
+  isRealTimeEnabled?: boolean;
 }
 
 const LiveScoreDisplay = ({
@@ -19,7 +20,8 @@ const LiveScoreDisplay = ({
   awayScore,
   homeTeamGoals,
   awayTeamGoals,
-  totalAssists
+  totalAssists,
+  isRealTimeEnabled = true
 }: LiveScoreDisplayProps) => {
   // Use semantic colors for better visibility
   const homeTeamColor = '#2563eb'; // blue-600
@@ -45,6 +47,12 @@ const LiveScoreDisplay = ({
         <div className="text-center px-4">
           <Trophy className="h-6 w-6 mx-auto text-yellow-500 mb-1 drop-shadow-sm" />
           <div className="text-xs text-muted-foreground">VS</div>
+          {isRealTimeEnabled && (
+            <div className="flex items-center justify-center gap-1 mt-1 text-xs text-green-600">
+              <Wifi className="h-3 w-3 animate-pulse" />
+              <span>Live</span>
+            </div>
+          )}
         </div>
         <div className="text-center flex-1">
           <div className="text-sm font-medium text-muted-foreground">
@@ -64,6 +72,11 @@ const LiveScoreDisplay = ({
       <div className="text-center mt-2 text-xs text-muted-foreground bg-gradient-to-r from-transparent via-muted/10 to-transparent rounded p-2">
         <Users className="h-4 w-4 inline mr-1" />
         Total Assists: {totalAssists}
+        {isRealTimeEnabled && (
+          <span className="ml-2 text-green-600">
+            • Real-time Updates Active
+          </span>
+        )}
       </div>
     </div>
   );

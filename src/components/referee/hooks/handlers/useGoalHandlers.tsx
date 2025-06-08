@@ -13,6 +13,7 @@ interface UseGoalHandlersProps {
   addEvent: (type: string, description: string, time: number) => void;
   assignGoal: (player: ComponentPlayer, matchTime: number, fixtureId: number, homeTeam: any, awayTeam: any) => any;
   updateFixtureScore: any;
+  forceRefresh?: () => Promise<void>;
 }
 
 export const useGoalHandlers = (props: UseGoalHandlersProps) => {
@@ -134,6 +135,14 @@ export const useGoalHandlers = (props: UseGoalHandlersProps) => {
           });
           
           props.addGoal(team);
+          
+          // Trigger immediate score refresh to sync with database
+          if (props.forceRefresh) {
+            console.log('🔄 useGoalHandlers: Triggering immediate score refresh after goal assignment');
+            setTimeout(() => {
+              props.forceRefresh?.();
+            }, 100); // Small delay to ensure database write completes
+          }
         }
 
         props.addEvent(
@@ -144,10 +153,10 @@ export const useGoalHandlers = (props: UseGoalHandlersProps) => {
 
         toast({
           title: `${props.selectedGoalType === 'goal' ? 'Goal' : 'Assist'} Assigned!`,
-          description: `${props.selectedGoalType === 'goal' ? 'Goal' : 'Assist'} assigned to ${player.name} and ${props.selectedGoalType === 'goal' ? 'score updated' : 'stats updated'}`,
+          description: `${props.selectedGoalType === 'goal' ? 'Goal' : 'Assist'} assigned to ${player.name} and ${props.selectedGoalType === 'goal' ? 'score updated with real-time sync' : 'stats updated'}`,
         });
 
-        console.log('✅ useGoalHandlers: Goal assignment completed with enhanced error handling');
+        console.log('✅ useGoalHandlers: Goal assignment completed with immediate score sync');
       }
     } catch (error) {
       console.error('❌ useGoalHandlers: Error assigning goal:', error);
