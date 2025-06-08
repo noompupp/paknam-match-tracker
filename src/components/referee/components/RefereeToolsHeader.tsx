@@ -29,6 +29,10 @@ const RefereeToolsHeader = ({
 
   const selectedFixtureData = fixtures.find(f => f.id === selectedFixture);
 
+  const handleFixtureChange = (value: string) => {
+    onFixtureChange(Number(value));
+  };
+
   return (
     <RefereeCard
       title="Referee Tools"
@@ -44,7 +48,7 @@ const RefereeToolsHeader = ({
           <RefereeSelect
             placeholder="Choose a fixture..."
             value={selectedFixture ? String(selectedFixture) : ""}
-            onValueChange={(value) => onFixtureChange(Number(value))}
+            onValueChange={handleFixtureChange}
             options={fixtureOptions}
           />
         </RefereeFormField>
