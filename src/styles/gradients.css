@@ -114,6 +114,61 @@
       rgb(220 38 38 / 0.15) 100%);
     border-color: rgb(239 68 68 / 0.3);
   }
+
+  /* Enhanced Time Badge Gradients */
+  .time-badge-gradient {
+    background: linear-gradient(135deg, 
+      hsl(var(--primary) / 0.08) 0%, 
+      hsl(var(--secondary) / 0.12) 50%, 
+      hsl(var(--primary) / 0.08) 100%);
+    border: 1px solid hsl(var(--primary) / 0.2);
+  }
+
+  .time-badge-goal-gradient {
+    background: linear-gradient(135deg, 
+      rgb(34 197 94 / 0.12) 0%, 
+      rgb(22 163 74 / 0.18) 100%);
+    border: 1px solid rgb(34 197 94 / 0.35);
+  }
+
+  .time-badge-card-gradient {
+    background: linear-gradient(135deg, 
+      rgb(234 179 8 / 0.12) 0%, 
+      rgb(202 138 4 / 0.18) 100%);
+    border: 1px solid rgb(234 179 8 / 0.35);
+  }
+
+  .time-badge-red-gradient {
+    background: linear-gradient(135deg, 
+      rgb(239 68 68 / 0.12) 0%, 
+      rgb(220 38 38 / 0.18) 100%);
+    border: 1px solid rgb(239 68 68 / 0.35);
+  }
+
+  /* Team-specific stat gradients */
+  .stat-block-home-gradient {
+    background: linear-gradient(135deg, 
+      hsl(var(--primary) / 0.08) 0%, 
+      hsl(var(--primary) / 0.12) 50%, 
+      hsl(var(--primary) / 0.08) 100%);
+    border: 1px solid hsl(var(--primary) / 0.15);
+  }
+
+  .stat-block-away-gradient {
+    background: linear-gradient(135deg, 
+      hsl(var(--secondary) / 0.08) 0%, 
+      hsl(var(--secondary) / 0.12) 50%, 
+      hsl(var(--secondary) / 0.08) 100%);
+    border: 1px solid hsl(var(--secondary) / 0.15);
+  }
+
+  .stat-block-neutral-gradient {
+    background: linear-gradient(135deg, 
+      hsl(var(--muted) / 0.15) 0%, 
+      hsl(var(--card) / 0.25) 50%, 
+      hsl(var(--muted) / 0.15) 100%);
+    border: 1px solid hsl(var(--muted) / 0.3);
+  }
 }
 
 /* Dark mode adjustments */
@@ -145,5 +200,31 @@
       hsl(var(--muted) / 0.2) 0%, 
       hsl(var(--card) / 0.3) 50%, 
       hsl(var(--muted) / 0.2) 100%);
+  }
+
+  /* Dark mode time badge adjustments */
+  .time-badge-gradient {
+    background: linear-gradient(135deg, 
+      hsl(var(--primary) / 0.15) 0%, 
+      hsl(var(--secondary) / 0.20) 50%, 
+      hsl(var(--primary) / 0.15) 100%);
+    border: 1px solid hsl(var(--primary) / 0.3);
+  }
+
+  /* Dark mode stat block adjustments */
+  .stat-block-home-gradient {
+    background: linear-gradient(135deg, 
+      hsl(var(--primary) / 0.15) 0%, 
+      hsl(var(--primary) / 0.20) 50%, 
+      hsl(var(--primary) / 0.15) 100%);
+    border: 1px solid hsl(var(--primary) / 0.25);
+  }
+
+  .stat-block-away-gradient {
+    background: linear-gradient(135deg, 
+      hsl(var(--secondary) / 0.15) 0%, 
+      hsl(var(--secondary) / 0.20) 50%, 
+      hsl(var(--secondary) / 0.15) 100%);
+    border: 1px solid hsl(var(--secondary) / 0.25);
   }
 }

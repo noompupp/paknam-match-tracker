@@ -25,7 +25,7 @@ const MatchStatisticsSummary = ({
     <Card className="premier-card-shadow match-border-gradient">
       <CardContent className="pt-6 match-gradient-stats">
         <div className="grid grid-cols-3 gap-6 text-center">
-          <div className="p-4 rounded-lg bg-gradient-to-br from-primary/5 to-primary/10 border border-primary/10">
+          <div className="p-4 rounded-lg stat-block-home-gradient premier-card-shadow">
             <div 
               className="text-2xl font-bold mb-1 score-text-outline"
               style={getScoreStyle(homeTeamColor)}
@@ -38,7 +38,7 @@ const MatchStatisticsSummary = ({
             </div>
           </div>
           
-          <div className="p-4 rounded-lg bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200">
+          <div className="p-4 rounded-lg stat-block-neutral-gradient premier-card-shadow">
             <div className="text-2xl font-bold mb-1 text-amber-600 score-text-shadow">
               {cardsCount}
             </div>
@@ -48,7 +48,7 @@ const MatchStatisticsSummary = ({
             </div>
           </div>
           
-          <div className="p-4 rounded-lg bg-gradient-to-br from-secondary/5 to-secondary/10 border border-secondary/10">
+          <div className="p-4 rounded-lg stat-block-away-gradient premier-card-shadow">
             <div 
               className="text-2xl font-bold mb-1 score-text-outline"
               style={getScoreStyle(awayTeamColor)}

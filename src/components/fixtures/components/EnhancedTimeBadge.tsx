@@ -15,15 +15,15 @@ const EnhancedTimeBadge = ({
   const getVariantStyles = () => {
     switch (variant) {
       case 'goal':
-        return 'bg-gradient-to-r from-green-50 to-green-100 border-green-200 text-green-800';
+        return 'time-badge-goal-gradient text-green-800 dark:text-green-200';
       case 'yellow':
-        return 'bg-gradient-to-r from-yellow-50 to-yellow-100 border-yellow-200 text-yellow-800';
+        return 'time-badge-card-gradient text-yellow-800 dark:text-yellow-200';
       case 'red':
-        return 'bg-gradient-to-r from-red-50 to-red-100 border-red-200 text-red-800';
+        return 'time-badge-red-gradient text-red-800 dark:text-red-200';
       case 'card':
-        return 'bg-gradient-to-r from-orange-50 to-orange-100 border-orange-200 text-orange-800';
+        return 'time-badge-card-gradient text-orange-800 dark:text-orange-200';
       default:
-        return 'bg-gradient-to-r from-primary/10 to-secondary/10 border-primary/20 text-foreground';
+        return 'time-badge-gradient text-foreground';
     }
   };
 

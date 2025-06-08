@@ -29,7 +29,7 @@ const EnhancedMatchStatisticsFooter = ({
       {isMobile ? (
         <div className="w-full">
           <div className="grid grid-cols-3 gap-4 text-center">
-            <div className="p-3 rounded-lg bg-gradient-to-br from-primary/5 to-primary/10 border border-primary/10 premier-card-shadow">
+            <div className="p-3 rounded-lg stat-block-home-gradient premier-card-shadow">
               <div 
                 className="text-xl font-bold mb-1 score-text-outline"
                 style={getScoreStyle(homeTeamColor)}
@@ -44,7 +44,7 @@ const EnhancedMatchStatisticsFooter = ({
               </div>
             </div>
             
-            <div className="p-3 rounded-lg bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 premier-card-shadow">
+            <div className="p-3 rounded-lg stat-block-neutral-gradient premier-card-shadow">
               <div className="text-xl font-bold mb-1 text-amber-600 score-text-shadow">{cards.length}</div>
               <div className="text-muted-foreground text-xs font-medium mb-1">Cards</div>
               <div className="text-xs text-muted-foreground">
@@ -52,7 +52,7 @@ const EnhancedMatchStatisticsFooter = ({
               </div>
             </div>
             
-            <div className="p-3 rounded-lg bg-gradient-to-br from-secondary/5 to-secondary/10 border border-secondary/10 premier-card-shadow">
+            <div className="p-3 rounded-lg stat-block-away-gradient premier-card-shadow">
               <div 
                 className="text-xl font-bold mb-1 score-text-outline"
                 style={getScoreStyle(awayTeamColor)}
@@ -71,7 +71,7 @@ const EnhancedMatchStatisticsFooter = ({
       ) : (
         /* Desktop layout with enhanced Premier League styling */
         <div className="grid grid-cols-3 gap-6 text-center">
-          <div className="p-4 rounded-lg bg-gradient-to-br from-primary/5 to-primary/10 border border-primary/10 premier-card-shadow">
+          <div className="p-4 rounded-lg stat-block-home-gradient premier-card-shadow">
             <div 
               className="text-2xl font-bold mb-1 score-text-outline"
               style={getScoreStyle(homeTeamColor)}
@@ -84,7 +84,7 @@ const EnhancedMatchStatisticsFooter = ({
             </div>
           </div>
           
-          <div className="p-4 rounded-lg bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 premier-card-shadow">
+          <div className="p-4 rounded-lg stat-block-neutral-gradient premier-card-shadow">
             <div className="text-2xl font-bold mb-1 text-amber-600 score-text-shadow">{cards.length}</div>
             <div className="text-muted-foreground text-sm font-medium">Total Cards</div>
             <div className="text-xs text-muted-foreground mt-1">
@@ -92,7 +92,7 @@ const EnhancedMatchStatisticsFooter = ({
             </div>
           </div>
           
-          <div className="p-4 rounded-lg bg-gradient-to-br from-secondary/5 to-secondary/10 border border-secondary/10 premier-card-shadow">
+          <div className="p-4 rounded-lg stat-block-away-gradient premier-card-shadow">
             <div 
               className="text-2xl font-bold mb-1 score-text-outline"
               style={getScoreStyle(awayTeamColor)}
