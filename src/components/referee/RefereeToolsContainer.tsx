@@ -98,11 +98,11 @@ const RefereeToolsContainer = () => {
     if (!selectedFixtureData) return;
     
     const homeTeam = { 
-      id: selectedFixtureData.home_team_id || 0, 
+      id: String(selectedFixtureData.home_team_id || ''), 
       name: selectedFixtureData.home_team?.name || '' 
     };
     const awayTeam = { 
-      id: selectedFixtureData.away_team_id || 0, 
+      id: String(selectedFixtureData.away_team_id || ''), 
       name: selectedFixtureData.away_team?.name || '' 
     };
     
@@ -112,6 +112,18 @@ const RefereeToolsContainer = () => {
   const handleAddCard = (playerName: string, team: string, cardType: 'yellow' | 'red', time: number) => {
     // Add card logic here
     console.log('Adding card:', { playerName, team, cardType, time });
+  };
+
+  const handleAddPlayer = (player: any) => {
+    addPlayer(player);
+  };
+
+  const handleRemovePlayer = (playerId: number) => {
+    removePlayer(playerId);
+  };
+
+  const handleTogglePlayerTime = (playerId: number) => {
+    togglePlayerTime(playerId);
   };
 
   const handleExportSummary = () => {
@@ -235,9 +247,9 @@ const RefereeToolsContainer = () => {
               matchTime={matchTime}
               onPlayerSelect={setSelectedTimePlayer}
               onTimeTeamChange={setSelectedTimeTeam}
-              onAddPlayer={addPlayer}
-              onRemovePlayer={removePlayer}
-              onTogglePlayerTime={togglePlayerTime}
+              onAddPlayer={handleAddPlayer}
+              onRemovePlayer={handleRemovePlayer}
+              onTogglePlayerTime={handleTogglePlayerTime}
               formatTime={formatTime}
               selectedFixtureData={selectedFixtureData}
             />

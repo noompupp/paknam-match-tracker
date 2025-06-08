@@ -13,9 +13,8 @@ interface CardsTabProps {
   matchTime: number;
   selectedFixtureData: any;
   onPlayerSelect: (value: string) => void;
-  onTeamSelect: (value: string) => void;
+  onTeamChange: (value: string) => void;
   onCardTypeChange: (value: 'yellow' | 'red') => void;
-  onAddCard: (playerName: string, team: string, cardType: 'yellow' | 'red', time: number) => void;
   formatTime: (seconds: number) => string;
 }
 
@@ -30,9 +29,8 @@ const CardsTab = ({
   matchTime,
   selectedFixtureData,
   onPlayerSelect,
-  onTeamSelect,
+  onTeamChange,
   onCardTypeChange,
-  onAddCard,
   formatTime
 }: CardsTabProps) => {
   const handleAddCard = () => {
@@ -54,7 +52,7 @@ const CardsTab = ({
     
     if (!player) return;
     
-    onAddCard(player.name, selectedTeam, selectedCardType, matchTime);
+    console.log('Adding card:', { player: player.name, team: selectedTeam, cardType: selectedCardType, time: matchTime });
   };
 
   return (
@@ -68,7 +66,7 @@ const CardsTab = ({
       selectedCardType={selectedCardType}
       cards={cards}
       onPlayerSelect={onPlayerSelect}
-      onTeamChange={onTeamSelect}
+      onTeamChange={onTeamChange}
       onCardTypeChange={onCardTypeChange}
       onAddCard={handleAddCard}
       formatTime={formatTime}
