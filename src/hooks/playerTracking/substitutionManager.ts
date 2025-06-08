@@ -19,7 +19,7 @@ export const useSubstitutionManager = () => {
       timestamp: Date.now()
     });
     
-    console.log('🔄 Substitution Manager: Pending substitution initiated for:', player.name);
+    console.log('🔄 Substitution Manager: Pending substitution initiated for Sub In:', player.name);
   }, []);
 
   const completePendingSubstitution = useCallback((incomingPlayer: ProcessedPlayer) => {

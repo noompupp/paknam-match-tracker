@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { UserMinus, ArrowRightLeft } from "lucide-react";
@@ -40,9 +39,9 @@ const TrackedPlayerCard = ({
   
   // Check if this is a player who has played before (potential substitution candidate)
   const hasPlayedBefore = player.totalTime > 0;
-  const isSubstitutionCandidate = player.isPlaying && hasPlayedBefore;
+  const isSubstitutionCandidate = hasPlayedBefore;
   
-  console.log('👤 Rendering tracked player with substitution status:', {
+  console.log('👤 Rendering tracked player with corrected substitution status:', {
     name: player.name,
     role,
     canRemove: removal.canRemove,
@@ -54,7 +53,7 @@ const TrackedPlayerCard = ({
     totalTime: player.totalTime
   });
 
-  // Determine button text and styling
+  // Determine button text and styling based on corrected logic
   const getButtonProps = () => {
     if (isPendingSubstitution) {
       return {
@@ -64,6 +63,7 @@ const TrackedPlayerCard = ({
       };
     }
     
+    // Show substitution buttons for players who have played before
     if (isSubstitutionCandidate) {
       if (player.isPlaying) {
         return {
@@ -80,6 +80,7 @@ const TrackedPlayerCard = ({
       }
     }
     
+    // For new players (no previous time), show Start/Stop
     if (player.isPlaying) {
       return {
         text: "Stop" as const,

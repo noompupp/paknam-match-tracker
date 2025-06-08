@@ -89,20 +89,48 @@ export const usePlayerTimeHandlers = (props: UsePlayerTimeHandlersProps) => {
     try {
       console.log('⏱️ usePlayerTimeHandlers: Toggling player time:', player.name);
       
-      // If player is currently playing and has played before, initiate pending substitution
-      if (player.isPlaying && player.totalTime > 0) {
+      // Check if player has played before (potential substitution candidate)
+      const hasPlayedBefore = player.totalTime > 0;
+      
+      // CORRECTED LOGIC: Only initiate pending substitution when pressing "Sub In" 
+      // (i.e., player is NOT currently playing AND has played before)
+      if (!player.isPlaying && hasPlayedBefore) {
+        // This is a "Sub In" action for a player who has played before
         substitutionManager.initiatePendingSubstitution(player);
         
         toast({
           title: "Substitution Ready",
-          description: `${player.name} will be substituted. Add a replacement player to complete.`,
+          description: `${player.name} will be substituted in. Press "Sub Out" on another player to complete.`,
         });
         
         props.addEvent('Substitution Initiated', `${player.name} ready for substitution`, props.matchTime);
         return;
       }
 
-      // Standard toggle for new players or players coming back in
+      // For "Sub Out" actions (player is currently playing), check if this completes a pending substitution
+      if (player.isPlaying && substitutionManager.hasPendingSubstitution) {
+        // Complete the pending substitution by stopping this player
+        await props.togglePlayerTime(playerId, props.matchTime);
+        
+        const pendingSub = substitutionManager.pendingSubstitution;
+        if (pendingSub) {
+          // Clear the pending substitution and complete it
+          substitutionManager.cancelPendingSubstitution();
+          
+          props.addEvent('Substitution Complete', 
+            `${pendingSub.outgoingPlayerName} substituted for ${player.name}`, 
+            props.matchTime
+          );
+          
+          toast({
+            title: "Substitution Complete",
+            description: `${pendingSub.outgoingPlayerName} replaced ${player.name}`,
+          });
+        }
+        return;
+      }
+
+      // Standard toggle for new players or regular start/stop actions
       await props.togglePlayerTime(playerId, props.matchTime);
       
       const action = player.isPlaying ? 'stopped' : 'started';
