@@ -1,3 +1,4 @@
+
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 
@@ -181,14 +182,24 @@ export const useMatchStore = create<MatchState>()(
     },
 
     updateGoal: (goalId, updates) => {
-      set((state) => ({
-        goals: state.goals.map(goal => 
+      set((state) => {
+        const updatedGoals = state.goals.map(goal => 
           goal.id === goalId 
-            ? { ...goal, ...updates, synced: false }
+            ? { ...goal, ...updates, synced: updates.synced !== undefined ? updates.synced : false }
             : goal
-        ),
-        hasUnsavedChanges: true
-      }));
+        );
+
+        console.log('🏪 MatchStore: Goal updated:', {
+          goalId,
+          updates,
+          updatedGoal: updatedGoals.find(g => g.id === goalId)
+        });
+
+        return {
+          goals: updatedGoals,
+          hasUnsavedChanges: true
+        };
+      });
     },
 
     removeGoal: (goalId) => {
@@ -304,8 +315,11 @@ export const useMatchStore = create<MatchState>()(
     },
 
     getUnassignedGoalsCount: () => {
+      // Enhanced detection: check for "Quick Goal" OR goals without proper player details
       return get().goals.filter(g => 
-        g.playerName === 'Quick Goal' || g.playerName === 'Unknown Player'
+        g.playerName === 'Quick Goal' || 
+        g.playerName === 'Unknown Player' ||
+        (!g.playerId && g.type === 'goal')
       ).length;
     },
 

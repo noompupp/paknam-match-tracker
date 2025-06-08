@@ -83,13 +83,15 @@ const ScoreTabContainer = ({
     setShowDetailedEntry(true);
   };
 
-  // Fixed handler for adding details to unassigned goals - now uses full Goal Entry Wizard
+  // Enhanced handler for adding details to unassigned goals
   const handleAddDetailsToGoals = () => {
     console.log('📝 ScoreTabContainer: Add details to goals requested');
     
-    // Find the first unassigned goal
+    // Find the first unassigned goal (including both database and local store goals)
     const unassignedGoal = goals.find(goal => 
-      goal.playerName === 'Quick Goal' || goal.playerName === 'Unknown Player'
+      goal.playerName === 'Quick Goal' || 
+      goal.playerName === 'Unknown Player' ||
+      (!goal.playerId && goal.type === 'goal')
     );
 
     if (unassignedGoal) {
@@ -113,24 +115,19 @@ const ScoreTabContainer = ({
   }) => {
     console.log('🎯 ScoreTabContainer: Goal wizard completed:', goalData);
 
-    if (goalData.isEdit && goalData.originalGoalId) {
-      // Handle editing existing goal
-      console.log('✏️ ScoreTabContainer: Processing goal edit for ID:', goalData.originalGoalId);
-      // The goal update will be handled by the detailed goal handler
-      handleWizardGoalAssigned(goalData);
-    } else {
-      // Handle new goal creation
-      handleWizardGoalAssigned(goalData);
-    }
+    // Always handle through the detailed goal handler for consistency
+    handleWizardGoalAssigned(goalData);
 
     setShowDetailedEntry(false);
     setQuickGoalTeam(null);
     setEditingGoal(null);
   };
 
-  // Get unassigned goals for the indicator
+  // Get unassigned goals for the indicator (enhanced detection)
   const unassignedGoals = goals.filter(goal => 
-    goal.playerName === 'Quick Goal' || goal.playerName === 'Unknown Player'
+    goal.playerName === 'Quick Goal' || 
+    goal.playerName === 'Unknown Player' ||
+    (!goal.playerId && goal.type === 'goal')
   );
 
   if (showDetailedEntry) {

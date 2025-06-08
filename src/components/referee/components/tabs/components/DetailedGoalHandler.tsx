@@ -2,6 +2,7 @@
 import { useToast } from "@/hooks/use-toast";
 import { ComponentPlayer } from "../../../hooks/useRefereeState";
 import { supabase } from "@/integrations/supabase/client";
+import { useMatchStore } from "@/stores/useMatchStore";
 
 interface DetailedGoalHandlerProps {
   onAssignGoal: (player: ComponentPlayer) => void;
@@ -13,6 +14,7 @@ export const useDetailedGoalHandler = ({
   forceRefresh
 }: DetailedGoalHandlerProps) => {
   const { toast } = useToast();
+  const { updateGoal, removeGoal, addGoal, addAssist } = useMatchStore();
 
   const handleWizardGoalAssigned = async (goalData: {
     player: ComponentPlayer;
@@ -66,12 +68,30 @@ export const useDetailedGoalHandler = ({
           console.log('✅ DetailedGoalHandler: Player stats updated');
         }
 
+        // Update local store - find and update the "Quick Goal" entry
+        const { goals } = useMatchStore.getState();
+        const quickGoalToUpdate = goals.find(g => 
+          g.playerName === 'Quick Goal' && 
+          g.time === (updatedEvent.event_time || 0)
+        );
+
+        if (quickGoalToUpdate) {
+          console.log('🔄 DetailedGoalHandler: Updating local store goal:', quickGoalToUpdate.id);
+          updateGoal(quickGoalToUpdate.id, {
+            playerId: goalData.player.id,
+            playerName: goalData.player.name,
+            synced: true
+          });
+        } else {
+          console.warn('⚠️ DetailedGoalHandler: Could not find matching quick goal in local store');
+        }
+
         toast({
           title: "Goal Updated!",
           description: `Goal assigned to ${goalData.player.name}`,
         });
 
-        // Handle assist player if provided and not an own goal - DON'T call onAssignGoal for assists
+        // Handle assist player if provided and not an own goal
         if (goalData.assistPlayer && !goalData.isOwnGoal) {
           console.log('🎯 DetailedGoalHandler: Recording assist (without incrementing score):', goalData.assistPlayer);
           
@@ -87,6 +107,17 @@ export const useDetailedGoalHandler = ({
             console.error('❌ DetailedGoalHandler: Error updating assist player stats:', assistStatsError);
           } else {
             console.log('✅ DetailedGoalHandler: Assist player stats updated');
+            
+            // Add assist to local store
+            addAssist({
+              playerId: goalData.assistPlayer.id,
+              playerName: goalData.assistPlayer.name,
+              team: goalData.team,
+              teamId: quickGoalToUpdate?.teamId || '',
+              teamName: quickGoalToUpdate?.teamName || '',
+              type: 'assist',
+              time: updatedEvent.event_time || 0
+            });
           }
         }
       } else {
@@ -114,12 +145,12 @@ export const useDetailedGoalHandler = ({
         }
       }
 
-      // Trigger refresh after processing
+      // Trigger refresh after processing with a shorter delay for immediate feedback
       if (forceRefresh) {
         console.log('🔄 DetailedGoalHandler: Triggering refresh after goal processing');
         setTimeout(() => {
           forceRefresh();
-        }, 500);
+        }, 200);
       }
 
     } catch (error) {
