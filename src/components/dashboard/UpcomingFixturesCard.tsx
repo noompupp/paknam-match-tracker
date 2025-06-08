@@ -2,7 +2,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, ChevronRight, Eye } from "lucide-react";
+import { ArrowRight, ChevronRight } from "lucide-react";
 import { Fixture } from "@/types/database";
 import { formatDateDisplay, formatTimeDisplay } from "@/utils/timeUtils";
 import TeamLogo from "../teams/TeamLogo";
@@ -14,29 +14,19 @@ interface UpcomingFixturesCardProps {
 }
 
 const UpcomingFixturesCard = ({ upcomingFixtures, isLoading, onViewAll }: UpcomingFixturesCardProps) => {
-  const handleClick = () => {
-    console.log('UpcomingFixturesCard: View All button clicked');
-    console.log('UpcomingFixturesCard: onViewAll function exists:', !!onViewAll);
-    if (onViewAll) {
-      onViewAll();
-    } else {
-      console.error('UpcomingFixturesCard: onViewAll function is not available');
-    }
-  };
-
   return (
     <Card className="card-shadow-lg animate-fade-in">
-      <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="text-xl font-bold">Upcoming Fixtures</CardTitle>
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          onClick={handleClick}
-          className="flex items-center gap-2 h-auto hover:bg-muted/50 transition-colors"
+      <CardHeader className="flex flex-row items-center justify-between pb-3 sm:pb-4">
+        <CardTitle className="text-lg sm:text-xl font-bold">Upcoming Fixtures</CardTitle>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onViewAll}
+          className="text-muted-foreground hover:text-foreground px-2 sm:px-3"
         >
-          <Eye className="h-4 w-4" />
-          <span className="text-sm">View All</span>
-          <ArrowRight className="h-4 w-4" />
+          <span className="hidden sm:inline mr-1">View All</span>
+          <span className="sm:hidden text-xs mr-1">All</span>
+          <ArrowRight className="h-3 w-3 sm:h-4 sm:w-4" />
         </Button>
       </CardHeader>
       <CardContent className="space-y-4">
