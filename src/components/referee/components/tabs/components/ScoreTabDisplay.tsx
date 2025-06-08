@@ -1,7 +1,7 @@
 
-import React from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Clock } from "lucide-react";
+import { Crown, Clock } from "lucide-react";
+import RefereeCard from "../../../shared/RefereeCard";
+import { cn } from "@/lib/utils";
 
 interface ScoreTabDisplayProps {
   homeTeamName: string;
@@ -10,7 +10,7 @@ interface ScoreTabDisplayProps {
   awayScore: number;
   matchTime: number;
   isRunning: boolean;
-  hasUnsavedChanges: boolean;
+  hasUnsavedChanges?: boolean;
   formatTime: (seconds: number) => string;
 }
 
@@ -21,46 +21,85 @@ const ScoreTabDisplay = ({
   awayScore,
   matchTime,
   isRunning,
-  hasUnsavedChanges,
+  hasUnsavedChanges = false,
   formatTime
 }: ScoreTabDisplayProps) => {
+  const isHomeWinning = homeScore > awayScore;
+  const isAwayWinning = awayScore > homeScore;
+  const isDraw = homeScore === awayScore;
+
   return (
-    <Card>
-      <CardContent className="p-6">
-        <div className="flex items-center justify-between">
-          <div className="text-center flex-1">
-            <h3 className="text-lg font-medium text-muted-foreground mb-2">{homeTeamName}</h3>
-            <div className="text-5xl font-bold text-primary">{homeScore}</div>
+    <RefereeCard
+      variant="highlighted"
+      className="referee-score-display"
+      icon={<Crown className="h-5 w-5" />}
+      title="Live Score"
+      headerActions={
+        <div className="flex items-center gap-2">
+          <div className={cn(
+            "referee-status-indicator",
+            isRunning ? "referee-status-running" : "referee-status-paused"
+          )}>
+            <Clock className="h-3 w-3" />
+            {formatTime(matchTime)}
           </div>
-          
-          <div className="text-center px-6">
-            <div className="text-2xl font-bold text-muted-foreground mb-2">VS</div>
-            <div className="flex items-center justify-center gap-2">
-              <Clock className="h-4 w-4" />
-              <span className="text-lg font-mono">{formatTime(matchTime)}</span>
+          {hasUnsavedChanges && (
+            <div className="referee-status-indicator bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400">
+              Unsaved
             </div>
-            <div className={`mt-2 inline-flex items-center px-3 py-1 rounded-full text-sm ${
-              isRunning ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-            }`}>
-              <div className={`w-2 h-2 rounded-full mr-2 ${
-                isRunning ? 'bg-green-500 animate-pulse' : 'bg-gray-400'
-              }`} />
-              {isRunning ? 'Live' : 'Paused'}
+          )}
+        </div>
+      }
+    >
+      <div className="grid grid-cols-3 gap-4 items-center">
+        {/* Home Team */}
+        <div className="text-center">
+          <div className={cn(
+            "transition-all duration-300",
+            isHomeWinning && "scale-110"
+          )}>
+            <div className="text-3xl font-bold mb-2 referee-timer">
+              {homeScore}
             </div>
-            {hasUnsavedChanges && (
-              <div className="mt-1 text-xs text-orange-600 bg-orange-50 px-2 py-1 rounded">
-                Auto-save enabled • Changes pending
-              </div>
-            )}
-          </div>
-          
-          <div className="text-center flex-1">
-            <h3 className="text-lg font-medium text-muted-foreground mb-2">{awayTeamName}</h3>
-            <div className="text-5xl font-bold text-primary">{awayScore}</div>
+            <div className={cn(
+              "text-sm font-medium px-3 py-1 rounded-full",
+              isHomeWinning ? "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400" :
+              isDraw ? "bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400" :
+              "bg-gray-50 text-gray-600 dark:bg-gray-900/10 dark:text-gray-500"
+            )}>
+              {homeTeamName}
+            </div>
           </div>
         </div>
-      </CardContent>
-    </Card>
+
+        {/* VS Separator */}
+        <div className="text-center">
+          <div className="text-lg font-bold text-muted-foreground">
+            VS
+          </div>
+        </div>
+
+        {/* Away Team */}
+        <div className="text-center">
+          <div className={cn(
+            "transition-all duration-300",
+            isAwayWinning && "scale-110"
+          )}>
+            <div className="text-3xl font-bold mb-2 referee-timer">
+              {awayScore}
+            </div>
+            <div className={cn(
+              "text-sm font-medium px-3 py-1 rounded-full",
+              isAwayWinning ? "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400" :
+              isDraw ? "bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400" :
+              "bg-gray-50 text-gray-600 dark:bg-gray-900/10 dark:text-gray-500"
+            )}>
+              {awayTeamName}
+            </div>
+          </div>
+        </div>
+      </div>
+    </RefereeCard>
   );
 };
 

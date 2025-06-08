@@ -1,53 +1,62 @@
 
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Play, Pause, Save, RotateCcw } from "lucide-react";
+import { Play, Pause, RotateCcw, Save } from "lucide-react";
+import RefereeCard from "../../../shared/RefereeCard";
+import RefereeButton from "../../../shared/RefereeButton";
+import RefereeLayoutGrid from "../../../shared/RefereeLayoutGrid";
 
 interface MatchControlsSectionProps {
   isRunning: boolean;
   onToggleTimer: () => void;
   onSaveMatch: () => void;
   onResetMatch: () => void;
+  isSaving?: boolean;
 }
 
 const MatchControlsSection = ({
   isRunning,
   onToggleTimer,
   onSaveMatch,
-  onResetMatch
+  onResetMatch,
+  isSaving = false
 }: MatchControlsSectionProps) => {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Match Controls</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="grid grid-cols-2 gap-4">
-          <Button onClick={onToggleTimer} className="h-12">
-            {isRunning ? (
-              <>
-                <Pause className="h-4 w-4 mr-2" />
-                Pause Match
-              </>
-            ) : (
-              <>
-                <Play className="h-4 w-4 mr-2" />
-                Start Match
-              </>
-            )}
-          </Button>
-          <Button onClick={onSaveMatch} className="h-12">
-            <Save className="h-4 w-4 mr-2" />
-            Save Match
-          </Button>
-        </div>
-        
-        <Button onClick={onResetMatch} variant="destructive" className="w-full h-12">
-          <RotateCcw className="h-4 w-4 mr-2" />
-          Reset Match
-        </Button>
-      </CardContent>
-    </Card>
+    <RefereeCard
+      title="Match Controls"
+      subtitle="Timer and match management"
+    >
+      <RefereeLayoutGrid columns={3} gap="sm">
+        <RefereeButton
+          onClick={onToggleTimer}
+          variant={isRunning ? "destructive" : "default"}
+          size="lg"
+          fullWidth
+          icon={isRunning ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+        >
+          {isRunning ? "Pause" : "Start"}
+        </RefereeButton>
+
+        <RefereeButton
+          onClick={onSaveMatch}
+          loading={isSaving}
+          variant="outline"
+          size="lg"
+          fullWidth
+          icon={<Save className="h-4 w-4" />}
+        >
+          Save
+        </RefereeButton>
+
+        <RefereeButton
+          onClick={onResetMatch}
+          variant="outline"
+          size="lg"
+          fullWidth
+          icon={<RotateCcw className="h-4 w-4" />}
+        >
+          Reset
+        </RefereeButton>
+      </RefereeLayoutGrid>
+    </RefereeCard>
   );
 };
 

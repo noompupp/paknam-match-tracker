@@ -1,36 +1,41 @@
 
-import { TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Trophy, Clock, CreditCard, Timer, FileText } from "lucide-react";
+import { Target, Timer, CreditCard, Clock, BarChart3, Play } from "lucide-react";
+import ResponsiveTabsList from "../shared/ResponsiveTabsList";
 
 const ResponsiveRefereeTabsNavigation = () => {
+  const tabs = [
+    {
+      value: "score",
+      label: "Score",
+      icon: <Target className="h-4 w-4" />
+    },
+    {
+      value: "timer", 
+      label: "Timer",
+      icon: <Timer className="h-4 w-4" />
+    },
+    {
+      value: "cards",
+      label: "Cards", 
+      icon: <CreditCard className="h-4 w-4" />
+    },
+    {
+      value: "time",
+      label: "Time",
+      icon: <Clock className="h-4 w-4" />
+    },
+    {
+      value: "summary",
+      label: "Summary",
+      icon: <BarChart3 className="h-4 w-4" />
+    }
+  ];
+
   return (
-    <TabsList className="grid w-full grid-cols-5">
-      <TabsTrigger value="score" className="flex items-center gap-2">
-        <Trophy className="h-4 w-4" />
-        <span className="hidden sm:inline">Score & Goals</span>
-        <span className="sm:hidden">Score</span>
-      </TabsTrigger>
-      <TabsTrigger value="timer" className="flex items-center gap-2">
-        <Clock className="h-4 w-4" />
-        <span className="hidden sm:inline">Timer</span>
-        <span className="sm:hidden">Time</span>
-      </TabsTrigger>
-      <TabsTrigger value="cards" className="flex items-center gap-2">
-        <CreditCard className="h-4 w-4" />
-        <span className="hidden sm:inline">Cards</span>
-        <span className="sm:hidden">Cards</span>
-      </TabsTrigger>
-      <TabsTrigger value="time" className="flex items-center gap-2">
-        <Timer className="h-4 w-4" />
-        <span className="hidden sm:inline">Player Time</span>
-        <span className="sm:hidden">Players</span>
-      </TabsTrigger>
-      <TabsTrigger value="summary" className="flex items-center gap-2">
-        <FileText className="h-4 w-4" />
-        <span className="hidden sm:inline">Summary</span>
-        <span className="sm:hidden">Summary</span>
-      </TabsTrigger>
-    </TabsList>
+    <ResponsiveTabsList 
+      tabs={tabs}
+      className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b border-border/50"
+    />
   );
 };
 

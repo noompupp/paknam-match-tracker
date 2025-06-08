@@ -1,12 +1,16 @@
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Trophy, Target } from "lucide-react";
+import { Goal, Clock, User } from "lucide-react";
+import RefereeCard from "../../../shared/RefereeCard";
+import { cn } from "@/lib/utils";
 
 interface Goal {
+  id: string;
   playerName: string;
-  team: string;
-  type: string;
+  teamName: string;
+  type: 'goal' | 'assist';
   time: number;
+  isOwnGoal?: boolean;
+  synced?: boolean;
 }
 
 interface GoalsSummaryProps {
@@ -15,50 +19,59 @@ interface GoalsSummaryProps {
 }
 
 const GoalsSummary = ({ goals, formatTime }: GoalsSummaryProps) => {
-  if (goals.length === 0) {
-    return null;
-  }
+  if (goals.length === 0) return null;
+
+  const sortedGoals = [...goals].sort((a, b) => a.time - b.time);
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Trophy className="h-5 w-5" />
-          Match Goals & Assists ({goals.length})
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-2 max-h-64 overflow-y-auto">
-          {goals.map((goal, index) => (
-            <div key={index} className="flex items-center justify-between p-3 bg-muted rounded-lg">
-              <div className="flex items-center gap-3">
-                <div className={`w-2 h-2 rounded-full ${
-                  goal.playerName === 'Quick Goal' ? 'bg-orange-500' : 'bg-green-500'
-                }`} />
-                <div>
-                  <span className="font-medium">
-                    {goal.playerName === 'Quick Goal' ? '⚡ Quick Goal' : goal.playerName}
-                  </span>
-                  <span className="text-muted-foreground ml-2">({goal.team})</span>
-                  {goal.playerName === 'Quick Goal' && (
-                    <span className="ml-2 text-xs bg-orange-100 text-orange-700 px-1 py-0.5 rounded">
-                      needs details
-                    </span>
-                  )}
-                </div>
+    <RefereeCard
+      title="Goals Summary"
+      icon={<Goal className="h-5 w-5" />}
+      subtitle={`${goals.length} goal${goals.length !== 1 ? 's' : ''} recorded`}
+    >
+      <div className="space-y-3">
+        {sortedGoals.map((goal) => (
+          <div
+            key={goal.id}
+            className={cn(
+              "flex items-center justify-between p-3 rounded-lg border",
+              goal.synced 
+                ? "bg-green-50 border-green-200 dark:bg-green-900/10 dark:border-green-800"
+                : "bg-orange-50 border-orange-200 dark:bg-orange-900/10 dark:border-orange-800"
+            )}
+          >
+            <div className="flex items-center gap-3">
+              <div className={cn(
+                "p-2 rounded-full",
+                goal.type === 'goal' 
+                  ? "bg-primary/10 text-primary"
+                  : "bg-secondary/10 text-secondary"
+              )}>
+                {goal.type === 'goal' ? <Goal className="h-4 w-4" /> : <User className="h-4 w-4" />}
               </div>
-              <div className="text-right">
-                <div className="text-sm font-medium capitalize flex items-center gap-1">
-                  {goal.type === 'goal' && <Target className="h-3 w-3" />}
-                  {goal.type}
+              <div>
+                <div className="font-medium text-sm">
+                  {goal.playerName}
+                  {goal.isOwnGoal && <span className="text-destructive ml-1">(OG)</span>}
                 </div>
-                <div className="text-xs text-muted-foreground">{formatTime(goal.time)}</div>
+                <div className="text-xs text-muted-foreground">
+                  {goal.teamName} • {goal.type}
+                </div>
               </div>
             </div>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
+            <div className="flex items-center gap-2 text-sm">
+              <Clock className="h-3 w-3" />
+              {formatTime(goal.time)}
+              {!goal.synced && (
+                <span className="text-xs text-orange-600 font-medium">
+                  Unsaved
+                </span>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    </RefereeCard>
   );
 };
 

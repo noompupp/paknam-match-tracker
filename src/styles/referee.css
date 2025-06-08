@@ -1,0 +1,130 @@
+
+/* Referee UI Custom Styles */
+
+/* Card Components */
+.referee-card {
+  @apply transition-all duration-200;
+}
+
+.referee-card:hover {
+  @apply shadow-md;
+}
+
+/* Section Components */
+.referee-section-header {
+  @apply border-b border-border/50 pb-3 mb-4;
+}
+
+/* Tab Components */
+.referee-tabs-list {
+  @apply bg-muted rounded-lg;
+}
+
+.referee-tab-trigger {
+  @apply relative overflow-hidden;
+}
+
+.referee-tab-trigger::before {
+  content: '';
+  @apply absolute inset-0 bg-gradient-to-r from-primary/10 to-primary/5 opacity-0 transition-opacity duration-200;
+}
+
+.referee-tab-trigger[data-state="active"]::before {
+  @apply opacity-100;
+}
+
+/* Button Components */
+.referee-button {
+  @apply relative overflow-hidden;
+}
+
+.referee-button::before {
+  content: '';
+  @apply absolute inset-0 bg-white/10 opacity-0 transition-opacity duration-200;
+}
+
+.referee-button:hover::before {
+  @apply opacity-100;
+}
+
+/* Form Components */
+.referee-select {
+  @apply relative;
+}
+
+.referee-select:focus-within {
+  @apply ring-2 ring-primary/20;
+}
+
+/* Layout Components */
+.referee-layout-grid {
+  @apply w-full;
+}
+
+/* Score Display */
+.referee-score-display {
+  @apply bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20;
+}
+
+/* Match Timer */
+.referee-timer {
+  @apply font-mono text-2xl font-bold;
+}
+
+/* Status Indicators */
+.referee-status-indicator {
+  @apply inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium;
+}
+
+.referee-status-running {
+  @apply bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400;
+}
+
+.referee-status-paused {
+  @apply bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400;
+}
+
+.referee-status-stopped {
+  @apply bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400;
+}
+
+/* Responsive Utilities */
+@media (max-width: 768px) {
+  .referee-card {
+    @apply rounded-lg;
+  }
+  
+  .referee-section-header {
+    @apply pb-2 mb-3;
+  }
+  
+  .referee-timer {
+    @apply text-xl;
+  }
+}
+
+/* Animation Classes */
+.referee-fade-in {
+  @apply animate-fade-in;
+}
+
+.referee-scale-in {
+  @apply animate-scale-in;
+}
+
+.referee-slide-in {
+  @apply animate-slide-in;
+}
+
+/* Utility Classes */
+.referee-gradient-bg {
+  @apply bg-gradient-to-br from-primary/5 via-transparent to-secondary/5;
+}
+
+.referee-glass {
+  @apply bg-background/80 backdrop-blur-sm border border-border/50;
+}
+
+.referee-highlight {
+  @apply bg-primary/10 border-l-4 border-l-primary;
+}

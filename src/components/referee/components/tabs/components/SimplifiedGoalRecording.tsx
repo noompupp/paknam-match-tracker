@@ -1,8 +1,8 @@
 
-import React from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Target } from "lucide-react";
+import { Target, Plus } from "lucide-react";
+import RefereeCard from "../../../shared/RefereeCard";
+import RefereeButton from "../../../shared/RefereeButton";
+import RefereeLayoutGrid from "../../../shared/RefereeLayoutGrid";
 
 interface SimplifiedGoalRecordingProps {
   homeTeamName: string;
@@ -18,44 +18,28 @@ const SimplifiedGoalRecording = ({
   isDisabled = false
 }: SimplifiedGoalRecordingProps) => {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Target className="h-5 w-5 text-blue-600" />
-          Goal Recording
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="text-center">
-          <p className="text-sm text-muted-foreground mb-4">
-            Record a goal with complete player details and timing information
-          </p>
-          
-          <Button
-            onClick={onRecordGoal}
-            disabled={isDisabled}
-            className="w-full h-16 text-lg"
-            size="lg"
-          >
-            <Target className="h-5 w-5 mr-2" />
-            Record Goal
-          </Button>
-          
-          <div className="mt-3 text-xs text-muted-foreground bg-blue-50 px-3 py-2 rounded-lg">
-            🎯 <strong>Complete recording</strong> - Player names, assists, cards, and timing
-          </div>
-        </div>
+    <RefereeCard
+      title="Record Goal"
+      icon={<Target className="h-5 w-5" />}
+      subtitle="Use the wizard to record goals with full details"
+    >
+      <RefereeLayoutGrid columns={1} gap="md">
+        <RefereeButton
+          onClick={onRecordGoal}
+          disabled={isDisabled}
+          variant="default"
+          size="lg"
+          fullWidth
+          icon={<Plus className="h-4 w-4" />}
+        >
+          Open Goal Entry Wizard
+        </RefereeButton>
         
-        <div className="grid grid-cols-2 gap-4 pt-4 border-t">
-          <div className="text-center">
-            <h4 className="font-medium text-sm text-muted-foreground">{homeTeamName}</h4>
-          </div>
-          <div className="text-center">
-            <h4 className="font-medium text-sm text-muted-foreground">{awayTeamName}</h4>
-          </div>
+        <div className="text-center text-sm text-muted-foreground">
+          Record goals for <span className="font-medium">{homeTeamName}</span> vs <span className="font-medium">{awayTeamName}</span>
         </div>
-      </CardContent>
-    </Card>
+      </RefereeLayoutGrid>
+    </RefereeCard>
   );
 };
 
