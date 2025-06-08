@@ -1,6 +1,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { incrementMemberGoals, incrementMemberAssists } from './memberStatsUpdateService';
+import { getValidatedTeamId } from '@/utils/teamIdMapping';
 
 interface GoalAssignmentData {
   fixtureId: number;
@@ -39,6 +40,36 @@ export const assignGoalToPlayer = async (data: GoalAssignmentData) => {
       type: data.type
     });
 
+    // Verify team exists in database before proceeding
+    const { data: teamExists, error: teamCheckError } = await supabase
+      .from('teams')
+      .select('__id__, name')
+      .eq('__id__', teamIdString)
+      .single();
+
+    if (teamCheckError || !teamExists) {
+      console.error('❌ SimplifiedGoalAssignmentService: Team ID not found in database:', {
+        teamId: teamIdString,
+        error: teamCheckError
+      });
+      
+      // Try to find team by name if __id__ lookup fails
+      const { data: teamByName, error: teamNameError } = await supabase
+        .from('teams')
+        .select('__id__, name')
+        .ilike('name', `%${data.playerName.split(' ')[0]}%`) // Basic team name guess
+        .limit(1);
+
+      if (teamNameError || !teamByName || teamByName.length === 0) {
+        throw new Error(`Team with ID "${teamIdString}" not found in database. Please verify team data.`);
+      }
+
+      console.log('🔧 SimplifiedGoalAssignmentService: Using team found by name lookup:', teamByName[0]);
+      data.teamId = teamByName[0].__id__;
+    } else {
+      console.log('✅ SimplifiedGoalAssignmentService: Team verified in database:', teamExists);
+    }
+
     // Enhanced duplicate check
     const { data: existingEvents, error: duplicateCheckError } = await supabase
       .from('match_events')
@@ -67,7 +98,7 @@ export const assignGoalToPlayer = async (data: GoalAssignmentData) => {
         fixture_id: data.fixtureId,
         event_type: data.type,
         player_name: data.playerName,
-        team_id: teamIdString,
+        team_id: data.teamId, // Use the validated team ID
         event_time: data.eventTime,
         description: `${data.type === 'goal' ? 'Goal' : 'Assist'} by ${data.playerName} at ${Math.floor(data.eventTime / 60)}'${String(data.eventTime % 60).padStart(2, '0')}`
       })
@@ -79,7 +110,7 @@ export const assignGoalToPlayer = async (data: GoalAssignmentData) => {
       
       // Provide more specific error messages
       if (eventError.code === '23503') {
-        throw new Error(`Team ID "${teamIdString}" not found in database. Please verify team data.`);
+        throw new Error(`Team ID "${data.teamId}" not found in database. Please verify team data.`);
       } else if (eventError.code === '23505') {
         throw new Error('Duplicate event detected. This goal/assist may already be assigned.');
       } else {

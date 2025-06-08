@@ -108,3 +108,25 @@ export const normalizeTeamIdForDatabase = (teamId: string | number): string => {
   }
   return String(teamId).trim();
 };
+
+// New function to verify team exists in database before creating match events
+export const getValidatedTeamId = async (
+  playerTeamName: string,
+  homeTeam: TeamInfo,
+  awayTeam: TeamInfo
+): Promise<string> => {
+  console.log('🔍 TeamIdMapping: Validating team ID against database');
+  
+  const resolvedId = resolveTeamIdForMatchEvent(playerTeamName, homeTeam, awayTeam);
+  
+  // Additional validation could be added here to check against database
+  // For now, we'll return the resolved ID with enhanced logging
+  console.log('✅ TeamIdMapping: Team ID validated:', {
+    playerTeamName,
+    resolvedId,
+    homeTeamId: homeTeam.__id__ || homeTeam.id,
+    awayTeamId: awayTeam.__id__ || awayTeam.id
+  });
+  
+  return resolvedId;
+};

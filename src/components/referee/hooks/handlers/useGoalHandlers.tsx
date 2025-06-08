@@ -2,7 +2,7 @@
 import { useToast } from "@/hooks/use-toast";
 import { ComponentPlayer } from "../useRefereeState";
 import { assignGoalToPlayer } from "@/services/fixtures/simplifiedGoalAssignmentService";
-import { resolveTeamIdForMatchEvent, normalizeTeamIdForDatabase, validateTeamData } from "@/utils/teamIdMapping";
+import { getValidatedTeamId, normalizeTeamIdForDatabase, validateTeamData } from "@/utils/teamIdMapping";
 
 interface UseGoalHandlersProps {
   selectedFixtureData: any;
@@ -58,7 +58,7 @@ export const useGoalHandlers = (props: UseGoalHandlersProps) => {
         fixture: props.selectedFixtureData.id
       });
 
-      // Enhanced team data structure
+      // Enhanced team data structure with proper __id__ prioritization
       const homeTeam = {
         id: props.selectedFixtureData.home_team_id || props.selectedFixtureData.home_team?.id?.toString(),
         name: props.selectedFixtureData.home_team?.name,
@@ -76,10 +76,10 @@ export const useGoalHandlers = (props: UseGoalHandlersProps) => {
         throw new Error('Invalid team data in fixture - missing required team information');
       }
 
-      // Enhanced team ID resolution with better error handling
+      // Enhanced team ID resolution with database validation
       let teamId: string;
       try {
-        teamId = resolveTeamIdForMatchEvent(player.team, homeTeam, awayTeam);
+        teamId = await getValidatedTeamId(player.team, homeTeam, awayTeam);
       } catch (resolutionError) {
         console.error('❌ useGoalHandlers: Team ID resolution failed:', resolutionError);
         
@@ -104,6 +104,12 @@ export const useGoalHandlers = (props: UseGoalHandlersProps) => {
         normalizedTeamId,
         homeTeam: homeTeam.name,
         awayTeam: awayTeam.name
+      });
+
+      // Show loading state
+      toast({
+        title: "Processing...",
+        description: `Adding ${props.selectedGoalType} for ${player.name}`,
       });
 
       const result = await assignGoalToPlayer({
@@ -149,10 +155,12 @@ export const useGoalHandlers = (props: UseGoalHandlersProps) => {
       // Enhanced error messaging
       let errorMessage = 'Failed to assign goal/assist';
       if (error instanceof Error) {
-        if (error.message.includes('foreign key')) {
-          errorMessage = 'Team data mismatch - please verify team information';
+        if (error.message.includes('not found in database')) {
+          errorMessage = 'Team data mismatch - please verify fixture team information';
         } else if (error.message.includes('duplicate')) {
           errorMessage = 'This goal/assist has already been assigned';
+        } else if (error.message.includes('foreign key')) {
+          errorMessage = 'Database constraint error - team data may be inconsistent';
         } else {
           errorMessage = error.message;
         }

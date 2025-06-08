@@ -43,6 +43,7 @@ const ScoreTab = ({
 }: ScoreTabProps) => {
   const [showDetailedEntry, setShowDetailedEntry] = useState(false);
   const [quickGoalTeam, setQuickGoalTeam] = useState<'home' | 'away' | null>(null);
+  const [isProcessingQuickGoal, setIsProcessingQuickGoal] = useState(false);
   const { toast } = useToast();
 
   const homeTeamName = selectedFixtureData?.home_team?.name || 'Home Team';
@@ -58,22 +59,32 @@ const ScoreTab = ({
       return;
     }
 
+    if (isProcessingQuickGoal) {
+      return; // Prevent double-clicks
+    }
+
+    setIsProcessingQuickGoal(true);
+
     try {
       console.log('⚡ ScoreTab: Adding quick goal for team:', team);
       
+      // Use the team ID mapping service to ensure correct team IDs
+      const homeTeamId = selectedFixtureData.home_team?.__id__ || selectedFixtureData.home_team_id;
+      const awayTeamId = selectedFixtureData.away_team?.__id__ || selectedFixtureData.away_team_id;
+
       const result = await quickGoalService.addQuickGoal({
         fixtureId: selectedFixtureData.id,
         team,
         matchTime,
         homeTeam: {
-          id: selectedFixtureData.home_team_id || selectedFixtureData.home_team?.id?.toString(),
+          id: homeTeamId,
           name: selectedFixtureData.home_team?.name,
-          __id__: selectedFixtureData.home_team?.__id__ || selectedFixtureData.home_team_id
+          __id__: homeTeamId
         },
         awayTeam: {
-          id: selectedFixtureData.away_team_id || selectedFixtureData.away_team?.id?.toString(),
+          id: awayTeamId,
           name: selectedFixtureData.away_team?.name,
-          __id__: selectedFixtureData.away_team?.__id__ || selectedFixtureData.away_team_id
+          __id__: awayTeamId
         }
       });
 
@@ -83,8 +94,13 @@ const ScoreTab = ({
           description: result.message,
         });
         
-        // Trigger a page refresh to update the scores
-        window.location.reload();
+        console.log('✅ ScoreTab: Quick goal added successfully, triggering state update');
+        
+        // Instead of page reload, trigger parent component to refresh data
+        // This should be handled by the parent component's data fetching
+        if (onSaveMatch) {
+          onSaveMatch(); // This should trigger a data refresh
+        }
       } else {
         toast({
           title: "Quick Goal Failed",
@@ -99,6 +115,8 @@ const ScoreTab = ({
         description: "An unexpected error occurred",
         variant: "destructive"
       });
+    } finally {
+      setIsProcessingQuickGoal(false);
     }
   };
 
@@ -186,20 +204,22 @@ const ScoreTab = ({
           <div className="grid grid-cols-2 gap-4">
             <Button
               onClick={() => handleQuickGoal('home')}
+              disabled={isProcessingQuickGoal}
               variant="outline"
               className="h-16 text-lg flex flex-col items-center gap-1 hover:bg-green-50 hover:border-green-300"
             >
               <Zap className="h-5 w-5 text-green-600" />
-              <span>Quick Goal</span>
+              <span>{isProcessingQuickGoal ? 'Adding...' : 'Quick Goal'}</span>
               <span className="text-sm font-normal">{homeTeamName}</span>
             </Button>
             <Button
               onClick={() => handleQuickGoal('away')}
+              disabled={isProcessingQuickGoal}
               variant="outline"
               className="h-16 text-lg flex flex-col items-center gap-1 hover:bg-green-50 hover:border-green-300"
             >
               <Zap className="h-5 w-5 text-green-600" />
-              <span>Quick Goal</span>
+              <span>{isProcessingQuickGoal ? 'Adding...' : 'Quick Goal'}</span>
               <span className="text-sm font-normal">{awayTeamName}</span>
             </Button>
           </div>
@@ -210,6 +230,7 @@ const ScoreTab = ({
                 onClick={() => handleDetailedGoalEntry('home')}
                 variant="outline"
                 className="h-12"
+                disabled={isProcessingQuickGoal}
               >
                 <Target className="h-4 w-4 mr-2" />
                 Assign to {homeTeamName}
@@ -218,6 +239,7 @@ const ScoreTab = ({
                 onClick={() => handleDetailedGoalEntry('away')}
                 variant="outline"
                 className="h-12"
+                disabled={isProcessingQuickGoal}
               >
                 <Target className="h-4 w-4 mr-2" />
                 Assign to {awayTeamName}

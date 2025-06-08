@@ -1,6 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { resolveTeamIdForMatchEvent } from '@/utils/teamIdMapping';
+import { getValidatedTeamId } from '@/utils/teamIdMapping';
 
 interface QuickGoalData {
   fixtureId: number;
@@ -30,13 +30,32 @@ export const quickGoalService = {
 
       // Determine which team scored
       const scoringTeam = data.team === 'home' ? data.homeTeam : data.awayTeam;
-      const teamId = resolveTeamIdForMatchEvent(scoringTeam.name, data.homeTeam, data.awayTeam);
+      
+      // Use the enhanced team ID validation
+      const teamId = await getValidatedTeamId(scoringTeam.name, data.homeTeam, data.awayTeam);
 
       console.log('🎯 QuickGoalService: Resolved team data:', {
         scoringTeam: scoringTeam.name,
         teamId,
         team: data.team
       });
+
+      // Verify team exists in database before creating event
+      const { data: teamExists, error: teamCheckError } = await supabase
+        .from('teams')
+        .select('__id__, name')
+        .eq('__id__', teamId)
+        .single();
+
+      if (teamCheckError || !teamExists) {
+        console.error('❌ QuickGoalService: Team verification failed:', {
+          teamId,
+          error: teamCheckError
+        });
+        throw new Error(`Team with ID "${teamId}" not found in database`);
+      }
+
+      console.log('✅ QuickGoalService: Team verified in database:', teamExists);
 
       // Create quick goal event with "Quick Goal" as player name
       const { data: goalEvent, error: eventError } = await supabase
@@ -54,7 +73,13 @@ export const quickGoalService = {
 
       if (eventError) {
         console.error('❌ QuickGoalService: Error creating goal event:', eventError);
-        throw new Error(`Failed to create goal event: ${eventError.message}`);
+        
+        // Enhanced error handling
+        if (eventError.code === '23503') {
+          throw new Error(`Team ID mismatch - "${teamId}" not found in teams table`);
+        } else {
+          throw new Error(`Failed to create goal event: ${eventError.message}`);
+        }
       }
 
       console.log('✅ QuickGoalService: Goal event created:', goalEvent);
@@ -83,7 +108,7 @@ export const quickGoalService = {
     console.log('📊 QuickGoalService: Updating fixture score');
     
     try {
-      // Count goals for each team
+      // Count goals for each team using __id__ for consistency
       const homeTeamId = homeTeam.__id__ || homeTeam.id;
       const awayTeamId = awayTeam.__id__ || awayTeam.id;
 
