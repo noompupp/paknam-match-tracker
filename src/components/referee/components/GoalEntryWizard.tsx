@@ -68,12 +68,14 @@ const GoalEntryWizard = ({
     setSelectedPlayer(player);
     
     // Check if this is an own goal (player from opposing team)
-    const playerTeam = player.team;
-    const scoringTeam = getTeamName(selectedTeam);
-    const isOwnGoalScenario = playerTeam !== scoringTeam;
-    
-    setIsOwnGoal(isOwnGoalScenario);
-    setCurrentStep('goal-type');
+    if (selectedTeam !== '') {
+      const playerTeam = player.team;
+      const scoringTeam = getTeamName(selectedTeam as 'home' | 'away');
+      const isOwnGoalScenario = playerTeam !== scoringTeam;
+      
+      setIsOwnGoal(isOwnGoalScenario);
+      setCurrentStep('goal-type');
+    }
   };
 
   const handleGoalTypeConfirm = () => {
@@ -99,23 +101,23 @@ const GoalEntryWizard = ({
   };
 
   const handleConfirm = () => {
-    if (!selectedPlayer) return;
+    if (!selectedPlayer || selectedTeam === '') return;
 
     // First assign the goal
     onGoalAssigned({
       player: selectedPlayer,
       goalType: 'goal',
-      team: selectedTeam,
+      team: selectedTeam as 'home' | 'away',
       isOwnGoal
     });
 
     // Then assign the assist if applicable
-    if (assistPlayer && !isOwnGoal) {
+    if (assistPlayer && !isOwnGoal && selectedTeam !== '') {
       setTimeout(() => {
         onGoalAssigned({
           player: assistPlayer,
           goalType: 'assist',
-          team: selectedTeam
+          team: selectedTeam as 'home' | 'away'
         });
       }, 100);
     }
@@ -210,10 +212,10 @@ const GoalEntryWizard = ({
         )}
 
         {/* Step 2: Player Selection */}
-        {currentStep === 'player' && (
+        {currentStep === 'player' && selectedTeam !== '' && (
           <div className="space-y-4">
             <h3 className="text-lg font-semibold">
-              Who scored for {getTeamName(selectedTeam)}?
+              Who scored for {getTeamName(selectedTeam as 'home' | 'away')}?
             </h3>
             <p className="text-sm text-muted-foreground">
               Tip: You can also select a player from the opposing team if it was an own goal
@@ -221,7 +223,7 @@ const GoalEntryWizard = ({
             
             <div className="space-y-3">
               <div>
-                <h4 className="font-medium mb-2">{getTeamName(selectedTeam)} Players</h4>
+                <h4 className="font-medium mb-2">{getTeamName(selectedTeam as 'home' | 'away')} Players</h4>
                 <div className="grid grid-cols-1 gap-2 max-h-40 overflow-y-auto">
                   {getTeamPlayers().map((player) => (
                     <Button
@@ -271,7 +273,7 @@ const GoalEntryWizard = ({
         )}
 
         {/* Step 3: Goal Type Confirmation */}
-        {currentStep === 'goal-type' && selectedPlayer && (
+        {currentStep === 'goal-type' && selectedPlayer && selectedTeam !== '' && (
           <div className="space-y-4">
             <h3 className="text-lg font-semibold">Confirm Goal Details</h3>
             <div className="bg-muted p-4 rounded-lg space-y-2">
@@ -282,7 +284,7 @@ const GoalEntryWizard = ({
                 <strong>Team:</strong> {selectedPlayer.team}
               </div>
               <div className="flex items-center gap-2">
-                <strong>Goal for:</strong> {getTeamName(selectedTeam)}
+                <strong>Goal for:</strong> {getTeamName(selectedTeam as 'home' | 'away')}
               </div>
               {isOwnGoal && (
                 <Badge variant="destructive" className="mt-2">
@@ -298,7 +300,7 @@ const GoalEntryWizard = ({
         )}
 
         {/* Step 4: Assist Selection */}
-        {currentStep === 'assist' && !isOwnGoal && (
+        {currentStep === 'assist' && !isOwnGoal && selectedTeam !== '' && (
           <div className="space-y-4">
             <h3 className="text-lg font-semibold">Was there an assist?</h3>
             
@@ -316,7 +318,7 @@ const GoalEntryWizard = ({
               </div>
             ) : (
               <div className="space-y-3">
-                <h4 className="font-medium">Select assist player from {getTeamName(selectedTeam)}</h4>
+                <h4 className="font-medium">Select assist player from {getTeamName(selectedTeam as 'home' | 'away')}</h4>
                 <div className="grid grid-cols-1 gap-2 max-h-40 overflow-y-auto">
                   {getTeamPlayers()
                     .filter(player => player.id !== selectedPlayer?.id)
@@ -350,7 +352,7 @@ const GoalEntryWizard = ({
         )}
 
         {/* Step 5: Confirmation */}
-        {currentStep === 'confirm' && (
+        {currentStep === 'confirm' && selectedTeam !== '' && (
           <div className="space-y-4">
             <h3 className="text-lg font-semibold">Confirm Goal Entry</h3>
             <div className="bg-muted p-4 rounded-lg space-y-3">
@@ -360,7 +362,7 @@ const GoalEntryWizard = ({
               </div>
               <div className="flex items-center justify-between">
                 <span className="font-medium">Team Scored For:</span>
-                <span>{getTeamName(selectedTeam)}</span>
+                <span>{getTeamName(selectedTeam as 'home' | 'away')}</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="font-medium">Time:</span>
