@@ -2,11 +2,12 @@
 import { useState } from "react";
 import GoalEntryWizard from "../GoalEntryWizard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { ComponentPlayer } from "../../hooks/useRefereeState";
-import { Zap, Target, Edit, Trophy, Clock, AlertCircle } from "lucide-react";
+import { Trophy, Clock } from "lucide-react";
 import { quickGoalService } from "@/services/quickGoalService";
 import { useToast } from "@/hooks/use-toast";
+import TeamSelectionModal from "../TeamSelectionModal";
+import SimplifiedQuickGoalSection from "./components/SimplifiedQuickGoalSection";
 
 interface GoalsTabProps {
   allPlayers: ComponentPlayer[];
@@ -32,12 +33,14 @@ const GoalsTab = (props: GoalsTabProps) => {
   const [wizardInitialTeam, setWizardInitialTeam] = useState<'home' | 'away' | undefined>(undefined);
   const [wizardMode, setWizardMode] = useState<'quick' | 'detailed' | 'assign'>('quick');
   const [isProcessingQuickGoal, setIsProcessingQuickGoal] = useState(false);
+  const [showTeamSelection, setShowTeamSelection] = useState(false);
+  const [teamSelectionMode, setTeamSelectionMode] = useState<'quick' | 'detailed'>('quick');
   const { toast } = useToast();
 
   const homeTeamName = props.selectedFixtureData?.home_team?.name || 'Home Team';
   const awayTeamName = props.selectedFixtureData?.away_team?.name || 'Away Team';
 
-  // Enhanced quick goal handler with improved feedback
+  // Enhanced quick goal handler with team selection
   const handleQuickGoal = async (team: 'home' | 'away') => {
     if (!props.selectedFixtureData || isProcessingQuickGoal) return;
 
@@ -89,17 +92,33 @@ const GoalsTab = (props: GoalsTabProps) => {
     }
   };
 
-  // Goal with details handler
-  const handleGoalWithDetails = (team?: 'home' | 'away') => {
-    setWizardInitialTeam(team);
+  // Handle quick goal button click - opens team selection
+  const handleQuickGoalClick = () => {
+    setTeamSelectionMode('quick');
+    setShowTeamSelection(true);
+  };
+
+  // Handle full goal entry button click - opens wizard directly
+  const handleFullGoalEntryClick = () => {
     setWizardMode('detailed');
     setShowWizard(true);
   };
 
-  // Add details to existing goals handler
-  const handleAddDetailsToGoals = () => {
+  // Handle add details to goals button click
+  const handleAddDetailsToGoalsClick = () => {
     setWizardMode('assign');
     setShowWizard(true);
+  };
+
+  // Handle team selection from modal
+  const handleTeamSelected = (team: 'home' | 'away') => {
+    if (teamSelectionMode === 'quick') {
+      handleQuickGoal(team);
+    } else {
+      setWizardInitialTeam(team);
+      setWizardMode('detailed');
+      setShowWizard(true);
+    }
   };
 
   const handleWizardGoalAssigned = (goalData: {
@@ -174,128 +193,25 @@ const GoalsTab = (props: GoalsTabProps) => {
         </CardContent>
       </Card>
 
-      {/* Three-Button Goal Recording Workflow */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Target className="h-5 w-5" />
-            Goal Recording Workflow
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          
-          {/* 1. Quick Goal - Instant recording for live matches */}
-          <div className="space-y-3">
-            <div className="flex items-center gap-2">
-              <span className="bg-green-100 text-green-800 text-xs font-medium px-2 py-1 rounded-full">1</span>
-              <h4 className="text-sm font-medium">Quick Goal - Instant Recording</h4>
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Perfect for live matches - instantly updates the score and records the goal. Add player details later.
-            </p>
-            <div className="grid grid-cols-2 gap-3">
-              <Button
-                onClick={() => handleQuickGoal('home')}
-                disabled={isProcessingQuickGoal}
-                variant="outline"
-                className="h-16 text-base flex flex-col items-center gap-2 hover:bg-green-50 hover:border-green-300 border-2 border-green-200"
-              >
-                <Zap className="h-5 w-5 text-green-600" />
-                <div className="text-center">
-                  <div className="font-medium">{isProcessingQuickGoal ? 'Adding...' : 'Quick Goal'}</div>
-                  <div className="text-xs text-muted-foreground">{homeTeamName}</div>
-                </div>
-              </Button>
-              <Button
-                onClick={() => handleQuickGoal('away')}
-                disabled={isProcessingQuickGoal}
-                variant="outline"
-                className="h-16 text-base flex flex-col items-center gap-2 hover:bg-green-50 hover:border-green-300 border-2 border-green-200"
-              >
-                <Zap className="h-5 w-5 text-green-600" />
-                <div className="text-center">
-                  <div className="font-medium">{isProcessingQuickGoal ? 'Adding...' : 'Quick Goal'}</div>
-                  <div className="text-xs text-muted-foreground">{awayTeamName}</div>
-                </div>
-              </Button>
-            </div>
-          </div>
+      {/* Simplified Goal Recording Section */}
+      <SimplifiedQuickGoalSection
+        unassignedGoalsCount={unassignedGoals.length}
+        isProcessingQuickGoal={isProcessingQuickGoal}
+        onQuickGoal={handleQuickGoalClick}
+        onFullGoalEntry={handleFullGoalEntryClick}
+        onAddDetailsToGoals={handleAddDetailsToGoalsClick}
+      />
 
-          {/* 2. Goal with Details - Complete recording */}
-          <div className="space-y-3 border-t pt-4">
-            <div className="flex items-center gap-2">
-              <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded-full">2</span>
-              <h4 className="text-sm font-medium">Goal with Details - Complete Recording</h4>
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Record a goal with full details including player name, assists, and match context in one step.
-            </p>
-            <div className="grid grid-cols-2 gap-3">
-              <Button
-                onClick={() => handleGoalWithDetails('home')}
-                variant="outline"
-                className="h-14 flex flex-col items-center gap-1 hover:bg-blue-50 hover:border-blue-300 border-2 border-blue-200"
-              >
-                <Target className="h-4 w-4 text-blue-600" />
-                <div className="text-center">
-                  <div className="text-sm font-medium">Goal with Details</div>
-                  <div className="text-xs text-muted-foreground">{homeTeamName}</div>
-                </div>
-              </Button>
-              <Button
-                onClick={() => handleGoalWithDetails('away')}
-                variant="outline"
-                className="h-14 flex flex-col items-center gap-1 hover:bg-blue-50 hover:border-blue-300 border-2 border-blue-200"
-              >
-                <Target className="h-4 w-4 text-blue-600" />
-                <div className="text-center">
-                  <div className="text-sm font-medium">Goal with Details</div>
-                  <div className="text-xs text-muted-foreground">{awayTeamName}</div>
-                </div>
-              </Button>
-            </div>
-            <Button
-              onClick={() => handleGoalWithDetails()}
-              className="w-full h-12"
-              variant="default"
-            >
-              <Target className="h-4 w-4 mr-2" />
-              Open Full Goal Entry Wizard
-            </Button>
-          </div>
-
-          {/* 3. Add Details to Earlier Goals - Only show if there are unassigned goals */}
-          {unassignedGoals.length > 0 && (
-            <div className="space-y-3 border-t pt-4">
-              <div className="flex items-center gap-2">
-                <span className="bg-orange-100 text-orange-800 text-xs font-medium px-2 py-1 rounded-full">3</span>
-                <h4 className="text-sm font-medium">Add Details to Earlier Goals</h4>
-              </div>
-              <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
-                <div className="flex items-start gap-3">
-                  <AlertCircle className="h-5 w-5 text-orange-600 mt-0.5" />
-                  <div className="flex-1">
-                    <div className="text-sm font-medium text-orange-800 mb-2">
-                      {unassignedGoals.length} goal{unassignedGoals.length !== 1 ? 's' : ''} need player details
-                    </div>
-                    <p className="text-xs text-orange-700 mb-3">
-                      These goals were recorded quickly during the match. Add player names and assists now.
-                    </p>
-                    <Button
-                      onClick={handleAddDetailsToGoals}
-                      variant="outline"
-                      className="w-full hover:bg-orange-100 hover:border-orange-300 border-orange-200"
-                    >
-                      <Edit className="h-4 w-4 mr-2" />
-                      Add Player Details to {unassignedGoals.length} Goal{unassignedGoals.length !== 1 ? 's' : ''}
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      {/* Team Selection Modal */}
+      <TeamSelectionModal
+        isOpen={showTeamSelection}
+        onClose={() => setShowTeamSelection(false)}
+        onTeamSelect={handleTeamSelected}
+        homeTeamName={homeTeamName}
+        awayTeamName={awayTeamName}
+        title="Select Team for Quick Goal"
+        description="Which team scored the goal?"
+      />
 
       {/* Goals Summary */}
       {props.goals.length > 0 && (
@@ -323,7 +239,7 @@ const GoalsTab = (props: GoalsTabProps) => {
                   </div>
                   <div className="text-right">
                     <div className="text-sm font-medium capitalize flex items-center gap-1">
-                      {goal.type === 'goal' && <Target className="h-3 w-3" />}
+                      {goal.type === 'goal' && <Trophy className="h-3 w-3" />}
                       {goal.type}
                     </div>
                     <div className="text-xs text-muted-foreground">{props.formatTime(goal.time)}</div>
