@@ -10,11 +10,16 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
 interface QuickGoal {
-  id: number;
-  event_time: number;
-  team_id: string;
-  description: string;
-  created_at: string;
+  id: number | string;
+  event_time?: number;
+  time?: number;
+  team_id?: string;
+  teamId?: string;
+  teamName?: string;
+  team?: 'home' | 'away';
+  description?: string;
+  created_at?: string;
+  playerName?: string;
 }
 
 interface QuickGoalEditWizardProps {
@@ -42,17 +47,47 @@ const QuickGoalEditWizard = ({
   const [isUpdating, setIsUpdating] = useState(false);
   const { toast } = useToast();
 
-  // Determine which team this goal belongs to and get the appropriate players
-  const isHomeTeam = quickGoal.team_id.includes('home') || quickGoal.team_id === homeTeamName;
-  const teamPlayers = isHomeTeam ? homeTeamPlayers : awayTeamPlayers;
-  const teamName = isHomeTeam ? homeTeamName : awayTeamName;
+  // Enhanced team determination with multiple fallbacks and null checking
+  const getTeamInfo = () => {
+    // Handle different data structures for team identification
+    let isHomeTeam = false;
+    
+    if (quickGoal.team === 'home') {
+      isHomeTeam = true;
+    } else if (quickGoal.team === 'away') {
+      isHomeTeam = false;
+    } else if (quickGoal.teamName) {
+      isHomeTeam = quickGoal.teamName === homeTeamName;
+    } else if (quickGoal.team_id) {
+      isHomeTeam = quickGoal.team_id.includes('home') || quickGoal.team_id === homeTeamName;
+    } else if (quickGoal.teamId) {
+      isHomeTeam = quickGoal.teamId.includes('home') || quickGoal.teamId === homeTeamName;
+    } else {
+      // Default fallback - log the issue and assume home team
+      console.warn('⚠️ QuickGoalEditWizard: Cannot determine team from quickGoal:', quickGoal);
+      isHomeTeam = true;
+    }
+
+    const teamPlayers = isHomeTeam ? homeTeamPlayers : awayTeamPlayers;
+    const teamName = isHomeTeam ? homeTeamName : awayTeamName;
+    
+    return { isHomeTeam, teamPlayers, teamName };
+  };
+
+  const { isHomeTeam, teamPlayers, teamName } = getTeamInfo();
+
+  // Get event time with fallbacks
+  const eventTime = quickGoal.event_time ?? quickGoal.time ?? 0;
 
   console.log('🎯 QuickGoalEditWizard: Editing quick goal:', {
     goalId: quickGoal.id,
     teamId: quickGoal.team_id,
+    teamName: quickGoal.teamName,
+    team: quickGoal.team,
     isHomeTeam,
-    teamName,
-    playersCount: teamPlayers.length
+    teamName: teamName,
+    playersCount: teamPlayers.length,
+    eventTime
   });
 
   const handlePlayerSelect = (playerId: string) => {
@@ -149,7 +184,7 @@ const QuickGoalEditWizard = ({
           Edit Quick Goal
           <Badge variant="outline" className="ml-auto">
             <Clock className="h-3 w-3 mr-1" />
-            {formatTime(quickGoal.event_time)}
+            {formatTime(eventTime)}
           </Badge>
         </CardTitle>
       </CardHeader>
@@ -162,7 +197,7 @@ const QuickGoalEditWizard = ({
             <div>
               <div className="font-medium">Quick Goal for {teamName}</div>
               <div className="text-sm text-muted-foreground">
-                Scored at {formatTime(quickGoal.event_time)} • No player assigned
+                Scored at {formatTime(eventTime)} • No player assigned
               </div>
             </div>
           </div>
@@ -212,7 +247,7 @@ const QuickGoalEditWizard = ({
                   Goal will be assigned to {selectedPlayer.name}
                 </div>
                 <div className="text-sm text-green-700">
-                  {teamName} • {formatTime(quickGoal.event_time)}
+                  {teamName} • {formatTime(eventTime)}
                 </div>
               </div>
             </div>
