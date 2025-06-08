@@ -1,9 +1,8 @@
-
 import { useCallback, useRef } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { unifiedRefereeService } from '@/services/fixtures/unifiedRefereeService';
-import type { LocalMatchState, LocalGoal, LocalCard, LocalPlayerTime } from './useLocalMatchState';
+import type { LocalMatchState, LocalGoal, LocalCard, LocalPlayerTime } from './localMatchState';
 
 interface UseBatchSaveManagerProps {
   fixtureId?: number;
