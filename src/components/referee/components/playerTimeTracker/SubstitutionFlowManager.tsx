@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { ProcessedPlayer } from "@/utils/refereeDataProcessor";
 import { PlayerTime } from "@/types/database";
@@ -30,7 +29,6 @@ const SubstitutionFlowManager = ({
   } | null>(null);
   const { toast } = useToast();
 
-  // Watch for players being substituted out (going from playing to not playing)
   useEffect(() => {
     const checkForSubstitutions = () => {
       const activeCount = trackedPlayers.filter(p => p.isPlaying).length;

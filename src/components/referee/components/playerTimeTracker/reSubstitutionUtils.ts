@@ -35,7 +35,7 @@ export const convertPlayerTimeToProcessedPlayer = (
       id: playerTime.id,
       name: playerTime.name,
       team: playerTime.team,
-      number: 0, // Default number
+      number: playerTime.number || 0, // Fix: Use playerTime.number or default to 0
       role: 'Starter' // Default role
     };
   }

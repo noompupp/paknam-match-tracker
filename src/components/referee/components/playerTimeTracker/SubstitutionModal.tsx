@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -19,7 +18,8 @@ interface SubstitutionModalProps {
     name: string;
     team: string;
   } | null;
-  enhancedAvailablePlayers: EnhancedAvailablePlayers;
+  enhancedAvailablePlayers?: EnhancedAvailablePlayers;
+  availablePlayers?: ProcessedPlayer[]; // Legacy support
   onSubstitute: (incomingPlayer: ProcessedPlayer) => void;
 }
 
@@ -28,11 +28,18 @@ const SubstitutionModal = ({
   onClose,
   outgoingPlayer,
   enhancedAvailablePlayers,
+  availablePlayers = [], // Legacy fallback
   onSubstitute
 }: SubstitutionModalProps) => {
   const [selectedIncomingPlayer, setSelectedIncomingPlayer] = useState("");
 
-  const { newPlayers, reSubstitutionPlayers, canReSubstitute } = enhancedAvailablePlayers;
+  // Handle both new enhanced format and legacy format
+  const { newPlayers = [], reSubstitutionPlayers = [], canReSubstitute = false } = enhancedAvailablePlayers || {
+    newPlayers: availablePlayers,
+    reSubstitutionPlayers: [],
+    canReSubstitute: false
+  };
+
   const allAvailablePlayers = [...newPlayers, ...reSubstitutionPlayers];
   const hasAnyPlayers = allAvailablePlayers.length > 0;
 
