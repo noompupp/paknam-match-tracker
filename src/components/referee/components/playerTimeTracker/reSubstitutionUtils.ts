@@ -35,7 +35,9 @@ export const convertPlayerTimeToProcessedPlayer = (
       id: playerTime.id,
       name: playerTime.name,
       team: playerTime.team,
-      number: playerTime.number || 0, // Fix: Use playerTime.number or default to 0
+      team_id: '', // Add missing team_id property
+      number: 0, // Default number since PlayerTime doesn't have this property
+      position: 'Player', // Add missing position property
       role: 'Starter' // Default role
     };
   }
