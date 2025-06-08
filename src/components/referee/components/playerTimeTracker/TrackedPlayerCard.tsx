@@ -30,76 +30,76 @@ const TrackedPlayerCard = ({
   });
 
   return (
-    <div className="p-3 sm:p-4 rounded-lg border bg-card hover:shadow-md transition-shadow">
-      {/* Mobile-first responsive layout */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <div className="p-2 sm:p-3 rounded-md border bg-card hover:shadow-sm transition-shadow">
+      {/* Ultra-compact single row layout */}
+      <div className="flex items-center gap-2 sm:gap-3">
         
-        {/* Player Info Section */}
-        <div className="flex items-center gap-3 min-w-0 flex-1">
-          <div className="w-8 h-8 sm:w-10 sm:h-10 bg-primary/10 rounded-full flex items-center justify-center text-xs sm:text-sm font-bold text-primary flex-shrink-0">
-            {playerInfo?.number || '?'}
+        {/* Compact player number */}
+        <div className="w-6 h-6 sm:w-8 sm:h-8 bg-primary/10 rounded-full flex items-center justify-center text-xs font-bold text-primary flex-shrink-0">
+          {playerInfo?.number || '?'}
+        </div>
+
+        {/* Player info - optimized for space */}
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-1.5 mb-0.5">
+            <span className="font-medium text-sm truncate">{player.name}</span>
+            <PlayerRoleBadge role={role} size="sm" />
           </div>
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2 mb-1 flex-wrap">
-              <span className="font-medium text-sm sm:text-base truncate">{player.name}</span>
-              <PlayerRoleBadge role={role} size="sm" />
-            </div>
-            <p className="text-xs sm:text-sm text-muted-foreground truncate">{player.team}</p>
-            <Badge variant={player.isPlaying ? "default" : "secondary"} className="text-xs mt-1">
-              {player.isPlaying ? "ON FIELD" : "OFF FIELD"}
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-muted-foreground truncate">{player.team}</span>
+            <Badge 
+              variant={player.isPlaying ? "default" : "secondary"} 
+              className="text-xs px-1.5 py-0 h-4"
+            >
+              {player.isPlaying ? "ON" : "OFF"}
             </Badge>
           </div>
         </div>
 
-        {/* Time and Controls Section */}
-        <div className="flex items-center justify-between sm:justify-end gap-2 sm:gap-3">
-          
-          {/* Time Display */}
-          <div className="text-right flex-shrink-0">
-            <div className="font-mono text-base sm:text-lg font-bold">
-              {formatTime(player.totalTime)}
-            </div>
-            <p className="text-xs text-muted-foreground hidden sm:block">
-              {role === 'S-class' && 'Max 20min/half'}
-              {role === 'Starter' && 'Min 10min total'}
-              {role === 'Captain' && 'No limits'}
-            </p>
+        {/* Inline timer display */}
+        <div className="text-right flex-shrink-0">
+          <div className="font-mono text-sm sm:text-base font-bold leading-tight">
+            {formatTime(player.totalTime)}
           </div>
+          <div className="text-xs text-muted-foreground leading-none hidden sm:block">
+            {role === 'S-class' && '20min/half'}
+            {role === 'Starter' && '10min min'}
+            {role === 'Captain' && 'No limit'}
+          </div>
+        </div>
 
-          {/* Action Buttons */}
-          <div className="flex gap-1 flex-shrink-0">
-            <Button
-              size="sm"
-              variant={player.isPlaying ? "destructive" : "default"}
-              onClick={() => onTogglePlayerTime(player.id)}
-              className="text-xs sm:text-sm px-2 sm:px-3"
-            >
-              {/* Responsive button text */}
-              <span className="hidden sm:inline">
-                {player.isPlaying ? "Sub Out" : "Sub In"}
-              </span>
-              <span className="sm:hidden">
-                {player.isPlaying ? "Out" : "In"}
-              </span>
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => onRemovePlayer(player.id)}
-              className="px-2"
-            >
-              <UserMinus className="h-3 w-3 sm:h-4 sm:w-4" />
-            </Button>
-          </div>
+        {/* Compact action buttons */}
+        <div className="flex gap-1 flex-shrink-0">
+          <Button
+            size="sm"
+            variant={player.isPlaying ? "destructive" : "default"}
+            onClick={() => onTogglePlayerTime(player.id)}
+            className="h-7 px-2 text-xs"
+          >
+            <span className="hidden sm:inline">
+              {player.isPlaying ? "Out" : "In"}
+            </span>
+            <span className="sm:hidden">
+              {player.isPlaying ? "−" : "+"}
+            </span>
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => onRemovePlayer(player.id)}
+            className="h-7 w-7 p-0"
+          >
+            <UserMinus className="h-3 w-3" />
+          </Button>
         </div>
       </div>
 
-      {/* Mobile-only role constraints hint */}
-      <div className="sm:hidden mt-2">
-        <p className="text-xs text-muted-foreground">
-          {role === 'S-class' && 'Max 20min/half'}
+      {/* Mobile role constraints - only show when space is critical */}
+      <div className="sm:hidden mt-1">
+        <p className="text-xs text-muted-foreground leading-none">
+          {role === 'S-class' && 'Max 20min per half'}
           {role === 'Starter' && 'Min 10min total'}
-          {role === 'Captain' && 'No limits'}
+          {role === 'Captain' && 'No time limits'}
         </p>
       </div>
     </div>

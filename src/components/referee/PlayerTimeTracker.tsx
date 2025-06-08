@@ -48,7 +48,7 @@ const PlayerTimeTracker = ({
   console.log('  - Tracked players:', trackedPlayers.length);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Enhanced 7-a-Side Validation Panel */}
       <SevenASideValidationPanel
         trackedPlayers={trackedPlayers}
@@ -63,7 +63,7 @@ const PlayerTimeTracker = ({
           formatTime={formatTime}
         />
         
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-3 p-3 sm:p-6">
           {/* Player Selection Section */}
           <PlayerSelectionSection
             selectedPlayer={selectedPlayer}
