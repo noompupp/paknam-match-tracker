@@ -109,7 +109,7 @@ export const useGoalHandlers = (props: UseGoalHandlersProps) => {
             isHomeTeam
           });
           
-          props.addGoal(team, undefined);
+          props.addGoal(team);
         }
 
         props.addEvent(
