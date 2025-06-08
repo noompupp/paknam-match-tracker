@@ -61,19 +61,28 @@ export const getEnhancedScoreColor = (teamColor: string, isDarkMode: boolean = f
 };
 
 /**
- * Creates optimized style object for score display
+ * Creates optimized style object for score display with enhanced mobile styling
  */
-export const getScoreStyle = (teamColor: string, isDarkMode: boolean = false) => {
+export const getScoreStyle = (teamColor: string, isDarkMode: boolean = false, isMobile: boolean = false) => {
   const { color, needsOutline } = getEnhancedScoreColor(teamColor, isDarkMode);
+  
+  // Enhanced shadows and effects for mobile
+  const mobileEnhancedShadow = isMobile 
+    ? '0 3px 12px rgba(0, 0, 0, 0.5), 0 6px 24px rgba(0, 0, 0, 0.25), 0 1px 0 rgba(255, 255, 255, 0.5)'
+    : '0 1px 3px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.2)';
+  
+  const standardShadow = isMobile 
+    ? '0 2px 8px rgba(0, 0, 0, 0.3), 0 1px 0 rgba(255, 255, 255, 0.3)'
+    : '0 1px 2px rgba(0, 0, 0, 0.2)';
   
   return {
     color,
-    textShadow: needsOutline 
-      ? '0 1px 3px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.2)'
-      : '0 1px 2px rgba(0, 0, 0, 0.2)',
-    WebkitTextStroke: needsOutline ? '0.5px rgba(255, 255, 255, 0.8)' : undefined,
-    fontWeight: 'bold',
-    filter: 'drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1))'
+    textShadow: needsOutline ? mobileEnhancedShadow : standardShadow,
+    WebkitTextStroke: needsOutline && isMobile ? '0.8px rgba(255, 255, 255, 0.8)' : 
+                      needsOutline ? '0.5px rgba(255, 255, 255, 0.8)' : undefined,
+    fontWeight: isMobile ? '800' : 'bold', // extra-bold for mobile
+    letterSpacing: isMobile ? '-0.02em' : undefined, // slight letter spacing reduction for mobile
+    filter: isMobile ? 'drop-shadow(0 3px 6px rgba(0, 0, 0, 0.3))' : 'drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1))'
   };
 };
 

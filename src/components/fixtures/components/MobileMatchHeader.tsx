@@ -4,6 +4,7 @@ import { Calendar, MapPin } from "lucide-react";
 import TeamLogoDisplay from "../TeamLogoDisplay";
 import { getScoreStyle } from "@/utils/scoreColorUtils";
 import MatchResultBadge from "./MatchResultBadge";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface MobileMatchHeaderProps {
   fixture: any;
@@ -12,6 +13,8 @@ interface MobileMatchHeaderProps {
 }
 
 const MobileMatchHeader = ({ fixture, homeTeamColor, awayTeamColor }: MobileMatchHeaderProps) => {
+  const isMobile = useIsMobile();
+
   return (
     <div className="grid grid-cols-3 gap-3 items-center w-full min-h-[140px]">
       
@@ -29,8 +32,8 @@ const MobileMatchHeader = ({ fixture, homeTeamColor, awayTeamColor }: MobileMatc
             {fixture.home_team?.name || 'Home'}
           </div>
           <div 
-            className="text-2xl font-bold score-text-outline leading-none"
-            style={getScoreStyle(homeTeamColor)}
+            className="text-3xl mobile-score-enhanced mobile-score-glow leading-none"
+            style={getScoreStyle(homeTeamColor, false, isMobile)}
           >
             {fixture.home_score || 0}
           </div>
@@ -86,8 +89,8 @@ const MobileMatchHeader = ({ fixture, homeTeamColor, awayTeamColor }: MobileMatc
             {fixture.away_team?.name || 'Away'}
           </div>
           <div 
-            className="text-2xl font-bold score-text-outline leading-none"
-            style={getScoreStyle(awayTeamColor)}
+            className="text-3xl mobile-score-enhanced mobile-score-glow leading-none"
+            style={getScoreStyle(awayTeamColor, false, isMobile)}
           >
             {fixture.away_score || 0}
           </div>
