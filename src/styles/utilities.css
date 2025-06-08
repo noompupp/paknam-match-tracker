@@ -26,3 +26,42 @@
     min-width: 44px;
   }
 }
+
+/* Mobile League Table Optimizations */
+@media (max-width: 767px) and (orientation: portrait) {
+  .league-table-mobile-portrait {
+    font-size: 0.75rem;
+  }
+  
+  .league-table-mobile-portrait th,
+  .league-table-mobile-portrait td {
+    padding: 0.25rem 0.125rem;
+  }
+  
+  .league-table-mobile-portrait .team-column {
+    padding: 0.5rem 0.25rem;
+  }
+  
+  .league-table-mobile-portrait .points-column {
+    padding: 0.5rem 0.25rem;
+    font-weight: 700;
+  }
+}
+
+@media (max-width: 767px) and (orientation: landscape) {
+  .league-table-mobile-landscape {
+    font-size: 0.875rem;
+  }
+  
+  .league-table-mobile-landscape th,
+  .league-table-mobile-landscape td {
+    padding: 0.5rem;
+  }
+}
+
+/* Smooth orientation transitions */
+@media (max-width: 767px) {
+  .league-table-responsive {
+    transition: all 0.3s ease-in-out;
+  }
+}
