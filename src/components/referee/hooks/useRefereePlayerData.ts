@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { useMembers } from "@/hooks/useMembers";
 import { processFixtureAndPlayers, processPlayersForDropdowns, debugPlayerDropdownData, type ProcessedPlayer } from "@/utils/refereeDataProcessor";
+import { PlayerTime } from "@/types/database";
 import type { ComponentPlayer, PlayerTimeTrackerPlayer } from "./useRefereeState";
 
 interface UseRefereePlayerDataProps {
@@ -9,7 +10,7 @@ interface UseRefereePlayerDataProps {
   selectedFixtureData: any;
   fixtures: any[];
   members: any[];
-  trackedPlayers: PlayerTimeTrackerPlayer[];
+  trackedPlayers: PlayerTime[]; // Fixed: Changed from PlayerTimeTrackerPlayer[] to PlayerTime[]
 }
 
 export const useRefereePlayerData = ({
