@@ -11,7 +11,7 @@ interface RefereeMatchStateProps {
 }
 
 export const useRefereeMatchState = ({ selectedFixtureData, isRunning, matchTime }: RefereeMatchStateProps) => {
-  // Player tracking state
+  // Player tracking state with enhanced role-based features
   const { 
     trackedPlayers, 
     selectedPlayer: selectedTimePlayer, 
@@ -20,7 +20,10 @@ export const useRefereeMatchState = ({ selectedFixtureData, isRunning, matchTime
     removePlayer, 
     togglePlayerTime, 
     resetTracking,
-    getPlayersNeedingAttention 
+    getPlayersNeedingAttention,
+    getRoleBasedNotifications,
+    playerHalfTimes,
+    roleBasedStops
   } = usePlayerTracking(isRunning);
 
   // Goal management state
@@ -66,6 +69,9 @@ export const useRefereeMatchState = ({ selectedFixtureData, isRunning, matchTime
     togglePlayerTime,
     resetTracking,
     getPlayersNeedingAttentionForMatch,
+    getRoleBasedNotifications,
+    playerHalfTimes,
+    roleBasedStops,
     
     // Goal state
     goals,

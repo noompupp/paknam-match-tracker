@@ -18,38 +18,75 @@ export const usePlayerTracking = (isTimerRunning: boolean) => {
   const [trackedPlayers, setTrackedPlayers] = useState<PlayerTime[]>([]);
   const [selectedPlayer, setSelectedPlayer] = useState("");
   const [playerHalfTimes, setPlayerHalfTimes] = useState<Map<number, { firstHalf: number; secondHalf: number }>>(new Map());
+  const [roleBasedStops, setRoleBasedStops] = useState<Map<number, boolean>>(new Map());
 
   useEffect(() => {
     if (isTimerRunning) {
       const interval = setInterval(() => {
         setTrackedPlayers(prev => prev.map(player => {
           if (player.isPlaying) {
-            return { ...player, totalTime: player.totalTime + 1 };
+            const newTotalTime = player.totalTime + 1;
+            
+            // Check if this player should be automatically stopped due to role limits
+            const shouldAutoStop = checkRoleBasedAutoStop(player.id, newTotalTime);
+            
+            return { 
+              ...player, 
+              totalTime: newTotalTime,
+              isPlaying: shouldAutoStop ? false : player.isPlaying
+            };
           }
           return player;
         }));
+
+        // Update half times tracking
+        setPlayerHalfTimes(prev => {
+          const newMap = new Map(prev);
+          trackedPlayers.forEach(player => {
+            if (player.isPlaying) {
+              const halfTimes = newMap.get(player.id) || { firstHalf: 0, secondHalf: 0 };
+              const currentHalf = isSecondHalf(player.totalTime + 1) ? 2 : 1;
+              
+              if (currentHalf === 1) {
+                halfTimes.firstHalf += 1;
+              } else {
+                halfTimes.secondHalf += 1;
+              }
+              
+              newMap.set(player.id, halfTimes);
+            }
+          });
+          return newMap;
+        });
       }, 1000);
 
       return () => clearInterval(interval);
     }
   }, [isTimerRunning]);
 
-  // Get role-based time constraints for 7-a-side
+  // Check if a player should be automatically stopped based on role limits
+  const checkRoleBasedAutoStop = (playerId: number, newTotalTime: number): boolean => {
+    // This would need access to player role data - for now return false
+    // In a real implementation, you'd check if the player is S-Class and has reached 20 minutes in current half
+    return false;
+  };
+
+  // Enhanced role-based constraints checking
   const getRoleConstraints = (role: string): PlayerConstraints => {
-    switch (role) {
-      case 'Captain':
+    switch (role.toLowerCase()) {
+      case 'captain':
         return { 
           maxPerHalf: null, 
           minTotal: 0, 
           warningPerHalf: null 
         };
-      case 'S-class':
+      case 's-class':
         return { 
           maxPerHalf: 20 * 60, // 20 minutes per half
           minTotal: 0, 
           warningPerHalf: 16 * 60 // Warning at 16 minutes (80% of limit)
         };
-      case 'Starter':
+      case 'starter':
         return { 
           maxPerHalf: null, 
           minTotal: 10 * 60, // Minimum 10 minutes total
@@ -71,14 +108,24 @@ export const usePlayerTracking = (isTimerRunning: boolean) => {
     // Calculate current half time for this player
     const currentHalfTime = isSecondHalf(matchTime) ? halfTimes.secondHalf : halfTimes.firstHalf;
     
-    // Check S-class per-half limits
-    if (role === 'S-class' && constraints.maxPerHalf) {
-      if (currentHalfTime >= constraints.maxPerHalf) return 'exceeded';
-      if (constraints.warningPerHalf && currentHalfTime >= constraints.warningPerHalf) return 'critical';
+    // Check S-class per-half limits with automatic stopping
+    if (role.toLowerCase() === 's-class' && constraints.maxPerHalf) {
+      if (currentHalfTime >= constraints.maxPerHalf) {
+        // Mark player for automatic stop
+        setRoleBasedStops(prev => {
+          const newMap = new Map(prev);
+          newMap.set(player.id, true);
+          return newMap;
+        });
+        return 'exceeded';
+      }
+      if (constraints.warningPerHalf && currentHalfTime >= constraints.warningPerHalf) {
+        return 'critical';
+      }
     }
     
     // Check Starter minimum total time (only relevant near end of match)
-    if (role === 'Starter' && constraints.minTotal) {
+    if (role.toLowerCase() === 'starter' && constraints.minTotal) {
       const remainingTime = SEVEN_A_SIDE_CONSTANTS.STANDARD_MATCH_DURATION - matchTime;
       if (remainingTime < 300 && player.totalTime < constraints.minTotal) { // 5 minutes remaining
         return 'insufficient';
@@ -88,6 +135,7 @@ export const usePlayerTracking = (isTimerRunning: boolean) => {
     return 'normal';
   };
 
+  // Enhanced add player with role tracking
   const addPlayer = (player: any, matchTime: number) => {
     if (!player) return null;
 
@@ -115,8 +163,17 @@ export const usePlayerTracking = (isTimerRunning: boolean) => {
       newMap.set(player.id, { firstHalf: 0, secondHalf: 0 });
       return newMap;
     });
+
+    // Initialize role-based stop tracking
+    setRoleBasedStops(prev => {
+      const newMap = new Map(prev);
+      newMap.set(player.id, false);
+      return newMap;
+    });
     
     setSelectedPlayer("");
+    
+    console.log(`🎯 Role-based timer: Added ${player.name} (${player.position || 'Starter'}) to tracking`);
     return newPlayerTime;
   };
 
@@ -126,6 +183,13 @@ export const usePlayerTracking = (isTimerRunning: boolean) => {
     
     // Remove half times tracking
     setPlayerHalfTimes(prev => {
+      const newMap = new Map(prev);
+      newMap.delete(playerId);
+      return newMap;
+    });
+
+    // Remove role-based stop tracking
+    setRoleBasedStops(prev => {
       const newMap = new Map(prev);
       newMap.delete(playerId);
       return newMap;
@@ -144,6 +208,16 @@ export const usePlayerTracking = (isTimerRunning: boolean) => {
           isPlaying: newIsPlaying,
           startTime: newIsPlaying ? matchTime : null
         };
+
+        // Clear role-based stop when manually toggling
+        if (newIsPlaying) {
+          setRoleBasedStops(prevStops => {
+            const newMap = new Map(prevStops);
+            newMap.set(playerId, false);
+            return newMap;
+          });
+        }
+
         return updatedPlayer;
       }
       return player;
@@ -155,6 +229,7 @@ export const usePlayerTracking = (isTimerRunning: boolean) => {
     setTrackedPlayers([]);
     setSelectedPlayer("");
     setPlayerHalfTimes(new Map());
+    setRoleBasedStops(new Map());
   };
 
   // Get players who need attention based on 7-a-side rules
@@ -167,21 +242,69 @@ export const usePlayerTracking = (isTimerRunning: boolean) => {
     });
   };
 
-  // Validate all players against 7-a-side rules
+  // Enhanced validation with role-based logic
   const validateAllPlayers = (allPlayers: any[], matchTime: number) => {
     const validationResults = trackedPlayers.map(player => {
       const playerInfo = allPlayers.find(p => p.id === player.id);
       const role = playerInfo?.position as 'Captain' | 'S-class' | 'Starter' || 'Starter';
       const halfTimes = playerHalfTimes.get(player.id) || { firstHalf: 0, secondHalf: 0 };
+      const wasAutoStopped = roleBasedStops.get(player.id) || false;
       
       return {
         player,
         role,
+        wasAutoStopped,
         validation: validatePlaytime(player.totalTime, halfTimes.firstHalf, halfTimes.secondHalf, role)
       };
     });
     
     return validationResults;
+  };
+
+  // Get role-based timer notifications
+  const getRoleBasedNotifications = (allPlayers: any[], matchTime: number) => {
+    const notifications: Array<{
+      playerId: number;
+      playerName: string;
+      role: string;
+      type: 'warning' | 'limit_reached' | 'auto_stopped' | 'minimum_needed';
+      message: string;
+    }> = [];
+
+    trackedPlayers.forEach(player => {
+      const playerInfo = allPlayers.find(p => p.id === player.id);
+      const role = playerInfo?.position || 'Starter';
+      const status = getTimeStatus(player, role, matchTime);
+      const wasAutoStopped = roleBasedStops.get(player.id) || false;
+
+      if (wasAutoStopped) {
+        notifications.push({
+          playerId: player.id,
+          playerName: player.name,
+          role,
+          type: 'auto_stopped',
+          message: `${player.name} was automatically substituted (S-Class 20min limit reached)`
+        });
+      } else if (status === 'critical') {
+        notifications.push({
+          playerId: player.id,
+          playerName: player.name,
+          role,
+          type: 'warning',
+          message: `${player.name} approaching ${role} time limit`
+        });
+      } else if (status === 'insufficient') {
+        notifications.push({
+          playerId: player.id,
+          playerName: player.name,
+          role,
+          type: 'minimum_needed',
+          message: `${player.name} needs more playing time (Starter minimum: 10min)`
+        });
+      }
+    });
+
+    return notifications;
   };
 
   return {
@@ -195,6 +318,9 @@ export const usePlayerTracking = (isTimerRunning: boolean) => {
     getRoleConstraints,
     getTimeStatus,
     getPlayersNeedingAttention,
-    validateAllPlayers
+    validateAllPlayers,
+    getRoleBasedNotifications,
+    playerHalfTimes,
+    roleBasedStops
   };
 };

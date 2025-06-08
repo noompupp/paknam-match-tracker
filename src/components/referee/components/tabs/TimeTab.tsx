@@ -1,5 +1,6 @@
 
 import PlayerTimeTracker from "../../PlayerTimeTracker";
+import RoleBasedTimerNotifications from "../RoleBasedTimerNotifications";
 import { ComponentPlayer } from "../../hooks/useRefereeState";
 
 interface TimeTabProps {
@@ -17,6 +18,13 @@ interface TimeTabProps {
   onTogglePlayerTime: (playerId: number) => void;
   formatTime: (seconds: number) => string;
   selectedFixtureData: any;
+  getRoleBasedNotifications?: (allPlayers: ComponentPlayer[], matchTime: number) => Array<{
+    playerId: number;
+    playerName: string;
+    role: string;
+    type: 'warning' | 'limit_reached' | 'auto_stopped' | 'minimum_needed';
+    message: string;
+  }>;
 }
 
 const TimeTab = ({
@@ -33,7 +41,8 @@ const TimeTab = ({
   onTogglePlayerTime,
   formatTime,
   matchTime,
-  selectedFixtureData
+  selectedFixtureData,
+  getRoleBasedNotifications
 }: TimeTabProps) => {
   const handleAddPlayer = () => {
     if (!selectedPlayer || !selectedTimeTeam) return;
@@ -60,29 +69,44 @@ const TimeTab = ({
       player: player.name,
       team: player.team,
       selectedTeam: selectedTimeTeam,
+      role: player.position,
       source: 'team-filtered'
     });
     
     onAddPlayer(player);
   };
 
+  // Get role-based notifications
+  const roleNotifications = getRoleBasedNotifications 
+    ? getRoleBasedNotifications(allPlayers, matchTime)
+    : [];
+
   return (
-    <PlayerTimeTracker
-      allPlayers={allPlayers}
-      homeTeamPlayers={homeTeamPlayers}
-      awayTeamPlayers={awayTeamPlayers}
-      trackedPlayers={trackedPlayers}
-      selectedPlayer={selectedPlayer}
-      selectedTimeTeam={selectedTimeTeam}
-      onPlayerSelect={onPlayerSelect}
-      onTimeTeamChange={onTimeTeamChange}
-      onAddPlayer={handleAddPlayer}
-      onRemovePlayer={onRemovePlayer}
-      onTogglePlayerTime={onTogglePlayerTime}
-      formatTime={formatTime}
-      matchTime={matchTime}
-      selectedFixtureData={selectedFixtureData}
-    />
+    <div className="space-y-6">
+      {/* Role-Based Timer Notifications */}
+      <RoleBasedTimerNotifications
+        notifications={roleNotifications}
+        formatTime={formatTime}
+      />
+
+      {/* Player Time Tracker */}
+      <PlayerTimeTracker
+        allPlayers={allPlayers}
+        homeTeamPlayers={homeTeamPlayers}
+        awayTeamPlayers={awayTeamPlayers}
+        trackedPlayers={trackedPlayers}
+        selectedPlayer={selectedPlayer}
+        selectedTimeTeam={selectedTimeTeam}
+        onPlayerSelect={onPlayerSelect}
+        onTimeTeamChange={onTimeTeamChange}
+        onAddPlayer={handleAddPlayer}
+        onRemovePlayer={onRemovePlayer}
+        onTogglePlayerTime={onTogglePlayerTime}
+        formatTime={formatTime}
+        matchTime={matchTime}
+        selectedFixtureData={selectedFixtureData}
+      />
+    </div>
   );
 };
 
