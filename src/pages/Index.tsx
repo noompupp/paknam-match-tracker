@@ -31,7 +31,8 @@ const Index = () => {
   };
 
   const handleNavigateToRecentResults = () => {
-    setActiveTab("fixtures");
+    console.log('Index: handleNavigateToRecentResults called, switching to results tab');
+    setActiveTab("results");
     // Small delay to ensure tab content is rendered
     setTimeout(() => {
       const element = document.getElementById("recent-results");
@@ -75,6 +76,12 @@ const Index = () => {
         return (
           <div className={baseClasses}>
             <Teams />
+          </div>
+        );
+      case "results":
+        return (
+          <div className={baseClasses}>
+            <Fixtures />
           </div>
         );
       case "fixtures":
