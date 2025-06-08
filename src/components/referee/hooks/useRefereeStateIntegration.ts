@@ -37,8 +37,11 @@ export const useRefereeStateIntegration = () => {
     awayTeamPlayers: playerData.awayTeamPlayers
   });
 
-  // Check for players needing attention
-  const playersNeedingAttention = matchState.getPlayersNeedingAttentionForMatch(playerData.playersForTimeTracker);
+  // Check for players needing attention - fix the type conversion
+  const playersNeedingAttention = matchState.getPlayersNeedingAttentionForMatch(
+    playerData.allPlayers, 
+    baseState.matchTime
+  );
 
   return {
     baseState,
