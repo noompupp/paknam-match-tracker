@@ -3,11 +3,24 @@ import { useState } from "react";
 import GoalEntryWizard from "../../GoalEntryWizard";
 import { ComponentPlayer } from "../../../hooks/useRefereeState";
 import LiveScoreHeader from "./LiveScoreHeader";
-import QuickGoalSection from "./QuickGoalSection";
+import SimplifiedQuickGoalSection from "./SimplifiedQuickGoalSection";
 import GoalsSummary from "./GoalsSummary";
 import MatchControlsSection from "./MatchControlsSection";
 import { useQuickGoalHandler } from "./QuickGoalHandler";
 import { useDetailedGoalHandler } from "./DetailedGoalHandler";
+
+interface QuickGoal {
+  id: number | string;
+  event_time?: number;
+  time?: number;
+  team_id?: string;
+  teamId?: string;
+  teamName?: string;
+  team?: 'home' | 'away';
+  description?: string;
+  created_at?: string;
+  playerName?: string;
+}
 
 interface ScoreTabContainerProps {
   homeScore: number;
@@ -43,6 +56,7 @@ const ScoreTabContainer = ({
   forceRefresh
 }: ScoreTabContainerProps) => {
   const [showDetailedEntry, setShowDetailedEntry] = useState(false);
+  const [editingGoal, setEditingGoal] = useState<QuickGoal | null>(null);
   const [quickGoalTeam, setQuickGoalTeam] = useState<'home' | 'away' | null>(null);
 
   const homeTeamName = selectedFixtureData?.home_team?.name || 'Home Team';
@@ -63,9 +77,29 @@ const ScoreTabContainer = ({
     forceRefresh
   });
 
-  const handleDetailedGoalEntry = (team: 'home' | 'away') => {
-    setQuickGoalTeam(team);
+  const handleFullGoalEntry = () => {
+    setQuickGoalTeam(null);
+    setEditingGoal(null);
     setShowDetailedEntry(true);
+  };
+
+  // New handler for editing unassigned goals
+  const handleEditUnassignedGoal = () => {
+    console.log('📝 ScoreTabContainer: Edit unassigned goal requested');
+    
+    // Find the first unassigned goal
+    const unassignedGoal = goals.find(goal => 
+      goal.playerName === 'Quick Goal' || goal.playerName === 'Unknown Player'
+    );
+
+    if (unassignedGoal) {
+      console.log('🎯 ScoreTabContainer: Found unassigned goal to edit:', unassignedGoal);
+      setEditingGoal(unassignedGoal);
+      setQuickGoalTeam(null);
+      setShowDetailedEntry(true);
+    } else {
+      console.warn('⚠️ ScoreTabContainer: No unassigned goals found to edit');
+    }
   };
 
   const handleWizardGoalComplete = (goalData: {
@@ -74,10 +108,24 @@ const ScoreTabContainer = ({
     team: 'home' | 'away';
     isOwnGoal?: boolean;
     assistPlayer?: ComponentPlayer;
+    isEdit?: boolean;
+    originalGoalId?: string | number;
   }) => {
-    handleWizardGoalAssigned(goalData);
+    console.log('🎯 ScoreTabContainer: Goal wizard completed:', goalData);
+
+    if (goalData.isEdit && goalData.originalGoalId) {
+      // Handle editing existing goal
+      console.log('✏️ ScoreTabContainer: Processing goal edit for ID:', goalData.originalGoalId);
+      // The goal update will be handled by the detailed goal handler
+      handleWizardGoalAssigned(goalData);
+    } else {
+      // Handle new goal creation
+      handleWizardGoalAssigned(goalData);
+    }
+
     setShowDetailedEntry(false);
     setQuickGoalTeam(null);
+    setEditingGoal(null);
   };
 
   // Get unassigned goals for the indicator
@@ -98,8 +146,10 @@ const ScoreTabContainer = ({
           onCancel={() => {
             setShowDetailedEntry(false);
             setQuickGoalTeam(null);
+            setEditingGoal(null);
           }}
           initialTeam={quickGoalTeam || undefined}
+          editingGoal={editingGoal || undefined}
         />
       </div>
     );
@@ -115,14 +165,12 @@ const ScoreTabContainer = ({
         formatTime={formatTime}
       />
 
-      <QuickGoalSection
-        homeTeamName={homeTeamName}
-        awayTeamName={awayTeamName}
+      <SimplifiedQuickGoalSection
         unassignedGoalsCount={unassignedGoals.length}
         isProcessingQuickGoal={isProcessingQuickGoal}
-        onQuickGoal={handleQuickGoal}
-        onDetailedGoalEntry={handleDetailedGoalEntry}
-        onOpenDetailedEntry={() => setShowDetailedEntry(true)}
+        onQuickGoal={() => handleQuickGoal('home')} // Default to home team for quick goal
+        onFullGoalEntry={handleFullGoalEntry}
+        onEditUnassignedGoal={handleEditUnassignedGoal}
       />
 
       <GoalsSummary goals={goals} formatTime={formatTime} />

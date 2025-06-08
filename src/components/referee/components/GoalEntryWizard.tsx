@@ -1,8 +1,8 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Target, ArrowLeft } from "lucide-react";
+import { Target, ArrowLeft, Edit } from "lucide-react";
 import { ComponentPlayer } from "../hooks/useRefereeState";
 import { WizardStep, GoalWizardData } from "./goalWizard/types";
 import StepIndicator from "./goalWizard/StepIndicator";
@@ -11,6 +11,19 @@ import PlayerSelectionStep from "./goalWizard/PlayerSelectionStep";
 import GoalTypeStep from "./goalWizard/GoalTypeStep";
 import AssistStep from "./goalWizard/AssistStep";
 import ConfirmationStep from "./goalWizard/ConfirmationStep";
+
+interface QuickGoal {
+  id: number | string;
+  event_time?: number;
+  time?: number;
+  team_id?: string;
+  teamId?: string;
+  teamName?: string;
+  team?: 'home' | 'away';
+  description?: string;
+  created_at?: string;
+  playerName?: string;
+}
 
 interface GoalEntryWizardProps {
   selectedFixtureData: any;
@@ -24,9 +37,12 @@ interface GoalEntryWizardProps {
     team: 'home' | 'away';
     isOwnGoal?: boolean;
     assistPlayer?: ComponentPlayer;
+    isEdit?: boolean;
+    originalGoalId?: string | number;
   }) => void;
   onCancel: () => void;
   initialTeam?: 'home' | 'away';
+  editingGoal?: QuickGoal; // New prop for editing mode
 }
 
 const GoalEntryWizard = ({
@@ -37,7 +53,8 @@ const GoalEntryWizard = ({
   formatTime,
   onGoalAssigned,
   onCancel,
-  initialTeam
+  initialTeam,
+  editingGoal
 }: GoalEntryWizardProps) => {
   const [currentStep, setCurrentStep] = useState<WizardStep>(initialTeam ? 'player' : 'team');
   const [wizardData, setWizardData] = useState<GoalWizardData>({
@@ -47,6 +64,36 @@ const GoalEntryWizard = ({
     needsAssist: false,
     assistPlayer: null,
   });
+
+  const isEditMode = !!editingGoal;
+  const homeTeamName = selectedFixtureData?.home_team?.name || 'Home Team';
+  const awayTeamName = selectedFixtureData?.away_team?.name || 'Away Team';
+
+  // Initialize wizard data when editing a goal
+  useEffect(() => {
+    if (editingGoal) {
+      console.log('🎯 GoalEntryWizard: Initializing edit mode with goal:', editingGoal);
+      
+      // Determine team from the goal data
+      let goalTeam: 'home' | 'away' = 'home';
+      
+      if (editingGoal.team === 'home' || editingGoal.team === 'away') {
+        goalTeam = editingGoal.team;
+      } else if (editingGoal.teamName) {
+        goalTeam = editingGoal.teamName === homeTeamName ? 'home' : 'away';
+      } else if (editingGoal.team_id) {
+        goalTeam = editingGoal.team_id.includes('home') || editingGoal.team_id === homeTeamName ? 'home' : 'away';
+      }
+
+      setWizardData(prev => ({
+        ...prev,
+        selectedTeam: goalTeam,
+      }));
+
+      // Start from player selection since team is already determined
+      setCurrentStep('player');
+    }
+  }, [editingGoal, homeTeamName, awayTeamName]);
 
   const handleDataChange = (data: Partial<GoalWizardData>) => {
     setWizardData(prev => ({ ...prev, ...data }));
@@ -76,8 +123,8 @@ const GoalEntryWizard = ({
   const handleBack = () => {
     switch (currentStep) {
       case 'player':
-        if (initialTeam) {
-          onCancel(); // Can't go back if we started with a team
+        if (initialTeam || isEditMode) {
+          onCancel(); // Can't go back if we started with a team or editing
         } else {
           setCurrentStep('team');
         }
@@ -101,17 +148,29 @@ const GoalEntryWizard = ({
   const handleConfirm = () => {
     if (!wizardData.selectedPlayer || !wizardData.selectedTeam) return;
 
-    // Single goal assignment call - this fixes the duplicate issue
+    console.log('🎯 GoalEntryWizard: Confirming goal assignment:', {
+      isEditMode,
+      editingGoalId: editingGoal?.id,
+      player: wizardData.selectedPlayer,
+      team: wizardData.selectedTeam,
+      isOwnGoal: wizardData.isOwnGoal,
+      assistPlayer: wizardData.assistPlayer
+    });
+
+    // Single goal assignment call with edit information
     onGoalAssigned({
       player: wizardData.selectedPlayer,
       goalType: 'goal',
       team: wizardData.selectedTeam,
       isOwnGoal: wizardData.isOwnGoal,
-      assistPlayer: wizardData.assistPlayer || undefined
+      assistPlayer: wizardData.assistPlayer || undefined,
+      isEdit: isEditMode,
+      originalGoalId: editingGoal?.id
     });
   };
 
-  const canGoBack = currentStep !== 'team' && !initialTeam;
+  const canGoBack = currentStep !== 'team' && !initialTeam && !isEditMode;
+  const displayTime = editingGoal ? formatTime(editingGoal.event_time || editingGoal.time || 0) : formatTime(matchTime);
 
   const renderCurrentStep = () => {
     switch (currentStep) {
@@ -158,7 +217,7 @@ const GoalEntryWizard = ({
           <ConfirmationStep
             selectedFixtureData={selectedFixtureData}
             wizardData={wizardData}
-            matchTime={matchTime}
+            matchTime={editingGoal ? (editingGoal.event_time || editingGoal.time || 0) : matchTime}
             formatTime={formatTime}
             onConfirm={handleConfirm}
           />
@@ -172,10 +231,30 @@ const GoalEntryWizard = ({
     <Card className="w-full max-w-2xl mx-auto">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Target className="h-5 w-5" />
-          Goal Entry - {formatTime(matchTime)}
+          {isEditMode ? (
+            <>
+              <Edit className="h-5 w-5 text-orange-600" />
+              Edit Goal Details - {displayTime}
+            </>
+          ) : (
+            <>
+              <Target className="h-5 w-5" />
+              Goal Entry - {displayTime}
+            </>
+          )}
         </CardTitle>
         <StepIndicator currentStep={currentStep} isOwnGoal={wizardData.isOwnGoal} />
+        
+        {isEditMode && editingGoal && (
+          <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
+            <div className="text-sm font-medium text-orange-800">
+              Editing Quick Goal from {displayTime}
+            </div>
+            <div className="text-xs text-orange-700">
+              Team: {wizardData.selectedTeam === 'home' ? homeTeamName : awayTeamName}
+            </div>
+          </div>
+        )}
       </CardHeader>
       
       <CardContent className="space-y-6">

@@ -41,7 +41,7 @@ const QuickGoalSection = ({
         <div className="space-y-3">
           <div className="flex items-center gap-2">
             <span className="bg-green-100 text-green-800 text-xs font-medium px-2 py-1 rounded-full">1</span>
-            <h4 className="text-sm font-medium">Quick Goal - Instant Recording</h4>
+            <h4 className="text-sm font-medium">Quick Goal (Instant Recording)</h4>
           </div>
           <p className="text-xs text-muted-foreground">
             Perfect for live matches - instantly updates the score and records the goal. Add player details later.
@@ -120,12 +120,12 @@ const QuickGoalSection = ({
           </Button>
         </div>
 
-        {/* Step 3: Add Details to Earlier Goals - Only show if there are unassigned goals */}
+        {/* Step 3: Edit Earlier Goals - Only show if there are unassigned goals */}
         {unassignedGoalsCount > 0 && (
           <div className="space-y-3 border-t pt-4">
             <div className="flex items-center gap-2">
               <span className="bg-orange-100 text-orange-800 text-xs font-medium px-2 py-1 rounded-full">3</span>
-              <h4 className="text-sm font-medium">Add Details to Earlier Goals</h4>
+              <h4 className="text-sm font-medium">Edit Earlier Goals</h4>
             </div>
             <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
               <div className="flex items-center gap-2 mb-2">
@@ -144,7 +144,7 @@ const QuickGoalSection = ({
                 size="sm"
               >
                 <Edit className="h-4 w-4 mr-2" />
-                Add Player Details to {unassignedGoalsCount} Goal{unassignedGoalsCount !== 1 ? 's' : ''}
+                Edit Goal Details ({unassignedGoalsCount} goal{unassignedGoalsCount !== 1 ? 's' : ''})
               </Button>
             </div>
           </div>

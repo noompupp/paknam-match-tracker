@@ -8,7 +8,7 @@ interface SimplifiedQuickGoalSectionProps {
   isProcessingQuickGoal: boolean;
   onQuickGoal: () => void;
   onFullGoalEntry: () => void;
-  onAddDetailsToGoals: () => void;
+  onEditUnassignedGoal: () => void; // Changed from onAddDetailsToGoals
 }
 
 const SimplifiedQuickGoalSection = ({
@@ -16,14 +16,14 @@ const SimplifiedQuickGoalSection = ({
   isProcessingQuickGoal,
   onQuickGoal,
   onFullGoalEntry,
-  onAddDetailsToGoals
+  onEditUnassignedGoal // Updated prop name
 }: SimplifiedQuickGoalSectionProps) => {
   console.log('📊 SimplifiedQuickGoalSection: Rendering with unassigned goals count:', unassignedGoalsCount);
 
-  const handleAddDetailsClick = () => {
-    console.log('📝 SimplifiedQuickGoalSection: Add details button clicked, count:', unassignedGoalsCount);
-    // This will now open the QuickGoalSelectionModal instead of the regular wizard
-    onAddDetailsToGoals();
+  const handleEditUnassignedClick = () => {
+    console.log('📝 SimplifiedQuickGoalSection: Edit unassigned goal button clicked, count:', unassignedGoalsCount);
+    // This will now open the GoalEntryWizard directly with the first unassigned goal preloaded
+    onEditUnassignedGoal();
   };
 
   return (
@@ -76,7 +76,7 @@ const SimplifiedQuickGoalSection = ({
           </Button>
         </div>
 
-        {/* Enhanced Add Details to Earlier Goals - Now opens selection modal */}
+        {/* Enhanced Edit Unassigned Goals - Now opens wizard directly */}
         {unassignedGoalsCount > 0 && (
           <div className="space-y-2 border-t pt-4">
             <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
@@ -87,18 +87,18 @@ const SimplifiedQuickGoalSection = ({
                     {unassignedGoalsCount} goal{unassignedGoalsCount !== 1 ? 's' : ''} need player details
                   </div>
                   <div className="text-xs text-orange-700">
-                    These goals were recorded quickly during the match
+                    Quick goals recorded during the match
                   </div>
                 </div>
               </div>
               <Button
-                onClick={handleAddDetailsClick}
+                onClick={handleEditUnassignedClick}
                 variant="outline"
                 className="w-full hover:bg-orange-100 hover:border-orange-300 border-orange-200"
                 disabled={isProcessingQuickGoal}
               >
                 <Edit className="h-4 w-4 mr-2" />
-                Add Player Details to {unassignedGoalsCount} Goal{unassignedGoalsCount !== 1 ? 's' : ''}
+                Edit Goal Details ({unassignedGoalsCount} goal{unassignedGoalsCount !== 1 ? 's' : ''})
               </Button>
             </div>
           </div>
