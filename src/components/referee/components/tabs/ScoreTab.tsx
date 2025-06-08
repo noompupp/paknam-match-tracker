@@ -6,10 +6,8 @@ import { useMatchStore } from "@/stores/useMatchStore";
 import { useGlobalBatchSaveManager } from "@/hooks/useGlobalBatchSaveManager";
 import { useAutoSave } from "@/hooks/useAutoSave";
 import ScoreTabDisplay from "./components/ScoreTabDisplay";
-import ScoreTabEventHandlers from "./components/ScoreTabEventHandlers";
-import ScoreTabModals from "./components/ScoreTabModals";
 import UnsavedChangesIndicator from "./components/UnsavedChangesIndicator";
-import SimplifiedQuickGoalSection from "./components/SimplifiedQuickGoalSection";
+import SimplifiedGoalRecording from "./components/SimplifiedGoalRecording";
 import GoalsSummary from "./components/GoalsSummary";
 import MatchControlsSection from "./components/MatchControlsSection";
 
@@ -27,19 +25,6 @@ interface ScoreTabProps {
   forceRefresh?: () => Promise<void>;
 }
 
-interface QuickGoal {
-  id: number | string;
-  event_time?: number;
-  time?: number;
-  team_id?: string;
-  teamId?: string;
-  teamName?: string;
-  team?: 'home' | 'away';
-  description?: string;
-  created_at?: string;
-  playerName?: string;
-}
-
 const ScoreTab = ({
   selectedFixtureData,
   isRunning,
@@ -54,10 +39,6 @@ const ScoreTab = ({
   forceRefresh
 }: ScoreTabProps) => {
   const [showWizard, setShowWizard] = useState(false);
-  const [showTeamSelection, setShowTeamSelection] = useState(false);
-  const [showQuickGoalSelection, setShowQuickGoalSelection] = useState(false);
-  const [editingGoal, setEditingGoal] = useState<QuickGoal | null>(null);
-  const [isProcessingQuickGoal, setIsProcessingQuickGoal] = useState(false);
 
   const homeTeamName = selectedFixtureData?.home_team?.name || 'Home Team';
   const awayTeamName = selectedFixtureData?.away_team?.name || 'Away Team';
@@ -75,8 +56,7 @@ const ScoreTab = ({
     addGoal,
     addAssist,
     addEvent,
-    resetState,
-    getUnassignedGoalsCount
+    resetState
   } = useMatchStore();
 
   // Set fixture ID when component mounts or fixture changes
@@ -100,14 +80,11 @@ const ScoreTab = ({
     hasUnsavedChanges
   });
 
-  const unassignedGoalsCount = getUnassignedGoalsCount();
-
-  console.log('📊 ScoreTab: Using global store:', { 
+  console.log('📊 ScoreTab: Simplified workflow active:', { 
     fixtureId,
     homeScore, 
     awayScore, 
     goalsCount: goals.length,
-    unassignedGoalsCount,
     hasUnsavedChanges,
     unsavedItemsCount
   });
@@ -126,37 +103,39 @@ const ScoreTab = ({
     const teamId = goalData.team === 'home' ? homeTeamId : awayTeamId;
     const teamName = goalData.team === 'home' ? homeTeamName : awayTeamName;
 
-    if (goalData.isEdit) {
-      console.log('✏️ ScoreTab: Edit mode detected, delegating to DetailedGoalHandler');
-    } else {
-      addGoal({
-        playerId: goalData.player.id,
-        playerName: goalData.player.name,
+    // Add the goal to the store
+    addGoal({
+      playerId: goalData.player.id,
+      playerName: goalData.player.name,
+      team: goalData.team,
+      teamId,
+      teamName,
+      type: 'goal',
+      time: matchTime,
+      isOwnGoal: goalData.isOwnGoal
+    });
+
+    // Add assist if provided and not an own goal
+    if (goalData.assistPlayer && !goalData.isOwnGoal) {
+      addAssist({
+        playerId: goalData.assistPlayer.id,
+        playerName: goalData.assistPlayer.name,
         team: goalData.team,
         teamId,
         teamName,
-        type: 'goal',
-        time: matchTime,
-        isOwnGoal: goalData.isOwnGoal
+        type: 'assist',
+        time: matchTime
       });
-
-      if (goalData.assistPlayer && !goalData.isOwnGoal) {
-        addAssist({
-          playerId: goalData.assistPlayer.id,
-          playerName: goalData.assistPlayer.name,
-          team: goalData.team,
-          teamId,
-          teamName,
-          type: 'assist',
-          time: matchTime
-        });
-      }
-
-      addEvent('Goal Assignment', `Goal assigned to ${goalData.player.name}`, matchTime);
     }
+
+    addEvent('Goal Assignment', `Goal assigned to ${goalData.player.name}`, matchTime);
     
     setShowWizard(false);
-    setEditingGoal(null);
+  };
+
+  const handleRecordGoal = () => {
+    console.log('🎯 ScoreTab: Opening goal entry wizard');
+    setShowWizard(true);
   };
 
   const handleSaveMatch = async () => {
@@ -189,11 +168,7 @@ const ScoreTab = ({
           matchTime={matchTime}
           formatTime={formatTime}
           onGoalAssigned={handleWizardGoalAssigned}
-          onCancel={() => {
-            setShowWizard(false);
-            setEditingGoal(null);
-          }}
-          editingGoal={editingGoal || undefined}
+          onCancel={() => setShowWizard(false)}
         />
       </div>
     );
@@ -216,52 +191,12 @@ const ScoreTab = ({
         <GoalsSummary goals={goals} formatTime={formatTime} />
       )}
 
-      <ScoreTabEventHandlers
-        selectedFixtureData={selectedFixtureData}
-        matchTime={matchTime}
-        homeTeamId={homeTeamId}
-        awayTeamId={awayTeamId}
+      <SimplifiedGoalRecording
         homeTeamName={homeTeamName}
         awayTeamName={awayTeamName}
-        unassignedGoalsCount={unassignedGoalsCount}
-        isProcessingQuickGoal={isProcessingQuickGoal}
-        setIsProcessingQuickGoal={setIsProcessingQuickGoal}
-        setShowTeamSelection={setShowTeamSelection}
-        setShowQuickGoalSelection={setShowQuickGoalSelection}
-        setEditingGoal={setEditingGoal}
-        setShowWizard={setShowWizard}
-      >
-        {({
-          handleQuickGoalClick,
-          handleFullGoalEntryClick,
-          handleAddDetailsToGoalsClick,
-          handleTeamSelected,
-          handleQuickGoalSelected
-        }) => (
-          <>
-            <SimplifiedQuickGoalSection
-              unassignedGoalsCount={unassignedGoalsCount}
-              isProcessingQuickGoal={isProcessingQuickGoal}
-              onQuickGoal={handleQuickGoalClick}
-              onFullGoalEntry={handleFullGoalEntryClick}
-              onAddDetailsToGoals={handleAddDetailsToGoalsClick}
-            />
-
-            <ScoreTabModals
-              showTeamSelection={showTeamSelection}
-              showQuickGoalSelection={showQuickGoalSelection}
-              homeTeamName={homeTeamName}
-              awayTeamName={awayTeamName}
-              goals={goals}
-              formatTime={formatTime}
-              onCloseTeamSelection={() => setShowTeamSelection(false)}
-              onCloseQuickGoalSelection={() => setShowQuickGoalSelection(false)}
-              onTeamSelected={handleTeamSelected}
-              onQuickGoalSelected={handleQuickGoalSelected}
-            />
-          </>
-        )}
-      </ScoreTabEventHandlers>
+        onRecordGoal={handleRecordGoal}
+        isDisabled={false}
+      />
 
       <UnsavedChangesIndicator
         hasUnsavedChanges={hasUnsavedChanges}
