@@ -27,7 +27,7 @@ export const useRefereeStateIntegration = () => {
     selectedFixtureData: baseState.selectedFixtureData,
     fixtures: baseState.fixtures,
     members: baseState.members,
-    trackedPlayers: matchState.trackedPlayers
+    trackedPlayers: playerData.playersForTimeTracker // Use the converted format
   });
 
   // Team selection management
@@ -37,9 +37,9 @@ export const useRefereeStateIntegration = () => {
     awayTeamPlayers: playerData.awayTeamPlayers
   });
 
-  // Check for players needing attention - fix the type conversion and method call
+  // Check for players needing attention - fix the method call to use single argument
   const playersNeedingAttention = matchState.getPlayersNeedingAttentionForMatch
-    ? matchState.getPlayersNeedingAttentionForMatch(playerData.allPlayers, baseState.matchTime)
+    ? matchState.getPlayersNeedingAttentionForMatch(playerData.playersForTimeTracker)
     : [];
 
   return {

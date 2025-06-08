@@ -54,7 +54,7 @@ export const useRefereeMatchState = ({ selectedFixtureData, isRunning, matchTime
     checkForSecondYellow 
   } = useCardManagementImproved({ selectedFixtureData });
 
-  // Check for players needing attention (this requires playersForTimeTracker to be passed in)
+  // Check for players needing attention - fix to accept single argument
   const getPlayersNeedingAttentionForMatch = (playersForTimeTracker: any[]) => {
     return getPlayersNeedingAttention(playersForTimeTracker, matchTime);
   };

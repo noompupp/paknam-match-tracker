@@ -54,7 +54,12 @@ export const basePlayerService = {
       throw teamsError;
     }
 
-    return teamsData || [];
+    // Convert the id from number to string to match TeamData interface
+    return (teamsData || []).map(team => ({
+      id: team.id.toString(),
+      __id__: team.__id__,
+      name: team.name
+    }));
   },
 
   async logOperation(operation: any): Promise<void> {
