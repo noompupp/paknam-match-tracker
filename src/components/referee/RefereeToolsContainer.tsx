@@ -5,15 +5,29 @@ import RefereeMatchControls from "./components/RefereeMatchControls";
 import { useRefereeState } from "./hooks/useRefereeState";
 import { useRefereeHandlers } from "./hooks/useRefereeHandlers";
 import { useUpdateMemberStatsFromMatch } from "@/hooks/useEnhancedMatchSummary";
+import { useBackgroundTimer } from "@/hooks/useBackgroundTimer";
 import { Button } from "@/components/ui/button";
 import { Save, Database, RotateCcw, Trash2, TrendingUp } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import ScrollSafeContainer from "@/components/ui/scroll-safe-container";
+import TimerProtectionAlert from "./components/TimerProtectionAlert";
 
 const RefereeToolsContainer = () => {
   const state = useRefereeState();
   const handlers = useRefereeHandlers(state);
   const updateMemberStats = useUpdateMemberStatsFromMatch();
   const { toast } = useToast();
+
+  // Enhanced background timer
+  const backgroundTimer = useBackgroundTimer({
+    onTimerTick: (time) => {
+      // Sync with main timer if needed
+      if (Math.abs(time - state.matchTime) > 2) {
+        console.log('🕐 Background timer syncing:', time, 'vs', state.matchTime);
+      }
+    },
+    enableNotifications: true
+  });
 
   const handleUpdateMemberStats = async () => {
     if (!state.selectedFixtureData) {
@@ -52,17 +66,25 @@ const RefereeToolsContainer = () => {
 
   if (state.fixturesLoading) {
     return (
-      <div className="min-h-screen gradient-bg flex items-center justify-center pb-20">
+      <ScrollSafeContainer className="gradient-bg flex items-center justify-center">
         <div className="text-center text-white">
           <h2 className="text-2xl font-bold mb-4">Loading...</h2>
         </div>
-      </div>
+      </ScrollSafeContainer>
     );
   }
 
+  const hasActiveTracking = state.trackedPlayers.some(p => p.isPlaying);
+
   return (
-    <div className="min-h-screen gradient-bg pb-20">
+    <ScrollSafeContainer className="gradient-bg">
       <div className="container mx-auto px-4 py-6 space-y-6">
+        {/* Timer Protection Alert */}
+        <TimerProtectionAlert
+          isTimerRunning={state.isRunning}
+          hasActiveTracking={hasActiveTracking}
+        />
+
         <RefereeHeader
           saveAttempts={state.saveAttempts}
           playersNeedingAttention={state.playersNeedingAttention}
@@ -164,7 +186,7 @@ const RefereeToolsContainer = () => {
           </>
         )}
       </div>
-    </div>
+    </ScrollSafeContainer>
   );
 };
 

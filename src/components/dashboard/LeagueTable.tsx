@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Team } from "@/types/database";
 import TeamLogo from "../teams/TeamLogo";
-import AnimatedRankIndicator from "./AnimatedRankIndicator";
+import RealTimeRankIndicator from "./RealTimeRankIndicator";
 
 interface LeagueTableProps {
   teams: Team[] | undefined;
@@ -55,9 +55,10 @@ const LeagueTable = ({ teams, isLoading }: LeagueTableProps) => {
                   <tr key={team.id} className="border-b hover:bg-muted/30 transition-colors group">
                     <td className="p-3">
                       <div className="flex items-center gap-2">
-                        <AnimatedRankIndicator 
+                        <RealTimeRankIndicator 
                           currentPosition={team.position} 
-                          previousPosition={team.previous_position} 
+                          previousPosition={team.previous_position}
+                          teamId={team.id}
                         />
                         <span className="font-bold group-hover:text-primary transition-colors">
                           {team.position}

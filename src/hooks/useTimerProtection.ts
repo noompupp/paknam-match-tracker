@@ -21,9 +21,10 @@ export const useTimerProtection = ({
 
   const showProtectionWarning = useCallback(() => {
     toast({
-      title: "Timer Active",
-      description: "Please stop the timer and player tracking before switching tabs",
+      title: "Navigation Protected",
+      description: "Timer is running or players are being tracked. Stop them before leaving.",
       variant: "destructive",
+      duration: 5000
     })
   }, [toast])
 
@@ -32,16 +33,39 @@ export const useTimerProtection = ({
       const message = "You have an active timer or player tracking. Are you sure you want to leave?"
       event.preventDefault()
       event.returnValue = message
+      
+      // Show additional toast warning
+      showProtectionWarning()
       return message
     }
-  }, [checkProtection])
+  }, [checkProtection, showProtectionWarning])
 
+  // Enhanced protection with multiple event listeners
   useEffect(() => {
     if (checkProtection()) {
+      // Standard beforeunload protection
       window.addEventListener('beforeunload', showNavigationWarning)
-      return () => window.removeEventListener('beforeunload', showNavigationWarning)
+      
+      // Additional protection for programmatic navigation
+      const handlePopState = (event: PopStateEvent) => {
+        if (checkProtection()) {
+          showProtectionWarning()
+          // Prevent navigation by pushing the current state back
+          window.history.pushState(null, '', window.location.href)
+        }
+      }
+      
+      window.addEventListener('popstate', handlePopState)
+      
+      // Push a dummy state to capture back button
+      window.history.pushState(null, '', window.location.href)
+      
+      return () => {
+        window.removeEventListener('beforeunload', showNavigationWarning)
+        window.removeEventListener('popstate', handlePopState)
+      }
     }
-  }, [checkProtection, showNavigationWarning])
+  }, [checkProtection, showNavigationWarning, showProtectionWarning])
 
   return {
     isProtected: checkProtection(),
