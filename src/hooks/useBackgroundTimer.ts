@@ -47,7 +47,7 @@ export const useBackgroundTimer = (options: UseBackgroundTimerOptions = {}) => {
     if (!isRunning) {
       setIsRunning(true)
       startBackgroundTimer()
-      onTimerStart?()
+      onTimerStart?.()
       
       if (enableNotifications) {
         toast({
