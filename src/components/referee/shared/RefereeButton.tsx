@@ -32,7 +32,7 @@ const RefereeButton = ({
       size={size}
       disabled={isDisabled}
       className={cn(
-        "referee-button transition-all duration-200",
+        "transition-all duration-200",
         "hover:scale-[1.02] active:scale-[0.98]",
         fullWidth && "w-full",
         loading && "cursor-wait",

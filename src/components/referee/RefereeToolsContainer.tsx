@@ -1,6 +1,7 @@
 
 import RefereeToolsHeader from "./components/RefereeToolsHeader";
 import RefereeMainContent from "./components/RefereeMainContent";
+import RefereePageContainer from "./shared/RefereePageContainer";
 import { useRefereeStateOrchestrator } from "./hooks/useRefereeStateOrchestrator";
 import { useRealTimeScoreSync } from "@/hooks/useRealTimeScoreSync";
 
@@ -89,16 +90,16 @@ const RefereeToolsContainer = () => {
 
   if (fixturesLoading) {
     return (
-      <div className="container mx-auto p-4">
+      <RefereePageContainer>
         <div className="flex items-center justify-center h-32">
           <p>Loading fixtures...</p>
         </div>
-      </div>
+      </RefereePageContainer>
     );
   }
 
   return (
-    <div className="container mx-auto p-4 space-y-6">
+    <RefereePageContainer>
       <RefereeToolsHeader
         fixtures={fixtures || []}
         selectedFixture={selectedFixture}
@@ -107,48 +108,50 @@ const RefereeToolsContainer = () => {
       />
 
       {selectedFixture && (
-        <RefereeMainContent
-          selectedFixtureData={selectedFixtureData}
-          homeScore={homeScore}
-          awayScore={awayScore}
-          matchTime={matchTime}
-          isRunning={isRunning}
-          formatTime={formatTime}
-          allPlayers={allPlayers}
-          homeTeamPlayers={homeTeamPlayers}
-          awayTeamPlayers={awayTeamPlayers}
-          goals={goals}
-          selectedGoalPlayer={selectedGoalPlayer}
-          selectedGoalType={selectedGoalType}
-          selectedGoalTeam={selectedGoalTeam}
-          setSelectedGoalPlayer={setSelectedGoalPlayer}
-          setSelectedGoalType={setSelectedGoalType}
-          setSelectedGoalTeam={setSelectedGoalTeam}
-          cards={cards}
-          selectedPlayer={selectedPlayer}
-          selectedTeam={selectedTeam}
-          selectedCardType={selectedCardType}
-          setSelectedPlayer={setSelectedPlayer}
-          setSelectedTeam={setSelectedTeam}
-          setSelectedCardType={setSelectedCardType}
-          trackedPlayers={trackedPlayers}
-          selectedTimePlayer={selectedTimePlayer}
-          selectedTimeTeam={selectedTimeTeam}
-          setSelectedTimePlayer={setSelectedTimePlayer}
-          setSelectedTimeTeam={setSelectedTimeTeam}
-          events={events}
-          saveAttempts={saveAttempts}
-          toggleTimer={toggleTimer}
-          resetTimer={resetTimer}
-          assignGoal={assignGoal}
-          addPlayer={handleAddPlayer}
-          removePlayer={removePlayer}
-          togglePlayerTime={handleTogglePlayerTime}
-          onSaveMatch={handleSaveMatch}
-          onResetMatch={handleResetMatch}
-        />
+        <div className="container mx-auto p-4">
+          <RefereeMainContent
+            selectedFixtureData={selectedFixtureData}
+            homeScore={homeScore}
+            awayScore={awayScore}
+            matchTime={matchTime}
+            isRunning={isRunning}
+            formatTime={formatTime}
+            allPlayers={allPlayers}
+            homeTeamPlayers={homeTeamPlayers}
+            awayTeamPlayers={awayTeamPlayers}
+            goals={goals}
+            selectedGoalPlayer={selectedGoalPlayer}
+            selectedGoalType={selectedGoalType}
+            selectedGoalTeam={selectedGoalTeam}
+            setSelectedGoalPlayer={setSelectedGoalPlayer}
+            setSelectedGoalType={setSelectedGoalType}
+            setSelectedGoalTeam={setSelectedGoalTeam}
+            cards={cards}
+            selectedPlayer={selectedPlayer}
+            selectedTeam={selectedTeam}
+            selectedCardType={selectedCardType}
+            setSelectedPlayer={setSelectedPlayer}
+            setSelectedTeam={setSelectedTeam}
+            setSelectedCardType={setSelectedCardType}
+            trackedPlayers={trackedPlayers}
+            selectedTimePlayer={selectedTimePlayer}
+            selectedTimeTeam={selectedTimeTeam}
+            setSelectedTimePlayer={setSelectedTimePlayer}
+            setSelectedTimeTeam={setSelectedTimeTeam}
+            events={events}
+            saveAttempts={saveAttempts}
+            toggleTimer={toggleTimer}
+            resetTimer={resetTimer}
+            assignGoal={assignGoal}
+            addPlayer={handleAddPlayer}
+            removePlayer={removePlayer}
+            togglePlayerTime={handleTogglePlayerTime}
+            onSaveMatch={handleSaveMatch}
+            onResetMatch={handleResetMatch}
+          />
+        </div>
       )}
-    </div>
+    </RefereePageContainer>
   );
 };
 

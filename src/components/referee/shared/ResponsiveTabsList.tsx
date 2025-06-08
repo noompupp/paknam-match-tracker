@@ -20,7 +20,7 @@ const ResponsiveTabsList = ({ tabs, className }: ResponsiveTabsListProps) => {
 
   return (
     <TabsList className={cn(
-      "referee-tabs-list",
+      "bg-muted rounded-lg",
       isMobile 
         ? "grid w-full grid-cols-2 sm:grid-cols-3 gap-1 h-auto p-1" 
         : "inline-flex h-10 p-1",
@@ -31,7 +31,7 @@ const ResponsiveTabsList = ({ tabs, className }: ResponsiveTabsListProps) => {
           key={tab.value}
           value={tab.value}
           className={cn(
-            "referee-tab-trigger relative transition-all duration-200",
+            "relative transition-all duration-200",
             isMobile 
               ? "flex-col h-12 px-2 py-1 text-xs" 
               : "flex-row h-8 px-3 py-1 text-sm",

@@ -1,5 +1,5 @@
 
-import { Target, Timer, CreditCard, Clock, BarChart3, Play } from "lucide-react";
+import { Target, Timer, CreditCard, Clock, BarChart3 } from "lucide-react";
 import ResponsiveTabsList from "../shared/ResponsiveTabsList";
 
 const ResponsiveRefereeTabsNavigation = () => {
@@ -34,7 +34,7 @@ const ResponsiveRefereeTabsNavigation = () => {
   return (
     <ResponsiveTabsList 
       tabs={tabs}
-      className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b border-border/50"
+      className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b border-border/50 mb-6"
     />
   );
 };

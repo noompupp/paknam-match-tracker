@@ -1,8 +1,7 @@
 
 import { Target, Plus } from "lucide-react";
-import RefereeCard from "../../../shared/RefereeCard";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import RefereeButton from "../../../shared/RefereeButton";
-import RefereeLayoutGrid from "../../../shared/RefereeLayoutGrid";
 
 interface SimplifiedGoalRecordingProps {
   homeTeamName: string;
@@ -18,12 +17,17 @@ const SimplifiedGoalRecording = ({
   isDisabled = false
 }: SimplifiedGoalRecordingProps) => {
   return (
-    <RefereeCard
-      title="Record Goal"
-      icon={<Target className="h-5 w-5" />}
-      subtitle="Use the wizard to record goals with full details"
-    >
-      <RefereeLayoutGrid columns={1} gap="md">
+    <Card className="transition-all duration-200 hover:shadow-md">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-lg">
+          <Target className="h-5 w-5" />
+          Record Goal
+        </CardTitle>
+        <p className="text-sm text-muted-foreground">
+          Use the wizard to record goals with full details
+        </p>
+      </CardHeader>
+      <CardContent className="space-y-4">
         <RefereeButton
           onClick={onRecordGoal}
           disabled={isDisabled}
@@ -38,8 +42,8 @@ const SimplifiedGoalRecording = ({
         <div className="text-center text-sm text-muted-foreground">
           Record goals for <span className="font-medium">{homeTeamName}</span> vs <span className="font-medium">{awayTeamName}</span>
         </div>
-      </RefereeLayoutGrid>
-    </RefereeCard>
+      </CardContent>
+    </Card>
   );
 };
 
