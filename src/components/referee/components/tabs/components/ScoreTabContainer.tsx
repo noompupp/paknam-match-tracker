@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import React, { useState } from "react";
 import GoalEntryWizard from "../../GoalEntryWizard";
 import { ComponentPlayer } from "../../../hooks/useRefereeState";
 import LiveScoreHeader from "./LiveScoreHeader";
