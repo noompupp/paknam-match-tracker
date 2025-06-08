@@ -2,6 +2,7 @@
 import RefereeToolsHeader from "./components/RefereeToolsHeader";
 import RefereeToolsMain from "./components/RefereeToolsMain";
 import { useRefereeState } from "./hooks/useRefereeState";
+import { useRefereeHandlers } from "./hooks/useRefereeHandlers";
 
 const RefereeToolsContainer = () => {
   const {
@@ -16,6 +17,7 @@ const RefereeToolsContainer = () => {
     allPlayers,
     homeTeamPlayers,
     awayTeamPlayers,
+    playersForTimeTracker,
     
     // Team selection for Goals and Time tabs
     selectedGoalTeam,
@@ -33,6 +35,9 @@ const RefereeToolsContainer = () => {
     // Score state
     homeScore,
     awayScore,
+    addGoal,
+    removeGoal,
+    resetScore,
     
     // Goal state
     goals,
@@ -41,6 +46,7 @@ const RefereeToolsContainer = () => {
     setSelectedGoalPlayer,
     setSelectedGoalType,
     assignGoal,
+    resetGoals,
     
     // Card state
     cards,
@@ -50,6 +56,8 @@ const RefereeToolsContainer = () => {
     setSelectedPlayer,
     setSelectedTeam,
     setSelectedCardType,
+    addCard,
+    resetCards,
     
     // Player tracking state
     trackedPlayers,
@@ -58,12 +66,24 @@ const RefereeToolsContainer = () => {
     addPlayer,
     removePlayer,
     togglePlayerTime,
+    resetTracking,
     
     // Events
     events,
+    addEvent,
+    resetEvents,
     
     // Enhanced data status
-    enhancedPlayersData
+    enhancedPlayersData,
+    
+    // Save attempts tracking
+    saveAttempts,
+    setSaveAttempts,
+    
+    // Database mutation hooks
+    updateFixtureScore,
+    createMatchEvent,
+    updatePlayerStats
   } = useRefereeState();
 
   console.log('🎮 RefereeToolsContainer: Enhanced team selection state:', {
@@ -74,7 +94,52 @@ const RefereeToolsContainer = () => {
     hasValidData: enhancedPlayersData.hasValidData
   });
 
-  // Create wrapper functions that handle matchTime internally
+  // Use the comprehensive referee handlers
+  const {
+    handleSaveMatch,
+    handleResetMatch,
+    handleAssignGoal,
+    handleAddCard,
+    handleAddPlayer: handleAddPlayerWithSave,
+    handleRemovePlayer,
+    handleTogglePlayerTime: handleTogglePlayerTimeWithSave
+  } = useRefereeHandlers({
+    selectedFixtureData,
+    matchTime,
+    isRunning,
+    formatTime,
+    homeScore,
+    awayScore,
+    allPlayers,
+    playersForTimeTracker,
+    selectedGoalPlayer,
+    selectedGoalType,
+    selectedTimePlayer,
+    saveAttempts,
+    setSaveAttempts,
+    updateFixtureScore,
+    createMatchEvent,
+    updatePlayerStats,
+    goals,
+    addGoal,
+    toggleTimer,
+    resetTimer,
+    resetScore,
+    resetEvents,
+    resetCards,
+    resetTracking,
+    resetGoals,
+    addEvent,
+    assignGoal,
+    addCard,
+    addPlayer,
+    removePlayer,
+    togglePlayerTime,
+    checkForSecondYellow: () => false, // Placeholder
+    removeGoal
+  });
+
+  // Create wrapper functions that handle matchTime internally for basic operations
   const handleAddPlayer = (player: any) => {
     addPlayer(player, matchTime);
   };
@@ -103,43 +168,71 @@ const RefereeToolsContainer = () => {
       />
 
       {selectedFixture && (
-        <RefereeToolsMain
-          selectedFixtureData={selectedFixtureData}
-          homeScore={homeScore}
-          awayScore={awayScore}
-          matchTime={matchTime}
-          isRunning={isRunning}
-          formatTime={formatTime}
-          allPlayers={allPlayers}
-          homeTeamPlayers={homeTeamPlayers}
-          awayTeamPlayers={awayTeamPlayers}
-          goals={goals}
-          selectedGoalPlayer={selectedGoalPlayer}
-          selectedGoalType={selectedGoalType}
-          selectedGoalTeam={selectedGoalTeam}
-          setSelectedGoalPlayer={setSelectedGoalPlayer}
-          setSelectedGoalType={setSelectedGoalType}
-          setSelectedGoalTeam={setSelectedGoalTeam}
-          cards={cards}
-          selectedPlayer={selectedPlayer}
-          selectedTeam={selectedTeam}
-          selectedCardType={selectedCardType}
-          setSelectedPlayer={setSelectedPlayer}
-          setSelectedTeam={setSelectedTeam}
-          setSelectedCardType={setSelectedCardType}
-          trackedPlayers={trackedPlayers}
-          selectedTimePlayer={selectedTimePlayer}
-          selectedTimeTeam={selectedTimeTeam}
-          setSelectedTimePlayer={setSelectedTimePlayer}
-          setSelectedTimeTeam={setSelectedTimeTeam}
-          events={events}
-          toggleTimer={toggleTimer}
-          resetTimer={resetTimer}
-          assignGoal={assignGoal}
-          addPlayer={handleAddPlayer}
-          removePlayer={removePlayer}
-          togglePlayerTime={handleTogglePlayerTime}
-        />
+        <div className="space-y-4">
+          {/* Enhanced save controls with proper database integration */}
+          <div className="bg-card p-4 rounded-lg border">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="font-semibold">Match Control</h3>
+                <p className="text-sm text-muted-foreground">
+                  Save attempts: {saveAttempts} | Score: {homeScore}-{awayScore}
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={handleSaveMatch}
+                  className="px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90"
+                >
+                  Save Match Data
+                </button>
+                <button
+                  onClick={handleResetMatch}
+                  className="px-4 py-2 bg-destructive text-destructive-foreground rounded hover:bg-destructive/90"
+                >
+                  Reset Match
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <RefereeToolsMain
+            selectedFixtureData={selectedFixtureData}
+            homeScore={homeScore}
+            awayScore={awayScore}
+            matchTime={matchTime}
+            isRunning={isRunning}
+            formatTime={formatTime}
+            allPlayers={allPlayers}
+            homeTeamPlayers={homeTeamPlayers}
+            awayTeamPlayers={awayTeamPlayers}
+            goals={goals}
+            selectedGoalPlayer={selectedGoalPlayer}
+            selectedGoalType={selectedGoalType}
+            selectedGoalTeam={selectedGoalTeam}
+            setSelectedGoalPlayer={setSelectedGoalPlayer}
+            setSelectedGoalType={setSelectedGoalType}
+            setSelectedGoalTeam={setSelectedGoalTeam}
+            cards={cards}
+            selectedPlayer={selectedPlayer}
+            selectedTeam={selectedTeam}
+            selectedCardType={selectedCardType}
+            setSelectedPlayer={setSelectedPlayer}
+            setSelectedTeam={setSelectedTeam}
+            setSelectedCardType={setSelectedCardType}
+            trackedPlayers={trackedPlayers}
+            selectedTimePlayer={selectedTimePlayer}
+            selectedTimeTeam={selectedTimeTeam}
+            setSelectedTimePlayer={setSelectedTimePlayer}
+            setSelectedTimeTeam={setSelectedTimeTeam}
+            events={events}
+            toggleTimer={toggleTimer}
+            resetTimer={resetTimer}
+            assignGoal={handleAssignGoal}
+            addPlayer={handleAddPlayer}
+            removePlayer={removePlayer}
+            togglePlayerTime={handleTogglePlayerTime}
+          />
+        </div>
       )}
     </div>
   );

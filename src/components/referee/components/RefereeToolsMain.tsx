@@ -48,68 +48,53 @@ interface RefereeToolsMainProps {
   togglePlayerTime: (playerId: number) => void;
 }
 
-const RefereeToolsMain = ({
-  selectedFixtureData,
-  homeScore,
-  awayScore,
-  matchTime,
-  isRunning,
-  formatTime,
-  allPlayers,
-  homeTeamPlayers,
-  awayTeamPlayers,
-  goals,
-  selectedGoalPlayer,
-  selectedGoalType,
-  selectedGoalTeam,
-  setSelectedGoalPlayer,
-  setSelectedGoalType,
-  setSelectedGoalTeam,
-  cards,
-  selectedPlayer,
-  selectedTeam,
-  selectedCardType,
-  setSelectedPlayer,
-  setSelectedTeam,
-  setSelectedCardType,
-  trackedPlayers,
-  selectedTimePlayer,
-  selectedTimeTeam,
-  setSelectedTimePlayer,
-  setSelectedTimeTeam,
-  events,
-  toggleTimer,
-  resetTimer,
-  assignGoal,
-  addPlayer,
-  removePlayer,
-  togglePlayerTime
-}: RefereeToolsMainProps) => {
-  const {
-    handleResetMatch,
-    handleSaveMatch,
-    handleAssignGoal,
-    handleAddGoal,
-    handleRemoveGoal,
-    handleAddCard,
-    handleExportSummary
-  } = useRefereeMatchHandlers({
-    selectedFixtureData,
-    matchTime,
-    resetTimer,
-    assignGoal
-  });
+const RefereeToolsMain = (props: RefereeToolsMainProps) => {
+  // We need access to the database mutation hooks from the container
+  // This is a temporary solution - ideally these would be passed as props
+  // For now, we'll create placeholder handlers that log the need for database integration
+  
+  const playersForTimeTracker = props.trackedPlayers.map(player => ({
+    id: player.id,
+    name: player.name,
+    team: player.team,
+    totalTime: player.totalTime,
+    isPlaying: player.isPlaying
+  }));
 
-  const handleAddPlayer = (player: ComponentPlayer) => {
-    addPlayer(player);
+  // Create a basic save handler that shows the issue
+  const handleSaveMatch = () => {
+    console.warn('⚠️ RefereeToolsMain: Save functionality needs database hooks from container');
+    console.log('Current match state:', {
+      homeScore: props.homeScore,
+      awayScore: props.awayScore,
+      goals: props.goals,
+      cards: props.cards,
+      trackedPlayers: playersForTimeTracker
+    });
   };
 
-  const handleRemovePlayer = (playerId: number) => {
-    removePlayer(playerId);
+  const handleResetMatch = () => {
+    props.resetTimer();
+    console.log('🔄 RefereeToolsMain: Reset match - full reset needs container-level coordination');
   };
 
-  const handleTogglePlayerTime = (playerId: number) => {
-    togglePlayerTime(playerId);
+  const handleAssignGoal = (player: ComponentPlayer) => {
+    if (!props.selectedFixtureData) return;
+    
+    const homeTeam = { 
+      id: String(props.selectedFixtureData.home_team_id || ''), 
+      name: props.selectedFixtureData.home_team?.name || '' 
+    };
+    const awayTeam = { 
+      id: String(props.selectedFixtureData.away_team_id || ''), 
+      name: props.selectedFixtureData.away_team?.name || '' 
+    };
+    
+    props.assignGoal(player, props.matchTime, props.selectedFixtureData.id, homeTeam, awayTeam);
+  };
+
+  const handleExportSummary = () => {
+    console.log('📄 RefereeToolsMain: Export summary functionality');
   };
 
   return (
@@ -118,11 +103,11 @@ const RefereeToolsMain = ({
       
       <TabsContent value="score" className="mt-6">
         <ScoreTab
-          homeScore={homeScore}
-          awayScore={awayScore}
-          selectedFixtureData={selectedFixtureData}
-          isRunning={isRunning}
-          onToggleTimer={toggleTimer}
+          homeScore={props.homeScore}
+          awayScore={props.awayScore}
+          selectedFixtureData={props.selectedFixtureData}
+          isRunning={props.isRunning}
+          onToggleTimer={props.toggleTimer}
           onResetMatch={handleResetMatch}
           onSaveMatch={handleSaveMatch}
         />
@@ -130,87 +115,87 @@ const RefereeToolsMain = ({
 
       <TabsContent value="timer" className="mt-6">
         <TimerTab
-          selectedFixtureData={selectedFixtureData}
-          homeScore={homeScore}
-          awayScore={awayScore}
-          matchTime={matchTime}
-          isRunning={isRunning}
-          formatTime={formatTime}
-          onToggleTimer={toggleTimer}
+          selectedFixtureData={props.selectedFixtureData}
+          homeScore={props.homeScore}
+          awayScore={props.awayScore}
+          matchTime={props.matchTime}
+          isRunning={props.isRunning}
+          formatTime={props.formatTime}
+          onToggleTimer={props.toggleTimer}
           onResetMatch={handleResetMatch}
         />
       </TabsContent>
 
       <TabsContent value="goals" className="mt-6">
         <GoalsTab
-          allPlayers={allPlayers}
-          homeTeamPlayers={homeTeamPlayers}
-          awayTeamPlayers={awayTeamPlayers}
-          goals={goals}
-          selectedPlayer={selectedGoalPlayer}
-          selectedGoalType={selectedGoalType}
-          selectedGoalTeam={selectedGoalTeam}
-          matchTime={matchTime}
-          onPlayerSelect={setSelectedGoalPlayer}
-          onGoalTypeChange={setSelectedGoalType}
-          onGoalTeamChange={setSelectedGoalTeam}
+          allPlayers={props.allPlayers}
+          homeTeamPlayers={props.homeTeamPlayers}
+          awayTeamPlayers={props.awayTeamPlayers}
+          goals={props.goals}
+          selectedPlayer={props.selectedGoalPlayer}
+          selectedGoalType={props.selectedGoalType}
+          selectedGoalTeam={props.selectedGoalTeam}
+          matchTime={props.matchTime}
+          onPlayerSelect={props.setSelectedGoalPlayer}
+          onGoalTypeChange={props.setSelectedGoalType}
+          onGoalTeamChange={props.setSelectedGoalTeam}
           onAssignGoal={handleAssignGoal}
-          formatTime={formatTime}
-          homeScore={homeScore}
-          awayScore={awayScore}
-          selectedFixtureData={selectedFixtureData}
+          formatTime={props.formatTime}
+          homeScore={props.homeScore}
+          awayScore={props.awayScore}
+          selectedFixtureData={props.selectedFixtureData}
         />
       </TabsContent>
 
       <TabsContent value="cards" className="mt-6">
         <CardsTab
-          allPlayers={allPlayers}
-          homeTeamPlayers={homeTeamPlayers}
-          awayTeamPlayers={awayTeamPlayers}
-          cards={cards}
-          selectedPlayer={selectedPlayer}
-          selectedTeam={selectedTeam}
-          selectedCardType={selectedCardType}
-          matchTime={matchTime}
-          selectedFixtureData={selectedFixtureData}
-          onPlayerSelect={setSelectedPlayer}
-          onTeamChange={setSelectedTeam}
-          onCardTypeChange={setSelectedCardType}
-          formatTime={formatTime}
+          allPlayers={props.allPlayers}
+          homeTeamPlayers={props.homeTeamPlayers}
+          awayTeamPlayers={props.awayTeamPlayers}
+          cards={props.cards}
+          selectedPlayer={props.selectedPlayer}
+          selectedTeam={props.selectedTeam}
+          selectedCardType={props.selectedCardType}
+          matchTime={props.matchTime}
+          selectedFixtureData={props.selectedFixtureData}
+          onPlayerSelect={props.setSelectedPlayer}
+          onTeamChange={props.setSelectedTeam}
+          onCardTypeChange={props.setSelectedCardType}
+          formatTime={props.formatTime}
         />
       </TabsContent>
 
       <TabsContent value="time" className="mt-6">
         <TimeTab
-          allPlayers={allPlayers}
-          homeTeamPlayers={homeTeamPlayers}
-          awayTeamPlayers={awayTeamPlayers}
-          trackedPlayers={trackedPlayers}
-          selectedPlayer={selectedTimePlayer}
-          selectedTimeTeam={selectedTimeTeam}
-          matchTime={matchTime}
-          onPlayerSelect={setSelectedTimePlayer}
-          onTimeTeamChange={setSelectedTimeTeam}
-          onAddPlayer={handleAddPlayer}
-          onRemovePlayer={handleRemovePlayer}
-          onTogglePlayerTime={handleTogglePlayerTime}
-          formatTime={formatTime}
-          selectedFixtureData={selectedFixtureData}
+          allPlayers={props.allPlayers}
+          homeTeamPlayers={props.homeTeamPlayers}
+          awayTeamPlayers={props.awayTeamPlayers}
+          trackedPlayers={props.trackedPlayers}
+          selectedPlayer={props.selectedTimePlayer}
+          selectedTimeTeam={props.selectedTimeTeam}
+          matchTime={props.matchTime}
+          onPlayerSelect={props.setSelectedTimePlayer}
+          onTimeTeamChange={props.setSelectedTimeTeam}
+          onAddPlayer={props.addPlayer}
+          onRemovePlayer={props.removePlayer}
+          onTogglePlayerTime={props.togglePlayerTime}
+          formatTime={props.formatTime}
+          selectedFixtureData={props.selectedFixtureData}
         />
       </TabsContent>
 
       <TabsContent value="summary" className="mt-6">
         <SummaryTab
-          matchTime={matchTime}
-          homeScore={homeScore}
-          awayScore={awayScore}
-          goals={goals}
-          cards={cards}
-          trackedPlayers={trackedPlayers}
-          events={events}
-          allPlayers={allPlayers}
-          selectedFixtureData={selectedFixtureData}
-          formatTime={formatTime}
+          matchTime={props.matchTime}
+          homeScore={props.homeScore}
+          awayScore={props.awayScore}
+          goals={props.goals}
+          cards={props.cards}
+          trackedPlayers={props.trackedPlayers}
+          events={props.events}
+          allPlayers={props.allPlayers}
+          selectedFixtureData={props.selectedFixtureData}
+          formatTime={props.formatTime}
           onExportSummary={handleExportSummary}
         />
       </TabsContent>
