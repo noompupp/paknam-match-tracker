@@ -50,8 +50,6 @@ const RefereeMainContent = (props: RefereeMainContentProps) => {
       {/* Enhanced save controls with proper database integration */}
       <RefereeMatchControlSection
         selectedFixtureData={props.selectedFixtureData}
-        homeScore={props.homeScore}
-        awayScore={props.awayScore}
         saveAttempts={props.saveAttempts}
         onSaveMatch={props.onSaveMatch}
         onResetMatch={props.onResetMatch}

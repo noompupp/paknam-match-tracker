@@ -28,7 +28,7 @@ export const useGlobalBatchSaveManager = ({
     getUnsavedItemsCount
   } = useMatchStore();
 
-  const transformGoalsToSaveFormat = useCallback((goals: typeof useMatchStore.getState.goals) => {
+  const transformGoalsToSaveFormat = useCallback((goals: typeof useMatchStore.getState().goals) => {
     return goals
       .filter(goal => !goal.synced)
       .map(goal => ({
@@ -40,7 +40,7 @@ export const useGlobalBatchSaveManager = ({
       }));
   }, []);
 
-  const transformCardsToSaveFormat = useCallback((cards: typeof useMatchStore.getState.cards) => {
+  const transformCardsToSaveFormat = useCallback((cards: typeof useMatchStore.getState().cards) => {
     return cards
       .filter(card => !card.synced)
       .map(card => ({
@@ -52,7 +52,7 @@ export const useGlobalBatchSaveManager = ({
       }));
   }, []);
 
-  const transformPlayerTimesToSaveFormat = useCallback((playerTimes: typeof useMatchStore.getState.playerTimes) => {
+  const transformPlayerTimesToSaveFormat = useCallback((playerTimes: typeof useMatchStore.getState().playerTimes) => {
     return playerTimes
       .filter(pt => !pt.synced)
       .map(pt => ({

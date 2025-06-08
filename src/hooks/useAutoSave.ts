@@ -15,10 +15,9 @@ export const useAutoSave = ({
   hasUnsavedChanges
 }: UseAutoSaveProps) => {
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
-  const lastSaveRef = useRef<number>(0);
 
   useEffect(() => {
-    if (!enabled) {
+    if (!enabled || !hasUnsavedChanges) {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
         intervalRef.current = null;
@@ -26,39 +25,26 @@ export const useAutoSave = ({
       return;
     }
 
+    console.log('🔄 useAutoSave: Setting up auto-save with interval:', interval);
+
     intervalRef.current = setInterval(async () => {
-      if (hasUnsavedChanges && Date.now() - lastSaveRef.current > interval) {
-        console.log('🔄 useAutoSave: Auto-save triggered');
-        try {
-          await onAutoSave();
-          lastSaveRef.current = Date.now();
-        } catch (error) {
-          console.error('❌ useAutoSave: Auto-save failed:', error);
-        }
+      console.log('⏰ useAutoSave: Auto-save triggered');
+      try {
+        await onAutoSave();
+      } catch (error) {
+        console.error('❌ useAutoSave: Auto-save failed:', error);
       }
     }, interval);
 
     return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
+        intervalRef.current = null;
       }
     };
-  }, [enabled, onAutoSave, interval, hasUnsavedChanges]);
-
-  // Manual trigger for auto-save
-  const triggerAutoSave = async () => {
-    if (hasUnsavedChanges) {
-      console.log('🔄 useAutoSave: Manual auto-save triggered');
-      try {
-        await onAutoSave();
-        lastSaveRef.current = Date.now();
-      } catch (error) {
-        console.error('❌ useAutoSave: Manual auto-save failed:', error);
-      }
-    }
-  };
+  }, [enabled, hasUnsavedChanges, onAutoSave, interval]);
 
   return {
-    triggerAutoSave
+    isAutoSaveEnabled: enabled && hasUnsavedChanges
   };
 };
