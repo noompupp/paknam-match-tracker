@@ -20,8 +20,8 @@ const MobilePortraitFixtureCard = ({ fixture, onClick, showDate = true, classNam
     }
   };
 
-  const homeTeamColor = fixture.home_team?.primary_color || "#3B82F6";
-  const awayTeamColor = fixture.away_team?.primary_color || "#EF4444";
+  const homeTeamColor = fixture.home_team?.color || "#3B82F6";
+  const awayTeamColor = fixture.away_team?.color || "#EF4444";
 
   return (
     <div 
