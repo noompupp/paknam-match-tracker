@@ -1,8 +1,8 @@
 
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Target, Users } from "lucide-react";
 import { debugPlayerDropdownData, ProcessedPlayer } from "@/utils/refereeDataProcessor";
+import { EnhancedRefereeSelect, EnhancedRefereeSelectContent, EnhancedRefereeSelectItem } from "@/components/ui/enhanced-referee-select";
 
 interface GoalAssignmentFormProps {
   allPlayers: ProcessedPlayer[];
@@ -41,15 +41,17 @@ const GoalAssignmentForm = ({
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div className="space-y-2">
         <Label htmlFor="playerSelect">Select Player</Label>
-        <Select value={selectedPlayer} onValueChange={onPlayerSelect}>
-          <SelectTrigger className="bg-white border-input relative z-50">
-            <SelectValue placeholder={playersToShow.length > 0 ? "Choose a player" : "No players available"} />
-          </SelectTrigger>
-          <SelectContent className="bg-white border border-border shadow-lg max-h-60 z-[100]">
+        <EnhancedRefereeSelect 
+          value={selectedPlayer} 
+          onValueChange={onPlayerSelect}
+          placeholder={playersToShow.length > 0 ? "Choose a player" : "No players available"}
+          disabled={playersToShow.length === 0}
+        >
+          <EnhancedRefereeSelectContent>
             {playersToShow.length === 0 ? (
-              <SelectItem value="no-players" disabled className="text-muted-foreground">
+              <EnhancedRefereeSelectItem value="no-players" disabled>
                 No players available - check fixture selection
-              </SelectItem>
+              </EnhancedRefereeSelectItem>
             ) : (
               <>
                 {homeTeamPlayers && homeTeamPlayers.length > 0 && (
@@ -58,19 +60,18 @@ const GoalAssignmentForm = ({
                       Home Team
                     </div>
                     {homeTeamPlayers.map((player) => (
-                      <SelectItem 
+                      <EnhancedRefereeSelectItem 
                         key={`home-player-${player.id}`}
                         value={player.id.toString()}
-                        className="hover:bg-accent focus:bg-accent cursor-pointer py-3"
+                        playerData={{
+                          name: player.name,
+                          team: player.team,
+                          number: player.number || '?',
+                          position: player.position
+                        }}
                       >
-                        <div className="flex items-center gap-2 py-1 w-full">
-                          <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center text-xs font-bold text-blue-600">
-                            {player.number || '?'}
-                          </div>
-                          <span className="font-medium">{player.name}</span>
-                          <span className="text-xs text-muted-foreground">({player.team})</span>
-                        </div>
-                      </SelectItem>
+                        {player.name}
+                      </EnhancedRefereeSelectItem>
                     ))}
                   </>
                 )}
@@ -81,42 +82,40 @@ const GoalAssignmentForm = ({
                       Away Team
                     </div>
                     {awayTeamPlayers.map((player) => (
-                      <SelectItem 
+                      <EnhancedRefereeSelectItem 
                         key={`away-player-${player.id}`}
                         value={player.id.toString()}
-                        className="hover:bg-accent focus:bg-accent cursor-pointer py-3"
+                        playerData={{
+                          name: player.name,
+                          team: player.team,
+                          number: player.number || '?',
+                          position: player.position
+                        }}
                       >
-                        <div className="flex items-center gap-2 py-1 w-full">
-                          <div className="w-6 h-6 bg-red-100 rounded-full flex items-center justify-center text-xs font-bold text-red-600">
-                            {player.number || '?'}
-                          </div>
-                          <span className="font-medium">{player.name}</span>
-                          <span className="text-xs text-muted-foreground">({player.team})</span>
-                        </div>
-                      </SelectItem>
+                        {player.name}
+                      </EnhancedRefereeSelectItem>
                     ))}
                   </>
                 )}
                 
                 {(!homeTeamPlayers || !awayTeamPlayers) && playersToShow.map((player) => (
-                  <SelectItem 
+                  <EnhancedRefereeSelectItem 
                     key={`player-${player.id}`}
                     value={player.id.toString()}
-                    className="hover:bg-accent focus:bg-accent cursor-pointer py-3"
+                    playerData={{
+                      name: player.name,
+                      team: player.team,
+                      number: player.number || '?',
+                      position: player.position
+                    }}
                   >
-                    <div className="flex items-center gap-2 py-1 w-full">
-                      <div className="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center text-xs font-bold text-primary">
-                        {player.number || '?'}
-                      </div>
-                      <span className="font-medium">{player.name}</span>
-                      <span className="text-xs text-muted-foreground">({player.team})</span>
-                    </div>
-                  </SelectItem>
+                    {player.name}
+                  </EnhancedRefereeSelectItem>
                 ))}
               </>
             )}
-          </SelectContent>
-        </Select>
+          </EnhancedRefereeSelectContent>
+        </EnhancedRefereeSelect>
         {playersToShow.length === 0 && (
           <p className="text-xs text-red-500 mt-1">
             ⚠️ No players found. Please ensure a fixture is selected and teams have players.
@@ -126,25 +125,26 @@ const GoalAssignmentForm = ({
 
       <div className="space-y-2">
         <Label htmlFor="goalTypeSelect">Type</Label>
-        <Select value={selectedGoalType} onValueChange={onGoalTypeChange}>
-          <SelectTrigger className="bg-white border-input relative z-50">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent className="bg-white border border-border shadow-lg z-[100]">
-            <SelectItem value="goal" className="hover:bg-accent focus:bg-accent cursor-pointer">
+        <EnhancedRefereeSelect 
+          value={selectedGoalType} 
+          onValueChange={onGoalTypeChange}
+          placeholder="Select type"
+        >
+          <EnhancedRefereeSelectContent>
+            <EnhancedRefereeSelectItem value="goal">
               <div className="flex items-center gap-2">
                 <Target className="h-4 w-4 text-green-600" />
                 Goal (Auto-updates score)
               </div>
-            </SelectItem>
-            <SelectItem value="assist" className="hover:bg-accent focus:bg-accent cursor-pointer">
+            </EnhancedRefereeSelectItem>
+            <EnhancedRefereeSelectItem value="assist">
               <div className="flex items-center gap-2">
                 <Users className="h-4 w-4 text-blue-600" />
                 Assist
               </div>
-            </SelectItem>
-          </SelectContent>
-        </Select>
+            </EnhancedRefereeSelectItem>
+          </EnhancedRefereeSelectContent>
+        </EnhancedRefereeSelect>
       </div>
     </div>
   );

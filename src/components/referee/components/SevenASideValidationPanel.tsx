@@ -32,7 +32,7 @@ const SevenASideValidationPanel = ({
   const activePlayers = trackedPlayers.filter(p => p.isPlaying)
   const sevenPlayerViolation = activePlayers.length > SEVEN_PLAYER_LIMIT
 
-  // S-Class time violations
+  // S-Class time violations - Fixed to use "role" field
   const sClassIssues = trackedPlayers
     .map(player => {
       const playerInfo = allPlayers.find(p => p.id === player.id)
@@ -52,7 +52,7 @@ const SevenASideValidationPanel = ({
     })
     .filter(Boolean)
 
-  // Starter minimum time warnings
+  // Starter minimum time warnings - Fixed to use "role" field
   const starterIssues = trackedPlayers
     .map(player => {
       const playerInfo = allPlayers.find(p => p.id === player.id)

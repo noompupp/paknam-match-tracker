@@ -2,7 +2,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, ChevronRight } from "lucide-react";
+import { ArrowRight, ChevronRight, Eye } from "lucide-react";
 import { Fixture } from "@/types/database";
 import { formatDateDisplay, formatTimeDisplay } from "@/utils/timeUtils";
 import TeamLogo from "../teams/TeamLogo";
@@ -23,9 +23,11 @@ const UpcomingFixturesCard = ({ upcomingFixtures, isLoading, onNavigateToFixture
             variant="ghost" 
             size="sm" 
             onClick={onNavigateToFixtures}
-            className="p-1 h-auto hover:bg-muted/50 transition-colors"
+            className="flex items-center gap-2 h-auto hover:bg-muted/50 transition-colors"
           >
-            <ArrowRight className="h-5 w-5 text-muted-foreground hover:text-primary transition-colors" />
+            <Eye className="h-4 w-4" />
+            <span className="text-sm">View All</span>
+            <ArrowRight className="h-4 w-4" />
           </Button>
         )}
       </CardHeader>

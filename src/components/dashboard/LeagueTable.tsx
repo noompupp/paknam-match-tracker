@@ -67,7 +67,7 @@ const LeagueTable = ({ teams, isLoading }: LeagueTableProps) => {
                     </td>
                     <td className="p-3">
                       <div className="flex items-center gap-3">
-                        <TeamLogo team={team} size="small" showColor />
+                        <TeamLogo team={team} size="small" showColor={true} />
                         <span className="font-semibold group-hover:text-primary transition-colors">
                           {team.name}
                         </span>

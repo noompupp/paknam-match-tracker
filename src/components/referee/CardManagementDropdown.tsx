@@ -3,9 +3,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Fixture } from "@/types/database";
 import { debugPlayerDropdownData, ProcessedPlayer } from "@/utils/refereeDataProcessor";
+import { EnhancedRefereeSelect, EnhancedRefereeSelectContent, EnhancedRefereeSelectItem } from "@/components/ui/enhanced-referee-select";
 
 interface CardData {
   id: number;
@@ -110,46 +110,45 @@ const CardManagementDropdown = ({
           
           <div>
             <Label htmlFor="player">Select Player</Label>
-            <Select value={selectedPlayer} onValueChange={onPlayerSelect}>
-              <SelectTrigger className="bg-white border-input relative z-50">
-                <SelectValue placeholder={
-                  !selectedTeam 
-                    ? "Select a team first" 
-                    : teamPlayers.length > 0 
-                      ? "Choose a player" 
-                      : "No players in selected team"
-                } />
-              </SelectTrigger>
-              <SelectContent className="bg-white border border-border shadow-lg z-[100] max-h-60">
+            <EnhancedRefereeSelect 
+              value={selectedPlayer} 
+              onValueChange={onPlayerSelect}
+              placeholder={
+                !selectedTeam 
+                  ? "Select a team first" 
+                  : teamPlayers.length > 0 
+                    ? "Choose a player" 
+                    : "No players in selected team"
+              }
+              disabled={!selectedTeam || teamPlayers.length === 0}
+            >
+              <EnhancedRefereeSelectContent>
                 {!selectedTeam ? (
-                  <SelectItem value="no-team" disabled className="text-muted-foreground">
+                  <EnhancedRefereeSelectItem value="no-team" disabled>
                     Please select a team first
-                  </SelectItem>
+                  </EnhancedRefereeSelectItem>
                 ) : teamPlayers.length === 0 ? (
-                  <SelectItem value="no-players" disabled className="text-muted-foreground">
+                  <EnhancedRefereeSelectItem value="no-players" disabled>
                     No players found for {selectedTeam} team
-                  </SelectItem>
+                  </EnhancedRefereeSelectItem>
                 ) : (
                   teamPlayers.map((player) => (
-                    <SelectItem 
+                    <EnhancedRefereeSelectItem 
                       key={`card-player-${player.id}`} 
                       value={player.id.toString()}
-                      className="hover:bg-accent focus:bg-accent cursor-pointer py-3"
+                      playerData={{
+                        name: player.name,
+                        team: player.team,
+                        number: player.number || '?',
+                        position: player.position
+                      }}
                     >
-                      <div className="flex items-center gap-2 w-full">
-                        <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
-                          selectedTeam === 'home' ? 'bg-blue-100 text-blue-600' : 'bg-red-100 text-red-600'
-                        }`}>
-                          {player.number || '?'}
-                        </div>
-                        <span className="font-medium">{player.name}</span>
-                        <span className="text-xs text-muted-foreground">({player.position})</span>
-                      </div>
-                    </SelectItem>
+                      {player.name}
+                    </EnhancedRefereeSelectItem>
                   ))
                 )}
-              </SelectContent>
-            </Select>
+              </EnhancedRefereeSelectContent>
+            </EnhancedRefereeSelect>
             {selectedTeam && teamPlayers.length === 0 && (
               <p className="text-xs text-red-500 mt-1">
                 ⚠️ No players found for {selectedTeam} team. Check team data.
