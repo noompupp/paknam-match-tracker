@@ -7,7 +7,6 @@ import { Clock, Timer, Save, RotateCcw, AlertCircle } from "lucide-react";
 import GoalEntryWizard from "../GoalEntryWizard";
 import TeamSelectionModal from "../TeamSelectionModal";
 import QuickGoalSelectionModal from "../QuickGoalSelectionModal";
-import QuickGoalEditWizard from "../QuickGoalEditWizard";
 import { useToast } from "@/hooks/use-toast";
 import SimplifiedQuickGoalSection from "./components/SimplifiedQuickGoalSection";
 import { useMatchStore } from "@/stores/useMatchStore";
@@ -28,6 +27,19 @@ interface ScoreTabProps {
   forceRefresh?: () => Promise<void>;
 }
 
+interface QuickGoal {
+  id: number | string;
+  event_time?: number;
+  time?: number;
+  team_id?: string;
+  teamId?: string;
+  teamName?: string;
+  team?: 'home' | 'away';
+  description?: string;
+  created_at?: string;
+  playerName?: string;
+}
+
 const ScoreTab = ({
   selectedFixtureData,
   isRunning,
@@ -44,8 +56,7 @@ const ScoreTab = ({
   const [showWizard, setShowWizard] = useState(false);
   const [showTeamSelection, setShowTeamSelection] = useState(false);
   const [showQuickGoalSelection, setShowQuickGoalSelection] = useState(false);
-  const [showQuickGoalEdit, setShowQuickGoalEdit] = useState(false);
-  const [selectedQuickGoal, setSelectedQuickGoal] = useState<any>(null);
+  const [editingGoal, setEditingGoal] = useState<QuickGoal | null>(null);
   const [isProcessingQuickGoal, setIsProcessingQuickGoal] = useState(false);
   const { toast } = useToast();
 
@@ -63,6 +74,7 @@ const ScoreTab = ({
     hasUnsavedChanges,
     setFixtureId,
     addGoal,
+    addAssist,
     addEvent,
     resetState,
     getUnassignedGoalsCount,
@@ -150,6 +162,7 @@ const ScoreTab = ({
   };
 
   const handleFullGoalEntryClick = () => {
+    setEditingGoal(null);
     setShowWizard(true);
   };
 
@@ -172,21 +185,9 @@ const ScoreTab = ({
 
   const handleQuickGoalSelected = (goal: any) => {
     console.log('🎯 ScoreTab: Quick goal selected for editing:', goal);
-    setSelectedQuickGoal(goal);
+    setEditingGoal(goal);
     setShowQuickGoalSelection(false);
-    setShowQuickGoalEdit(true);
-  };
-
-  const handleQuickGoalUpdated = (updatedGoal: any) => {
-    console.log('✅ ScoreTab: Quick goal updated:', updatedGoal);
-    
-    setShowQuickGoalEdit(false);
-    setSelectedQuickGoal(null);
-    
-    toast({
-      title: "Goal Updated!",
-      description: `Goal assigned to ${updatedGoal.player?.name}`,
-    });
+    setShowWizard(true);
   };
 
   const handleWizardGoalAssigned = (goalData: {
@@ -195,40 +196,48 @@ const ScoreTab = ({
     team: 'home' | 'away';
     isOwnGoal?: boolean;
     assistPlayer?: ComponentPlayer;
+    isEdit?: boolean;
+    originalGoalId?: string | number;
   }) => {
     console.log('🎯 ScoreTab: Goal assigned via wizard:', goalData);
     
     const teamId = goalData.team === 'home' ? homeTeamId : awayTeamId;
     const teamName = goalData.team === 'home' ? homeTeamName : awayTeamName;
 
-    // Add goal to global store
-    addGoal({
-      playerId: goalData.player.id,
-      playerName: goalData.player.name,
-      team: goalData.team,
-      teamId,
-      teamName,
-      type: goalData.goalType,
-      time: matchTime,
-      isOwnGoal: goalData.isOwnGoal
-    });
-
-    // Add assist if provided
-    if (goalData.assistPlayer && !goalData.isOwnGoal) {
+    if (goalData.isEdit) {
+      // Handle editing existing goal - this will be handled by the DetailedGoalHandler
+      console.log('✏️ ScoreTab: Edit mode detected, delegating to DetailedGoalHandler');
+    } else {
+      // Handle new goal creation - only add goal for scorer
       addGoal({
-        playerId: goalData.assistPlayer.id,
-        playerName: goalData.assistPlayer.name,
+        playerId: goalData.player.id,
+        playerName: goalData.player.name,
         team: goalData.team,
         teamId,
         teamName,
-        type: 'assist',
-        time: matchTime
+        type: 'goal',
+        time: matchTime,
+        isOwnGoal: goalData.isOwnGoal
       });
-    }
 
-    addEvent('Goal Assignment', `${goalData.goalType} assigned to ${goalData.player.name}`, matchTime);
+      // Add assist separately (without incrementing score)
+      if (goalData.assistPlayer && !goalData.isOwnGoal) {
+        addAssist({
+          playerId: goalData.assistPlayer.id,
+          playerName: goalData.assistPlayer.name,
+          team: goalData.team,
+          teamId,
+          teamName,
+          type: 'assist',
+          time: matchTime
+        });
+      }
+
+      addEvent('Goal Assignment', `Goal assigned to ${goalData.player.name}`, matchTime);
+    }
     
     setShowWizard(false);
+    setEditingGoal(null);
   };
 
   // Enhanced save handler using global batch save
@@ -255,26 +264,6 @@ const ScoreTab = ({
     }
   };
 
-  if (showQuickGoalEdit && selectedQuickGoal) {
-    return (
-      <div className="space-y-6">
-        <QuickGoalEditWizard
-          quickGoal={selectedQuickGoal}
-          homeTeamPlayers={homeTeamPlayers}
-          awayTeamPlayers={awayTeamPlayers}
-          formatTime={formatTime}
-          onGoalUpdated={handleQuickGoalUpdated}
-          onCancel={() => {
-            setShowQuickGoalEdit(false);
-            setSelectedQuickGoal(null);
-          }}
-          homeTeamName={homeTeamName}
-          awayTeamName={awayTeamName}
-        />
-      </div>
-    );
-  }
-
   if (showWizard) {
     return (
       <div className="space-y-6">
@@ -285,7 +274,11 @@ const ScoreTab = ({
           matchTime={matchTime}
           formatTime={formatTime}
           onGoalAssigned={handleWizardGoalAssigned}
-          onCancel={() => setShowWizard(false)}
+          onCancel={() => {
+            setShowWizard(false);
+            setEditingGoal(null);
+          }}
+          editingGoal={editingGoal || undefined}
         />
       </div>
     );

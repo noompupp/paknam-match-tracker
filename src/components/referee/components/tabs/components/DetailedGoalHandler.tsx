@@ -71,7 +71,7 @@ export const useDetailedGoalHandler = ({
           description: `Goal assigned to ${goalData.player.name}`,
         });
 
-        // Handle assist player if provided and not an own goal - CRITICAL FIX: Don't call onAssignGoal for assists
+        // Handle assist player if provided and not an own goal - DON'T call onAssignGoal for assists
         if (goalData.assistPlayer && !goalData.isOwnGoal) {
           console.log('🎯 DetailedGoalHandler: Recording assist (without incrementing score):', goalData.assistPlayer);
           
@@ -90,11 +90,11 @@ export const useDetailedGoalHandler = ({
           }
         }
       } else {
-        // Handle new goal creation - CRITICAL FIX: Only call onAssignGoal for the goal scorer
+        // Handle new goal creation - ONLY call onAssignGoal for the goal scorer
         console.log('🆕 DetailedGoalHandler: Creating new goal for scorer only');
         onAssignGoal(goalData.player);
 
-        // Handle assist player if provided and not an own goal - CRITICAL FIX: Don't call onAssignGoal for assists
+        // Handle assist player if provided and not an own goal - DON'T call onAssignGoal for assists
         if (goalData.assistPlayer && !goalData.isOwnGoal) {
           console.log('🎯 DetailedGoalHandler: Recording assist (without incrementing score):', goalData.assistPlayer);
           

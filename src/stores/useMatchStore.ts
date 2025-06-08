@@ -1,4 +1,3 @@
-
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 
@@ -71,6 +70,7 @@ interface MatchState {
   // Actions
   setFixtureId: (id: number | null) => void;
   addGoal: (goal: Omit<MatchGoal, 'id' | 'timestamp' | 'synced'>) => void;
+  addAssist: (assist: Omit<MatchGoal, 'id' | 'timestamp' | 'synced'>) => void;
   updateGoal: (goalId: string, updates: Partial<MatchGoal>) => void;
   removeGoal: (goalId: string) => void;
   addCard: (card: Omit<MatchCard, 'id' | 'timestamp' | 'synced'>) => void;
@@ -130,8 +130,9 @@ export const useMatchStore = create<MatchState>()(
       };
 
       set((state) => {
-        const newHomeScore = goalData.team === 'home' ? state.homeScore + 1 : state.homeScore;
-        const newAwayScore = goalData.team === 'away' ? state.awayScore + 1 : state.awayScore;
+        // Only increment score for actual goals, not assists
+        const newHomeScore = goalData.team === 'home' && goalData.type === 'goal' ? state.homeScore + 1 : state.homeScore;
+        const newAwayScore = goalData.team === 'away' && goalData.type === 'goal' ? state.awayScore + 1 : state.awayScore;
         
         const updatedState = {
           goals: [...state.goals, newGoal],
@@ -152,6 +153,33 @@ export const useMatchStore = create<MatchState>()(
       return newGoal;
     },
 
+    addAssist: (assistData) => {
+      const newAssist: MatchGoal = {
+        ...assistData,
+        type: 'assist',
+        id: generateId(),
+        timestamp: Date.now(),
+        synced: false
+      };
+
+      set((state) => {
+        const updatedState = {
+          goals: [...state.goals, newAssist],
+          hasUnsavedChanges: true
+          // NOTE: No score increment for assists
+        };
+
+        console.log('🏪 MatchStore: Assist added (no score change):', {
+          assist: newAssist,
+          totalGoalsAndAssists: updatedState.goals.length
+        });
+
+        return updatedState;
+      });
+
+      return newAssist;
+    },
+
     updateGoal: (goalId, updates) => {
       set((state) => ({
         goals: state.goals.map(goal => 
@@ -168,8 +196,9 @@ export const useMatchStore = create<MatchState>()(
         const goalToRemove = state.goals.find(g => g.id === goalId);
         if (!goalToRemove) return state;
 
-        const newHomeScore = goalToRemove.team === 'home' ? state.homeScore - 1 : state.homeScore;
-        const newAwayScore = goalToRemove.team === 'away' ? state.awayScore - 1 : state.awayScore;
+        // Only decrement score if it's an actual goal, not an assist
+        const newHomeScore = goalToRemove.team === 'home' && goalToRemove.type === 'goal' ? state.homeScore - 1 : state.homeScore;
+        const newAwayScore = goalToRemove.team === 'away' && goalToRemove.type === 'goal' ? state.awayScore - 1 : state.awayScore;
 
         return {
           goals: state.goals.filter(g => g.id !== goalId),

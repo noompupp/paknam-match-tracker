@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import GoalEntryWizard from "../../GoalEntryWizard";
 import { ComponentPlayer } from "../../../hooks/useRefereeState";
@@ -82,7 +83,7 @@ const ScoreTabContainer = ({
     setShowDetailedEntry(true);
   };
 
-  // Fixed handler for adding details to unassigned goals
+  // Fixed handler for adding details to unassigned goals - now uses full Goal Entry Wizard
   const handleAddDetailsToGoals = () => {
     console.log('📝 ScoreTabContainer: Add details to goals requested');
     
@@ -169,7 +170,7 @@ const ScoreTabContainer = ({
         isProcessingQuickGoal={isProcessingQuickGoal}
         onQuickGoal={() => handleQuickGoal('home')} // Default to home team for quick goal
         onFullGoalEntry={handleFullGoalEntry}
-        onAddDetailsToGoals={handleAddDetailsToGoals} // Fixed prop name
+        onAddDetailsToGoals={handleAddDetailsToGoals}
       />
 
       <GoalsSummary goals={goals} formatTime={formatTime} />
