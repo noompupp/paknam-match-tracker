@@ -1,6 +1,5 @@
 
 import { useState, useEffect } from "react"
-import { TrendingUp, TrendingDown, Minus } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface RealTimeRankIndicatorProps {
@@ -39,7 +38,7 @@ const RealTimeRankIndicator = ({
   if (!previousPosition || previousPosition === currentPosition) {
     return (
       <div className={cn("flex items-center justify-center w-5 h-5", className)}>
-        <Minus className="h-3 w-3 text-muted-foreground opacity-50" />
+        <span className="text-muted-foreground opacity-50 text-sm">➖</span>
       </div>
     )
   }
@@ -62,16 +61,16 @@ const RealTimeRankIndicator = ({
       title={`${isMovingUp ? 'Up' : 'Down'} ${positions} position${positions > 1 ? 's' : ''} (${previousPosition} → ${currentPosition})`}
     >
       {isMovingUp && (
-        <TrendingUp className={cn(
-          "h-3 w-3 transition-transform duration-300",
+        <span className={cn(
+          "text-sm transition-transform duration-300",
           isAnimating && "animate-bounce"
-        )} />
+        )}>🔺</span>
       )}
       {isMovingDown && (
-        <TrendingDown className={cn(
-          "h-3 w-3 transition-transform duration-300",
+        <span className={cn(
+          "text-sm transition-transform duration-300",
           isAnimating && "animate-pulse"
-        )} />
+        )}>🔻</span>
       )}
     </div>
   )

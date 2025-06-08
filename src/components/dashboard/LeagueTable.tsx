@@ -2,6 +2,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Team } from "@/types/database";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { generateTeamAbbreviation } from "@/utils/teamAbbreviations";
 import TeamLogo from "../teams/TeamLogo";
 import RealTimeRankIndicator from "./RealTimeRankIndicator";
 
@@ -11,6 +13,8 @@ interface LeagueTableProps {
 }
 
 const LeagueTable = ({ teams, isLoading }: LeagueTableProps) => {
+  const isMobile = useIsMobile();
+
   return (
     <Card className="card-shadow-lg animate-fade-in">
       <CardHeader>
@@ -69,7 +73,7 @@ const LeagueTable = ({ teams, isLoading }: LeagueTableProps) => {
                       <div className="flex items-center gap-3">
                         <TeamLogo team={team} size="small" showColor={true} />
                         <span className="font-semibold group-hover:text-primary transition-colors">
-                          {team.name}
+                          {isMobile ? generateTeamAbbreviation(team.name) : team.name}
                         </span>
                       </div>
                     </td>
