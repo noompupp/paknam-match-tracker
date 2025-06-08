@@ -41,6 +41,7 @@ const TrackedPlayersList = ({
               formatTime={formatTime}
               onTogglePlayerTime={onTogglePlayerTime}
               onRemovePlayer={onRemovePlayer}
+              trackedPlayers={trackedPlayers}
             />
           );
         })}

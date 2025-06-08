@@ -5,6 +5,7 @@ import { UserMinus } from "lucide-react";
 import { PlayerTime } from "@/types/database";
 import { ProcessedPlayer } from "@/utils/refereeDataProcessor";
 import PlayerRoleBadge from "@/components/ui/player-role-badge";
+import { canRemovePlayer } from "./playerValidationUtils";
 
 interface TrackedPlayerCardProps {
   player: PlayerTime;
@@ -12,6 +13,7 @@ interface TrackedPlayerCardProps {
   formatTime: (seconds: number) => string;
   onTogglePlayerTime: (playerId: number) => void;
   onRemovePlayer: (playerId: number) => void;
+  trackedPlayers?: PlayerTime[]; // Added for validation
 }
 
 const TrackedPlayerCard = ({
@@ -19,19 +21,23 @@ const TrackedPlayerCard = ({
   playerInfo,
   formatTime,
   onTogglePlayerTime,
-  onRemovePlayer
+  onRemovePlayer,
+  trackedPlayers = []
 }: TrackedPlayerCardProps) => {
   const role = playerInfo?.role || 'Starter';
+  
+  // Check if player can be removed
+  const removal = canRemovePlayer(player.id, trackedPlayers);
   
   console.log('👤 Rendering tracked player:', {
     name: player.name,
     role,
-    playerInfo: !!playerInfo
+    canRemove: removal.canRemove,
+    isPlaying: player.isPlaying
   });
 
   return (
     <div className="p-2 sm:p-3 rounded-md border bg-card hover:shadow-sm transition-shadow">
-      {/* Ultra-compact single row layout */}
       <div className="flex items-center gap-2 sm:gap-3">
         
         {/* Compact player number */}
@@ -77,10 +83,10 @@ const TrackedPlayerCard = ({
             className="h-7 px-2 text-xs"
           >
             <span className="hidden sm:inline">
-              {player.isPlaying ? "Out" : "In"}
+              {player.isPlaying ? "Sub Out" : "Sub In"}
             </span>
             <span className="sm:hidden">
-              {player.isPlaying ? "−" : "+"}
+              {player.isPlaying ? "Out" : "In"}
             </span>
           </Button>
           <Button
@@ -88,19 +94,26 @@ const TrackedPlayerCard = ({
             variant="outline"
             onClick={() => onRemovePlayer(player.id)}
             className="h-7 w-7 p-0"
+            disabled={!removal.canRemove}
+            title={!removal.canRemove ? removal.reason : 'Remove player from squad'}
           >
             <UserMinus className="h-3 w-3" />
           </Button>
         </div>
       </div>
 
-      {/* Mobile role constraints - only show when space is critical */}
+      {/* Mobile role constraints and removal warnings */}
       <div className="sm:hidden mt-1">
         <p className="text-xs text-muted-foreground leading-none">
           {role === 'S-class' && 'Max 20min per half'}
           {role === 'Starter' && 'Min 10min total'}
           {role === 'Captain' && 'No time limits'}
         </p>
+        {!removal.canRemove && (
+          <p className="text-xs text-red-500 mt-1 leading-none">
+            {removal.reason}
+          </p>
+        )}
       </div>
     </div>
   );

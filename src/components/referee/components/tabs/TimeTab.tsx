@@ -1,7 +1,7 @@
 
-import PlayerTimeTracker from "../../PlayerTimeTracker";
-import RoleBasedTimerNotifications from "../RoleBasedTimerNotifications";
 import { ComponentPlayer } from "../../hooks/useRefereeState";
+import EnhancedPlayerTimeTracker from "../playerTimeTracker/EnhancedPlayerTimeTracker";
+import RoleBasedTimerNotifications from "../RoleBasedTimerNotifications";
 
 interface TimeTabProps {
   allPlayers: ComponentPlayer[];
@@ -32,10 +32,6 @@ const TimeTab = ({
   homeTeamPlayers,
   awayTeamPlayers,
   trackedPlayers,
-  selectedPlayer,
-  selectedTimeTeam,
-  onPlayerSelect,
-  onTimeTeamChange,
   onAddPlayer,
   onRemovePlayer,
   onTogglePlayerTime,
@@ -44,50 +40,16 @@ const TimeTab = ({
   selectedFixtureData,
   getRoleBasedNotifications
 }: TimeTabProps) => {
-  const handleAddPlayer = () => {
-    if (!selectedPlayer || !selectedTimeTeam) return;
-    
-    // Get filtered players based on selected team
-    const getFilteredPlayers = () => {
-      if (selectedTimeTeam === 'home' && homeTeamPlayers) {
-        return homeTeamPlayers;
-      } else if (selectedTimeTeam === 'away' && awayTeamPlayers) {
-        return awayTeamPlayers;
-      }
-      return [];
-    };
-    
-    const filteredPlayers = getFilteredPlayers();
-    const player = filteredPlayers.find(p => p.id.toString() === selectedPlayer);
-    
-    if (!player) {
-      console.warn('Player not found in filtered list:', selectedPlayer);
-      return;
-    }
-    
-    console.log('⏱️ TimeTab: Adding player to time tracking (Role-Based):', {
-      player: player.name,
-      team: player.team,
-      selectedTeam: selectedTimeTeam,
-      role: player.role, // Use role field instead of position
-      source: 'team-filtered'
-    });
-    
-    onAddPlayer(player);
-  };
-
   // Get role-based notifications using role field
   const roleNotifications = getRoleBasedNotifications 
     ? getRoleBasedNotifications(allPlayers, matchTime)
     : [];
 
-  console.log('📋 TimeTab: Role-based notifications:', {
-    count: roleNotifications.length,
-    notifications: roleNotifications.map(n => ({
-      player: n.playerName,
-      role: n.role,
-      type: n.type
-    }))
+  console.log('📋 TimeTab: Enhanced timer with new workflows:', {
+    homePlayersCount: homeTeamPlayers?.length || 0,
+    awayPlayersCount: awayTeamPlayers?.length || 0,
+    trackedPlayersCount: trackedPlayers.length,
+    roleNotificationsCount: roleNotifications.length
   });
 
   return (
@@ -98,17 +60,13 @@ const TimeTab = ({
         formatTime={formatTime}
       />
 
-      {/* Player Time Tracker */}
-      <PlayerTimeTracker
+      {/* Enhanced Player Time Tracker with new workflows */}
+      <EnhancedPlayerTimeTracker
         allPlayers={allPlayers}
         homeTeamPlayers={homeTeamPlayers}
         awayTeamPlayers={awayTeamPlayers}
         trackedPlayers={trackedPlayers}
-        selectedPlayer={selectedPlayer}
-        selectedTimeTeam={selectedTimeTeam}
-        onPlayerSelect={onPlayerSelect}
-        onTimeTeamChange={onTimeTeamChange}
-        onAddPlayer={handleAddPlayer}
+        onAddPlayer={onAddPlayer}
         onRemovePlayer={onRemovePlayer}
         onTogglePlayerTime={onTogglePlayerTime}
         formatTime={formatTime}
