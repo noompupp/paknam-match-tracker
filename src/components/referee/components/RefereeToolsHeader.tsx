@@ -7,8 +7,8 @@ import RefereeFormField, { RefereeSelect } from "../shared/RefereeFormField";
 
 interface RefereeToolsHeaderProps {
   fixtures: any[];
-  selectedFixture: number | null;
-  onFixtureChange: (fixtureId: number) => void;
+  selectedFixture: string;
+  onFixtureChange: (fixtureId: string) => void;
   enhancedPlayersData: {
     hasValidData: boolean;
     dataIssues: string[];
@@ -27,10 +27,10 @@ const RefereeToolsHeader = ({
     disabled: false
   }));
 
-  const selectedFixtureData = fixtures.find(f => f.id === selectedFixture);
+  const selectedFixtureData = fixtures.find(f => f.id.toString() === selectedFixture);
 
   const handleFixtureChange = (value: string) => {
-    onFixtureChange(Number(value));
+    onFixtureChange(value);
   };
 
   return (
@@ -47,7 +47,7 @@ const RefereeToolsHeader = ({
         >
           <RefereeSelect
             placeholder="Choose a fixture..."
-            value={selectedFixture ? String(selectedFixture) : ""}
+            value={selectedFixture}
             onValueChange={handleFixtureChange}
             options={fixtureOptions}
           />
