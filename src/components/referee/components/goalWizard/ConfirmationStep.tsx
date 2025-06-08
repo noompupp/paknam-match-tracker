@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Check } from "lucide-react";
 import { BaseStepProps } from "./types";
 
-interface ConfirmationStepProps extends Pick<BaseStepProps, 'selectedFixtureData' | 'wizardData'> & {
+interface ConfirmationStepProps extends Pick<BaseStepProps, 'selectedFixtureData' | 'wizardData'> {
   matchTime: number;
   formatTime: (seconds: number) => string;
   onConfirm: () => void;
