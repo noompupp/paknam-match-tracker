@@ -1,7 +1,7 @@
 
 import RefereeToolsHeader from "./components/RefereeToolsHeader";
 import RefereeMainContent from "./components/RefereeMainContent";
-import { useRefereeContainerState } from "./hooks/useRefereeContainerState";
+import { useRefereeStateOrchestrator } from "./hooks/useRefereeStateOrchestrator";
 import { useRealTimeScoreSync } from "@/hooks/useRealTimeScoreSync";
 
 const RefereeToolsContainer = () => {
@@ -76,7 +76,7 @@ const RefereeToolsContainer = () => {
     assignGoal,
     removePlayer,
     addPlayer
-  } = useRefereeContainerState();
+  } = useRefereeStateOrchestrator();
 
   console.log('🎮 RefereeToolsContainer: Enhanced team selection state with real-time scores:', {
     selectedGoalTeam,
