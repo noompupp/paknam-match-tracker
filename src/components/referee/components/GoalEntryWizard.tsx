@@ -23,8 +23,10 @@ interface GoalEntryWizardProps {
     goalType: 'goal' | 'assist';
     team: 'home' | 'away';
     isOwnGoal?: boolean;
+    assistPlayer?: ComponentPlayer;
   }) => void;
   onCancel: () => void;
+  initialTeam?: 'home' | 'away';
 }
 
 const GoalEntryWizard = ({
@@ -34,11 +36,12 @@ const GoalEntryWizard = ({
   matchTime,
   formatTime,
   onGoalAssigned,
-  onCancel
+  onCancel,
+  initialTeam
 }: GoalEntryWizardProps) => {
-  const [currentStep, setCurrentStep] = useState<WizardStep>('team');
+  const [currentStep, setCurrentStep] = useState<WizardStep>(initialTeam ? 'player' : 'team');
   const [wizardData, setWizardData] = useState<GoalWizardData>({
-    selectedTeam: null,
+    selectedTeam: initialTeam || null,
     selectedPlayer: null,
     isOwnGoal: false,
     needsAssist: false,
@@ -73,7 +76,11 @@ const GoalEntryWizard = ({
   const handleBack = () => {
     switch (currentStep) {
       case 'player':
-        setCurrentStep('team');
+        if (initialTeam) {
+          onCancel(); // Can't go back if we started with a team
+        } else {
+          setCurrentStep('team');
+        }
         break;
       case 'goal-type':
         setCurrentStep('player');
@@ -94,27 +101,17 @@ const GoalEntryWizard = ({
   const handleConfirm = () => {
     if (!wizardData.selectedPlayer || !wizardData.selectedTeam) return;
 
-    // First assign the goal
+    // Single goal assignment call - this fixes the duplicate issue
     onGoalAssigned({
       player: wizardData.selectedPlayer,
       goalType: 'goal',
       team: wizardData.selectedTeam,
-      isOwnGoal: wizardData.isOwnGoal
+      isOwnGoal: wizardData.isOwnGoal,
+      assistPlayer: wizardData.assistPlayer || undefined
     });
-
-    // Then assign the assist if applicable
-    if (wizardData.assistPlayer && !wizardData.isOwnGoal && wizardData.selectedTeam) {
-      setTimeout(() => {
-        onGoalAssigned({
-          player: wizardData.assistPlayer!,
-          goalType: 'assist',
-          team: wizardData.selectedTeam!
-        });
-      }, 100);
-    }
   };
 
-  const canGoBack = currentStep !== 'team';
+  const canGoBack = currentStep !== 'team' && !initialTeam;
 
   const renderCurrentStep = () => {
     switch (currentStep) {

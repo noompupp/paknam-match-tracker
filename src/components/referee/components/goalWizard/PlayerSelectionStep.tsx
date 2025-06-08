@@ -1,7 +1,7 @@
 
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { BaseStepProps, GoalWizardData } from "./types";
+import { Users } from "lucide-react";
+import { BaseStepProps } from "./types";
 import { ComponentPlayer } from "../../hooks/useRefereeState";
 
 interface PlayerSelectionStepProps extends Pick<BaseStepProps, 'selectedFixtureData' | 'homeTeamPlayers' | 'awayTeamPlayers' | 'wizardData' | 'onDataChange' | 'onNext'> {}
@@ -22,88 +22,72 @@ const PlayerSelectionStep = ({
     return [];
   };
 
-  const getOpposingTeamPlayers = () => {
-    if (selectedTeam === 'home') return awayTeamPlayers || [];
-    if (selectedTeam === 'away') return homeTeamPlayers || [];
-    return [];
-  };
-
   const getTeamName = (team: 'home' | 'away') => {
     if (team === 'home') return selectedFixtureData?.home_team?.name || 'Home Team';
     return selectedFixtureData?.away_team?.name || 'Away Team';
   };
 
   const handlePlayerSelect = (player: ComponentPlayer) => {
-    if (selectedTeam) {
-      const playerTeam = player.team;
-      const scoringTeamName = getTeamName(selectedTeam);
-      const isOwnGoalScenario = playerTeam !== scoringTeamName;
-      
-      onDataChange({
-        selectedPlayer: player,
-        isOwnGoal: isOwnGoalScenario
-      });
-      onNext();
-    }
+    // Determine if this is an own goal based on player's team vs selected team
+    const playerTeam = player.team;
+    const scoringTeam = getTeamName(selectedTeam!);
+    const isOwnGoal = playerTeam !== scoringTeam;
+
+    onDataChange({ 
+      selectedPlayer: player,
+      isOwnGoal
+    });
+    onNext();
   };
 
   if (!selectedTeam) return null;
 
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-semibold">
-        Who scored for {getTeamName(selectedTeam)}?
-      </h3>
-      <p className="text-sm text-muted-foreground">
-        Tip: You can also select a player from the opposing team if it was an own goal
-      </p>
+      <h3 className="text-lg font-semibold">Select goal scorer from {getTeamName(selectedTeam)}</h3>
+      <div className="grid grid-cols-1 gap-2 max-h-60 overflow-y-auto">
+        {getTeamPlayers().map((player) => (
+          <Button
+            key={`player-${player.id}`}
+            onClick={() => handlePlayerSelect(player)}
+            variant="outline"
+            className="justify-start h-auto p-3"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-xs font-bold text-blue-700">
+                {player.number || '?'}
+              </div>
+              <div className="text-left">
+                <div className="font-medium">{player.name}</div>
+                <div className="text-sm text-muted-foreground">{player.team}</div>
+              </div>
+            </div>
+          </Button>
+        ))}
+      </div>
       
-      <div className="space-y-3">
-        <div>
-          <h4 className="font-medium mb-2">{getTeamName(selectedTeam)} Players</h4>
-          <div className="grid grid-cols-1 gap-2 max-h-40 overflow-y-auto">
-            {getTeamPlayers().map((player) => (
-              <Button
-                key={`team-${player.id}`}
-                onClick={() => handlePlayerSelect(player)}
-                variant="outline"
-                className="justify-start h-auto p-3"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center text-xs font-bold">
-                    {player.number || '?'}
-                  </div>
-                  <span>{player.name}</span>
+      {/* Show all players option */}
+      <div className="border-t pt-4">
+        <h4 className="text-sm font-medium mb-2 text-muted-foreground">Or select from any team (for own goals):</h4>
+        <div className="grid grid-cols-1 gap-2 max-h-40 overflow-y-auto">
+          {[...(homeTeamPlayers || []), ...(awayTeamPlayers || [])]
+            .filter(player => !getTeamPlayers().some(p => p.id === player.id))
+            .map((player) => (
+            <Button
+              key={`all-player-${player.id}`}
+              onClick={() => handlePlayerSelect(player)}
+              variant="ghost"
+              className="justify-start h-auto p-2 text-sm"
+            >
+              <div className="flex items-center gap-2">
+                <Users className="h-4 w-4" />
+                <div className="text-left">
+                  <span className="font-medium">{player.name}</span>
+                  <span className="text-muted-foreground ml-2">({player.team})</span>
                 </div>
-              </Button>
-            ))}
-          </div>
-        </div>
-
-        <div>
-          <h4 className="font-medium mb-2 text-muted-foreground">
-            {selectedTeam === 'home' ? getTeamName('away') : getTeamName('home')} Players (Own Goal)
-          </h4>
-          <div className="grid grid-cols-1 gap-2 max-h-32 overflow-y-auto">
-            {getOpposingTeamPlayers().map((player) => (
-              <Button
-                key={`opposing-${player.id}`}
-                onClick={() => handlePlayerSelect(player)}
-                variant="outline"
-                className="justify-start h-auto p-3 border-orange-200 hover:border-orange-300"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center text-xs font-bold text-orange-700">
-                    {player.number || '?'}
-                  </div>
-                  <span className="text-orange-700">{player.name}</span>
-                  <Badge variant="outline" className="ml-auto text-orange-600 border-orange-300">
-                    Own Goal
-                  </Badge>
-                </div>
-              </Button>
-            ))}
-          </div>
+              </div>
+            </Button>
+          ))}
         </div>
       </div>
     </div>

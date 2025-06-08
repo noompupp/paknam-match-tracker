@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import RefereeTabsNavigation from "./RefereeTabsNavigation";
@@ -63,6 +64,7 @@ const RefereeToolsMain = (props: RefereeToolsMainProps) => {
     goalType: 'goal' | 'assist';
     team: 'home' | 'away';
     isOwnGoal?: boolean;
+    assistPlayer?: ComponentPlayer;
   }) => {
     if (!props.selectedFixtureData) return;
     
@@ -75,7 +77,20 @@ const RefereeToolsMain = (props: RefereeToolsMainProps) => {
       name: props.selectedFixtureData.away_team?.name || '' 
     };
     
+    // Handle the main goal assignment
     props.assignGoal(goalData.player, props.matchTime, props.selectedFixtureData.id, homeTeam, awayTeam);
+    
+    // Handle assist if present
+    if (goalData.assistPlayer && !goalData.isOwnGoal) {
+      // Set goal type to assist temporarily
+      props.setSelectedGoalType('assist');
+      setTimeout(() => {
+        props.assignGoal(goalData.assistPlayer!, props.matchTime, props.selectedFixtureData.id, homeTeam, awayTeam);
+        // Reset back to goal type
+        props.setSelectedGoalType('goal');
+      }, 200);
+    }
+    
     setShowGoalWizard(false);
     setGoalWizardInitialTeam(undefined);
   };
@@ -92,7 +107,6 @@ const RefereeToolsMain = (props: RefereeToolsMainProps) => {
     isPlaying: player.isPlaying
   }));
 
-  // Create a basic save handler that shows the issue
   const handleSaveMatch = () => {
     console.warn('⚠️ RefereeToolsMain: Save functionality needs database hooks from container');
     console.log('Current match state:', {
@@ -144,6 +158,7 @@ const RefereeToolsMain = (props: RefereeToolsMainProps) => {
               setShowGoalWizard(false);
               setGoalWizardInitialTeam(undefined);
             }}
+            initialTeam={goalWizardInitialTeam}
           />
         </div>
         
