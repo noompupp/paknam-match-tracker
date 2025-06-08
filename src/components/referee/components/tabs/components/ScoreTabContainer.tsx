@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import GoalEntryWizard from "../../GoalEntryWizard";
 import { ComponentPlayer } from "../../../hooks/useRefereeState";
 import LiveScoreHeader from "./LiveScoreHeader";
@@ -64,55 +64,97 @@ const ScoreTabContainer = ({
   const homeTeamName = selectedFixtureData?.home_team?.name || 'Home Team';
   const awayTeamName = selectedFixtureData?.away_team?.name || 'Away Team';
 
-  // Get goals from global store for real-time updates
-  const { goals: storeGoals, getUnassignedGoalsCount } = useMatchStore();
+  // Enhanced real-time store integration
+  const { goals: storeGoals, getUnassignedGoalsCount, lastUpdated, triggerUIUpdate } = useMatchStore();
 
-  // Enhanced goal merging with real-time priority
+  // Enhanced goal merging with real-time priority and auto-refresh
   const mergedGoals = React.useMemo(() => {
-    console.log('🔄 ScoreTabContainer: Enhanced goal merging - Store:', storeGoals.length, 'Props:', goals.length);
+    console.log('🔄 ScoreTabContainer: Enhanced goal merging with auto-refresh:', {
+      storeGoals: storeGoals.length,
+      propsGoals: goals.length,
+      lastUpdated
+    });
     
     // Always prioritize store goals for real-time updates
     if (storeGoals.length > 0) {
-      console.log('✅ ScoreTabContainer: Using store goals for real-time display');
+      console.log('✅ ScoreTabContainer: Using store goals for enhanced real-time display');
       return storeGoals;
     }
     
     // Fall back to props goals if store is empty (initial load)
     console.log('📥 ScoreTabContainer: Using props goals as fallback');
     return goals;
-  }, [storeGoals, goals]);
+  }, [storeGoals, goals, lastUpdated]);
+
+  // Enhanced unassigned goals detection with real-time updates
+  const unassignedGoals = React.useMemo(() => {
+    const unassigned = mergedGoals.filter(goal => 
+      goal.playerName === 'Quick Goal' || 
+      goal.playerName === 'Unknown Player' ||
+      (!goal.playerId && goal.type === 'goal')
+    );
+    
+    console.log('📊 ScoreTabContainer: Enhanced real-time unassigned goals:', {
+      count: unassigned.length,
+      goals: unassigned.map(g => ({ id: g.id, playerName: g.playerName })),
+      lastUpdated
+    });
+    
+    return unassigned;
+  }, [mergedGoals, lastUpdated]);
+
+  // Auto-refresh effect when lastUpdated changes
+  useEffect(() => {
+    console.log('🔄 ScoreTabContainer: Auto-refresh triggered by lastUpdated:', lastUpdated);
+  }, [lastUpdated]);
 
   // Quick goal handling
   const { isProcessingQuickGoal, handleQuickGoal } = useQuickGoalHandler({
     selectedFixtureData,
     matchTime,
     formatTime,
-    forceRefresh,
+    forceRefresh: async () => {
+      console.log('🔄 ScoreTabContainer: Enhanced force refresh with comprehensive sync');
+      
+      // Enhanced refresh with real-time sync
+      if (selectedFixtureData?.id) {
+        await realTimeDataSync.forceGoalResync(selectedFixtureData.id);
+      }
+      
+      // Trigger original force refresh
+      if (forceRefresh) {
+        await forceRefresh();
+      }
+      
+      // Additional UI update trigger
+      triggerUIUpdate();
+    },
     onSaveMatch
   });
 
-  // Enhanced detailed goal handling with real-time sync
+  // Enhanced detailed goal handling with comprehensive real-time sync
   const { handleWizardGoalAssigned } = useDetailedGoalHandler({
     onAssignGoal,
     forceRefresh: async () => {
-      console.log('🔄 ScoreTabContainer: Enhanced refresh with real-time sync triggered');
+      console.log('🔄 ScoreTabContainer: Enhanced detailed goal refresh with comprehensive sync');
       
-      // First try real-time database sync
+      // Multi-layer refresh approach
       if (selectedFixtureData?.id) {
-        const syncResult = await realTimeDataSync.refreshGoalsFromDatabase(selectedFixtureData.id);
-        console.log('🔄 ScoreTabContainer: Real-time sync result:', syncResult);
-        
-        if (syncResult.success && syncResult.localStoreUpdated) {
-          console.log('✅ ScoreTabContainer: Real-time sync successful, UI should update automatically');
-          return; // No need for force refresh if real-time sync worked
-        }
+        // Force comprehensive goal resync
+        const syncResult = await realTimeDataSync.forceGoalResync(selectedFixtureData.id);
+        console.log('🔄 ScoreTabContainer: Comprehensive sync result:', syncResult);
       }
       
-      // Fallback to original force refresh if real-time sync fails
+      // Original force refresh
       if (forceRefresh) {
-        console.log('🔄 ScoreTabContainer: Falling back to force refresh');
         await forceRefresh();
       }
+      
+      // Additional UI refresh
+      setTimeout(() => {
+        triggerUIUpdate();
+        console.log('🔄 ScoreTabContainer: Additional UI refresh after detailed goal processing');
+      }, 100);
     }
   });
 
@@ -122,28 +164,36 @@ const ScoreTabContainer = ({
     setShowDetailedEntry(true);
   };
 
-  // Enhanced handler with real-time goal detection
+  // Enhanced handler with improved goal detection
   const handleAddDetailsToGoals = () => {
-    console.log('📝 ScoreTabContainer: Add details to goals requested with real-time detection');
+    console.log('📝 ScoreTabContainer: Enhanced add details with improved detection');
     
-    // Use real-time merged goals for detection
-    const unassignedGoal = mergedGoals.find(goal => 
-      goal.playerName === 'Quick Goal' || 
-      goal.playerName === 'Unknown Player' ||
-      (!goal.playerId && goal.type === 'goal')
-    );
+    // Use enhanced real-time unassigned goals detection
+    const targetGoal = unassignedGoals.length > 0 ? unassignedGoals[0] : null;
 
-    if (unassignedGoal) {
-      console.log('🎯 ScoreTabContainer: Found unassigned goal to edit:', unassignedGoal);
-      setEditingGoal(unassignedGoal);
+    if (targetGoal) {
+      console.log('🎯 ScoreTabContainer: Found target goal for editing:', {
+        id: targetGoal.id,
+        playerName: targetGoal.playerName,
+        team: targetGoal.team
+      });
+      
+      setEditingGoal(targetGoal);
       setQuickGoalTeam(null);
       setShowDetailedEntry(true);
     } else {
-      console.warn('⚠️ ScoreTabContainer: No unassigned goals found in real-time data');
+      console.warn('⚠️ ScoreTabContainer: No unassigned goals found in enhanced detection');
+      
+      // Force a refresh and try again
+      if (forceRefresh) {
+        forceRefresh().then(() => {
+          console.log('🔄 ScoreTabContainer: Refresh completed, checking again for unassigned goals');
+        });
+      }
     }
   };
 
-  const handleWizardGoalComplete = (goalData: {
+  const handleWizardGoalComplete = async (goalData: {
     player: ComponentPlayer;
     goalType: 'goal' | 'assist';
     team: 'home' | 'away';
@@ -152,27 +202,36 @@ const ScoreTabContainer = ({
     isEdit?: boolean;
     originalGoalId?: string | number;
   }) => {
-    console.log('🎯 ScoreTabContainer: Goal wizard completed with real-time sync:', goalData);
+    console.log('🎯 ScoreTabContainer: Enhanced goal wizard completion:', goalData);
 
-    // Handle through enhanced detailed goal handler with real-time sync
-    handleWizardGoalAssigned(goalData);
+    // Enhanced goal assignment with improved tracking
+    if (goalData.isEdit && editingGoal) {
+      console.log('✏️ ScoreTabContainer: Processing edit mode with enhanced tracking:', {
+        originalGoal: editingGoal,
+        newPlayer: goalData.player.name
+      });
+      
+      // Pass the editing goal ID for better matching
+      await handleWizardGoalAssigned({
+        ...goalData,
+        originalGoalId: editingGoal.id
+      });
+    } else {
+      console.log('🆕 ScoreTabContainer: Processing new goal creation');
+      await handleWizardGoalAssigned(goalData);
+    }
 
+    // Enhanced cleanup with UI refresh
     setShowDetailedEntry(false);
     setQuickGoalTeam(null);
     setEditingGoal(null);
-  };
-
-  // Enhanced unassigned goals detection using real-time merged goals
-  const unassignedGoals = React.useMemo(() => {
-    const unassigned = mergedGoals.filter(goal => 
-      goal.playerName === 'Quick Goal' || 
-      goal.playerName === 'Unknown Player' ||
-      (!goal.playerId && goal.type === 'goal')
-    );
     
-    console.log('📊 ScoreTabContainer: Real-time unassigned goals detected:', unassigned.length);
-    return unassigned;
-  }, [mergedGoals]);
+    // Additional UI refresh after wizard completion
+    setTimeout(() => {
+      triggerUIUpdate();
+      console.log('🔄 ScoreTabContainer: Post-wizard UI refresh triggered');
+    }, 150);
+  };
 
   if (showDetailedEntry) {
     return (

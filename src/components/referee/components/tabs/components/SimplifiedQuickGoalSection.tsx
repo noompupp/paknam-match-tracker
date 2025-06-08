@@ -19,17 +19,28 @@ const SimplifiedQuickGoalSection = ({
   onFullGoalEntry,
   onAddDetailsToGoals
 }: SimplifiedQuickGoalSectionProps) => {
-  // Subscribe to store updates for real-time UI changes
-  const { lastUpdated } = useMatchStore();
+  // Enhanced real-time subscription to store updates
+  const { lastUpdated, getUnassignedGoalsCount } = useMatchStore();
   
-  console.log('📊 SimplifiedQuickGoalSection: Rendering with real-time data:', {
-    unassignedGoalsCount,
+  // Enhanced real-time unassigned goals count calculation
+  const realTimeUnassignedCount = getUnassignedGoalsCount();
+  
+  console.log('📊 SimplifiedQuickGoalSection: Enhanced real-time data:', {
+    propsCount: unassignedGoalsCount,
+    realTimeCount: realTimeUnassignedCount,
     lastUpdated,
     timestamp: new Date().toISOString()
   });
 
+  // Use the most accurate count (prioritize real-time store data)
+  const effectiveUnassignedCount = realTimeUnassignedCount;
+
   const handleAddDetailsClick = () => {
-    console.log('📝 SimplifiedQuickGoalSection: Add details button clicked with real-time count:', unassignedGoalsCount);
+    console.log('📝 SimplifiedQuickGoalSection: Enhanced add details clicked:', {
+      effectiveCount: effectiveUnassignedCount,
+      propsCount: unassignedGoalsCount,
+      realTimeCount: realTimeUnassignedCount
+    });
     onAddDetailsToGoals();
   };
 
@@ -39,9 +50,9 @@ const SimplifiedQuickGoalSection = ({
         <CardTitle className="flex items-center gap-2">
           <Zap className="h-5 w-5 text-green-600" />
           Goal Recording
-          {unassignedGoalsCount > 0 && (
+          {effectiveUnassignedCount > 0 && (
             <span className="ml-auto bg-orange-100 text-orange-700 text-xs px-2 py-1 rounded-full animate-pulse">
-              {unassignedGoalsCount} need details
+              {effectiveUnassignedCount} need details
             </span>
           )}
         </CardTitle>
@@ -83,18 +94,18 @@ const SimplifiedQuickGoalSection = ({
           </Button>
         </div>
 
-        {/* Enhanced Add Details to Earlier Goals - Real-time enabled */}
-        {unassignedGoalsCount > 0 && (
+        {/* Enhanced Add Details Section - Real-time responsive */}
+        {effectiveUnassignedCount > 0 && (
           <div className="space-y-2 border-t pt-4">
             <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 transition-all duration-200 hover:bg-orange-100">
               <div className="flex items-center gap-3 mb-3">
                 <AlertCircle className="h-5 w-5 text-orange-600" />
                 <div className="flex-1">
                   <div className="text-sm font-medium text-orange-800">
-                    {unassignedGoalsCount} goal{unassignedGoalsCount !== 1 ? 's' : ''} need player details
+                    {effectiveUnassignedCount} goal{effectiveUnassignedCount !== 1 ? 's' : ''} need player details
                   </div>
                   <div className="text-xs text-orange-700">
-                    Quick goals recorded during the match • Real-time updates enabled
+                    Quick goals recorded during the match • Enhanced real-time sync
                   </div>
                 </div>
               </div>
@@ -105,7 +116,7 @@ const SimplifiedQuickGoalSection = ({
                 disabled={isProcessingQuickGoal}
               >
                 <Edit className="h-4 w-4 mr-2" />
-                Add Details to Goal{unassignedGoalsCount !== 1 ? 's' : ''} ({unassignedGoalsCount} goal{unassignedGoalsCount !== 1 ? 's' : ''})
+                Add Details to Goal{effectiveUnassignedCount !== 1 ? 's' : ''} ({effectiveUnassignedCount} goal{effectiveUnassignedCount !== 1 ? 's' : ''})
               </Button>
             </div>
           </div>
@@ -114,9 +125,9 @@ const SimplifiedQuickGoalSection = ({
         <div className="text-center">
           <p className="text-sm text-muted-foreground bg-muted/50 px-3 py-2 rounded-lg">
             <strong>Quick Goal:</strong> Instant scoring • <strong>Full Entry:</strong> Complete with details
-            {unassignedGoalsCount > 0 && (
+            {effectiveUnassignedCount > 0 && (
               <span className="block text-xs text-orange-600 mt-1">
-                Real-time sync active
+                Enhanced real-time sync active • Updates: {lastUpdated}
               </span>
             )}
           </p>

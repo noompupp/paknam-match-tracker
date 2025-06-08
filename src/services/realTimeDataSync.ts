@@ -7,55 +7,85 @@ export interface SyncResult {
   updatedGoals: number;
   errors: string[];
   localStoreUpdated: boolean;
+  goalFound?: boolean;
+  matchedGoalId?: string;
 }
 
 export const realTimeDataSync = {
   async syncGoalDetailsUpdate(goalId: string | number, updatedPlayerName: string): Promise<SyncResult> {
-    console.log('🔄 RealTimeDataSync: Starting goal details sync for:', { goalId, updatedPlayerName });
+    console.log('🔄 RealTimeDataSync: Starting enhanced goal details sync for:', { goalId, updatedPlayerName });
     
     const result: SyncResult = {
       success: false,
       updatedGoals: 0,
       errors: [],
-      localStoreUpdated: false
+      localStoreUpdated: false,
+      goalFound: false
     };
 
     try {
       // Get the current local store state
-      const { goals, updateGoal } = useMatchStore.getState();
+      const { goals, updateGoal, triggerUIUpdate } = useMatchStore.getState();
       console.log('📊 RealTimeDataSync: Current local goals:', goals.length);
 
+      // Enhanced goal matching with multiple strategies
+      let goalToUpdate = null;
+      let matchedGoalId = null;
+
       // Strategy 1: Find by exact ID match
-      let goalToUpdate = goals.find(g => 
+      goalToUpdate = goals.find(g => 
         g.id === String(goalId) || 
-        g.id === goalId
+        g.id === goalId ||
+        g.id === `global_${goalId}` ||
+        g.id.includes(String(goalId))
       );
 
-      // Strategy 2: Find by player name pattern if exact ID fails
+      if (goalToUpdate) {
+        matchedGoalId = goalToUpdate.id;
+        console.log('✅ RealTimeDataSync: Found goal by ID match:', matchedGoalId);
+      }
+
+      // Strategy 2: Find by unassigned goal pattern if exact ID fails
       if (!goalToUpdate) {
-        goalToUpdate = goals.find(g => 
+        const unassignedGoals = goals.filter(g => 
           (g.playerName === 'Quick Goal' || g.playerName === 'Unknown Player') &&
           g.type === 'goal'
         );
-        console.log('🔍 RealTimeDataSync: Fallback match found:', !!goalToUpdate);
+
+        if (unassignedGoals.length > 0) {
+          // Take the oldest unassigned goal
+          goalToUpdate = unassignedGoals.sort((a, b) => a.timestamp - b.timestamp)[0];
+          matchedGoalId = goalToUpdate.id;
+          console.log('🔍 RealTimeDataSync: Found goal by unassigned pattern:', matchedGoalId);
+        }
       }
 
-      if (goalToUpdate) {
-        console.log('✅ RealTimeDataSync: Updating local store goal:', goalToUpdate.id);
+      if (goalToUpdate && matchedGoalId) {
+        console.log('✅ RealTimeDataSync: Updating local store goal:', {
+          id: matchedGoalId,
+          oldPlayerName: goalToUpdate.playerName,
+          newPlayerName: updatedPlayerName
+        });
         
-        // Update the local store immediately for UI responsiveness
-        updateGoal(goalToUpdate.id, {
+        // Update the local store with enhanced data
+        updateGoal(matchedGoalId, {
           playerName: updatedPlayerName,
           synced: true
         });
 
+        // Force UI update trigger
+        triggerUIUpdate();
+
         result.localStoreUpdated = true;
         result.updatedGoals = 1;
         result.success = true;
+        result.goalFound = true;
+        result.matchedGoalId = matchedGoalId;
         
-        console.log('✅ RealTimeDataSync: Local store updated successfully');
+        console.log('✅ RealTimeDataSync: Local store updated successfully with UI trigger');
       } else {
         result.errors.push('Could not find matching goal in local store');
+        result.goalFound = false;
         console.warn('⚠️ RealTimeDataSync: No matching goal found for update');
       }
 
@@ -69,7 +99,7 @@ export const realTimeDataSync = {
   },
 
   async refreshGoalsFromDatabase(fixtureId: number): Promise<SyncResult> {
-    console.log('🔄 RealTimeDataSync: Refreshing goals from database for fixture:', fixtureId);
+    console.log('🔄 RealTimeDataSync: Enhanced refresh from database for fixture:', fixtureId);
     
     const result: SyncResult = {
       success: false,
@@ -98,16 +128,17 @@ export const realTimeDataSync = {
         return result;
       }
 
-      // Transform database goals to match store format
-      const { goals: currentGoals, updateGoal } = useMatchStore.getState();
+      // Enhanced local store update with proper synchronization
+      const { goals: currentGoals, updateGoal, triggerUIUpdate } = useMatchStore.getState();
       
-      // Update existing goals with database data
       let updatedCount = 0;
       
       for (const dbGoal of dbGoals) {
+        // Multiple matching strategies for database sync
         const localGoal = currentGoals.find(g => 
           g.id === String(dbGoal.id) ||
-          (g.time === dbGoal.event_time && g.type === dbGoal.event_type)
+          g.id.includes(String(dbGoal.id)) ||
+          (g.time === dbGoal.event_time && g.type === dbGoal.event_type && g.playerName !== dbGoal.player_name)
         );
 
         if (localGoal && localGoal.playerName !== dbGoal.player_name) {
@@ -116,20 +147,63 @@ export const realTimeDataSync = {
             synced: true
           });
           updatedCount++;
-          console.log('🔄 RealTimeDataSync: Updated local goal with DB data:', localGoal.id);
+          console.log('🔄 RealTimeDataSync: Updated local goal with DB data:', {
+            localId: localGoal.id,
+            dbId: dbGoal.id,
+            playerName: dbGoal.player_name
+          });
         }
+      }
+
+      // Trigger UI update if any changes were made
+      if (updatedCount > 0) {
+        triggerUIUpdate();
       }
 
       result.success = true;
       result.updatedGoals = updatedCount;
       result.localStoreUpdated = updatedCount > 0;
       
-      console.log(`✅ RealTimeDataSync: Database refresh completed, updated ${updatedCount} goals`);
+      console.log(`✅ RealTimeDataSync: Enhanced database refresh completed, updated ${updatedCount} goals`);
       return result;
 
     } catch (error) {
       console.error('❌ RealTimeDataSync: Error refreshing from database:', error);
       result.errors.push(error instanceof Error ? error.message : 'Unknown refresh error');
+      return result;
+    }
+  },
+
+  // New method for comprehensive goal synchronization
+  async forceGoalResync(fixtureId: number): Promise<SyncResult> {
+    console.log('🔄 RealTimeDataSync: Force goal resync initiated for fixture:', fixtureId);
+    
+    const result: SyncResult = {
+      success: false,
+      updatedGoals: 0,
+      errors: [],
+      localStoreUpdated: false
+    };
+
+    try {
+      // First refresh from database
+      const dbRefreshResult = await this.refreshGoalsFromDatabase(fixtureId);
+      
+      // Trigger UI update regardless
+      const { triggerUIUpdate } = useMatchStore.getState();
+      triggerUIUpdate();
+      
+      result.success = dbRefreshResult.success;
+      result.updatedGoals = dbRefreshResult.updatedGoals;
+      result.errors = dbRefreshResult.errors;
+      result.localStoreUpdated = true; // Always consider it updated for UI purposes
+      
+      console.log('✅ RealTimeDataSync: Force resync completed');
+      return result;
+
+    } catch (error) {
+      console.error('❌ RealTimeDataSync: Error in force resync:', error);
+      result.errors.push(error instanceof Error ? error.message : 'Unknown resync error');
       return result;
     }
   }

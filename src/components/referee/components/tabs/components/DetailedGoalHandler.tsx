@@ -15,7 +15,7 @@ export const useDetailedGoalHandler = ({
   forceRefresh
 }: DetailedGoalHandlerProps) => {
   const { toast } = useToast();
-  const { updateGoal, removeGoal, addGoal, addAssist, goals } = useMatchStore();
+  const { updateGoal, removeGoal, addGoal, addAssist, goals, triggerUIUpdate } = useMatchStore();
 
   const handleWizardGoalAssigned = async (goalData: {
     player: ComponentPlayer;
@@ -26,12 +26,12 @@ export const useDetailedGoalHandler = ({
     isEdit?: boolean;
     originalGoalId?: string | number;
   }) => {
-    console.log('🎯 DetailedGoalHandler: Processing goal assignment with enhanced sync:', goalData);
+    console.log('🎯 DetailedGoalHandler: Processing enhanced goal assignment:', goalData);
 
     try {
       if (goalData.isEdit && goalData.originalGoalId) {
-        // Handle editing existing goal with enhanced real-time sync
-        console.log('✏️ DetailedGoalHandler: Updating existing goal with real-time sync:', goalData.originalGoalId);
+        // Enhanced editing flow with improved synchronization
+        console.log('✏️ DetailedGoalHandler: Enhanced edit mode for goal:', goalData.originalGoalId);
         
         // Update database first
         const { data: updatedEvent, error } = await supabase
@@ -69,32 +69,45 @@ export const useDetailedGoalHandler = ({
           console.log('✅ DetailedGoalHandler: Player stats updated');
         }
 
-        // Enhanced real-time local store sync
+        // Enhanced real-time local store sync with immediate UI update
         const syncResult = await realTimeDataSync.syncGoalDetailsUpdate(
           goalData.originalGoalId,
           goalData.player.name
         );
 
+        console.log('🚀 DetailedGoalHandler: Real-time sync result:', syncResult);
+
         if (syncResult.success && syncResult.localStoreUpdated) {
-          console.log('🚀 DetailedGoalHandler: Real-time sync successful');
+          console.log('✅ DetailedGoalHandler: Real-time sync successful');
+          
+          // Additional UI refresh trigger
+          setTimeout(() => {
+            triggerUIUpdate();
+            console.log('🔄 DetailedGoalHandler: Additional UI refresh triggered');
+          }, 100);
+          
           toast({
             title: "Goal Updated!",
             description: `Goal assigned to ${goalData.player.name} and synced in real-time`,
           });
         } else {
-          console.warn('⚠️ DetailedGoalHandler: Real-time sync had issues:', syncResult.errors);
+          console.warn('⚠️ DetailedGoalHandler: Real-time sync had issues, forcing comprehensive refresh');
           
-          // Fallback: Force refresh if real-time sync fails
+          // Enhanced fallback with comprehensive resync
           if (forceRefresh) {
-            console.log('🔄 DetailedGoalHandler: Triggering fallback refresh');
-            setTimeout(() => {
-              forceRefresh();
-            }, 100);
+            setTimeout(async () => {
+              await forceRefresh();
+              // Additional force resync from database
+              const fixtureId = useMatchStore.getState().fixtureId;
+              if (fixtureId) {
+                await realTimeDataSync.forceGoalResync(fixtureId);
+              }
+            }, 150);
           }
           
           toast({
             title: "Goal Updated!",
-            description: `Goal assigned to ${goalData.player.name}. Syncing...`,
+            description: `Goal assigned to ${goalData.player.name}. Refreshing data...`,
           });
         }
 
@@ -124,11 +137,14 @@ export const useDetailedGoalHandler = ({
               type: 'assist',
               time: updatedEvent.event_time || 0
             });
+
+            // Trigger UI update for assist
+            triggerUIUpdate();
           }
         }
       } else {
-        // Handle new goal creation
-        console.log('🆕 DetailedGoalHandler: Creating new goal');
+        // Handle new goal creation with enhanced flow
+        console.log('🆕 DetailedGoalHandler: Creating new goal with enhanced flow');
         onAssignGoal(goalData.player);
 
         // Handle assist player if provided and not an own goal
@@ -148,14 +164,23 @@ export const useDetailedGoalHandler = ({
             console.log('✅ DetailedGoalHandler: Assist stats updated for new goal');
           }
         }
+
+        // Trigger UI update for new goal
+        triggerUIUpdate();
       }
 
-      // Enhanced refresh with shorter delay for immediate feedback
+      // Enhanced comprehensive refresh with reduced delay
       if (forceRefresh) {
-        console.log('🔄 DetailedGoalHandler: Triggering enhanced refresh after processing');
-        setTimeout(() => {
-          forceRefresh();
-        }, 50); // Reduced from 100ms to 50ms for faster feedback
+        console.log('🔄 DetailedGoalHandler: Triggering enhanced comprehensive refresh');
+        setTimeout(async () => {
+          await forceRefresh();
+          
+          // Additional comprehensive sync
+          const fixtureId = useMatchStore.getState().fixtureId;
+          if (fixtureId) {
+            await realTimeDataSync.forceGoalResync(fixtureId);
+          }
+        }, 100); // Reduced delay for faster feedback
       }
 
     } catch (error) {
