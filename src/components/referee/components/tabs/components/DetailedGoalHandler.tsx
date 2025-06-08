@@ -71,24 +71,46 @@ export const useDetailedGoalHandler = ({
           description: `Goal assigned to ${goalData.player.name}`,
         });
 
-        // Handle assist player if provided and not an own goal
+        // Handle assist player if provided and not an own goal - CRITICAL FIX: Don't call onAssignGoal for assists
         if (goalData.assistPlayer && !goalData.isOwnGoal) {
-          setTimeout(() => {
-            console.log('🎯 DetailedGoalHandler: Processing assist player:', goalData.assistPlayer);
-            onAssignGoal(goalData.assistPlayer!);
-          }, 100);
+          console.log('🎯 DetailedGoalHandler: Recording assist (without incrementing score):', goalData.assistPlayer);
+          
+          // Update assist player stats directly without calling onAssignGoal
+          const { error: assistStatsError } = await supabase
+            .from('members')
+            .update({
+              assists: ((goalData.assistPlayer as any).assists || 0) + 1
+            })
+            .eq('id', goalData.assistPlayer.id);
+
+          if (assistStatsError) {
+            console.error('❌ DetailedGoalHandler: Error updating assist player stats:', assistStatsError);
+          } else {
+            console.log('✅ DetailedGoalHandler: Assist player stats updated');
+          }
         }
       } else {
-        // Handle new goal creation
-        console.log('🆕 DetailedGoalHandler: Creating new goal');
+        // Handle new goal creation - CRITICAL FIX: Only call onAssignGoal for the goal scorer
+        console.log('🆕 DetailedGoalHandler: Creating new goal for scorer only');
         onAssignGoal(goalData.player);
 
-        // Handle assist player if provided and not an own goal
+        // Handle assist player if provided and not an own goal - CRITICAL FIX: Don't call onAssignGoal for assists
         if (goalData.assistPlayer && !goalData.isOwnGoal) {
-          setTimeout(() => {
-            console.log('🎯 DetailedGoalHandler: Processing assist player:', goalData.assistPlayer);
-            onAssignGoal(goalData.assistPlayer!);
-          }, 100);
+          console.log('🎯 DetailedGoalHandler: Recording assist (without incrementing score):', goalData.assistPlayer);
+          
+          // Update assist player stats directly without calling onAssignGoal to prevent score increment
+          const { error: assistStatsError } = await supabase
+            .from('members')
+            .update({
+              assists: ((goalData.assistPlayer as any).assists || 0) + 1
+            })
+            .eq('id', goalData.assistPlayer.id);
+
+          if (assistStatsError) {
+            console.error('❌ DetailedGoalHandler: Error updating assist player stats:', assistStatsError);
+          } else {
+            console.log('✅ DetailedGoalHandler: Assist player stats updated without score increment');
+          }
         }
       }
 

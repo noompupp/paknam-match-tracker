@@ -8,7 +8,7 @@ interface SimplifiedQuickGoalSectionProps {
   isProcessingQuickGoal: boolean;
   onQuickGoal: () => void;
   onFullGoalEntry: () => void;
-  onEditUnassignedGoal: () => void; // Changed from onAddDetailsToGoals
+  onAddDetailsToGoals: () => void; // Fixed prop name
 }
 
 const SimplifiedQuickGoalSection = ({
@@ -16,14 +16,13 @@ const SimplifiedQuickGoalSection = ({
   isProcessingQuickGoal,
   onQuickGoal,
   onFullGoalEntry,
-  onEditUnassignedGoal // Updated prop name
+  onAddDetailsToGoals // Updated prop name
 }: SimplifiedQuickGoalSectionProps) => {
   console.log('📊 SimplifiedQuickGoalSection: Rendering with unassigned goals count:', unassignedGoalsCount);
 
-  const handleEditUnassignedClick = () => {
-    console.log('📝 SimplifiedQuickGoalSection: Edit unassigned goal button clicked, count:', unassignedGoalsCount);
-    // This will now open the GoalEntryWizard directly with the first unassigned goal preloaded
-    onEditUnassignedGoal();
+  const handleAddDetailsClick = () => {
+    console.log('📝 SimplifiedQuickGoalSection: Add details button clicked, count:', unassignedGoalsCount);
+    onAddDetailsToGoals();
   };
 
   return (
@@ -76,7 +75,7 @@ const SimplifiedQuickGoalSection = ({
           </Button>
         </div>
 
-        {/* Enhanced Edit Unassigned Goals - Now opens wizard directly */}
+        {/* Enhanced Add Details to Earlier Goals - Now properly enabled when goals exist */}
         {unassignedGoalsCount > 0 && (
           <div className="space-y-2 border-t pt-4">
             <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
@@ -92,13 +91,13 @@ const SimplifiedQuickGoalSection = ({
                 </div>
               </div>
               <Button
-                onClick={handleEditUnassignedClick}
+                onClick={handleAddDetailsClick}
                 variant="outline"
                 className="w-full hover:bg-orange-100 hover:border-orange-300 border-orange-200"
                 disabled={isProcessingQuickGoal}
               >
                 <Edit className="h-4 w-4 mr-2" />
-                Edit Goal Details ({unassignedGoalsCount} goal{unassignedGoalsCount !== 1 ? 's' : ''})
+                Add Details to Goal{unassignedGoalsCount !== 1 ? 's' : ''} ({unassignedGoalsCount} goal{unassignedGoalsCount !== 1 ? 's' : ''})
               </Button>
             </div>
           </div>

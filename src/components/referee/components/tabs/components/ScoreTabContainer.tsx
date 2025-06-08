@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import GoalEntryWizard from "../../GoalEntryWizard";
 import { ComponentPlayer } from "../../../hooks/useRefereeState";
@@ -83,9 +82,9 @@ const ScoreTabContainer = ({
     setShowDetailedEntry(true);
   };
 
-  // New handler for editing unassigned goals
-  const handleEditUnassignedGoal = () => {
-    console.log('📝 ScoreTabContainer: Edit unassigned goal requested');
+  // Fixed handler for adding details to unassigned goals
+  const handleAddDetailsToGoals = () => {
+    console.log('📝 ScoreTabContainer: Add details to goals requested');
     
     // Find the first unassigned goal
     const unassignedGoal = goals.find(goal => 
@@ -170,7 +169,7 @@ const ScoreTabContainer = ({
         isProcessingQuickGoal={isProcessingQuickGoal}
         onQuickGoal={() => handleQuickGoal('home')} // Default to home team for quick goal
         onFullGoalEntry={handleFullGoalEntry}
-        onEditUnassignedGoal={handleEditUnassignedGoal}
+        onAddDetailsToGoals={handleAddDetailsToGoals} // Fixed prop name
       />
 
       <GoalsSummary goals={goals} formatTime={formatTime} />
