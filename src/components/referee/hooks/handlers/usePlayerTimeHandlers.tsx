@@ -1,12 +1,13 @@
 
 import { useToast } from "@/hooks/use-toast";
-import { ComponentPlayer, PlayerTimeTrackerPlayer } from "../useRefereeState";
+import { ComponentPlayer } from "../useRefereeState";
+import { PlayerTime } from "@/types/database";
 import { useSubstitutionManager } from "@/hooks/playerTracking/substitutionManager";
 
 interface UsePlayerTimeHandlersProps {
   selectedFixtureData: any;
   matchTime: number;
-  playersForTimeTracker: PlayerTimeTrackerPlayer[];
+  playersForTimeTracker: PlayerTime[];
   addPlayer: (player: ComponentPlayer, matchTime: number) => any;
   removePlayer: (playerId: number) => void;
   togglePlayerTime: (playerId: number, matchTime: number) => any;

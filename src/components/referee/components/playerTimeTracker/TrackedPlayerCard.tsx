@@ -67,14 +67,14 @@ const TrackedPlayerCard = ({
     if (isSubstitutionCandidate) {
       return {
         text: player.isPlaying ? "Sub Out" : "Sub In",
-        variant: player.isPlaying ? "destructive" : "default" as const,
+        variant: (player.isPlaying ? "destructive" : "default") as const,
         icon: <ArrowRightLeft className="h-3 w-3" />
       };
     }
     
     return {
       text: player.isPlaying ? "Stop" : "Start",
-      variant: player.isPlaying ? "destructive" : "default" as const,
+      variant: (player.isPlaying ? "destructive" : "default") as const,
       icon: null
     };
   };
