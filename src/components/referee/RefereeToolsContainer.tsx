@@ -2,8 +2,12 @@
 import RefereeToolsHeader from "./components/RefereeToolsHeader";
 import RefereeMainContent from "./components/RefereeMainContent";
 import { useRefereeContainerState } from "./hooks/useRefereeContainerState";
+import { useRealTimeScoreSync } from "@/hooks/useRealTimeScoreSync";
 
 const RefereeToolsContainer = () => {
+  // Enable real-time score synchronization
+  useRealTimeScoreSync();
+
   const {
     // Base state
     fixtures,
@@ -29,7 +33,7 @@ const RefereeToolsContainer = () => {
     isRunning,
     formatTime,
     
-    // Score
+    // Score - now real-time enabled
     homeScore,
     awayScore,
     
@@ -74,12 +78,13 @@ const RefereeToolsContainer = () => {
     addPlayer
   } = useRefereeContainerState();
 
-  console.log('🎮 RefereeToolsContainer: Enhanced team selection state:', {
+  console.log('🎮 RefereeToolsContainer: Enhanced team selection state with real-time scores:', {
     selectedGoalTeam,
     selectedTimeTeam,
     homePlayersCount: homeTeamPlayers?.length || 0,
     awayPlayersCount: awayTeamPlayers?.length || 0,
-    hasValidData: enhancedPlayersData.hasValidData
+    hasValidData: enhancedPlayersData.hasValidData,
+    realTimeScore: { homeScore, awayScore }
   });
 
   if (fixturesLoading) {

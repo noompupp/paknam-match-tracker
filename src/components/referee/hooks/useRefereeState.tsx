@@ -1,11 +1,10 @@
-
 import { useState, useEffect } from "react";
 import { useFixtures } from "@/hooks/useFixtures";
 import { useMembers } from "@/hooks/useMembers";
 import { useUpdateFixtureScore } from "@/hooks/useFixtures";
 import { useCreateMatchEvent, useUpdatePlayerStats } from "@/hooks/useMatchEvents";
 import { useMatchTimer } from "@/hooks/useMatchTimer";
-import { useScoreManagement } from "@/hooks/useScoreManagement";
+import { useRealTimeScore } from "@/hooks/useRealTimeScore";
 import { usePlayerTracking } from "@/hooks/usePlayerTracking";
 import { useGoalManagement } from "@/hooks/useGoalManagement";
 import { useLocalMatchEvents } from "@/hooks/useMatchEvents";
@@ -170,7 +169,12 @@ export const useRefereeState = () => {
 
   // Custom hooks
   const { matchTime, isRunning, toggleTimer, resetTimer, formatTime } = useMatchTimer();
-  const { homeScore, awayScore, addGoal, removeGoal, resetScore } = useScoreManagement();
+  
+  // Updated to use real-time score hook
+  const { homeScore, awayScore, addGoal, removeGoal, resetScore, refreshScore } = useRealTimeScore({ 
+    fixtureId: selectedFixtureData ? selectedFixtureData.id : undefined 
+  });
+  
   const { 
     trackedPlayers, 
     selectedPlayer: selectedTimePlayer, 
@@ -251,7 +255,8 @@ export const useRefereeState = () => {
     selectedGoalTeam,
     selectedTimeTeam,
     goalFilteredPlayersCount: getGoalFilteredPlayers().length,
-    timeFilteredPlayersCount: getTimeFilteredPlayers().length
+    timeFilteredPlayersCount: getTimeFilteredPlayers().length,
+    realTimeScore: { homeScore, awayScore } // Added for debugging
   });
 
   return {
@@ -294,12 +299,13 @@ export const useRefereeState = () => {
     resetTimer,
     formatTime,
     
-    // Score state
+    // Real-time score state (updated)
     homeScore,
     awayScore,
     addGoal,
     removeGoal,
     resetScore,
+    refreshScore, // Added manual refresh function
     
     // Improved card state
     cards,

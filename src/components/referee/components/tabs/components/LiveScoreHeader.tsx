@@ -1,6 +1,6 @@
 
 import { Card, CardContent } from "@/components/ui/card";
-import { Clock } from "lucide-react";
+import { Clock, Wifi } from "lucide-react";
 
 interface LiveScoreHeaderProps {
   homeTeamName: string;
@@ -40,6 +40,11 @@ const LiveScoreHeader = ({
               isRunning ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
             }`}>
               {isRunning ? '● LIVE' : '⏸ PAUSED'}
+            </div>
+            {/* Real-time indicator */}
+            <div className="mt-1 flex items-center justify-center gap-1 text-xs text-muted-foreground">
+              <Wifi className="h-3 w-3 text-green-500" />
+              <span>Real-time</span>
             </div>
           </div>
           
