@@ -1,5 +1,12 @@
 
 import { PlayerTime } from "@/types/database";
+import { 
+  canSubPlayerIn, 
+  canSubPlayerOut, 
+  requiresSubstitution,
+  validateSubstitution,
+  FIELD_PLAYER_LIMIT
+} from "./substitutionValidationUtils";
 
 export interface PlayerCountValidation {
   isValid: boolean;
@@ -16,8 +23,16 @@ export interface TeamLockValidation {
   message: string;
 }
 
-export const MINIMUM_PLAYERS_ON_FIELD = 7;
-export const MAXIMUM_PLAYERS_ON_FIELD = 7;
+export const MINIMUM_PLAYERS_ON_FIELD = FIELD_PLAYER_LIMIT;
+export const MAXIMUM_PLAYERS_ON_FIELD = FIELD_PLAYER_LIMIT;
+
+// Re-export substitution validation functions
+export { 
+  canSubPlayerIn, 
+  canSubPlayerOut, 
+  requiresSubstitution,
+  validateSubstitution
+};
 
 export const validatePlayerCount = (trackedPlayers: PlayerTime[]): PlayerCountValidation => {
   const activePlayers = trackedPlayers.filter(player => player.isPlaying);
@@ -90,26 +105,7 @@ export const canRemovePlayer = (
   playerId: number, 
   trackedPlayers: PlayerTime[]
 ): { canRemove: boolean; reason?: string } => {
-  const player = trackedPlayers.find(p => p.id === playerId);
-  if (!player) {
-    return { canRemove: false, reason: 'Player not found' };
-  }
-
-  if (!player.isPlaying) {
-    // Can always remove players who are not currently playing
-    return { canRemove: true };
-  }
-
-  const activePlayers = trackedPlayers.filter(p => p.isPlaying);
-  
-  if (activePlayers.length <= MINIMUM_PLAYERS_ON_FIELD) {
-    return { 
-      canRemove: false, 
-      reason: `Cannot remove player - would leave only ${activePlayers.length - 1} players on field (minimum: ${MINIMUM_PLAYERS_ON_FIELD})` 
-    };
-  }
-
-  return { canRemove: true };
+  return canSubPlayerOut(playerId, trackedPlayers);
 };
 
 export const canAddPlayer = (

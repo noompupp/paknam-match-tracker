@@ -13,6 +13,7 @@ import TrackedPlayersList from "./TrackedPlayersList";
 import TimeTrackerHeader from "./TimeTrackerHeader";
 import InitialPlayerSelection from "./InitialPlayerSelection";
 import SubstitutionFlowManager from "./SubstitutionFlowManager";
+import SmartSubstitutionManager from "./SmartSubstitutionManager";
 import { 
   validatePlayerCount, 
   validateTeamLock, 
@@ -50,6 +51,16 @@ const EnhancedPlayerTimeTracker = ({
   const playerCountValidation = validatePlayerCount(trackedPlayers);
   const teamLockValidation = validateTeamLock(trackedPlayers);
 
+  // Enhanced substitution management
+  const smartSubstitutionManager = SmartSubstitutionManager({
+    trackedPlayers,
+    homeTeamPlayers,
+    awayTeamPlayers,
+    selectedFixtureData,
+    onAddPlayer,
+    onTogglePlayerTime
+  });
+
   const handleStartMatch = (selectedPlayers: ProcessedPlayer[], team: 'home' | 'away') => {
     console.log('🚀 Starting match with initial squad:', {
       team,
@@ -80,6 +91,16 @@ const EnhancedPlayerTimeTracker = ({
     onRemovePlayer(playerId);
   };
 
+  const handleEnhancedPlayerToggle = (playerId: number) => {
+    // Use smart substitution manager for enhanced validation
+    smartSubstitutionManager.handlePlayerToggle(playerId);
+  };
+
+  const handleEnhancedPlayerAdd = (player: ProcessedPlayer) => {
+    // Use smart substitution manager for enhanced validation
+    smartSubstitutionManager.handlePlayerAdd(player);
+  };
+
   const handleQuickAdd = () => {
     if (trackedPlayers.length === 0) {
       // No players tracked yet, show initial selection
@@ -92,7 +113,7 @@ const EnhancedPlayerTimeTracker = ({
 
   const isMatchStarted = trackedPlayers.length > 0;
 
-  console.log('🎯 EnhancedPlayerTimeTracker Debug:', {
+  console.log('🎯 EnhancedPlayerTimeTracker (Enhanced Substitution):', {
     trackedCount: trackedPlayers.length,
     activeCount: playerCountValidation.activeCount,
     isValid: playerCountValidation.isValid,
@@ -168,12 +189,12 @@ const EnhancedPlayerTimeTracker = ({
             )}
           </div>
 
-          {/* Tracked Players List with enhanced status badges */}
+          {/* Tracked Players List with enhanced substitution controls */}
           <TrackedPlayersList
             trackedPlayers={trackedPlayers}
             allPlayers={allPlayers}
             formatTime={formatTime}
-            onTogglePlayerTime={onTogglePlayerTime}
+            onTogglePlayerTime={handleEnhancedPlayerToggle}
             onRemovePlayer={handlePlayerRemove}
             matchTime={matchTime}
           />
@@ -198,7 +219,7 @@ const EnhancedPlayerTimeTracker = ({
         selectedFixtureData={selectedFixtureData}
       />
 
-      {/* Automatic Substitution Flow Manager */}
+      {/* Original Automatic Substitution Flow Manager */}
       <SubstitutionFlowManager
         trackedPlayers={trackedPlayers}
         homeTeamPlayers={homeTeamPlayers}
@@ -209,6 +230,9 @@ const EnhancedPlayerTimeTracker = ({
           console.log('✅ Substitution completed successfully');
         }}
       />
+
+      {/* Smart Substitution Modal */}
+      {smartSubstitutionManager.substitutionModal}
     </div>
   );
 };

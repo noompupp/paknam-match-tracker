@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { PlayerTime } from "@/types/database";
 import { PlayerHalfTimes } from "./types";
+import { validateSubstitution } from "@/components/referee/components/playerTimeTracker/substitutionValidationUtils";
 
 export const usePlayerOperations = () => {
   const [trackedPlayers, setTrackedPlayers] = useState<PlayerTime[]>([]);
@@ -17,6 +18,14 @@ export const usePlayerOperations = () => {
     if (existingPlayer) {
       console.warn(`Player ${player.name} is already being tracked`);
       return null;
+    }
+
+    // Enhanced validation using new substitution validation
+    const validation = validateSubstitution('in', -1, trackedPlayers, player);
+    
+    if (!validation.canSubIn && validation.requiresSubstitution) {
+      console.warn(`Cannot add ${player.name}: ${validation.reason}`);
+      return { requiresSubstitution: true, validation };
     }
 
     const newPlayerTime: PlayerTime = {
@@ -46,11 +55,19 @@ export const usePlayerOperations = () => {
     
     setSelectedPlayer("");
     
-    console.log(`🎯 Role-based timer: Added ${player.name} (${player.role || 'Starter'}) to tracking`);
+    console.log(`🎯 Enhanced player operations: Added ${player.name} (${player.role || 'Starter'}) to tracking`);
     return newPlayerTime;
   };
 
   const removePlayer = (playerId: number) => {
+    // Enhanced validation using new substitution validation
+    const validation = validateSubstitution('out', playerId, trackedPlayers);
+    
+    if (!validation.canSubOut) {
+      console.warn(`Cannot remove player ${playerId}: ${validation.reason}`);
+      return { canRemove: false, reason: validation.reason };
+    }
+
     const player = trackedPlayers.find(p => p.id === playerId);
     setTrackedPlayers(prev => prev.filter(p => p.id !== playerId));
     
@@ -72,6 +89,19 @@ export const usePlayerOperations = () => {
   };
 
   const togglePlayerTime = (playerId: number, matchTime: number) => {
+    // Enhanced validation using new substitution validation
+    const validation = validateSubstitution('toggle', playerId, trackedPlayers);
+    
+    if (validation.requiresSubstitution && validation.actionType === 'substitute') {
+      console.warn(`Toggle requires substitution for player ${playerId}: ${validation.reason}`);
+      return { requiresSubstitution: true, validation };
+    }
+
+    if (!validation.canSubIn && !validation.canSubOut) {
+      console.warn(`Cannot toggle player ${playerId}: ${validation.reason}`);
+      return { canToggle: false, reason: validation.reason };
+    }
+
     let updatedPlayer = null;
     setTrackedPlayers(prev => prev.map(player => {
       if (player.id === playerId) {
