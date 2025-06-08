@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useFixtures, useUpcomingFixtures } from "@/hooks/useFixtures";
 import { sortFixtures } from "@/utils/fixtureUtils";
@@ -6,6 +5,7 @@ import FixturesHeader from "./fixtures/FixturesHeader";
 import UpcomingFixturesSection from "./fixtures/UpcomingFixturesSection";
 import AllFixturesSection from "./fixtures/AllFixturesSection";
 import MatchSummaryDialog from "./fixtures/MatchSummaryDialog";
+import RecentResultsSection from "./fixtures/RecentResultsSection";
 
 const Fixtures = () => {
   const { data: allFixtures, isLoading: allLoading, error } = useFixtures();
@@ -45,6 +45,12 @@ const Fixtures = () => {
           <UpcomingFixturesSection 
             upcomingFixtures={upcomingFixtures || []}
             isLoading={upcomingLoading}
+            onFixtureClick={handleFixtureClick}
+          />
+
+          <RecentResultsSection 
+            recentFixtures={sortedAllFixtures}
+            isLoading={allLoading}
             onFixtureClick={handleFixtureClick}
           />
 
