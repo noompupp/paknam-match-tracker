@@ -18,9 +18,9 @@ interface UseGoalHandlersProps {
 export const useGoalHandlers = (props: UseGoalHandlersProps) => {
   const { toast } = useToast();
 
-  const handleAddGoal = (team: 'home' | 'away') => {
+  const handleAddGoal = (team: 'home' | 'away', additionalParam?: any) => {
     console.log('⚽ useGoalHandlers: Adding goal for team:', team);
-    props.addGoal(team, undefined);
+    props.addGoal(team, additionalParam);
     props.addEvent('Goal', `${team === 'home' ? 'Home' : 'Away'} team goal`, props.matchTime);
     
     toast({
@@ -29,9 +29,9 @@ export const useGoalHandlers = (props: UseGoalHandlersProps) => {
     });
   };
 
-  const handleRemoveGoal = (team: 'home' | 'away') => {
+  const handleRemoveGoal = (team: 'home' | 'away', additionalParam?: any) => {
     console.log('🗑️ useGoalHandlers: Removing goal for team:', team);
-    props.removeGoal(team, undefined);
+    props.removeGoal(team, additionalParam);
     props.addEvent('Goal Removed', `${team === 'home' ? 'Home' : 'Away'} team goal removed`, props.matchTime);
     
     toast({

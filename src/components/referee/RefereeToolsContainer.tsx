@@ -109,7 +109,7 @@ const RefereeToolsContainer = () => {
     assignGoal(player, matchTime, selectedFixtureData.id, homeTeam, awayTeam);
   };
 
-  // Fixed function signatures to match the expected calls from useGoalHandlers
+  // Fixed function signatures to make the second parameter optional
   const handleAddGoal = (team: 'home' | 'away', additionalParam?: any) => {
     // Add goal logic here
     console.log('Adding goal for team:', team);
