@@ -1,6 +1,7 @@
 
 import { useToast } from "@/hooks/use-toast";
 import { ComponentPlayer, PlayerTimeTrackerPlayer } from "../useRefereeState";
+import { useSubstitutionManager } from "@/hooks/playerTracking/substitutionManager";
 
 interface UsePlayerTimeHandlersProps {
   selectedFixtureData: any;
@@ -14,6 +15,7 @@ interface UsePlayerTimeHandlersProps {
 
 export const usePlayerTimeHandlers = (props: UsePlayerTimeHandlersProps) => {
   const { toast } = useToast();
+  const substitutionManager = useSubstitutionManager();
 
   const handleAddPlayer = async (player: ComponentPlayer) => {
     if (!props.selectedFixtureData) {
@@ -28,13 +30,32 @@ export const usePlayerTimeHandlers = (props: UsePlayerTimeHandlersProps) => {
     try {
       console.log('⏱️ usePlayerTimeHandlers: Adding player to time tracking:', player.name);
       
-      await props.addPlayer(player, props.matchTime);
-      props.addEvent('Player Added', `${player.name} added to time tracking`, props.matchTime);
+      // Check if this completes a pending substitution
+      if (substitutionManager.hasPendingSubstitution) {
+        const substitution = substitutionManager.completePendingSubstitution(player);
+        if (substitution) {
+          props.addEvent('Substitution', 
+            `${substitution.incoming.name} substituted for ${substitution.outgoing.outgoingPlayerName}`, 
+            props.matchTime
+          );
+          
+          toast({
+            title: "Substitution Complete",
+            description: `${substitution.incoming.name} replaced ${substitution.outgoing.outgoingPlayerName}`,
+          });
+        }
+      }
       
-      toast({
-        title: "Player Added",
-        description: `${player.name} added to time tracking`,
-      });
+      await props.addPlayer(player, props.matchTime);
+      
+      if (!substitutionManager.hasPendingSubstitution) {
+        props.addEvent('Player Added', `${player.name} added to time tracking`, props.matchTime);
+        
+        toast({
+          title: "Player Added",
+          description: `${player.name} added to time tracking`,
+        });
+      }
       
       console.log('✅ usePlayerTimeHandlers: Player added successfully');
     } catch (error) {
@@ -67,6 +88,20 @@ export const usePlayerTimeHandlers = (props: UsePlayerTimeHandlersProps) => {
     try {
       console.log('⏱️ usePlayerTimeHandlers: Toggling player time:', player.name);
       
+      // If player is currently playing and has played before, initiate pending substitution
+      if (player.isPlaying && player.totalTime > 0) {
+        substitutionManager.initiatePendingSubstitution(player);
+        
+        toast({
+          title: "Substitution Ready",
+          description: `${player.name} will be substituted. Add a replacement player to complete.`,
+        });
+        
+        props.addEvent('Substitution Initiated', `${player.name} ready for substitution`, props.matchTime);
+        return;
+      }
+
+      // Standard toggle for new players or players coming back in
       await props.togglePlayerTime(playerId, props.matchTime);
       
       const action = player.isPlaying ? 'stopped' : 'started';
@@ -134,6 +169,7 @@ export const usePlayerTimeHandlers = (props: UsePlayerTimeHandlersProps) => {
     handleAddPlayer,
     handleRemovePlayer,
     handleTogglePlayerTime,
-    handleSaveAllPlayerTimes
+    handleSaveAllPlayerTimes,
+    substitutionManager
   };
 };

@@ -2,6 +2,7 @@
 // Main export file for the refactored player tracking functionality
 export { usePlayerOperations } from "./playerTracking/playerOperations";
 export { useTimeUpdater } from "./playerTracking/timeUpdater";
+export { useSubstitutionManager } from "./playerTracking/substitutionManager";
 export { getTimeStatus } from "./playerTracking/timeStatusCalculator";
 export { generateRoleBasedNotifications } from "./playerTracking/notificationsGenerator";
 export { getPlayersNeedingAttention, validateAllPlayers } from "./playerTracking/validationUtils";
@@ -16,6 +17,7 @@ export type {
 // Main hook that combines all the functionality
 import { usePlayerOperations } from "./playerTracking/playerOperations";
 import { useTimeUpdater } from "./playerTracking/timeUpdater";
+import { useSubstitutionManager } from "./playerTracking/substitutionManager";
 import { generateRoleBasedNotifications } from "./playerTracking/notificationsGenerator";
 import { getPlayersNeedingAttention } from "./playerTracking/validationUtils";
 
@@ -34,6 +36,8 @@ export const usePlayerTracking = (isTimerRunning: boolean) => {
     togglePlayerTime,
     resetTracking
   } = usePlayerOperations();
+
+  const substitutionManager = useSubstitutionManager();
 
   // Use the time updater
   useTimeUpdater(isTimerRunning, trackedPlayers, setTrackedPlayers, setPlayerHalfTimes);
@@ -58,6 +62,7 @@ export const usePlayerTracking = (isTimerRunning: boolean) => {
     getPlayersNeedingAttention: getPlayersNeedingAttentionForMatch,
     getRoleBasedNotifications,
     playerHalfTimes,
-    roleBasedStops
+    roleBasedStops,
+    substitutionManager
   };
 };

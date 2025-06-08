@@ -1,7 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { UserMinus } from "lucide-react";
+import { UserMinus, ArrowRightLeft } from "lucide-react";
 import { PlayerTime } from "@/types/database";
 import { ProcessedPlayer } from "@/utils/refereeDataProcessor";
 import PlayerRoleBadge from "@/components/ui/player-role-badge";
@@ -17,6 +17,7 @@ interface TrackedPlayerCardProps {
   onRemovePlayer: (playerId: number) => void;
   trackedPlayers?: PlayerTime[];
   matchTime?: number;
+  isPendingSubstitution?: boolean;
 }
 
 const TrackedPlayerCard = ({
@@ -26,7 +27,8 @@ const TrackedPlayerCard = ({
   onTogglePlayerTime,
   onRemovePlayer,
   trackedPlayers = [],
-  matchTime = 0
+  matchTime = 0,
+  isPendingSubstitution = false
 }: TrackedPlayerCardProps) => {
   const role = playerInfo?.role || 'Starter';
   
@@ -36,17 +38,53 @@ const TrackedPlayerCard = ({
   // Calculate current half time for status badge
   const currentHalfTime = getCurrentHalfTime(matchTime);
   
-  console.log('👤 Rendering tracked player with status:', {
+  // Check if this is a player who has played before (potential substitution candidate)
+  const hasPlayedBefore = player.totalTime > 0;
+  const isSubstitutionCandidate = player.isPlaying && hasPlayedBefore;
+  
+  console.log('👤 Rendering tracked player with substitution status:', {
     name: player.name,
     role,
     canRemove: removal.canRemove,
     isPlaying: player.isPlaying,
+    hasPlayedBefore,
+    isSubstitutionCandidate,
+    isPendingSubstitution,
     currentHalfTime,
     totalTime: player.totalTime
   });
 
+  // Determine button text and styling
+  const getButtonProps = () => {
+    if (isPendingSubstitution) {
+      return {
+        text: "Pending Sub",
+        variant: "outline" as const,
+        icon: <ArrowRightLeft className="h-3 w-3" />
+      };
+    }
+    
+    if (isSubstitutionCandidate) {
+      return {
+        text: player.isPlaying ? "Sub Out" : "Sub In",
+        variant: player.isPlaying ? "destructive" : "default" as const,
+        icon: <ArrowRightLeft className="h-3 w-3" />
+      };
+    }
+    
+    return {
+      text: player.isPlaying ? "Stop" : "Start",
+      variant: player.isPlaying ? "destructive" : "default" as const,
+      icon: null
+    };
+  };
+
+  const buttonProps = getButtonProps();
+
   return (
-    <div className="p-2 sm:p-3 rounded-md border bg-card hover:shadow-sm transition-shadow">
+    <div className={`p-2 sm:p-3 rounded-md border bg-card hover:shadow-sm transition-all ${
+      isPendingSubstitution ? 'border-orange-300 bg-orange-50/50' : ''
+    }`}>
       <div className="flex items-center gap-2 sm:gap-3">
         
         {/* Compact player number */}
@@ -59,6 +97,11 @@ const TrackedPlayerCard = ({
           <div className="flex items-center gap-1.5 mb-0.5">
             <span className="font-medium text-sm truncate">{player.name}</span>
             <PlayerRoleBadge role={role} size="sm" />
+            {isPendingSubstitution && (
+              <Badge variant="outline" className="text-xs px-1.5 py-0 h-4 border-orange-300 text-orange-700">
+                Pending Sub
+              </Badge>
+            )}
           </div>
           <div className="flex items-center gap-2">
             <span className="text-xs text-muted-foreground truncate">{player.team}</span>
@@ -92,15 +135,21 @@ const TrackedPlayerCard = ({
         <div className="flex gap-1 flex-shrink-0">
           <Button
             size="sm"
-            variant={player.isPlaying ? "destructive" : "default"}
+            variant={buttonProps.variant}
             onClick={() => onTogglePlayerTime(player.id)}
             className="h-7 px-2 text-xs"
+            disabled={isPendingSubstitution}
           >
+            {buttonProps.icon && (
+              <span className="sm:hidden mr-1">
+                {buttonProps.icon}
+              </span>
+            )}
             <span className="hidden sm:inline">
-              {player.isPlaying ? "Sub Out" : "Sub In"}
+              {buttonProps.text}
             </span>
             <span className="sm:hidden">
-              {player.isPlaying ? "Out" : "In"}
+              {buttonProps.text.split(' ')[0]}
             </span>
           </Button>
           <Button
@@ -108,7 +157,7 @@ const TrackedPlayerCard = ({
             variant="outline"
             onClick={() => onRemovePlayer(player.id)}
             className="h-7 w-7 p-0"
-            disabled={!removal.canRemove}
+            disabled={!removal.canRemove || isPendingSubstitution}
             title={!removal.canRemove ? removal.reason : 'Remove player from squad'}
           >
             <UserMinus className="h-3 w-3" />

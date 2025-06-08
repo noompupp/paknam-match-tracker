@@ -1,7 +1,7 @@
 
+import TrackedPlayerCard from "./TrackedPlayerCard";
 import { PlayerTime } from "@/types/database";
 import { ProcessedPlayer } from "@/utils/refereeDataProcessor";
-import TrackedPlayerCard from "./TrackedPlayerCard";
 
 interface TrackedPlayersListProps {
   trackedPlayers: PlayerTime[];
@@ -10,6 +10,7 @@ interface TrackedPlayersListProps {
   onTogglePlayerTime: (playerId: number) => void;
   onRemovePlayer: (playerId: number) => void;
   matchTime?: number;
+  pendingSubstitutionPlayerId?: number | null;
 }
 
 const TrackedPlayersList = ({
@@ -18,37 +19,37 @@ const TrackedPlayersList = ({
   formatTime,
   onTogglePlayerTime,
   onRemovePlayer,
-  matchTime = 0
+  matchTime = 0,
+  pendingSubstitutionPlayerId = null
 }: TrackedPlayersListProps) => {
   if (trackedPlayers.length === 0) {
     return (
-      <p className="text-muted-foreground text-center py-3 text-sm">No players being tracked</p>
+      <div className="text-center py-4 text-muted-foreground">
+        <p className="text-sm">No players currently tracked</p>
+      </div>
     );
   }
 
   return (
-    <div className="space-y-1.5 sm:space-y-2">
-      <h4 className="font-semibold text-sm mb-2">
-        Tracked Players ({trackedPlayers.length})
-      </h4>
-      <div className="space-y-1.5">
-        {trackedPlayers.map((player) => {
-          const playerInfo = allPlayers.find(p => p.id === player.id);
-          
-          return (
-            <TrackedPlayerCard
-              key={player.id}
-              player={player}
-              playerInfo={playerInfo}
-              formatTime={formatTime}
-              onTogglePlayerTime={onTogglePlayerTime}
-              onRemovePlayer={onRemovePlayer}
-              trackedPlayers={trackedPlayers}
-              matchTime={matchTime}
-            />
-          );
-        })}
-      </div>
+    <div className="space-y-2">
+      {trackedPlayers.map((player) => {
+        const playerInfo = allPlayers.find(p => p.id === player.id);
+        const isPendingSubstitution = pendingSubstitutionPlayerId === player.id;
+        
+        return (
+          <TrackedPlayerCard
+            key={player.id}
+            player={player}
+            playerInfo={playerInfo}
+            formatTime={formatTime}
+            onTogglePlayerTime={onTogglePlayerTime}
+            onRemovePlayer={onRemovePlayer}
+            trackedPlayers={trackedPlayers}
+            matchTime={matchTime}
+            isPendingSubstitution={isPendingSubstitution}
+          />
+        );
+      })}
     </div>
   );
 };
