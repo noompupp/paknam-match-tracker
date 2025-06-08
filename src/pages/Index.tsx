@@ -26,6 +26,7 @@ const Index = () => {
   });
 
   const handleNavigateToFixtures = () => {
+    console.log('Index: handleNavigateToFixtures called, switching to fixtures tab');
     setActiveTab("fixtures");
   };
 

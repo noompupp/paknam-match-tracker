@@ -10,10 +10,17 @@ import TeamLogo from "../teams/TeamLogo";
 interface UpcomingFixturesCardProps {
   upcomingFixtures: Fixture[] | undefined;
   isLoading: boolean;
-  onViewAll?: () => void;
+  onViewAll: () => void; // Made required (removed ?)
 }
 
 const UpcomingFixturesCard = ({ upcomingFixtures, isLoading, onViewAll }: UpcomingFixturesCardProps) => {
+  const handleViewAllClick = () => {
+    // Safety check to ensure function exists before calling
+    if (onViewAll && typeof onViewAll === 'function') {
+      onViewAll();
+    }
+  };
+
   return (
     <Card className="card-shadow-lg animate-fade-in">
       <CardHeader className="flex flex-row items-center justify-between">
@@ -21,7 +28,7 @@ const UpcomingFixturesCard = ({ upcomingFixtures, isLoading, onViewAll }: Upcomi
         <Button 
           variant="ghost" 
           size="sm" 
-          onClick={onViewAll}
+          onClick={handleViewAllClick}
           className="flex items-center gap-2 h-auto hover:bg-muted/50 transition-colors"
         >
           <Eye className="h-4 w-4" />

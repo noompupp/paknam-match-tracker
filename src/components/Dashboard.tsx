@@ -1,4 +1,3 @@
-
 import { useTeams } from "@/hooks/useTeams";
 import { useEnhancedTopScorers, useEnhancedTopAssists } from "@/hooks/useEnhancedPlayerStats";
 import { useRecentFixtures, useUpcomingFixtures } from "@/hooks/useFixtures";
@@ -28,8 +27,12 @@ const Dashboard = ({ onNavigateToResults, onNavigateToFixtures }: DashboardProps
   };
 
   const handleViewAllUpcomingFixtures = () => {
-    if (onNavigateToFixtures) {
+    console.log('Dashboard: handleViewAllUpcomingFixtures called');
+    if (onNavigateToFixtures && typeof onNavigateToFixtures === 'function') {
+      console.log('Dashboard: Calling onNavigateToFixtures');
       onNavigateToFixtures();
+    } else {
+      console.log('Dashboard: onNavigateToFixtures is not available');
     }
   };
 
