@@ -58,8 +58,8 @@ const TeamLogoDisplay = ({
 
   return (
     <div className={`flex flex-col items-center ${gapSize}`}>
-      {/* Enhanced logo display with better mobile sizing */}
-      <div className={`${sizeClasses[size]} flex items-center justify-center premier-card-shadow`}>
+      {/* Logo display with no additional border or shadow */}
+      <div className={`${sizeClasses[size]} flex items-center justify-center`}>
         {teamLogo ? (
           <img 
             src={teamLogo} 
@@ -68,7 +68,7 @@ const TeamLogoDisplay = ({
           />
         ) : (
           <div 
-            className={`${sizeClasses[size]} rounded-lg flex items-center justify-center font-bold text-white ${fallbackTextSize[size]} premier-card-shadow`}
+            className={`${sizeClasses[size]} rounded-lg flex items-center justify-center font-bold text-white ${fallbackTextSize[size]}`}
             style={{ 
               backgroundColor: teamColor,
               background: `linear-gradient(135deg, ${teamColor} 0%, ${teamColor}dd 100%)`
