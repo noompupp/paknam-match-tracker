@@ -1,4 +1,3 @@
-
 import { TabsContent } from "@/components/ui/tabs";
 import ScoreTab from "./tabs/ScoreTab";
 import TimerTab from "./tabs/TimerTab";
@@ -43,6 +42,8 @@ interface RefereeTabsContentProps {
   onToggleTimer: () => void;
   onResetMatch: () => void;
   onSaveMatch: () => void;
+  onQuickGoal: (team: 'home' | 'away') => void;
+  onOpenGoalWizard: () => void;
   onAssignGoal: (player: ComponentPlayer) => void;
   onAddCard: (playerName: string, team: string, cardType: 'yellow' | 'red', time: number) => void;
   onAddPlayer: (player: ComponentPlayer) => void;
@@ -86,6 +87,8 @@ const RefereeTabsContent = ({
   onToggleTimer,
   onResetMatch,
   onSaveMatch,
+  onQuickGoal,
+  onOpenGoalWizard,
   onAssignGoal,
   onAddCard,
   onAddPlayer,
@@ -104,6 +107,8 @@ const RefereeTabsContent = ({
           onToggleTimer={onToggleTimer}
           onResetMatch={onResetMatch}
           onSaveMatch={onSaveMatch}
+          onQuickGoal={onQuickGoal}
+          onOpenGoalWizard={onOpenGoalWizard}
         />
       </TabsContent>
 
