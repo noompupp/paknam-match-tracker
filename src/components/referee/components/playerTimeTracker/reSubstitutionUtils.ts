@@ -36,7 +36,7 @@ export const convertPlayerTimeToProcessedPlayer = (
       name: playerTime.name,
       team: playerTime.team,
       team_id: '', // Add missing team_id property
-      number: 0, // Default number since PlayerTime doesn't have this property
+      number: '0', // Default number as string since ProcessedPlayer expects string
       position: 'Player', // Add missing position property
       role: 'Starter' // Default role
     };
