@@ -8,8 +8,8 @@ interface UseGoalHandlersProps {
   selectedFixtureData: any;
   matchTime: number;
   selectedGoalType: 'goal' | 'assist';
-  addGoal: (team: 'home' | 'away') => void;
-  removeGoal: (team: 'home' | 'away') => void;
+  addGoal: (team: 'home' | 'away', additionalParam?: any) => void;
+  removeGoal: (team: 'home' | 'away', additionalParam?: any) => void;
   addEvent: (type: string, description: string, time: number) => void;
   assignGoal: (player: ComponentPlayer, matchTime: number, fixtureId: number, homeTeam: any, awayTeam: any) => any;
   updateFixtureScore: any;
@@ -20,7 +20,7 @@ export const useGoalHandlers = (props: UseGoalHandlersProps) => {
 
   const handleAddGoal = (team: 'home' | 'away') => {
     console.log('⚽ useGoalHandlers: Adding goal for team:', team);
-    props.addGoal(team);
+    props.addGoal(team, undefined);
     props.addEvent('Goal', `${team === 'home' ? 'Home' : 'Away'} team goal`, props.matchTime);
     
     toast({
@@ -31,7 +31,7 @@ export const useGoalHandlers = (props: UseGoalHandlersProps) => {
 
   const handleRemoveGoal = (team: 'home' | 'away') => {
     console.log('🗑️ useGoalHandlers: Removing goal for team:', team);
-    props.removeGoal(team);
+    props.removeGoal(team, undefined);
     props.addEvent('Goal Removed', `${team === 'home' ? 'Home' : 'Away'} team goal removed`, props.matchTime);
     
     toast({
