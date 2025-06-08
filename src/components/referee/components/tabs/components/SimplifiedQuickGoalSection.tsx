@@ -18,6 +18,8 @@ const SimplifiedQuickGoalSection = ({
   onFullGoalEntry,
   onAddDetailsToGoals
 }: SimplifiedQuickGoalSectionProps) => {
+  console.log('📊 SimplifiedQuickGoalSection: Rendering with unassigned goals count:', unassignedGoalsCount);
+
   return (
     <Card>
       <CardHeader>

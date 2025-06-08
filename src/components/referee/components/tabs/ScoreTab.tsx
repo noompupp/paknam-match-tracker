@@ -3,11 +3,13 @@ import { useState } from "react";
 import { ComponentPlayer } from "../../hooks/useRefereeState";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Clock, Timer, Save, RotateCcw, Zap, Target } from "lucide-react";
+import { Clock, Timer, Save, RotateCcw } from "lucide-react";
 import GoalEntryWizard from "../GoalEntryWizard";
 import TeamSelectionModal from "../TeamSelectionModal";
 import { quickGoalService } from "@/services/quickGoalService";
 import { useToast } from "@/hooks/use-toast";
+import SimplifiedQuickGoalSection from "./components/SimplifiedQuickGoalSection";
+import { useUnassignedGoals } from "@/hooks/useUnassignedGoals";
 
 interface ScoreTabProps {
   homeScore: number;
@@ -47,10 +49,19 @@ const ScoreTab = ({
   const [showWizard, setShowWizard] = useState(false);
   const [showTeamSelection, setShowTeamSelection] = useState(false);
   const [isProcessingQuickGoal, setIsProcessingQuickGoal] = useState(false);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
   const { toast } = useToast();
 
   const homeTeamName = selectedFixtureData?.home_team?.name || 'Home Team';
   const awayTeamName = selectedFixtureData?.away_team?.name || 'Away Team';
+
+  // Use the new database-driven unassigned goals hook
+  const { unassignedGoalsCount } = useUnassignedGoals({
+    fixtureId: selectedFixtureData?.id,
+    refreshTrigger
+  });
+
+  console.log('📊 ScoreTab: Database-driven unassigned goals count:', unassignedGoalsCount);
 
   // Enhanced quick goal handler
   const handleQuickGoal = async (team: 'home' | 'away') => {
@@ -86,6 +97,9 @@ const ScoreTab = ({
           description: result.message,
         });
         
+        // Trigger refresh of unassigned goals count
+        setRefreshTrigger(prev => prev + 1);
+        
         if (forceRefresh) {
           setTimeout(() => {
             forceRefresh();
@@ -116,6 +130,14 @@ const ScoreTab = ({
     setShowTeamSelection(true);
   };
 
+  const handleFullGoalEntryClick = () => {
+    setShowWizard(true);
+  };
+
+  const handleAddDetailsToGoalsClick = () => {
+    setShowWizard(true);
+  };
+
   const handleTeamSelected = (team: 'home' | 'away') => {
     handleQuickGoal(team);
   };
@@ -134,6 +156,9 @@ const ScoreTab = ({
         onAssignGoal(goalData.assistPlayer!);
       }, 100);
     }
+    
+    // Trigger refresh of unassigned goals count
+    setRefreshTrigger(prev => prev + 1);
     
     setShowWizard(false);
   };
@@ -189,42 +214,14 @@ const ScoreTab = ({
         </CardContent>
       </Card>
 
-      {/* Simplified Goal Recording */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Goal Recording</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <Button
-            onClick={handleQuickGoalClick}
-            disabled={isProcessingQuickGoal}
-            variant="outline"
-            className="w-full h-16 text-base flex items-center gap-3 hover:bg-green-50 hover:border-green-300 border-2 border-green-200"
-          >
-            <Zap className="h-6 w-6 text-green-600" />
-            <div className="text-center flex-1">
-              <div className="font-medium text-lg">
-                {isProcessingQuickGoal ? 'Adding Quick Goal...' : 'Quick Goal'}
-              </div>
-              <div className="text-xs text-muted-foreground">
-                Instant scoring for live matches
-              </div>
-            </div>
-          </Button>
-
-          <Button
-            onClick={() => setShowWizard(true)}
-            className="w-full h-16 text-base flex items-center gap-3"
-            disabled={isProcessingQuickGoal}
-          >
-            <Target className="h-6 w-6" />
-            <div className="text-center flex-1">
-              <div className="font-medium text-lg">Full Goal Entry Wizard</div>
-              <div className="text-xs">Complete recording with player details</div>
-            </div>
-          </Button>
-        </CardContent>
-      </Card>
+      {/* Simplified Goal Recording with Database-Driven Count */}
+      <SimplifiedQuickGoalSection
+        unassignedGoalsCount={unassignedGoalsCount}
+        isProcessingQuickGoal={isProcessingQuickGoal}
+        onQuickGoal={handleQuickGoalClick}
+        onFullGoalEntry={handleFullGoalEntryClick}
+        onAddDetailsToGoals={handleAddDetailsToGoalsClick}
+      />
 
       {/* Team Selection Modal */}
       <TeamSelectionModal

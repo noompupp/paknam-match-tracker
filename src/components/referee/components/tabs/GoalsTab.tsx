@@ -8,6 +8,7 @@ import { quickGoalService } from "@/services/quickGoalService";
 import { useToast } from "@/hooks/use-toast";
 import TeamSelectionModal from "../TeamSelectionModal";
 import SimplifiedQuickGoalSection from "./components/SimplifiedQuickGoalSection";
+import { useUnassignedGoals } from "@/hooks/useUnassignedGoals";
 
 interface GoalsTabProps {
   allPlayers: ComponentPlayer[];
@@ -26,6 +27,7 @@ interface GoalsTabProps {
   homeScore: number;
   awayScore: number;
   selectedFixtureData: any;
+  forceRefresh?: () => Promise<void>;
 }
 
 const GoalsTab = (props: GoalsTabProps) => {
@@ -35,12 +37,21 @@ const GoalsTab = (props: GoalsTabProps) => {
   const [isProcessingQuickGoal, setIsProcessingQuickGoal] = useState(false);
   const [showTeamSelection, setShowTeamSelection] = useState(false);
   const [teamSelectionMode, setTeamSelectionMode] = useState<'quick' | 'detailed'>('quick');
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
   const { toast } = useToast();
 
   const homeTeamName = props.selectedFixtureData?.home_team?.name || 'Home Team';
   const awayTeamName = props.selectedFixtureData?.away_team?.name || 'Away Team';
 
-  // Enhanced quick goal handler with team selection
+  // Use the new database-driven unassigned goals hook
+  const { unassignedGoalsCount, refreshUnassignedGoals } = useUnassignedGoals({
+    fixtureId: props.selectedFixtureData?.id,
+    refreshTrigger
+  });
+
+  console.log('📊 GoalsTab: Database-driven unassigned goals count:', unassignedGoalsCount);
+
+  // Enhanced quick goal handler with team selection and refresh trigger
   const handleQuickGoal = async (team: 'home' | 'away') => {
     if (!props.selectedFixtureData || isProcessingQuickGoal) return;
 
@@ -73,6 +84,16 @@ const GoalsTab = (props: GoalsTabProps) => {
           title: "⚡ Quick Goal Added!",
           description: `Goal recorded for ${team === 'home' ? homeTeamName : awayTeamName} at ${props.formatTime(props.matchTime)}. Score updated automatically.`,
         });
+        
+        // Trigger refresh of unassigned goals count
+        setRefreshTrigger(prev => prev + 1);
+        
+        // Also trigger force refresh if available
+        if (props.forceRefresh) {
+          setTimeout(() => {
+            props.forceRefresh!();
+          }, 500);
+        }
       } else {
         toast({
           title: "Quick Goal Failed",
@@ -137,14 +158,12 @@ const GoalsTab = (props: GoalsTabProps) => {
       }, 100);
     }
     
+    // Trigger refresh of unassigned goals count
+    setRefreshTrigger(prev => prev + 1);
+    
     setShowWizard(false);
     setWizardInitialTeam(undefined);
   };
-
-  // Get unassigned goals (Quick Goals that need details)
-  const unassignedGoals = props.goals.filter(goal => 
-    goal.playerName === 'Quick Goal' || goal.playerName === 'Unknown Player'
-  );
 
   if (showWizard) {
     return (
@@ -193,9 +212,9 @@ const GoalsTab = (props: GoalsTabProps) => {
         </CardContent>
       </Card>
 
-      {/* Simplified Goal Recording Section */}
+      {/* Simplified Goal Recording Section with Database-Driven Count */}
       <SimplifiedQuickGoalSection
-        unassignedGoalsCount={unassignedGoals.length}
+        unassignedGoalsCount={unassignedGoalsCount}
         isProcessingQuickGoal={isProcessingQuickGoal}
         onQuickGoal={handleQuickGoalClick}
         onFullGoalEntry={handleFullGoalEntryClick}
