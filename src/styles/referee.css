@@ -1,4 +1,5 @@
 
+
 /* Referee UI Standardized Styles */
 
 /* Layout Components */
@@ -34,7 +35,7 @@
 }
 
 .dark .referee-score-display {
-  @apply bg-gradient-to-br from-primary/5 to-primary/3 border-primary/15;
+  @apply bg-gradient-to-br from-primary/5 to-primary/30 border-primary/15;
 }
 
 /* Responsive utilities */
@@ -116,3 +117,4 @@
   min-height: 100vh;
   min-height: 100dvh;
 }
+
