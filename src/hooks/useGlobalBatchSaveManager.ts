@@ -1,7 +1,7 @@
 
 import { useCallback, useRef } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { useMatchStore } from '@/stores/useMatchStore';
+import { useMatchStore, MatchGoal, MatchCard, MatchPlayerTime } from '@/stores/useMatchStore';
 import { unifiedRefereeService } from '@/services/fixtures/unifiedRefereeService';
 
 interface UseGlobalBatchSaveManagerProps {
@@ -28,7 +28,7 @@ export const useGlobalBatchSaveManager = ({
     getUnsavedItemsCount
   } = useMatchStore();
 
-  const transformGoalsToSaveFormat = useCallback((goals: typeof useMatchStore.getState().goals) => {
+  const transformGoalsToSaveFormat = useCallback((goals: MatchGoal[]) => {
     return goals
       .filter(goal => !goal.synced)
       .map(goal => ({
@@ -40,7 +40,7 @@ export const useGlobalBatchSaveManager = ({
       }));
   }, []);
 
-  const transformCardsToSaveFormat = useCallback((cards: typeof useMatchStore.getState().cards) => {
+  const transformCardsToSaveFormat = useCallback((cards: MatchCard[]) => {
     return cards
       .filter(card => !card.synced)
       .map(card => ({
@@ -52,7 +52,7 @@ export const useGlobalBatchSaveManager = ({
       }));
   }, []);
 
-  const transformPlayerTimesToSaveFormat = useCallback((playerTimes: typeof useMatchStore.getState().playerTimes) => {
+  const transformPlayerTimesToSaveFormat = useCallback((playerTimes: MatchPlayerTime[]) => {
     return playerTimes
       .filter(pt => !pt.synced)
       .map(pt => ({
