@@ -20,6 +20,13 @@ const LiveScoreDisplay = ({
   awayTeamGoals,
   totalAssists
 }: LiveScoreDisplayProps) => {
+  // Enhanced score styling for better visibility and contrast
+  const getScoreStyle = (isHome: boolean) => ({
+    color: isHome ? '#2563eb' : '#16a34a', // Use semantic blue/green instead of team colors
+    textShadow: '0 1px 2px rgba(0, 0, 0, 0.2)',
+    fontWeight: 'bold'
+  });
+
   return (
     <div className="bg-gradient-to-r from-blue-50 to-green-50 rounded-lg p-4 border border-blue-200">
       <div className="flex items-center justify-between">
@@ -27,7 +34,12 @@ const LiveScoreDisplay = ({
           <div className="text-sm font-medium text-gray-600">
             {homeTeamName || 'Home'}
           </div>
-          <div className="text-2xl font-bold text-blue-600">{homeScore}</div>
+          <div 
+            className="text-2xl font-bold"
+            style={getScoreStyle(true)}
+          >
+            {homeScore}
+          </div>
           <div className="text-xs text-gray-500">
             Goals from assignments: {homeTeamGoals}
           </div>
@@ -40,7 +52,12 @@ const LiveScoreDisplay = ({
           <div className="text-sm font-medium text-gray-600">
             {awayTeamName || 'Away'}
           </div>
-          <div className="text-2xl font-bold text-green-600">{awayScore}</div>
+          <div 
+            className="text-2xl font-bold"
+            style={getScoreStyle(false)}
+          >
+            {awayScore}
+          </div>
           <div className="text-xs text-gray-500">
             Goals from assignments: {awayTeamGoals}
           </div>

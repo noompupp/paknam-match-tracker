@@ -31,6 +31,23 @@ const MatchHeaderSection = ({
     return 'text-yellow-600';
   };
 
+  // Enhanced score display with better contrast
+  const getScoreStyle = (teamColor: string) => {
+    // Ensure good contrast while maintaining team identity
+    if (!teamColor || teamColor === '#ffffff' || teamColor === '#FFFFFF') {
+      return {
+        color: '#1e293b', // slate-800 for visibility
+        textShadow: '0 1px 2px rgba(0, 0, 0, 0.1)'
+      };
+    }
+    
+    return {
+      color: teamColor,
+      textShadow: '0 1px 3px rgba(0, 0, 0, 0.3)', // Add shadow for better visibility
+      WebkitTextStroke: '0.5px rgba(255, 255, 255, 0.8)' // Subtle outline for contrast
+    };
+  };
+
   return (
     <Card className="overflow-hidden">
       <CardContent className="p-6">
@@ -50,7 +67,7 @@ const MatchHeaderSection = ({
               </div>
               <div 
                 className="text-4xl font-bold"
-                style={{ color: homeTeamColor }}
+                style={getScoreStyle(homeTeamColor)}
               >
                 {fixture.home_score || 0}
               </div>
@@ -78,7 +95,7 @@ const MatchHeaderSection = ({
               </div>
               <div 
                 className="text-4xl font-bold"
-                style={{ color: awayTeamColor }}
+                style={getScoreStyle(awayTeamColor)}
               >
                 {fixture.away_score || 0}
               </div>

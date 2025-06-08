@@ -59,6 +59,13 @@ const MatchEventsSection = ({
     return `${minutes}'`;
   };
 
+  // Fixed card type function to return only the color without redundant "card" text
+  const getSimplifiedCardType = (card: any) => {
+    const cardType = getCardType(card);
+    // Remove "card" from the end if it exists to prevent "YELLOW CARD card"
+    return cardType?.replace(/\s*card$/i, '').toUpperCase() || 'YELLOW';
+  };
+
   return (
     <Card>
       <CardContent className="pt-6">
@@ -107,7 +114,7 @@ const MatchEventsSection = ({
                 );
               } else {
                 const playerName = getCardPlayerName(event.data);
-                const cardType = getCardType(event.data);
+                const cardType = getSimplifiedCardType(event.data);
                 const isRed = isCardRed(event.data);
                 
                 return (
@@ -126,7 +133,7 @@ const MatchEventsSection = ({
                           <span>{playerName}</span>
                         </div>
                         <div className="text-xs text-muted-foreground">
-                          {cardType?.toUpperCase()} Card
+                          {cardType} Card
                         </div>
                       </div>
                     </div>

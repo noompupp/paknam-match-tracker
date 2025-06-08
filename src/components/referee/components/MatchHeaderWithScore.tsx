@@ -19,6 +19,13 @@ const MatchHeaderWithScore = ({
   matchTime,
   formatTime
 }: MatchHeaderWithScoreProps) => {
+  // Enhanced score styling for better visibility across themes
+  const getScoreStyle = () => ({
+    color: 'hsl(var(--primary))', // Use semantic primary color
+    textShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+    filter: 'drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1))'
+  });
+
   return (
     <Card className="bg-gradient-to-r from-primary/10 to-secondary/10 border-primary/20">
       <CardContent className="p-6">
@@ -29,7 +36,7 @@ const MatchHeaderWithScore = ({
               <TeamLogo team={selectedFixtureData.home_team} size="medium" />
               <h3 className="text-lg font-bold">{selectedFixtureData.home_team?.name}</h3>
             </div>
-            <div className="text-5xl font-bold text-primary drop-shadow-lg">
+            <div className="text-5xl font-bold" style={getScoreStyle()}>
               {homeScore}
             </div>
           </div>
@@ -51,7 +58,7 @@ const MatchHeaderWithScore = ({
               <h3 className="text-lg font-bold">{selectedFixtureData.away_team?.name}</h3>
               <TeamLogo team={selectedFixtureData.away_team} size="medium" />
             </div>
-            <div className="text-5xl font-bold text-primary drop-shadow-lg">
+            <div className="text-5xl font-bold" style={getScoreStyle()}>
               {awayScore}
             </div>
           </div>
