@@ -8,6 +8,7 @@ export interface SubstitutionValidation {
   requiresSubstitution: boolean;
   reason?: string;
   actionType?: 'substitute' | 'direct';
+  isReSubstitution?: boolean;
 }
 
 export const FIELD_PLAYER_LIMIT = 7;
@@ -81,6 +82,15 @@ export const validateSubstitution = (
   const player = trackedPlayers.find(p => p.id === playerId);
   const activePlayers = trackedPlayers.filter(p => p.isPlaying);
   
+  console.log('🔍 validateSubstitution:', {
+    actionType,
+    playerId,
+    playerName: player?.name || newPlayer?.name,
+    isPlaying: player?.isPlaying,
+    activeCount: activePlayers.length,
+    trackedCount: trackedPlayers.length
+  });
+
   if (actionType === 'in' && newPlayer) {
     const validation = canSubPlayerIn(newPlayer, trackedPlayers);
     return {
@@ -88,7 +98,8 @@ export const validateSubstitution = (
       canSubOut: true,
       requiresSubstitution: activePlayers.length >= FIELD_PLAYER_LIMIT,
       reason: validation.reason,
-      actionType: activePlayers.length >= FIELD_PLAYER_LIMIT ? 'substitute' : 'direct'
+      actionType: activePlayers.length >= FIELD_PLAYER_LIMIT ? 'substitute' : 'direct',
+      isReSubstitution: false
     };
   }
   
@@ -99,37 +110,51 @@ export const validateSubstitution = (
       canSubOut: validation.canRemove,
       requiresSubstitution: activePlayers.length <= FIELD_PLAYER_LIMIT && player.isPlaying,
       reason: validation.reason,
-      actionType: 'direct'
+      actionType: 'direct',
+      isReSubstitution: false
     };
   }
   
   if (actionType === 'toggle' && player) {
+    const isReSubstitution = !player.isPlaying; // Player is currently off field
+    
     if (player.isPlaying) {
-      // Toggling from playing to not playing
+      // Toggling from playing to not playing (subbing out)
       const validation = canSubPlayerOut(playerId, trackedPlayers);
       return {
         canSubIn: true,
         canSubOut: validation.canRemove,
         requiresSubstitution: activePlayers.length <= FIELD_PLAYER_LIMIT,
         reason: validation.reason,
-        actionType: activePlayers.length <= FIELD_PLAYER_LIMIT ? 'substitute' : 'direct'
+        actionType: activePlayers.length <= FIELD_PLAYER_LIMIT ? 'substitute' : 'direct',
+        isReSubstitution: false
       };
     } else {
-      // Toggling from not playing to playing
+      // Toggling from not playing to playing (re-substitution)
       if (activePlayers.length >= FIELD_PLAYER_LIMIT) {
+        console.log('🚨 Re-substitution blocked - field is full:', {
+          playerName: player.name,
+          activeCount: activePlayers.length,
+          limit: FIELD_PLAYER_LIMIT
+        });
+        
         return {
           canSubIn: false,
           canSubOut: true,
           requiresSubstitution: true,
-          reason: 'Field is full - substitution required',
-          actionType: 'substitute'
+          reason: 'Field is full - must substitute another player out first',
+          actionType: 'substitute',
+          isReSubstitution: true
         };
       }
+      
+      // Field has space, allow direct re-entry
       return {
         canSubIn: true,
         canSubOut: true,
         requiresSubstitution: false,
-        actionType: 'direct'
+        actionType: 'direct',
+        isReSubstitution: true
       };
     }
   }
@@ -138,13 +163,16 @@ export const validateSubstitution = (
     canSubIn: false,
     canSubOut: false,
     requiresSubstitution: false,
-    reason: 'Invalid action type'
+    reason: 'Invalid action type',
+    isReSubstitution: false
   };
 };
 
 export const getSubstitutionMessage = (validation: SubstitutionValidation): string => {
   if (validation.requiresSubstitution && validation.actionType === 'substitute') {
-    return 'Substitution required - field limit reached';
+    return validation.isReSubstitution 
+      ? 'Re-substitution requires removing another player first'
+      : 'Substitution required - field limit reached';
   }
   if (!validation.canSubIn && !validation.canSubOut) {
     return validation.reason || 'Action not allowed';

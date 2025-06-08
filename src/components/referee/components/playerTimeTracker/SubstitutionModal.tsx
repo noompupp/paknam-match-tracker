@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { EnhancedRefereeSelect, EnhancedRefereeSelectContent, EnhancedRefereeSelectItem } from "@/components/ui/enhanced-referee-select";
 import { ProcessedPlayer } from "@/utils/refereeDataProcessor";
-import { Users, UserPlus, AlertTriangle, RotateCcw } from "lucide-react";
+import { Users, UserPlus, AlertTriangle, RotateCcw, ArrowLeftRight } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -21,6 +21,8 @@ interface SubstitutionModalProps {
   } | null;
   enhancedAvailablePlayers: EnhancedAvailablePlayers;
   onSubstitute: (incomingPlayer: ProcessedPlayer) => void;
+  actionType?: string;
+  isReSubstitution?: boolean;
 }
 
 const SubstitutionModal = ({
@@ -28,7 +30,9 @@ const SubstitutionModal = ({
   onClose,
   outgoingPlayer,
   enhancedAvailablePlayers,
-  onSubstitute
+  onSubstitute,
+  actionType = 'toggle',
+  isReSubstitution = false
 }: SubstitutionModalProps) => {
   const [selectedIncomingPlayer, setSelectedIncomingPlayer] = useState("");
 
@@ -39,6 +43,8 @@ const SubstitutionModal = ({
   const hasAnyPlayers = allAvailablePlayers.length > 0;
 
   console.log('🔄 SubstitutionModal: Rendering with enhanced players:', {
+    actionType,
+    isReSubstitution,
     newPlayers: newPlayers.length,
     reSubstitutionPlayers: reSubstitutionPlayers.length,
     canReSubstitute,
@@ -52,6 +58,7 @@ const SubstitutionModal = ({
     const incomingPlayer = allAvailablePlayers.find(p => p.id.toString() === selectedIncomingPlayer);
     if (incomingPlayer) {
       console.log('✅ SubstitutionModal: Making substitution:', {
+        actionType,
         outgoing: outgoingPlayer?.name,
         incoming: incomingPlayer.name,
         isReSubstitution: reSubstitutionPlayers.some(p => p.id.toString() === selectedIncomingPlayer)
@@ -72,24 +79,55 @@ const SubstitutionModal = ({
     return reSubstitutionPlayers.some(p => p.id.toString() === playerId);
   };
 
-  if (!outgoingPlayer) return null;
+  const getModalTitle = () => {
+    if (actionType === 're-substitution') {
+      return 'Re-Substitution Required';
+    }
+    if (actionType === 'automatic') {
+      return 'Automatic Substitution';
+    }
+    return 'Substitution Required';
+  };
+
+  const getModalIcon = () => {
+    if (actionType === 're-substitution') {
+      return <ArrowLeftRight className="h-5 w-5" />;
+    }
+    return <Users className="h-5 w-5" />;
+  };
+
+  const getAlertMessage = () => {
+    if (actionType === 're-substitution') {
+      return 'Field is full. You must remove another player before this re-entry can proceed.';
+    }
+    if (outgoingPlayer) {
+      return (
+        <>
+          <span className="font-medium">{outgoingPlayer.name}</span> has been substituted out. 
+          Select a replacement player to maintain the squad.
+        </>
+      );
+    }
+    return 'Select a replacement player to complete the substitution.';
+  };
+
+  if (!outgoingPlayer && actionType !== 're-substitution') return null;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Users className="h-5 w-5" />
-            Substitution Required
+            {getModalIcon()}
+            {getModalTitle()}
           </DialogTitle>
         </DialogHeader>
         
         <div className="space-y-4">
-          <Alert>
+          <Alert variant={actionType === 're-substitution' ? 'destructive' : 'default'}>
             <AlertTriangle className="h-4 w-4" />
             <AlertDescription>
-              <span className="font-medium">{outgoingPlayer.name}</span> has been substituted out. 
-              Select a replacement player to maintain the squad.
+              {getAlertMessage()}
             </AlertDescription>
           </Alert>
 
@@ -108,18 +146,39 @@ const SubstitutionModal = ({
             </Alert>
           )}
 
-          <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-            <div className="flex items-center gap-2 text-red-800">
-              <span className="text-sm font-medium">Outgoing Player:</span>
+          {/* Special indicator for re-substitution enforcement */}
+          {actionType === 're-substitution' && (
+            <Alert>
+              <ArrowLeftRight className="h-4 w-4" />
+              <AlertDescription>
+                <div className="flex items-center justify-between">
+                  <span>Re-substitution enforcement: Must maintain 7 players on field</span>
+                  <Badge variant="destructive" className="text-xs">
+                    Field Full
+                  </Badge>
+                </div>
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {outgoingPlayer && (
+            <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+              <div className="flex items-center gap-2 text-red-800">
+                <span className="text-sm font-medium">
+                  {actionType === 're-substitution' ? 'Player to Remove:' : 'Outgoing Player:'}
+                </span>
+              </div>
+              <div className="mt-1">
+                <span className="font-semibold">{outgoingPlayer.name}</span>
+                <span className="text-sm text-muted-foreground ml-2">({outgoingPlayer.team})</span>
+              </div>
             </div>
-            <div className="mt-1">
-              <span className="font-semibold">{outgoingPlayer.name}</span>
-              <span className="text-sm text-muted-foreground ml-2">({outgoingPlayer.team})</span>
-            </div>
-          </div>
+          )}
 
           <div className="space-y-2">
-            <Label htmlFor="incomingPlayer">Select Replacement Player</Label>
+            <Label htmlFor="incomingPlayer">
+              {actionType === 're-substitution' ? 'Select Player to Remove' : 'Select Replacement Player'}
+            </Label>
             <EnhancedRefereeSelect 
               value={selectedIncomingPlayer} 
               onValueChange={(value) => {
@@ -128,7 +187,7 @@ const SubstitutionModal = ({
               }}
               placeholder={
                 hasAnyPlayers 
-                  ? "Choose replacement player" 
+                  ? actionType === 're-substitution' ? "Choose player to remove" : "Choose replacement player"
                   : "No available players"
               }
               disabled={!hasAnyPlayers}
@@ -217,7 +276,9 @@ const SubstitutionModal = ({
               <UserPlus className="h-4 w-4 mr-2" />
               {selectedIncomingPlayer && isReSubstitutionPlayer(selectedIncomingPlayer) 
                 ? "Re-substitute" 
-                : "Make Substitution"
+                : actionType === 're-substitution' 
+                  ? "Remove Player"
+                  : "Make Substitution"
               }
             </Button>
             <Button
@@ -241,6 +302,16 @@ const SubstitutionModal = ({
               <div className="flex items-center justify-center gap-1">
                 <RotateCcw className="h-3 w-3" />
                 <span>Players marked OFF can now be re-substituted back in</span>
+              </div>
+            </div>
+          )}
+
+          {/* Re-substitution enforcement explanation */}
+          {actionType === 're-substitution' && (
+            <div className="text-xs text-center text-muted-foreground bg-blue-50 p-2 rounded">
+              <div className="flex items-center justify-center gap-1">
+                <ArrowLeftRight className="h-3 w-3" />
+                <span>Re-substitution enforcement ensures exactly 7 players on field</span>
               </div>
             </div>
           )}

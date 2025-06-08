@@ -61,18 +61,29 @@ const TrackedPlayerCard = ({
       };
     } else {
       const isFieldFull = trackedPlayers.filter(p => p.isPlaying).length >= 7;
+      const isReSubstitution = toggleValidation.isReSubstitution;
+      
       return {
         ...baseProps,
         variant: isFieldFull ? "outline" as const : "default" as const,
         children: (
           <>
-            <span className="hidden sm:inline">Sub In</span>
-            <span className="sm:hidden">In</span>
+            <span className="hidden sm:inline">
+              {isReSubstitution ? "Re-Sub In" : "Sub In"}
+            </span>
+            <span className="sm:hidden">
+              {isReSubstitution ? "Re-In" : "In"}
+            </span>
           </>
         ),
         title: isFieldFull 
-          ? "Field is full - will require substitution"
-          : "Substitute player in"
+          ? isReSubstitution 
+            ? "Field is full - will require another player to be substituted out first"
+            : "Field is full - will require substitution"
+          : isReSubstitution 
+            ? "Re-substitute player in"
+            : "Substitute player in",
+        disabled: isFieldFull && !toggleValidation.canSubIn
       };
     }
   };
@@ -85,7 +96,8 @@ const TrackedPlayerCard = ({
     canRemove: removal.canRemove,
     isPlaying: player.isPlaying,
     toggleValidation: toggleValidation.actionType,
-    requiresSubstitution: toggleValidation.requiresSubstitution
+    requiresSubstitution: toggleValidation.requiresSubstitution,
+    isReSubstitution: toggleValidation.isReSubstitution
   });
 
   return (
@@ -114,6 +126,11 @@ const TrackedPlayerCard = ({
             {toggleValidation.requiresSubstitution && (
               <Badge variant="outline" className="text-xs px-1.5 py-0 h-4">
                 SUB REQ
+              </Badge>
+            )}
+            {toggleValidation.isReSubstitution && !player.isPlaying && (
+              <Badge variant="outline" className="text-xs px-1.5 py-0 h-4 bg-blue-50">
+                RE-SUB
               </Badge>
             )}
           </div>
@@ -155,7 +172,7 @@ const TrackedPlayerCard = ({
       </div>
 
       {/* Mobile-only status display */}
-      <div className="sm:hidden mt-2">
+      <div className="sm:hidden mt-2 flex items-center gap-2">
         <PlayerStatusBadge
           role={role}
           totalTime={player.totalTime}
@@ -163,6 +180,11 @@ const TrackedPlayerCard = ({
           isPlaying={player.isPlaying}
           matchTime={matchTime}
         />
+        {toggleValidation.isReSubstitution && !player.isPlaying && (
+          <Badge variant="outline" className="text-xs px-1.5 py-0 h-4 bg-blue-50">
+            Available for Re-substitution
+          </Badge>
+        )}
       </div>
     </div>
   );
