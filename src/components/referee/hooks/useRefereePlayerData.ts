@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { playerDropdownService } from "@/services/playerDropdownService";
-import { debugPlayerDropdownData, debugRefereeToolsData } from "@/utils/refereeToolsDebug";
+import { debugRefereeToolsData } from "@/utils/refereeToolsDebug";
 import type { ComponentPlayer, PlayerTimeTrackerPlayer } from "./useRefereeState";
 
 interface RefereePlayerDataProps {
@@ -107,9 +107,6 @@ export const useRefereePlayerData = ({
           dataIssues
         });
 
-        // Debug the final data
-        debugPlayerDropdownData(allPlayers, "Enhanced useRefereePlayerData - Match Specific");
-        
         console.log('✅ useRefereePlayerData: Enhanced player data loaded for match:', {
           fixture: selectedFixtureData.id,
           homeTeam: homeTeamName,
