@@ -77,10 +77,10 @@ const SubstitutionFlowManager = ({
     // Add the incoming player
     onAddPlayer(incomingPlayer);
     
-    // Show success toast
+    // Show enhanced substitution complete toast
     toast({
-      title: "Substitution Complete",
-      description: `${incomingPlayer.name} has entered the match`,
+      title: "🔄 Substitution Complete",
+      description: `${pendingSubstitution?.name} → ${incomingPlayer.name} (${incomingPlayer.team})`,
     });
     
     // Clean up
@@ -92,16 +92,8 @@ const SubstitutionFlowManager = ({
   };
 
   const handleSkipSubstitution = () => {
-    const activeCount = trackedPlayers.filter(p => p.isPlaying).length;
-    
-    if (activeCount < 7) {
-      toast({
-        title: "Warning: Below Minimum Players",
-        description: `Only ${activeCount} players on field. Add a substitute to reach the required 7 players.`,
-        variant: "destructive"
-      });
-    }
-    
+    // Remove the old warning message - substitution is optional
+    // Players can continue with fewer than 7 if needed
     setPendingSubstitution(null);
     setShowSubstitutionModal(false);
   };
