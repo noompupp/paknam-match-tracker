@@ -1,3 +1,4 @@
+
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertTriangle } from "lucide-react";
@@ -108,13 +109,13 @@ const RefereeToolsContainer = () => {
     assignGoal(player, matchTime, selectedFixtureData.id, homeTeam, awayTeam);
   };
 
-  // Fixed function signatures to match expected calls
-  const handleAddGoal = (team: 'home' | 'away', additionalParam?: any) => {
+  // Fixed function signatures to match interface expectations
+  const handleAddGoal = (team: 'home' | 'away') => {
     // Add goal logic here
     console.log('Adding goal for team:', team);
   };
 
-  const handleRemoveGoal = (team: 'home' | 'away', additionalParam?: any) => {
+  const handleRemoveGoal = (team: 'home' | 'away') => {
     // Remove goal logic here
     console.log('Removing goal for team:', team);
   };
