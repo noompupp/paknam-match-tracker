@@ -12,6 +12,12 @@ interface SubstitutionFlowManagerProps {
   selectedFixtureData?: any;
   onAddPlayer: (player: ProcessedPlayer) => void;
   onSubstitutionComplete?: () => void;
+  substitutionManager?: {
+    pendingSubstitution: any;
+    hasPendingSubstitution: boolean;
+    isSubOutInitiated: boolean;
+    cancelPendingSubstitution: () => void;
+  };
 }
 
 const SubstitutionFlowManager = ({
@@ -20,46 +26,31 @@ const SubstitutionFlowManager = ({
   awayTeamPlayers,
   selectedFixtureData,
   onAddPlayer,
-  onSubstitutionComplete
+  onSubstitutionComplete,
+  substitutionManager
 }: SubstitutionFlowManagerProps) => {
   const [showSubstitutionModal, setShowSubstitutionModal] = useState(false);
-  const [pendingSubstitution, setPendingSubstitution] = useState<{
-    id: number;
-    name: string;
-    team: string;
-  } | null>(null);
   const { toast } = useToast();
 
-  // Watch for players being substituted out (going from playing to not playing)
+  // Watch for "Sub Out" first scenarios (modal flow)
   useEffect(() => {
-    const checkForSubstitutions = () => {
-      const activeCount = trackedPlayers.filter(p => p.isPlaying).length;
-      
-      // If we have less than 7 active players and there was a recent substitution
-      if (activeCount < 7) {
-        // Find the most recently stopped player
-        const stoppedPlayers = trackedPlayers.filter(p => !p.isPlaying);
-        if (stoppedPlayers.length > 0) {
-          const lastStopped = stoppedPlayers[stoppedPlayers.length - 1];
-          
-          // Trigger substitution flow
-          setPendingSubstitution({
-            id: lastStopped.id,
-            name: lastStopped.name,
-            team: lastStopped.team
-          });
-          setShowSubstitutionModal(true);
-        }
-      }
-    };
-
-    checkForSubstitutions();
-  }, [trackedPlayers]);
+    if (substitutionManager?.hasPendingSubstitution && substitutionManager?.isSubOutInitiated) {
+      // This is a "Sub Out" first scenario - show the modal
+      setShowSubstitutionModal(true);
+    } else {
+      // Hide modal for "Sub In" first scenarios (streamlined flow)
+      setShowSubstitutionModal(false);
+    }
+  }, [substitutionManager?.hasPendingSubstitution, substitutionManager?.isSubOutInitiated]);
 
   const getAvailablePlayersForSubstitution = () => {
-    if (!pendingSubstitution) return [];
+    if (!substitutionManager?.pendingSubstitution) return [];
     
-    const teamPlayers = pendingSubstitution.team === (selectedFixtureData?.home_team?.name || 'Home')
+    // Find the substituted player to determine their team
+    const substitutedPlayer = trackedPlayers.find(p => p.id === substitutionManager.pendingSubstitution.outgoingPlayerId);
+    if (!substitutedPlayer) return [];
+    
+    const teamPlayers = substitutedPlayer.team === (selectedFixtureData?.home_team?.name || 'Home')
       ? homeTeamPlayers || []
       : awayTeamPlayers || [];
     
@@ -69,8 +60,8 @@ const SubstitutionFlowManager = ({
   };
 
   const handleSubstitution = (incomingPlayer: ProcessedPlayer) => {
-    console.log('🔄 SubstitutionFlowManager: Making substitution:', {
-      outgoing: pendingSubstitution?.name,
+    console.log('🔄 SubstitutionFlowManager: Making modal-based substitution:', {
+      outgoing: substitutionManager?.pendingSubstitution?.outgoingPlayerName,
       incoming: incomingPlayer.name
     });
     
@@ -80,11 +71,11 @@ const SubstitutionFlowManager = ({
     // Show enhanced substitution complete toast
     toast({
       title: "🔄 Substitution Complete",
-      description: `${pendingSubstitution?.name} → ${incomingPlayer.name} (${incomingPlayer.team})`,
+      description: `${substitutionManager?.pendingSubstitution?.outgoingPlayerName} → ${incomingPlayer.name} (${incomingPlayer.team})`,
     });
     
     // Clean up
-    setPendingSubstitution(null);
+    substitutionManager?.cancelPendingSubstitution();
     setShowSubstitutionModal(false);
     
     // Notify parent component
@@ -92,17 +83,32 @@ const SubstitutionFlowManager = ({
   };
 
   const handleSkipSubstitution = () => {
-    // Remove the old warning message - substitution is optional
-    // Players can continue with fewer than 7 if needed
-    setPendingSubstitution(null);
+    console.log('⏭️ SubstitutionFlowManager: Skipping substitution for:', substitutionManager?.pendingSubstitution?.outgoingPlayerName);
+    
+    // Clean up pending substitution
+    substitutionManager?.cancelPendingSubstitution();
     setShowSubstitutionModal(false);
+    
+    toast({
+      title: "Substitution Cancelled",
+      description: "Continuing with current squad",
+    });
   };
+
+  // Only show modal for "Sub Out" first scenarios
+  if (!substitutionManager?.isSubOutInitiated) {
+    return null;
+  }
 
   return (
     <SubstitutionModal
       isOpen={showSubstitutionModal}
       onClose={handleSkipSubstitution}
-      outgoingPlayer={pendingSubstitution}
+      outgoingPlayer={substitutionManager.pendingSubstitution ? {
+        id: substitutionManager.pendingSubstitution.outgoingPlayerId,
+        name: substitutionManager.pendingSubstitution.outgoingPlayerName,
+        team: trackedPlayers.find(p => p.id === substitutionManager.pendingSubstitution.outgoingPlayerId)?.team || ''
+      } : null}
       availablePlayers={getAvailablePlayersForSubstitution()}
       onSubstitute={handleSubstitution}
     />

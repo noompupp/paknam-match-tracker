@@ -1,4 +1,3 @@
-
 import { useToast } from "@/hooks/use-toast";
 import { ComponentPlayer } from "../useRefereeState";
 import { PlayerTime } from "@/types/database";
@@ -89,36 +88,41 @@ export const usePlayerTimeHandlers = (props: UsePlayerTimeHandlersProps) => {
     try {
       console.log('⏱️ usePlayerTimeHandlers: Toggling player time:', player.name);
       
-      // Check if player has played before (potential substitution candidate)
       const hasPlayedBefore = player.totalTime > 0;
       
-      // CORRECTED LOGIC: Only initiate pending substitution when pressing "Sub In" 
-      // (i.e., player is NOT currently playing AND has played before)
+      // DUAL-BEHAVIOR IMPLEMENTATION:
+      
+      // SCENARIO 1: "Sub In" first (streamlined flow)
       if (!player.isPlaying && hasPlayedBefore) {
         // This is a "Sub In" action for a player who has played before
-        substitutionManager.initiatePendingSubstitution(player);
+        substitutionManager.initiatePendingSubstitution(player, 'sub_in');
         
         toast({
           title: "Substitution Ready",
           description: `${player.name} will be substituted in. Press "Sub Out" on another player to complete.`,
         });
         
-        props.addEvent('Substitution Initiated', `${player.name} ready for substitution`, props.matchTime);
+        props.addEvent('Substitution Initiated', `${player.name} ready for substitution (Sub In first)`, props.matchTime);
         return;
       }
 
-      // For "Sub Out" actions (player is currently playing), check if this completes a pending substitution
-      if (player.isPlaying && substitutionManager.hasPendingSubstitution) {
-        // Complete the pending substitution by stopping this player
+      // SCENARIO 2: Complete streamlined substitution (Sub Out after Sub In)
+      if (player.isPlaying && substitutionManager.hasPendingSubstitution && !substitutionManager.isSubOutInitiated) {
+        // Complete the pending "Sub In" substitution by stopping this player
         await props.togglePlayerTime(playerId, props.matchTime);
         
         const pendingSub = substitutionManager.pendingSubstitution;
         if (pendingSub) {
-          // Clear the pending substitution and complete it
+          // Start the incoming player automatically
+          const incomingPlayer = props.playersForTimeTracker.find(p => p.id === pendingSub.outgoingPlayerId);
+          if (incomingPlayer) {
+            await props.togglePlayerTime(pendingSub.outgoingPlayerId, props.matchTime);
+          }
+          
           substitutionManager.cancelPendingSubstitution();
           
           props.addEvent('Substitution Complete', 
-            `${pendingSub.outgoingPlayerName} substituted for ${player.name}`, 
+            `${pendingSub.outgoingPlayerName} substituted for ${player.name} (Streamlined)`, 
             props.matchTime
           );
           
@@ -130,7 +134,24 @@ export const usePlayerTimeHandlers = (props: UsePlayerTimeHandlersProps) => {
         return;
       }
 
-      // Standard toggle for new players or regular start/stop actions
+      // SCENARIO 3: "Sub Out" first (modal flow)
+      if (player.isPlaying && hasPlayedBefore && !substitutionManager.hasPendingSubstitution) {
+        // This is a "Sub Out" action that should trigger the modal flow
+        await props.togglePlayerTime(playerId, props.matchTime);
+        
+        // Initiate substitution with "sub_out" type to trigger modal
+        substitutionManager.initiatePendingSubstitution(player, 'sub_out');
+        
+        props.addEvent('Substitution Initiated', `${player.name} substituted out (Modal flow)`, props.matchTime);
+        
+        toast({
+          title: "Player Substituted Out",
+          description: `${player.name} has been substituted out. Select a replacement player.`,
+        });
+        return;
+      }
+
+      // SCENARIO 4: Standard toggle for new players or regular start/stop actions
       await props.togglePlayerTime(playerId, props.matchTime);
       
       const action = player.isPlaying ? 'stopped' : 'started';
@@ -174,8 +195,6 @@ export const usePlayerTimeHandlers = (props: UsePlayerTimeHandlersProps) => {
     try {
       console.log('⏱️ usePlayerTimeHandlers: Saving all player times...');
       
-      // This would typically call a service to save all player times
-      // For now, we'll just show a success message
       props.addEvent('Time Save', `Saved time data for ${props.playersForTimeTracker.length} players`, props.matchTime);
       
       toast({

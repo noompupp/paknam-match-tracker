@@ -7,19 +7,21 @@ interface PendingSubstitution {
   outgoingPlayerId: number;
   outgoingPlayerName: string;
   timestamp: number;
+  initiationType: 'sub_in' | 'sub_out'; // Track how the substitution was initiated
 }
 
 export const useSubstitutionManager = () => {
   const [pendingSubstitution, setPendingSubstitution] = useState<PendingSubstitution | null>(null);
 
-  const initiatePendingSubstitution = useCallback((player: PlayerTime) => {
+  const initiatePendingSubstitution = useCallback((player: PlayerTime, type: 'sub_in' | 'sub_out' = 'sub_in') => {
     setPendingSubstitution({
       outgoingPlayerId: player.id,
       outgoingPlayerName: player.name,
-      timestamp: Date.now()
+      timestamp: Date.now(),
+      initiationType: type
     });
     
-    console.log('🔄 Substitution Manager: Pending substitution initiated for Sub In:', player.name);
+    console.log(`🔄 Substitution Manager: Pending substitution initiated via ${type}:`, player.name);
   }, []);
 
   const completePendingSubstitution = useCallback((incomingPlayer: ProcessedPlayer) => {
@@ -47,10 +49,12 @@ export const useSubstitutionManager = () => {
   }, [pendingSubstitution]);
 
   const hasPendingSubstitution = Boolean(pendingSubstitution);
+  const isSubOutInitiated = pendingSubstitution?.initiationType === 'sub_out';
 
   return {
     pendingSubstitution,
     hasPendingSubstitution,
+    isSubOutInitiated,
     initiatePendingSubstitution,
     completePendingSubstitution,
     cancelPendingSubstitution

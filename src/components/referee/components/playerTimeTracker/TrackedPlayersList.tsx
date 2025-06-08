@@ -11,6 +11,11 @@ interface TrackedPlayersListProps {
   onRemovePlayer: (playerId: number) => void;
   matchTime?: number;
   pendingSubstitutionPlayerId?: number | null;
+  substitutionManager?: {
+    pendingSubstitution: any;
+    hasPendingSubstitution: boolean;
+    isSubOutInitiated: boolean;
+  };
 }
 
 const TrackedPlayersList = ({
@@ -20,7 +25,8 @@ const TrackedPlayersList = ({
   onTogglePlayerTime,
   onRemovePlayer,
   matchTime = 0,
-  pendingSubstitutionPlayerId = null
+  pendingSubstitutionPlayerId = null,
+  substitutionManager
 }: TrackedPlayersListProps) => {
   if (trackedPlayers.length === 0) {
     return (
@@ -47,6 +53,7 @@ const TrackedPlayersList = ({
             trackedPlayers={trackedPlayers}
             matchTime={matchTime}
             isPendingSubstitution={isPendingSubstitution}
+            substitutionManager={substitutionManager}
           />
         );
       })}

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -78,7 +77,6 @@ const EnhancedPlayerTimeTracker = ({
       players: selectedPlayers.map(p => p.name)
     });
     
-    // Add all selected players to tracking
     selectedPlayers.forEach(player => {
       onAddPlayer(player);
     });
@@ -88,7 +86,6 @@ const EnhancedPlayerTimeTracker = ({
     const removal = canRemovePlayer(playerId, trackedPlayers);
     
     if (!removal.canRemove) {
-      // Show toast notification instead of inline warning
       toast({
         title: "Cannot Remove Player",
         description: removal.reason,
@@ -97,29 +94,27 @@ const EnhancedPlayerTimeTracker = ({
       return;
     }
     
-    // Remove the player - substitution flow will be handled automatically
     handleRemovePlayer(playerId);
   };
 
   const handleQuickAdd = () => {
     if (trackedPlayers.length === 0) {
-      // No players tracked yet, show initial selection
       setShowInitialSelection(true);
     } else {
-      // Players already tracked, use manual addition (existing functionality)
       console.log('Use existing player selection dropdown');
     }
   };
 
   const isMatchStarted = trackedPlayers.length > 0;
 
-  console.log('🎯 EnhancedPlayerTimeTracker Debug:', {
+  console.log('🎯 EnhancedPlayerTimeTracker Debug (Dual-Behavior):', {
     trackedCount: trackedPlayers.length,
     activeCount: playerCountValidation.activeCount,
     isValid: playerCountValidation.isValid,
     teamLocked: teamLockValidation.isLocked,
     lockedTeam: teamLockValidation.lockedTeam,
-    pendingSubstitution: substitutionManager.pendingSubstitution
+    pendingSubstitution: substitutionManager.pendingSubstitution,
+    substitutionType: substitutionManager.isSubOutInitiated ? 'modal' : 'streamlined'
   });
 
   return (
@@ -132,14 +127,17 @@ const EnhancedPlayerTimeTracker = ({
         formatTime={formatTime}
       />
 
-      {/* Pending Substitution Alert */}
+      {/* Dual-Behavior Pending Substitution Alert */}
       {substitutionManager.hasPendingSubstitution && (
         <Alert>
           <AlertTriangle className="h-4 w-4" />
           <AlertDescription>
             <div className="flex items-center justify-between">
               <span>
-                Substitution pending: {substitutionManager.pendingSubstitution?.outgoingPlayerName} is ready to be replaced. Add a new player to complete the substitution.
+                {substitutionManager.isSubOutInitiated 
+                  ? `${substitutionManager.pendingSubstitution?.outgoingPlayerName} has been substituted out. Select a replacement player.`
+                  : `Substitution pending: ${substitutionManager.pendingSubstitution?.outgoingPlayerName} is ready to be substituted in. Press "Sub Out" on another player to complete.`
+                }
               </span>
               <Button
                 variant="ghost"
@@ -212,7 +210,7 @@ const EnhancedPlayerTimeTracker = ({
             )}
           </div>
 
-          {/* Tracked Players List with substitution status */}
+          {/* Tracked Players List with dual-behavior substitution status */}
           <TrackedPlayersList
             trackedPlayers={trackedPlayers}
             allPlayers={allPlayers}
@@ -221,6 +219,7 @@ const EnhancedPlayerTimeTracker = ({
             onRemovePlayer={handlePlayerRemove}
             matchTime={matchTime}
             pendingSubstitutionPlayerId={substitutionManager.pendingSubstitution?.outgoingPlayerId || null}
+            substitutionManager={substitutionManager}
           />
 
           {!isMatchStarted && (
@@ -243,7 +242,7 @@ const EnhancedPlayerTimeTracker = ({
         selectedFixtureData={selectedFixtureData}
       />
 
-      {/* Automatic Substitution Flow Manager */}
+      {/* Dual-Behavior Substitution Flow Manager */}
       <SubstitutionFlowManager
         trackedPlayers={trackedPlayers}
         homeTeamPlayers={homeTeamPlayers}
@@ -251,8 +250,9 @@ const EnhancedPlayerTimeTracker = ({
         selectedFixtureData={selectedFixtureData}
         onAddPlayer={handleAddPlayer}
         onSubstitutionComplete={() => {
-          console.log('✅ Substitution completed successfully');
+          console.log('✅ Dual-behavior substitution completed successfully');
         }}
+        substitutionManager={substitutionManager}
       />
     </div>
   );

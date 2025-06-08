@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { UserMinus, ArrowRightLeft } from "lucide-react";
@@ -17,6 +18,11 @@ interface TrackedPlayerCardProps {
   trackedPlayers?: PlayerTime[];
   matchTime?: number;
   isPendingSubstitution?: boolean;
+  substitutionManager?: {
+    pendingSubstitution: any;
+    hasPendingSubstitution: boolean;
+    isSubOutInitiated: boolean;
+  };
 }
 
 const TrackedPlayerCard = ({
@@ -27,7 +33,8 @@ const TrackedPlayerCard = ({
   onRemovePlayer,
   trackedPlayers = [],
   matchTime = 0,
-  isPendingSubstitution = false
+  isPendingSubstitution = false,
+  substitutionManager
 }: TrackedPlayerCardProps) => {
   const role = playerInfo?.role || 'Starter';
   
@@ -41,7 +48,13 @@ const TrackedPlayerCard = ({
   const hasPlayedBefore = player.totalTime > 0;
   const isSubstitutionCandidate = hasPlayedBefore;
   
-  console.log('👤 Rendering tracked player with corrected substitution status:', {
+  // Check if there's a pending streamlined substitution that this player can complete
+  const canCompleteStreamlinedSub = substitutionManager?.hasPendingSubstitution && 
+                                   !substitutionManager?.isSubOutInitiated && 
+                                   player.isPlaying && 
+                                   player.id !== substitutionManager?.pendingSubstitution?.outgoingPlayerId;
+  
+  console.log('👤 Rendering tracked player with dual-behavior substitution status:', {
     name: player.name,
     role,
     canRemove: removal.canRemove,
@@ -49,16 +62,35 @@ const TrackedPlayerCard = ({
     hasPlayedBefore,
     isSubstitutionCandidate,
     isPendingSubstitution,
+    canCompleteStreamlinedSub,
+    substitutionType: substitutionManager?.isSubOutInitiated ? 'modal' : 'streamlined',
     currentHalfTime,
     totalTime: player.totalTime
   });
 
-  // Determine button text and styling based on corrected logic
+  // Determine button text and styling based on dual-behavior logic
   const getButtonProps = () => {
     if (isPendingSubstitution) {
+      if (substitutionManager?.isSubOutInitiated) {
+        return {
+          text: "Substituted Out" as const,
+          variant: "outline" as const,
+          icon: <ArrowRightLeft className="h-3 w-3" />
+        };
+      } else {
+        return {
+          text: "Pending Sub In" as const,
+          variant: "outline" as const,
+          icon: <ArrowRightLeft className="h-3 w-3" />
+        };
+      }
+    }
+    
+    // Show completion indicator for streamlined substitutions
+    if (canCompleteStreamlinedSub) {
       return {
-        text: "Pending Sub" as const,
-        variant: "outline" as const,
+        text: "Complete Sub" as const,
+        variant: "destructive" as const,
         icon: <ArrowRightLeft className="h-3 w-3" />
       };
     }
@@ -101,7 +133,7 @@ const TrackedPlayerCard = ({
   return (
     <div className={`p-2 sm:p-3 rounded-md border bg-card hover:shadow-sm transition-all ${
       isPendingSubstitution ? 'border-orange-300 bg-orange-50/50' : ''
-    }`}>
+    } ${canCompleteStreamlinedSub ? 'border-green-300 bg-green-50/50' : ''}`}>
       <div className="flex items-center gap-2 sm:gap-3">
         
         {/* Compact player number */}
@@ -116,7 +148,12 @@ const TrackedPlayerCard = ({
             <PlayerRoleBadge role={role} size="sm" />
             {isPendingSubstitution && (
               <Badge variant="outline" className="text-xs px-1.5 py-0 h-4 border-orange-300 text-orange-700">
-                Pending Sub
+                {substitutionManager?.isSubOutInitiated ? 'Out' : 'Pending In'}
+              </Badge>
+            )}
+            {canCompleteStreamlinedSub && (
+              <Badge variant="outline" className="text-xs px-1.5 py-0 h-4 border-green-300 text-green-700">
+                Can Complete
               </Badge>
             )}
           </div>
@@ -154,8 +191,8 @@ const TrackedPlayerCard = ({
             size="sm"
             variant={buttonProps.variant}
             onClick={() => onTogglePlayerTime(player.id)}
-            className="h-7 px-2 text-xs"
-            disabled={isPendingSubstitution}
+            className={`h-7 px-2 text-xs ${canCompleteStreamlinedSub ? 'animate-pulse' : ''}`}
+            disabled={isPendingSubstitution && substitutionManager?.isSubOutInitiated}
           >
             {buttonProps.icon && (
               <span className="sm:hidden mr-1">
