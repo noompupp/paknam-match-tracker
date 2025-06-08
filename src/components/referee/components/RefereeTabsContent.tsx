@@ -1,7 +1,7 @@
+
 import { TabsContent } from "@/components/ui/tabs";
 import ScoreTab from "./tabs/ScoreTab";
 import TimerTab from "./tabs/TimerTab";
-import GoalsTab from "./tabs/GoalsTab";
 import CardsTab from "./tabs/CardsTab";
 import EnhancedTimeTab from "./tabs/EnhancedTimeTab";
 import SummaryTab from "./tabs/SummaryTab";
@@ -103,12 +103,18 @@ const RefereeTabsContent = ({
           selectedFixtureData={selectedFixtureData}
           homeScore={homeScore}
           awayScore={awayScore}
+          matchTime={matchTime}
           isRunning={isRunning}
+          goals={goals}
+          homeTeamPlayers={homeTeamPlayers}
+          awayTeamPlayers={awayTeamPlayers}
+          formatTime={formatTime}
           onToggleTimer={onToggleTimer}
           onResetMatch={onResetMatch}
           onSaveMatch={onSaveMatch}
           onQuickGoal={onQuickGoal}
           onOpenGoalWizard={onOpenGoalWizard}
+          onAssignGoal={onAssignGoal}
         />
       </TabsContent>
 
@@ -122,27 +128,6 @@ const RefereeTabsContent = ({
           formatTime={formatTime}
           onToggleTimer={onToggleTimer}
           onResetMatch={onResetMatch}
-        />
-      </TabsContent>
-
-      <TabsContent value="goals">
-        <GoalsTab
-          allPlayers={allPlayers}
-          homeTeamPlayers={homeTeamPlayers}
-          awayTeamPlayers={awayTeamPlayers}
-          goals={goals}
-          selectedPlayer={selectedGoalPlayer}
-          selectedGoalType={selectedGoalType}
-          selectedGoalTeam={selectedGoalTeam}
-          matchTime={matchTime}
-          onPlayerSelect={setSelectedGoalPlayer}
-          onGoalTypeChange={setSelectedGoalType}
-          onGoalTeamChange={setSelectedGoalTeam}
-          onAssignGoal={onAssignGoal}
-          formatTime={formatTime}
-          homeScore={homeScore}
-          awayScore={awayScore}
-          selectedFixtureData={selectedFixtureData}
         />
       </TabsContent>
 
