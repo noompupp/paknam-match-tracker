@@ -1,5 +1,6 @@
 
 import { useToast } from "@/hooks/use-toast";
+import { useQueryClient } from '@tanstack/react-query';
 import { PlayerTimeTrackerPlayer } from "../useRefereeState";
 import { unifiedRefereeService } from "@/services/fixtures";
 import { matchResetService } from "@/services/fixtures";
@@ -19,11 +20,12 @@ interface UseMatchDataHandlersProps {
   resetTracking: () => void;
   resetGoals: () => void;
   addEvent: (type: string, description: string, time: number) => void;
-  forceRefresh?: () => Promise<void>; // Enhanced refresh function
+  forceRefresh?: () => Promise<void>;
 }
 
 export const useMatchDataHandlers = (props: UseMatchDataHandlersProps) => {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const handleSaveMatch = async () => {
     if (!props.selectedFixtureData) return;
@@ -33,13 +35,11 @@ export const useMatchDataHandlers = (props: UseMatchDataHandlersProps) => {
     try {
       console.log('💾 useMatchDataHandlers: Starting unified match save...');
       
-      // Show loading state
       toast({
         title: "Saving Match...",
         description: "Please wait while we save your match data",
       });
       
-      // Prepare match data for unified save
       const matchData = {
         fixtureId: props.selectedFixtureData.id,
         homeScore: props.homeScore,
@@ -51,12 +51,12 @@ export const useMatchDataHandlers = (props: UseMatchDataHandlersProps) => {
           type: goal.type as 'goal' | 'assist',
           time: goal.time
         })),
-        cards: [], // Cards are handled separately in the current implementation
+        cards: [],
         playerTimes: props.playersForTimeTracker.map(player => ({
           playerId: player.id,
           playerName: player.name,
           team: player.team,
-          totalTime: Math.floor(player.totalTime / 60), // Convert to minutes
+          totalTime: Math.floor(player.totalTime / 60),
           periods: [{
             start_time: player.startTime || 0,
             end_time: props.matchTime,
@@ -78,7 +78,17 @@ export const useMatchDataHandlers = (props: UseMatchDataHandlersProps) => {
       if (result.success) {
         props.addEvent('Save', `Match saved successfully: ${result.message}`, props.matchTime);
         
-        // Force refresh to sync state
+        // Enhanced cache invalidation
+        await queryClient.invalidateQueries({ 
+          queryKey: ['fixtures'] 
+        });
+        await queryClient.invalidateQueries({ 
+          queryKey: ['match_events'] 
+        });
+        await queryClient.invalidateQueries({ 
+          queryKey: ['enhancedMatchSummary', props.selectedFixtureData.id] 
+        });
+        
         if (props.forceRefresh) {
           await props.forceRefresh();
         }
@@ -95,7 +105,6 @@ export const useMatchDataHandlers = (props: UseMatchDataHandlersProps) => {
         });
       }
       
-      console.log('✅ useMatchDataHandlers: Unified match save completed');
     } catch (error) {
       console.error('❌ useMatchDataHandlers: Failed to save match:', error);
       toast({
@@ -117,7 +126,6 @@ export const useMatchDataHandlers = (props: UseMatchDataHandlersProps) => {
     }
 
     try {
-      // Enhanced validation with user confirmation
       const safetyCheck = await matchResetService.validateResetOperation(props.selectedFixtureData.id);
       
       if (!safetyCheck.canReset) {
@@ -129,7 +137,6 @@ export const useMatchDataHandlers = (props: UseMatchDataHandlersProps) => {
         return;
       }
 
-      // Show detailed confirmation with warning information
       const warningMessage = safetyCheck.warnings.length > 0 
         ? `\n\nWarnings:\n${safetyCheck.warnings.join('\n')}`
         : '';
@@ -149,7 +156,6 @@ export const useMatchDataHandlers = (props: UseMatchDataHandlersProps) => {
         return;
       }
 
-      // Show loading state
       toast({
         title: "Resetting Match...",
         description: "Please wait while we reset all match data",
@@ -160,7 +166,7 @@ export const useMatchDataHandlers = (props: UseMatchDataHandlersProps) => {
       const resetResult = await matchResetService.resetMatchData(props.selectedFixtureData.id);
       
       if (resetResult.success) {
-        // Reset all local state
+        // Reset all local state first
         props.resetTimer();
         props.resetScore();
         props.resetEvents();
@@ -168,17 +174,40 @@ export const useMatchDataHandlers = (props: UseMatchDataHandlersProps) => {
         props.resetTracking();
         props.resetGoals();
         
+        // Enhanced cache invalidation to ensure UI updates
+        console.log('🔄 useMatchDataHandlers: Invalidating React Query cache...');
+        await queryClient.invalidateQueries({ 
+          queryKey: ['fixtures'] 
+        });
+        await queryClient.invalidateQueries({ 
+          queryKey: ['match_events'] 
+        });
+        await queryClient.invalidateQueries({ 
+          queryKey: ['enhancedMatchSummary', props.selectedFixtureData.id] 
+        });
+        await queryClient.invalidateQueries({ 
+          queryKey: ['enhancedMatchSummaryWithTeams', props.selectedFixtureData.id] 
+        });
+        
         // Force refresh to sync state
         if (props.forceRefresh) {
+          console.log('🔄 useMatchDataHandlers: Forcing real-time refresh...');
           await props.forceRefresh();
         }
         
+        // Additional delay to ensure all async operations complete
+        setTimeout(async () => {
+          await queryClient.refetchQueries({
+            queryKey: ['enhancedMatchSummary', props.selectedFixtureData.id]
+          });
+        }, 1000);
+        
         toast({
           title: "✅ Match Data Reset Complete",
-          description: resetResult.message,
+          description: "All match data has been cleared and UI refreshed",
         });
         
-        props.addEvent('Reset', 'Match data completely reset', 0);
+        props.addEvent('Reset', 'Match data completely reset with cache invalidation', 0);
         
         console.log('✅ useMatchDataHandlers: Enhanced match data reset completed successfully');
       } else {
@@ -211,24 +240,31 @@ export const useMatchDataHandlers = (props: UseMatchDataHandlersProps) => {
     try {
       console.log('🧹 useMatchDataHandlers: Starting duplicate cleanup...');
       
-      // Show loading state
       toast({
         title: "Cleaning Duplicates...",
         description: "Removing duplicate match events",
       });
       
-      // Note: This would require the enhancedDuplicatePreventionService to be implemented
-      // For now, we'll just refresh the state
+      // Enhanced cache invalidation
+      await queryClient.invalidateQueries({ 
+        queryKey: ['fixtures'] 
+      });
+      await queryClient.invalidateQueries({ 
+        queryKey: ['match_events'] 
+      });
+      await queryClient.invalidateQueries({ 
+        queryKey: ['enhancedMatchSummary', props.selectedFixtureData.id] 
+      });
+      
       if (props.forceRefresh) {
         await props.forceRefresh();
       }
       
       toast({
         title: "✅ Cleanup Complete",
-        description: "Match state has been refreshed",
+        description: "Match state has been refreshed and cache cleared",
       });
       
-      console.log('✅ useMatchDataHandlers: Duplicate cleanup completed');
     } catch (error) {
       console.error('❌ useMatchDataHandlers: Failed to cleanup duplicates:', error);
       toast({

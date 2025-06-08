@@ -1,39 +1,88 @@
 
 import { supabase } from '@/integrations/supabase/client';
 
-export interface MatchResetResult {
+interface ResetValidationResult {
+  canReset: boolean;
+  warnings: string[];
+  matchEvents: number;
+  playerTimeRecords: number;
+}
+
+interface ResetResult {
   success: boolean;
   message: string;
   errors: string[];
-  itemsDeleted: {
-    matchEvents: number;
-    playerTimeTracking: number;
-  };
+  eventsDeleted: number;
+  playerTimeRecordsDeleted: number;
 }
 
 export const matchResetService = {
-  async resetMatchData(fixtureId: number): Promise<MatchResetResult> {
-    console.log('🔄 MatchResetService: Starting match data reset for fixture:', fixtureId);
+  async validateResetOperation(fixtureId: number): Promise<ResetValidationResult> {
+    console.log('🔍 matchResetService: Validating reset operation for fixture:', fixtureId);
     
-    const result: MatchResetResult = {
-      success: false,
-      message: '',
-      errors: [],
-      itemsDeleted: {
-        matchEvents: 0,
-        playerTimeTracking: 0
-      }
-    };
+    try {
+      // Count existing match events
+      const { data: events, error: eventsError } = await supabase
+        .from('match_events')
+        .select('id')
+        .eq('fixture_id', fixtureId);
 
-    if (!fixtureId || fixtureId <= 0) {
-      result.errors.push('Invalid fixture ID provided');
-      result.message = 'Cannot reset match data: Invalid fixture ID';
-      return result;
+      if (eventsError) {
+        console.error('❌ matchResetService: Error counting events:', eventsError);
+        throw eventsError;
+      }
+
+      // Count existing player time records
+      const { data: playerTimes, error: playerTimesError } = await supabase
+        .from('player_time_tracking')
+        .select('id')
+        .eq('fixture_id', fixtureId);
+
+      if (playerTimesError) {
+        console.error('❌ matchResetService: Error counting player times:', playerTimesError);
+        throw playerTimesError;
+      }
+
+      const matchEvents = events?.length || 0;
+      const playerTimeRecords = playerTimes?.length || 0;
+      const warnings: string[] = [];
+
+      if (matchEvents > 0) {
+        warnings.push(`${matchEvents} match event(s) will be deleted`);
+      }
+      
+      if (playerTimeRecords > 0) {
+        warnings.push(`${playerTimeRecords} player time record(s) will be deleted`);
+      }
+
+      return {
+        canReset: true, // We allow reset in most cases, but show warnings
+        warnings,
+        matchEvents,
+        playerTimeRecords
+      };
+
+    } catch (error) {
+      console.error('❌ matchResetService: Error validating reset:', error);
+      return {
+        canReset: false,
+        warnings: ['Validation failed - cannot safely reset'],
+        matchEvents: 0,
+        playerTimeRecords: 0
+      };
     }
+  },
+
+  async resetMatchData(fixtureId: number): Promise<ResetResult> {
+    console.log('🔄 matchResetService: Starting complete match data reset for fixture:', fixtureId);
+    
+    const errors: string[] = [];
+    let eventsDeleted = 0;
+    let playerTimeRecordsDeleted = 0;
 
     try {
-      // 1. Delete match events (goals, cards, etc.)
-      console.log('🗑️ Deleting match events...');
+      // 1. Delete all match events
+      console.log('🗑️ matchResetService: Deleting match events...');
       const { data: deletedEvents, error: eventsError } = await supabase
         .from('match_events')
         .delete()
@@ -41,117 +90,77 @@ export const matchResetService = {
         .select();
 
       if (eventsError) {
-        result.errors.push(`Failed to delete match events: ${eventsError.message}`);
+        console.error('❌ matchResetService: Error deleting events:', eventsError);
+        errors.push(`Failed to delete match events: ${eventsError.message}`);
       } else {
-        result.itemsDeleted.matchEvents = deletedEvents?.length || 0;
-        console.log(`✅ Deleted ${result.itemsDeleted.matchEvents} match events`);
+        eventsDeleted = deletedEvents?.length || 0;
+        console.log(`✅ matchResetService: Deleted ${eventsDeleted} match events`);
       }
 
-      // 2. Delete player time tracking data
-      console.log('⏱️ Deleting player time tracking data...');
-      const { data: deletedTimeTracking, error: timeError } = await supabase
+      // 2. Delete all player time tracking records
+      console.log('🗑️ matchResetService: Deleting player time records...');
+      const { data: deletedPlayerTimes, error: playerTimesError } = await supabase
         .from('player_time_tracking')
         .delete()
         .eq('fixture_id', fixtureId)
         .select();
 
-      if (timeError) {
-        result.errors.push(`Failed to delete player time tracking: ${timeError.message}`);
+      if (playerTimesError) {
+        console.error('❌ matchResetService: Error deleting player times:', playerTimesError);
+        errors.push(`Failed to delete player time records: ${playerTimesError.message}`);
       } else {
-        result.itemsDeleted.playerTimeTracking = deletedTimeTracking?.length || 0;
-        console.log(`✅ Deleted ${result.itemsDeleted.playerTimeTracking} player time tracking records`);
+        playerTimeRecordsDeleted = deletedPlayerTimes?.length || 0;
+        console.log(`✅ matchResetService: Deleted ${playerTimeRecordsDeleted} player time records`);
       }
 
-      // 3. Reset fixture scores
-      console.log('📊 Resetting fixture scores...');
+      // 3. Reset fixture scores to 0-0
+      console.log('🔄 matchResetService: Resetting fixture scores...');
       const { error: fixtureError } = await supabase
         .from('fixtures')
         .update({
-          home_score: null,
-          away_score: null,
-          status: 'scheduled'
+          home_score: 0,
+          away_score: 0,
+          updated_at: new Date().toISOString()
         })
         .eq('id', fixtureId);
 
       if (fixtureError) {
-        result.errors.push(`Failed to reset fixture scores: ${fixtureError.message}`);
+        console.error('❌ matchResetService: Error resetting fixture:', fixtureError);
+        errors.push(`Failed to reset fixture scores: ${fixtureError.message}`);
       } else {
-        console.log('✅ Fixture scores reset successfully');
+        console.log('✅ matchResetService: Fixture scores reset to 0-0');
       }
 
-      // 4. Reset member stats (goals, assists, cards) - we'll need to recalculate these
-      console.log('📈 Resetting member stats will require recalculation from remaining events...');
-      
-      result.success = result.errors.length === 0;
-      
-      if (result.success) {
-        result.message = `Match data reset successfully. Deleted ${result.itemsDeleted.matchEvents} events and ${result.itemsDeleted.playerTimeTracking} time tracking records.`;
-      } else {
-        result.message = `Match data reset completed with ${result.errors.length} errors.`;
-      }
+      // Determine success
+      const isFullSuccess = errors.length === 0;
+      const message = isFullSuccess 
+        ? `Match data completely reset: ${eventsDeleted} events and ${playerTimeRecordsDeleted} player time records deleted, scores reset to 0-0`
+        : `Match data partially reset with ${errors.length} error(s)`;
 
-      console.log(result.success ? '✅' : '⚠️', 'MatchResetService completed:', {
-        success: result.success,
-        eventsDeleted: result.itemsDeleted.matchEvents,
-        timeTrackingDeleted: result.itemsDeleted.playerTimeTracking,
-        errorsCount: result.errors.length
+      console.log(`${isFullSuccess ? '✅' : '⚠️'} matchResetService: Reset completed with result:`, {
+        success: isFullSuccess,
+        eventsDeleted,
+        playerTimeRecordsDeleted,
+        errors
       });
 
-      return result;
+      return {
+        success: isFullSuccess,
+        message,
+        errors,
+        eventsDeleted,
+        playerTimeRecordsDeleted
+      };
 
     } catch (error) {
-      console.error('❌ MatchResetService: Critical error during reset:', error);
-      
-      result.errors.push(`Critical error: ${error instanceof Error ? error.message : 'Unknown error'}`);
-      result.message = 'Match data reset failed due to critical error';
-      
-      return result;
-    }
-  },
-
-  async validateResetOperation(fixtureId: number): Promise<{ canReset: boolean; warnings: string[] }> {
-    console.log('🔍 MatchResetService: Validating reset operation for fixture:', fixtureId);
-    
-    const warnings: string[] = [];
-    
-    try {
-      // Check if fixture exists
-      const { data: fixture, error: fixtureError } = await supabase
-        .from('fixtures')
-        .select('id, status')
-        .eq('id', fixtureId)
-        .single();
-
-      if (fixtureError || !fixture) {
-        warnings.push('Fixture not found or inaccessible');
-        return { canReset: false, warnings };
-      }
-
-      // Check for existing data that will be deleted
-      const { data: events } = await supabase
-        .from('match_events')
-        .select('id')
-        .eq('fixture_id', fixtureId);
-
-      const { data: timeTracking } = await supabase
-        .from('player_time_tracking')
-        .select('id')
-        .eq('fixture_id', fixtureId);
-
-      if (events && events.length > 0) {
-        warnings.push(`This will delete ${events.length} match events (goals, cards, etc.)`);
-      }
-
-      if (timeTracking && timeTracking.length > 0) {
-        warnings.push(`This will delete ${timeTracking.length} player time tracking records`);
-      }
-
-      return { canReset: true, warnings };
-
-    } catch (error) {
-      console.error('❌ MatchResetService: Error validating reset operation:', error);
-      warnings.push(`Validation error: ${error instanceof Error ? error.message : 'Unknown error'}`);
-      return { canReset: false, warnings };
+      console.error('❌ matchResetService: Critical error during reset:', error);
+      return {
+        success: false,
+        message: 'Critical error during reset operation',
+        errors: [error instanceof Error ? error.message : 'Unknown error'],
+        eventsDeleted,
+        playerTimeRecordsDeleted
+      };
     }
   }
 };

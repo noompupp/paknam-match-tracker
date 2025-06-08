@@ -1,3 +1,4 @@
+
 import { useRefereeState } from "./useRefereeState";
 import { useRefereeHandlers } from "./useRefereeHandlers";
 
@@ -130,6 +131,16 @@ export const useRefereeContainerState = () => {
     forceRefresh // Pass enhanced refresh function
   });
 
+  // Enhanced reset handler that coordinates all reset operations
+  const handleEnhancedResetMatch = async () => {
+    console.log('🔄 useRefereeContainerState: Starting enhanced reset with cache invalidation...');
+    
+    // Use the enhanced reset handler from match data handlers
+    await handleResetMatch();
+    
+    console.log('✅ useRefereeContainerState: Enhanced reset completed with cache invalidation');
+  };
+
   // Create wrapper functions that handle matchTime internally for basic operations
   const handleAddPlayer = (player: any) => {
     addPlayer(player, matchTime);
@@ -196,9 +207,9 @@ export const useRefereeContainerState = () => {
     // Save attempts
     saveAttempts,
     
-    // Handlers
+    // Enhanced handlers
     handleSaveMatch,
-    handleResetMatch,
+    handleResetMatch: handleEnhancedResetMatch, // Use enhanced reset
     handleAssignGoal,
     handleAddCard,
     handleAddPlayer,
