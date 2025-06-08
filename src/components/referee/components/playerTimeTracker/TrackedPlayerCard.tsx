@@ -58,25 +58,41 @@ const TrackedPlayerCard = ({
   const getButtonProps = () => {
     if (isPendingSubstitution) {
       return {
-        text: "Pending Sub",
+        text: "Pending Sub" as const,
         variant: "outline" as const,
         icon: <ArrowRightLeft className="h-3 w-3" />
       };
     }
     
     if (isSubstitutionCandidate) {
-      return {
-        text: player.isPlaying ? "Sub Out" : "Sub In",
-        variant: (player.isPlaying ? "destructive" : "default") as const,
-        icon: <ArrowRightLeft className="h-3 w-3" />
-      };
+      if (player.isPlaying) {
+        return {
+          text: "Sub Out" as const,
+          variant: "destructive" as const,
+          icon: <ArrowRightLeft className="h-3 w-3" />
+        };
+      } else {
+        return {
+          text: "Sub In" as const,
+          variant: "default" as const,
+          icon: <ArrowRightLeft className="h-3 w-3" />
+        };
+      }
     }
     
-    return {
-      text: player.isPlaying ? "Stop" : "Start",
-      variant: (player.isPlaying ? "destructive" : "default") as const,
-      icon: null
-    };
+    if (player.isPlaying) {
+      return {
+        text: "Stop" as const,
+        variant: "destructive" as const,
+        icon: null
+      };
+    } else {
+      return {
+        text: "Start" as const,
+        variant: "default" as const,
+        icon: null
+      };
+    }
   };
 
   const buttonProps = getButtonProps();
