@@ -307,12 +307,12 @@ const GoalsTab = (props: GoalsTabProps) => {
         description="Which team scored the goal?"
       />
 
-      {/* Quick Goal Selection Modal */}
+      {/* Quick Goal Selection Modal - Fix: Pass goals array instead of fixtureId */}
       <QuickGoalSelectionModal
         isOpen={showQuickGoalSelection}
         onClose={() => setShowQuickGoalSelection(false)}
         onGoalSelected={handleQuickGoalSelected}
-        fixtureId={props.selectedFixtureData?.id}
+        goals={props.goals.filter(g => g.playerName === 'Quick Goal')}
         formatTime={props.formatTime}
         homeTeamName={homeTeamName}
         awayTeamName={awayTeamName}

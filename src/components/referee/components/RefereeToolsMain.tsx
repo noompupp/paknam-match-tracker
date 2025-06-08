@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import RefereeTabsNavigation from "./RefereeTabsNavigation";
@@ -95,10 +94,6 @@ const RefereeToolsMain = (props: RefereeToolsMainProps) => {
     setGoalWizardInitialTeam(undefined);
   };
 
-  // We need access to the database mutation hooks from the container
-  // This is a temporary solution - ideally these would be passed as props
-  // For now, we'll create placeholder handlers that log the need for database integration
-  
   const playersForTimeTracker = props.trackedPlayers.map(player => ({
     id: player.id,
     name: player.name,
@@ -181,11 +176,8 @@ const RefereeToolsMain = (props: RefereeToolsMainProps) => {
       
       <TabsContent value="score" className="mt-6">
         <ScoreTab
-          homeScore={props.homeScore}
-          awayScore={props.awayScore}
           selectedFixtureData={props.selectedFixtureData}
           isRunning={props.isRunning}
-          goals={props.goals}
           matchTime={props.matchTime}
           homeTeamPlayers={props.homeTeamPlayers}
           awayTeamPlayers={props.awayTeamPlayers}
@@ -193,8 +185,6 @@ const RefereeToolsMain = (props: RefereeToolsMainProps) => {
           onToggleTimer={props.toggleTimer}
           onResetMatch={handleResetMatch}
           onSaveMatch={handleSaveMatch}
-          onQuickGoal={handleQuickGoal}
-          onOpenGoalWizard={() => setShowGoalWizard(true)}
           onAssignGoal={handleAssignGoal}
         />
       </TabsContent>

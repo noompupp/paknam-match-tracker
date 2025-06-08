@@ -101,19 +101,14 @@ const RefereeTabsContent = ({
       <TabsContent value="score">
         <ScoreTab
           selectedFixtureData={selectedFixtureData}
-          homeScore={homeScore}
-          awayScore={awayScore}
           matchTime={matchTime}
           isRunning={isRunning}
-          goals={goals}
           homeTeamPlayers={homeTeamPlayers}
           awayTeamPlayers={awayTeamPlayers}
           formatTime={formatTime}
           onToggleTimer={onToggleTimer}
           onResetMatch={onResetMatch}
           onSaveMatch={onSaveMatch}
-          onQuickGoal={onQuickGoal}
-          onOpenGoalWizard={onOpenGoalWizard}
           onAssignGoal={onAssignGoal}
         />
       </TabsContent>

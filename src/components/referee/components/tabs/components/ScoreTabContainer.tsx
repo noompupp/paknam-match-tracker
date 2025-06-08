@@ -110,8 +110,6 @@ const ScoreTabContainer = ({
       <LiveScoreHeader
         homeTeamName={homeTeamName}
         awayTeamName={awayTeamName}
-        homeScore={homeScore}
-        awayScore={awayScore}
         matchTime={matchTime}
         isRunning={isRunning}
         formatTime={formatTime}
