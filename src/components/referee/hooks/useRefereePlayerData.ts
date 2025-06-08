@@ -1,15 +1,15 @@
 
 import { useState, useEffect } from "react";
-import { playerDropdownService } from "@/services/playerDropdownService";
-import { debugRefereeToolsData } from "@/utils/refereeToolsDebug";
+import { useMembers } from "@/hooks/useMembers";
+import { processFixtureAndPlayers, processPlayersForDropdowns, debugPlayerDropdownData, type ProcessedPlayer } from "@/utils/refereeDataProcessor";
 import type { ComponentPlayer, PlayerTimeTrackerPlayer } from "./useRefereeState";
 
-interface RefereePlayerDataProps {
+interface UseRefereePlayerDataProps {
   selectedFixture: string;
   selectedFixtureData: any;
-  fixtures: any[] | undefined;
-  members: any[] | undefined;
-  trackedPlayers: any[];
+  fixtures: any[];
+  members: any[];
+  trackedPlayers: PlayerTimeTrackerPlayer[];
 }
 
 export const useRefereePlayerData = ({
@@ -18,7 +18,7 @@ export const useRefereePlayerData = ({
   fixtures,
   members,
   trackedPlayers
-}: RefereePlayerDataProps) => {
+}: UseRefereePlayerDataProps) => {
   const [enhancedPlayersData, setEnhancedPlayersData] = useState<{
     allPlayers: ComponentPlayer[];
     homeTeamPlayers: ComponentPlayer[];
@@ -30,17 +30,12 @@ export const useRefereePlayerData = ({
     homeTeamPlayers: [],
     awayTeamPlayers: [],
     hasValidData: false,
-    dataIssues: []
+    dataIssues: ['No fixture selected']
   });
 
-  // Debug data when fixture is selected
-  if (selectedFixture && selectedFixtureData && members) {
-    debugRefereeToolsData(fixtures, members, selectedFixture);
-  }
-
-  // Enhanced player data processing with match-specific filtering
+  // Enhanced player data processing with dropdown service integration
   useEffect(() => {
-    async function loadEnhancedPlayerData() {
+    const processEnhancedPlayerData = async () => {
       if (!selectedFixtureData) {
         setEnhancedPlayersData({
           allPlayers: [],
@@ -52,105 +47,87 @@ export const useRefereePlayerData = ({
         return;
       }
 
-      console.log('🔄 useRefereePlayerData: Loading enhanced player data for fixture:', selectedFixtureData.id);
-      
       try {
-        const homeTeamName = selectedFixtureData.home_team?.name;
-        const awayTeamName = selectedFixtureData.away_team?.name;
-
-        if (!homeTeamName || !awayTeamName) {
-          throw new Error('Missing team names in fixture');
-        }
-
-        // Use the enhanced dropdown service for match-specific players
-        const { homeTeamPlayers, awayTeamPlayers, allPlayers } = 
-          await playerDropdownService.getPlayersByTeam(homeTeamName, awayTeamName);
-
-        const dataIssues: string[] = [];
+        console.log('🎯 Processing enhanced player data for fixture:', selectedFixtureData.id);
         
-        if (homeTeamPlayers.length === 0) {
-          dataIssues.push(`No players found for home team: ${homeTeamName}`);
-        }
+        // Use the dropdown service integration for more reliable data
+        const enhancedData = await processPlayersForDropdowns(selectedFixtureData);
         
-        if (awayTeamPlayers.length === 0) {
-          dataIssues.push(`No players found for away team: ${awayTeamName}`);
-        }
-
-        const hasValidData = homeTeamPlayers.length > 0 && awayTeamPlayers.length > 0;
-
-        setEnhancedPlayersData({
-          allPlayers: allPlayers.map(p => ({
-            id: p.id,
-            name: p.name,
-            team: p.team,
-            team_id: p.team_id,
-            number: p.number,
-            position: p.position
-          })),
-          homeTeamPlayers: homeTeamPlayers.map(p => ({
-            id: p.id,
-            name: p.name,
-            team: p.team,
-            team_id: p.team_id,
-            number: p.number,
-            position: p.position
-          })),
-          awayTeamPlayers: awayTeamPlayers.map(p => ({
-            id: p.id,
-            name: p.name,
-            team: p.team,
-            team_id: p.team_id,
-            number: p.number,
-            position: p.position
-          })),
-          hasValidData,
-          dataIssues
-        });
-
-        console.log('✅ useRefereePlayerData: Enhanced player data loaded for match:', {
-          fixture: selectedFixtureData.id,
-          homeTeam: homeTeamName,
-          awayTeam: awayTeamName,
-          homePlayersCount: homeTeamPlayers.length,
-          awayPlayersCount: awayTeamPlayers.length,
-          totalPlayers: allPlayers.length,
-          hasValidData
+        setEnhancedPlayersData(enhancedData);
+        
+        console.log('✅ Enhanced player data processed:', {
+          totalPlayers: enhancedData.allPlayers.length,
+          homeTeamPlayers: enhancedData.homeTeamPlayers.length,
+          awayTeamPlayers: enhancedData.awayTeamPlayers.length,
+          hasValidData: enhancedData.hasValidData,
+          rolesFound: [...new Set(enhancedData.allPlayers.map(p => p.role))]
         });
 
       } catch (error) {
-        console.error('❌ useRefereePlayerData: Failed to load enhanced player data:', error);
+        console.error('❌ Failed to process enhanced player data:', error);
         setEnhancedPlayersData({
           allPlayers: [],
           homeTeamPlayers: [],
           awayTeamPlayers: [],
           hasValidData: false,
-          dataIssues: ['Failed to load player data: ' + (error instanceof Error ? error.message : 'Unknown error')]
+          dataIssues: ['Failed to process player data: ' + (error instanceof Error ? error.message : 'Unknown error')]
         });
       }
-    }
+    };
 
-    loadEnhancedPlayerData();
-  }, [selectedFixtureData, members]);
+    processEnhancedPlayerData();
+  }, [selectedFixtureData]);
 
-  // Create players specifically for PlayerTimeTracker with extended properties
-  const playersForTimeTracker: PlayerTimeTrackerPlayer[] = trackedPlayers.map(trackedPlayer => ({
-    id: trackedPlayer.id,
-    name: trackedPlayer.name,
-    team: trackedPlayer.team,
-    number: typeof trackedPlayer.id === 'number' ? trackedPlayer.id : parseInt(String(trackedPlayer.id || '0')),
-    position: 'Player',
-    totalTime: trackedPlayer.totalTime,
-    startTime: trackedPlayer.startTime,
-    isPlaying: trackedPlayer.isPlaying
-  }));
+  // Legacy processing (fallback) - updated to include role field
+  const legacyProcessedData = processFixtureAndPlayers(selectedFixtureData, members);
+  
+  // Ensure all player arrays include the role field
+  const allPlayers: ComponentPlayer[] = enhancedPlayersData.hasValidData 
+    ? enhancedPlayersData.allPlayers.map(p => ({
+        ...p,
+        role: p.role || 'Starter' // Ensure role is always present
+      }))
+    : (legacyProcessedData?.allPlayers.map(p => ({
+        ...p,
+        role: p.role || 'Starter' // Ensure role is always present
+      })) || []);
+
+  const homeTeamPlayers: ComponentPlayer[] = enhancedPlayersData.hasValidData 
+    ? enhancedPlayersData.homeTeamPlayers.map(p => ({
+        ...p,
+        role: p.role || 'Starter' // Ensure role is always present
+      }))
+    : (legacyProcessedData?.homeTeamPlayers.map(p => ({
+        ...p,
+        role: p.role || 'Starter' // Ensure role is always present
+      })) || []);
+
+  const awayTeamPlayers: ComponentPlayer[] = enhancedPlayersData.hasValidData 
+    ? enhancedPlayersData.awayTeamPlayers.map(p => ({
+        ...p,
+        role: p.role || 'Starter' // Ensure role is always present
+      }))
+    : (legacyProcessedData?.awayTeamPlayers.map(p => ({
+        ...p,
+        role: p.role || 'Starter' // Ensure role is always present
+      })) || []);
+
+  // Convert to time tracker format with role field
+  const playersForTimeTracker: PlayerTimeTrackerPlayer[] = trackedPlayers.map(tracked => {
+    const playerInfo = allPlayers.find(p => p.id === tracked.id);
+    return {
+      ...tracked,
+      number: playerInfo?.number ? parseInt(playerInfo.number) : 0,
+      position: playerInfo?.role || 'Starter' // Use role instead of position
+    };
+  });
 
   return {
+    allPlayers,
+    homeTeamPlayers,
+    awayTeamPlayers,
+    playersForTimeTracker,
     enhancedPlayersData,
-    
-    // Enhanced player data with team filtering
-    allPlayers: enhancedPlayersData.allPlayers,
-    homeTeamPlayers: enhancedPlayersData.homeTeamPlayers,
-    awayTeamPlayers: enhancedPlayersData.awayTeamPlayers,
-    playersForTimeTracker
+    legacyProcessedData
   };
 };
