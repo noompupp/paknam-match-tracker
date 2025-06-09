@@ -66,11 +66,11 @@ const MatchPreviewModal = ({ fixture, isOpen, onClose }: MatchPreviewModalProps)
 
   return (
     <EnhancedDialog open={isOpen} onOpenChange={handleClose}>
-      <EnhancedDialogContent className="w-[95vw] h-[90vh] max-w-none max-h-none p-0 sm:max-w-4xl sm:max-h-[95vh] sm:h-auto sm:p-0 sm:rounded-lg overflow-hidden">
+      <EnhancedDialogContent className="w-[95vw] h-[95vh] max-w-none max-h-none p-0 sm:max-w-5xl sm:max-h-[90vh] sm:h-auto sm:rounded-lg overflow-hidden bg-gradient-to-b from-background via-background to-muted/30">
         <div className="flex flex-col h-full">
-          {/* Header - Fixed */}
-          <EnhancedDialogHeader className="px-3 py-2 sm:px-6 sm:py-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 flex-shrink-0">
-            <EnhancedDialogTitle className="text-base sm:text-lg font-bold">
+          {/* Header - Fixed with gradient */}
+          <EnhancedDialogHeader className="px-4 py-3 sm:px-6 sm:py-4 border-b bg-gradient-to-r from-primary/5 to-secondary/5 backdrop-blur-sm flex-shrink-0">
+            <EnhancedDialogTitle className="text-lg sm:text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
               Match Preview
             </EnhancedDialogTitle>
           </EnhancedDialogHeader>
@@ -78,44 +78,49 @@ const MatchPreviewModal = ({ fixture, isOpen, onClose }: MatchPreviewModalProps)
           {/* Content - Scrollable */}
           <div className="flex-1 overflow-hidden">
             {isLoading ? (
-              <div className="p-3 sm:p-6 space-y-4 sm:space-y-6">
-                {/* Loading skeleton */}
-                <div className="space-y-3 sm:space-y-4">
+              <div className="p-4 sm:p-6 space-y-6">
+                {/* Enhanced loading skeleton */}
+                <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <Skeleton className="h-5 w-16 sm:h-6 sm:w-20" />
-                    <Skeleton className="h-5 w-24 sm:h-6 sm:w-32" />
+                    <Skeleton className="h-6 w-24" />
+                    <Skeleton className="h-6 w-32" />
                   </div>
-                  <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-8 py-4 sm:py-6">
-                    <div className="flex items-center gap-3">
-                      <Skeleton className="h-12 w-12 sm:h-16 sm:w-16 rounded-full" />
-                      <div className="space-y-2">
-                        <Skeleton className="h-5 w-20 sm:h-6 sm:w-24" />
-                        <Skeleton className="h-3 w-12 sm:h-4 sm:w-16" />
-                      </div>
+                  <div className="grid grid-cols-3 gap-4 py-6">
+                    <div className="text-center space-y-2">
+                      <Skeleton className="h-16 w-16 rounded-full mx-auto" />
+                      <Skeleton className="h-4 w-20 mx-auto" />
+                      <Skeleton className="h-6 w-16 mx-auto" />
                     </div>
-                    <Skeleton className="h-8 w-12 sm:h-12 sm:w-16" />
-                    <div className="flex items-center gap-3">
-                      <div className="space-y-2">
-                        <Skeleton className="h-5 w-20 sm:h-6 sm:w-24" />
-                        <Skeleton className="h-3 w-12 sm:h-4 sm:w-16" />
-                      </div>
-                      <Skeleton className="h-12 w-12 sm:h-16 sm:w-16 rounded-full" />
+                    <div className="text-center space-y-2">
+                      <Skeleton className="h-8 w-12 mx-auto" />
+                      <Skeleton className="h-4 w-16 mx-auto" />
+                    </div>
+                    <div className="text-center space-y-2">
+                      <Skeleton className="h-16 w-16 rounded-full mx-auto" />
+                      <Skeleton className="h-4 w-20 mx-auto" />
+                      <Skeleton className="h-6 w-16 mx-auto" />
                     </div>
                   </div>
                 </div>
-                <Skeleton className="h-32 w-full sm:h-40" />
-                <Skeleton className="h-24 w-full sm:h-32" />
+                <div className="grid grid-cols-3 gap-2">
+                  <Skeleton className="h-10 w-full" />
+                  <Skeleton className="h-10 w-full" />
+                  <Skeleton className="h-10 w-full" />
+                </div>
+                <Skeleton className="h-40 w-full" />
               </div>
             ) : error ? (
-              <div className="p-3 sm:p-6">
-                <Alert>
+              <div className="p-4 sm:p-6">
+                <Alert className="border-destructive/50 bg-destructive/5">
                   <Info className="h-4 w-4" />
-                  <AlertDescription>{error}</AlertDescription>
+                  <AlertDescription className="text-destructive-foreground">
+                    {error}
+                  </AlertDescription>
                 </Alert>
               </div>
             ) : matchData ? (
               <ScrollArea className="h-full">
-                <div className="p-3 sm:p-6 space-y-4 sm:space-y-6">
+                <div className="p-4 sm:p-6 space-y-6">
                   {/* Enhanced Match Header */}
                   <MatchPreviewHeader 
                     fixture={matchData.fixture}
@@ -125,21 +130,30 @@ const MatchPreviewModal = ({ fixture, isOpen, onClose }: MatchPreviewModalProps)
                     venue={matchData.venue}
                   />
                   
-                  {/* Tabbed Content */}
+                  {/* Enhanced Tabbed Content */}
                   <Tabs defaultValue="overview" className="w-full">
-                    <TabsList className="grid w-full grid-cols-3 mb-4 sm:mb-6 h-9 sm:h-10">
-                      <TabsTrigger value="overview" className="text-xs sm:text-sm font-medium py-1.5 sm:py-2">
+                    <TabsList className="grid w-full grid-cols-3 mb-6 h-12 bg-muted/50 backdrop-blur-sm">
+                      <TabsTrigger 
+                        value="overview" 
+                        className="text-sm font-medium py-3 data-[state=active]:bg-background data-[state=active]:shadow-sm"
+                      >
                         Overview
                       </TabsTrigger>
-                      <TabsTrigger value="squads" className="text-xs sm:text-sm font-medium py-1.5 sm:py-2">
+                      <TabsTrigger 
+                        value="squads" 
+                        className="text-sm font-medium py-3 data-[state=active]:bg-background data-[state=active]:shadow-sm"
+                      >
                         Squads
                       </TabsTrigger>
-                      <TabsTrigger value="form" className="text-xs sm:text-sm font-medium py-1.5 sm:py-2">
+                      <TabsTrigger 
+                        value="form" 
+                        className="text-sm font-medium py-3 data-[state=active]:bg-background data-[state=active]:shadow-sm"
+                      >
                         Form
                       </TabsTrigger>
                     </TabsList>
                     
-                    <TabsContent value="overview" className="space-y-4 sm:space-y-6 mt-0">
+                    <TabsContent value="overview" className="space-y-6 mt-0">
                       <MatchPreviewOverview 
                         homeTeam={matchData.homeTeam}
                         awayTeam={matchData.awayTeam}
@@ -147,7 +161,7 @@ const MatchPreviewModal = ({ fixture, isOpen, onClose }: MatchPreviewModalProps)
                       />
                     </TabsContent>
                     
-                    <TabsContent value="squads" className="space-y-4 sm:space-y-6 mt-0">
+                    <TabsContent value="squads" className="space-y-6 mt-0">
                       <MatchPreviewSquads 
                         homeTeam={matchData.homeTeam}
                         awayTeam={matchData.awayTeam}
@@ -156,7 +170,7 @@ const MatchPreviewModal = ({ fixture, isOpen, onClose }: MatchPreviewModalProps)
                       />
                     </TabsContent>
                     
-                    <TabsContent value="form" className="space-y-4 sm:space-y-6 mt-0">
+                    <TabsContent value="form" className="space-y-6 mt-0">
                       <MatchPreviewForm 
                         homeTeam={matchData.homeTeam}
                         awayTeam={matchData.awayTeam}
