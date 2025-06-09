@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { EnhancedRefereeSelect, EnhancedRefereeSelectContent, EnhancedRefereeSelectItem } from "@/components/ui/enhanced-referee-select";
 import { ProcessedPlayer } from "@/utils/refereeDataProcessor";
-import { Users, UserPlus, AlertTriangle } from "lucide-react";
+import { Users, UserPlus, AlertTriangle, X } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface SubstitutionModalProps {
@@ -18,6 +18,7 @@ interface SubstitutionModalProps {
   } | null;
   availablePlayers: ProcessedPlayer[];
   onSubstitute: (incomingPlayer: ProcessedPlayer) => void;
+  onUndoSubOut?: () => void; // New prop for undoing the Sub Out action
 }
 
 const SubstitutionModal = ({
@@ -25,7 +26,8 @@ const SubstitutionModal = ({
   onClose,
   outgoingPlayer,
   availablePlayers,
-  onSubstitute
+  onSubstitute,
+  onUndoSubOut
 }: SubstitutionModalProps) => {
   const [selectedIncomingPlayer, setSelectedIncomingPlayer] = useState("");
 
@@ -40,20 +42,37 @@ const SubstitutionModal = ({
     }
   };
 
-  const handleSkipSubstitution = () => {
+  const handleUndoClose = () => {
+    console.log('🔄 SubstitutionModal: Undoing Sub Out action for:', outgoingPlayer?.name);
     setSelectedIncomingPlayer("");
+    
+    // Call the undo function to revert the "Sub Out" action
+    if (onUndoSubOut) {
+      onUndoSubOut();
+    }
+    
     onClose();
   };
 
   if (!outgoingPlayer) return null;
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
+    <Dialog open={isOpen} onOpenChange={handleUndoClose}>
+      <DialogContent className="max-w-md mobile-substitution-modal">
+        {/* Custom close button with undo functionality */}
+        <button
+          onClick={handleUndoClose}
+          className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground z-10"
+          aria-label="Undo substitution and close"
+        >
+          <X className="h-4 w-4" />
+          <span className="sr-only">Undo and close</span>
+        </button>
+
+        <DialogHeader className="pr-8">
           <DialogTitle className="flex items-center gap-2">
             <Users className="h-5 w-5" />
-            Substitution Required
+            Select Replacement Player
           </DialogTitle>
         </DialogHeader>
         
@@ -62,7 +81,7 @@ const SubstitutionModal = ({
             <AlertTriangle className="h-4 w-4" />
             <AlertDescription>
               <span className="font-medium">{outgoingPlayer.name}</span> has been substituted out. 
-              Select a replacement player to maintain the squad.
+              Select a replacement player to complete the substitution.
             </AlertDescription>
           </Alert>
 
@@ -87,8 +106,9 @@ const SubstitutionModal = ({
                   : "No available players"
               }
               disabled={availablePlayers.length === 0}
+              className="mobile-optimized-select"
             >
-              <EnhancedRefereeSelectContent>
+              <EnhancedRefereeSelectContent className="mobile-select-content-optimized">
                 {availablePlayers.length === 0 ? (
                   <EnhancedRefereeSelectItem value="no-players" disabled>
                     No available players for substitution
@@ -117,17 +137,10 @@ const SubstitutionModal = ({
             <Button
               onClick={handleSubstitute}
               disabled={!selectedIncomingPlayer || availablePlayers.length === 0}
-              className="flex-1"
+              className="flex-1 mobile-action-button"
             >
               <UserPlus className="h-4 w-4 mr-2" />
-              Make Substitution
-            </Button>
-            <Button
-              variant="outline"
-              onClick={handleSkipSubstitution}
-              className="flex-1"
-            >
-              Skip for Now
+              Complete Substitution
             </Button>
           </div>
 
@@ -136,6 +149,10 @@ const SubstitutionModal = ({
               All eligible players are already being tracked
             </p>
           )}
+
+          <div className="text-xs text-muted-foreground text-center pt-2 border-t">
+            Tip: Click the X to undo the substitution and return {outgoingPlayer.name} to play
+          </div>
         </div>
       </DialogContent>
     </Dialog>

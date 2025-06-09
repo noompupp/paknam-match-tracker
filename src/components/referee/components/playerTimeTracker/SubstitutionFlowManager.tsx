@@ -12,6 +12,7 @@ interface SubstitutionFlowManagerProps {
   selectedFixtureData?: any;
   onAddPlayer: (player: ProcessedPlayer) => void;
   onSubstitutionComplete?: () => void;
+  onUndoSubOut?: (playerId: number) => void; // New prop for undoing Sub Out
   substitutionManager?: {
     pendingSubstitution: any;
     hasPendingSubstitution: boolean;
@@ -27,6 +28,7 @@ const SubstitutionFlowManager = ({
   selectedFixtureData,
   onAddPlayer,
   onSubstitutionComplete,
+  onUndoSubOut,
   substitutionManager
 }: SubstitutionFlowManagerProps) => {
   const [showSubstitutionModal, setShowSubstitutionModal] = useState(false);
@@ -82,8 +84,18 @@ const SubstitutionFlowManager = ({
     onSubstitutionComplete?.();
   };
 
-  const handleSkipSubstitution = () => {
-    console.log('⏭️ SubstitutionFlowManager: Skipping substitution for:', substitutionManager?.pendingSubstitution?.outgoingPlayerName);
+  const handleUndoSubOut = () => {
+    if (!substitutionManager?.pendingSubstitution) return;
+    
+    const playerId = substitutionManager.pendingSubstitution.outgoingPlayerId;
+    const playerName = substitutionManager.pendingSubstitution.outgoingPlayerName;
+    
+    console.log('↩️ SubstitutionFlowManager: Undoing Sub Out for:', playerName);
+    
+    // Call the undo function to restart the player
+    if (onUndoSubOut) {
+      onUndoSubOut(playerId);
+    }
     
     // Clean up pending substitution
     substitutionManager?.cancelPendingSubstitution();
@@ -91,7 +103,7 @@ const SubstitutionFlowManager = ({
     
     toast({
       title: "Substitution Cancelled",
-      description: "Continuing with current squad",
+      description: `${playerName} has been returned to play`,
     });
   };
 
@@ -103,7 +115,7 @@ const SubstitutionFlowManager = ({
   return (
     <SubstitutionModal
       isOpen={showSubstitutionModal}
-      onClose={handleSkipSubstitution}
+      onClose={() => setShowSubstitutionModal(false)}
       outgoingPlayer={substitutionManager.pendingSubstitution ? {
         id: substitutionManager.pendingSubstitution.outgoingPlayerId,
         name: substitutionManager.pendingSubstitution.outgoingPlayerName,
@@ -111,6 +123,7 @@ const SubstitutionFlowManager = ({
       } : null}
       availablePlayers={getAvailablePlayersForSubstitution()}
       onSubstitute={handleSubstitution}
+      onUndoSubOut={handleUndoSubOut}
     />
   );
 };

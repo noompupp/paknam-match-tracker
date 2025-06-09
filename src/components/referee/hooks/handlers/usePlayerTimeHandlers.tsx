@@ -1,3 +1,4 @@
+
 import { useToast } from "@/hooks/use-toast";
 import { ComponentPlayer } from "../useRefereeState";
 import { PlayerTime } from "@/types/database";
@@ -173,6 +174,30 @@ export const usePlayerTimeHandlers = (props: UsePlayerTimeHandlersProps) => {
     }
   };
 
+  // New function to handle undoing a "Sub Out" action
+  const handleUndoSubOut = async (playerId: number) => {
+    const player = props.playersForTimeTracker.find(p => p.id === playerId);
+    if (!player) return;
+
+    try {
+      console.log('↩️ usePlayerTimeHandlers: Undoing Sub Out for:', player.name);
+      
+      // Restart the player's time tracking
+      await props.togglePlayerTime(playerId, props.matchTime);
+      
+      props.addEvent('Sub Out Undone', `${player.name} returned to play (Sub Out cancelled)`, props.matchTime);
+      
+      console.log('✅ usePlayerTimeHandlers: Sub Out undone successfully');
+    } catch (error) {
+      console.error('❌ usePlayerTimeHandlers: Failed to undo Sub Out:', error);
+      toast({
+        title: "Undo Failed",
+        description: error instanceof Error ? error.message : "Failed to undo substitution",
+        variant: "destructive"
+      });
+    }
+  };
+
   const handleSaveAllPlayerTimes = async () => {
     if (!props.selectedFixtureData) {
       toast({
@@ -217,6 +242,7 @@ export const usePlayerTimeHandlers = (props: UsePlayerTimeHandlersProps) => {
     handleAddPlayer,
     handleRemovePlayer,
     handleTogglePlayerTime,
+    handleUndoSubOut,
     handleSaveAllPlayerTimes,
     substitutionManager
   };
