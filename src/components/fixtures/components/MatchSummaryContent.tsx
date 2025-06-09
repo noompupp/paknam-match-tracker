@@ -1,5 +1,5 @@
 
-import UnifiedMatchSummaryLayout from "./UnifiedMatchSummaryLayout";
+import AccordionMatchSummaryLayout from "./AccordionMatchSummaryLayout";
 
 interface MatchSummaryContentProps {
   fixture: any;
@@ -45,7 +45,7 @@ const MatchSummaryContent = ({
     >
       {/* Unified responsive container */}
       <div className="w-full mx-auto max-w-4xl">
-        <UnifiedMatchSummaryLayout
+        <AccordionMatchSummaryLayout
           fixture={fixture}
           goals={goals}
           cards={cards}
