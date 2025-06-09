@@ -2,7 +2,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Calendar, MapPin } from "lucide-react";
 import TeamLogoDisplay from "../TeamLogoDisplay";
-import { getScoreStyle } from "@/utils/scoreColorUtils";
+import { getNeutralScoreStyle } from "@/utils/scoreColorUtils";
 import MatchResultBadge from "./MatchResultBadge";
 
 interface DesktopMatchHeaderProps {
@@ -29,8 +29,8 @@ const DesktopMatchHeader = ({ fixture, homeTeamColor, awayTeamColor }: DesktopMa
               {fixture.home_team?.name || 'Home'}
             </div>
             <div 
-              className="text-4xl font-bold score-text-outline"
-              style={getScoreStyle(homeTeamColor)}
+              className="text-4xl font-bold"
+              style={getNeutralScoreStyle()}
             >
               {fixture.home_score || 0}
             </div>
@@ -55,8 +55,8 @@ const DesktopMatchHeader = ({ fixture, homeTeamColor, awayTeamColor }: DesktopMa
               {fixture.away_team?.name || 'Away'}
             </div>
             <div 
-              className="text-4xl font-bold score-text-outline"
-              style={getScoreStyle(awayTeamColor)}
+              className="text-4xl font-bold"
+              style={getNeutralScoreStyle()}
             >
               {fixture.away_score || 0}
             </div>

@@ -2,7 +2,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Calendar, MapPin } from "lucide-react";
 import TeamLogoDisplay from "../TeamLogoDisplay";
-import { getScoreStyle } from "@/utils/scoreColorUtils";
+import { getNeutralScoreStyle } from "@/utils/scoreColorUtils";
 import MatchResultBadge from "./MatchResultBadge";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -32,8 +32,8 @@ const MobileMatchHeader = ({ fixture, homeTeamColor, awayTeamColor }: MobileMatc
             {fixture.home_team?.name || 'Home'}
           </div>
           <div 
-            className="text-3xl mobile-score-enhanced mobile-score-glow leading-none"
-            style={getScoreStyle(homeTeamColor, false, isMobile)}
+            className="text-3xl font-bold leading-none"
+            style={getNeutralScoreStyle(isMobile)}
           >
             {fixture.home_score || 0}
           </div>
@@ -89,8 +89,8 @@ const MobileMatchHeader = ({ fixture, homeTeamColor, awayTeamColor }: MobileMatc
             {fixture.away_team?.name || 'Away'}
           </div>
           <div 
-            className="text-3xl mobile-score-enhanced mobile-score-glow leading-none"
-            style={getScoreStyle(awayTeamColor, false, isMobile)}
+            className="text-3xl font-bold leading-none"
+            style={getNeutralScoreStyle(isMobile)}
           >
             {fixture.away_score || 0}
           </div>

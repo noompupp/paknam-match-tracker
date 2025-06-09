@@ -117,29 +117,18 @@ export const needsContrastEnhancement = (color: string, background: 'light' | 'd
 
 /**
  * Gets neutral score styling that works consistently across light and dark modes
- * - In light mode: minimal or no shadow for better readability
- * - In dark mode: enhanced shadows for better contrast
+ * - Clean, readable typography without shadows or effects
+ * - Uses theme-aware foreground color for accessibility
+ * - Optimized spacing and weight for mobile and desktop
  */
 export const getNeutralScoreStyle = (isMobile: boolean = false) => {
-  // Check if we're in dark mode using CSS custom properties
-  const isDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-  
-  // Light mode: minimal shadows for clean readability
-  const lightModeShadow = isMobile 
-    ? '0 1px 2px rgba(0, 0, 0, 0.1)' // Very subtle shadow for mobile
-    : '0 0.5px 1px rgba(0, 0, 0, 0.08)'; // Minimal shadow for desktop
-  
-  // Dark mode: enhanced shadows for better contrast
-  const darkModeShadow = isMobile 
-    ? '0 3px 12px rgba(0, 0, 0, 0.4), 0 6px 24px rgba(0, 0, 0, 0.2), 0 1px 0 rgba(255, 255, 255, 0.3)'
-    : '0 2px 6px rgba(0, 0, 0, 0.3), 0 1px 0 rgba(255, 255, 255, 0.2)';
-  
   return {
     color: 'hsl(var(--foreground))', // Uses theme-aware foreground color
-    textShadow: isDarkMode ? darkModeShadow : lightModeShadow,
-    WebkitTextStroke: isDarkMode && isMobile ? '0.5px rgba(0, 0, 0, 0.1)' : undefined,
-    fontWeight: isMobile ? '800' : 'bold',
-    letterSpacing: isMobile ? '-0.02em' : undefined,
-    filter: isDarkMode && isMobile ? 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2))' : undefined
+    fontWeight: isMobile ? '700' : '600', // semi-bold for better readability
+    letterSpacing: isMobile ? '-0.01em' : '0', // minimal letter spacing for mobile
+    // Clean, minimal styling - no shadows or effects
+    textShadow: 'none',
+    WebkitTextStroke: 'none',
+    filter: 'none'
   };
 };

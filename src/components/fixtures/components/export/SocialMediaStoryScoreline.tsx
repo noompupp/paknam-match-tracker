@@ -1,5 +1,5 @@
 
-import { getScoreStyle } from "@/utils/scoreColorUtils";
+import { getNeutralScoreStyle } from "@/utils/scoreColorUtils";
 
 interface SocialMediaStoryScorelineProps {
   fixture: any;
@@ -18,23 +18,23 @@ const SocialMediaStoryScoreline = ({
       <div className="flex items-center justify-center space-x-4">
         <div className="flex-1 text-right">
           <div 
-            className="text-lg font-bold truncate score-text-outline"
-            style={getScoreStyle(displayHomeColor)}
+            className="text-lg font-semibold truncate"
+            style={getNeutralScoreStyle()}
           >
             {fixture?.home_team?.name || 'Home'}
           </div>
         </div>
         
-        <div className="px-4 py-2 bg-gradient-to-r from-gray-100 to-gray-200 rounded-lg min-w-[80px] border border-gray-300 premier-card-shadow">
-          <div className="text-2xl font-bold text-gray-900 score-text-shadow">
+        <div className="px-4 py-2 bg-gradient-to-r from-muted/50 to-muted/30 rounded-lg min-w-[80px] border border-border">
+          <div className="text-2xl font-bold text-foreground">
             {fixture?.home_score || 0} - {fixture?.away_score || 0}
           </div>
         </div>
         
         <div className="flex-1 text-left">
           <div 
-            className="text-lg font-bold truncate score-text-outline"
-            style={getScoreStyle(displayAwayColor)}
+            className="text-lg font-semibold truncate"
+            style={getNeutralScoreStyle()}
           >
             {fixture?.away_team?.name || 'Away'}
           </div>

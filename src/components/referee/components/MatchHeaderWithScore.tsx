@@ -3,7 +3,8 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Clock } from "lucide-react"
 import TeamLogo from "../../teams/TeamLogo"
-import { getScoreStyle } from "@/utils/scoreColorUtils"
+import { getNeutralScoreStyle } from "@/utils/scoreColorUtils"
+import { useIsMobile } from "@/hooks/use-mobile"
 
 interface MatchHeaderWithScoreProps {
   selectedFixtureData: any
@@ -20,8 +21,7 @@ const MatchHeaderWithScore = ({
   matchTime,
   formatTime
 }: MatchHeaderWithScoreProps) => {
-  const homeTeamColor = selectedFixtureData?.home_team?.primaryColor || '#2563eb';
-  const awayTeamColor = selectedFixtureData?.away_team?.primaryColor || '#16a34a';
+  const isMobile = useIsMobile();
 
   return (
     <Card className="premier-card-shadow-lg match-border-gradient">
@@ -31,11 +31,11 @@ const MatchHeaderWithScore = ({
           <div className="flex-1 text-center">
             <div className="flex items-center justify-center gap-3 mb-2">
               <TeamLogo team={selectedFixtureData.home_team} size="medium" />
-              <h3 className="text-lg font-bold">{selectedFixtureData.home_team?.name}</h3>
+              <h3 className="text-lg font-semibold">{selectedFixtureData.home_team?.name}</h3>
             </div>
             <div 
-              className="text-5xl font-bold score-text-outline"
-              style={getScoreStyle(homeTeamColor)}
+              className="text-5xl font-bold"
+              style={getNeutralScoreStyle(isMobile)}
             >
               {homeScore}
             </div>
@@ -45,7 +45,7 @@ const MatchHeaderWithScore = ({
           <div className="mx-8 text-center min-w-[120px]">
             <div className="flex items-center justify-center gap-2 mb-2">
               <Clock className="h-4 w-4 text-muted-foreground" />
-              <span className="text-xl font-mono font-bold">{formatTime(matchTime)}</span>
+              <span className="text-xl font-mono font-semibold">{formatTime(matchTime)}</span>
             </div>
             <Badge 
               variant="outline" 
@@ -58,12 +58,12 @@ const MatchHeaderWithScore = ({
           {/* Away Team */}
           <div className="flex-1 text-center">
             <div className="flex items-center justify-center gap-3 mb-2">
-              <h3 className="text-lg font-bold">{selectedFixtureData.away_team?.name}</h3>
+              <h3 className="text-lg font-semibold">{selectedFixtureData.away_team?.name}</h3>
               <TeamLogo team={selectedFixtureData.away_team} size="medium" />
             </div>
             <div 
-              className="text-5xl font-bold score-text-outline"
-              style={getScoreStyle(awayTeamColor)}
+              className="text-5xl font-bold"
+              style={getNeutralScoreStyle(isMobile)}
             >
               {awayScore}
             </div>
