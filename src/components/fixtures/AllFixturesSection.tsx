@@ -8,12 +8,14 @@ interface AllFixturesSectionProps {
   sortedAllFixtures: any[];
   isLoading: boolean;
   onFixtureClick: (fixture: any) => void;
+  onPreviewClick?: (fixture: any) => void;
 }
 
 const AllFixturesSection = ({ 
   sortedAllFixtures, 
   isLoading, 
-  onFixtureClick 
+  onFixtureClick,
+  onPreviewClick
 }: AllFixturesSectionProps) => (
   <div id="all-fixtures" className="scroll-mt-20">
     <div className="flex items-center gap-2 mb-6">
@@ -33,6 +35,7 @@ const AllFixturesSection = ({
             fixture={fixture} 
             showScore={fixture.status === 'completed'} 
             onFixtureClick={onFixtureClick}
+            onPreviewClick={onPreviewClick}
           />
         ))
       ) : (

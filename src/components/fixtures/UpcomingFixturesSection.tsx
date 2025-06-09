@@ -8,12 +8,14 @@ interface UpcomingFixturesSectionProps {
   upcomingFixtures: any[];
   isLoading: boolean;
   onFixtureClick: (fixture: any) => void;
+  onPreviewClick?: (fixture: any) => void;
 }
 
 const UpcomingFixturesSection = ({ 
   upcomingFixtures, 
   isLoading, 
-  onFixtureClick 
+  onFixtureClick,
+  onPreviewClick
 }: UpcomingFixturesSectionProps) => (
   <div id="upcoming-fixtures" className="scroll-mt-20">
     <div className="flex items-center gap-2 mb-6">
@@ -32,6 +34,7 @@ const UpcomingFixturesSection = ({
             key={fixture.id} 
             fixture={fixture} 
             onFixtureClick={onFixtureClick}
+            onPreviewClick={onPreviewClick}
           />
         ))
       ) : (
