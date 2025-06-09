@@ -31,7 +31,7 @@ const EnhancedRecentResultsCard = ({ recentFixtures, isLoading, onViewAll }: Enh
   return (
     <>
       <Card className="card-shadow-lg animate-fade-in">
-        <CardHeader className="flex flex-row items-center justify-between pb-3 sm:pb-4">
+        <CardHeader className="flex flex-row items-center justify-between pb-2 sm:pb-4">
           <CardTitle className="text-lg sm:text-xl font-bold">Recent Results</CardTitle>
           <Button
             variant="ghost"
@@ -44,30 +44,30 @@ const EnhancedRecentResultsCard = ({ recentFixtures, isLoading, onViewAll }: Enh
             <ArrowRight className="h-3 w-3 sm:h-4 sm:w-4" />
           </Button>
         </CardHeader>
-        <CardContent className="space-y-3 sm:space-y-4 px-3 sm:px-6">
+        <CardContent className="space-y-2 sm:space-y-4 px-3 sm:px-6">
           {isLoading ? (
-            <div className="space-y-3">
+            <div className="space-y-2 sm:space-y-3">
               {Array.from({ length: 3 }).map((_, index) => (
-                <div key={index} className="p-3 sm:p-4 rounded-lg bg-muted/20 relative">
+                <div key={index} className="p-2 sm:p-4 rounded-lg bg-muted/20 relative">
                   <div className="flex items-center justify-center gap-3 sm:gap-6 md:gap-8">
-                    <div className="flex items-center gap-2 sm:gap-3 flex-1 justify-end">
-                      <Skeleton className="h-3 w-12 sm:h-4 sm:w-20" />
-                      <Skeleton className="h-6 w-6 sm:h-8 sm:w-8 rounded-full flex-shrink-0" />
+                    <div className="flex items-center gap-1 sm:gap-3 flex-1 justify-end">
+                      <Skeleton className="h-3 w-10 sm:h-4 sm:w-20" />
+                      <Skeleton className="h-5 w-5 sm:h-8 sm:w-8 rounded-full flex-shrink-0" />
                     </div>
-                    <Skeleton className="h-6 w-12 sm:h-8 sm:w-16 flex-shrink-0" />
-                    <div className="flex items-center gap-2 sm:gap-3 flex-1 justify-start">
-                      <Skeleton className="h-6 w-6 sm:h-8 sm:w-8 rounded-full flex-shrink-0" />
-                      <Skeleton className="h-3 w-12 sm:h-4 sm:w-20" />
+                    <Skeleton className="h-5 w-10 sm:h-8 sm:w-16 flex-shrink-0" />
+                    <div className="flex items-center gap-1 sm:gap-3 flex-1 justify-start">
+                      <Skeleton className="h-5 w-5 sm:h-8 sm:w-8 rounded-full flex-shrink-0" />
+                      <Skeleton className="h-3 w-10 sm:h-4 sm:w-20" />
                     </div>
                   </div>
-                  <div className="absolute top-2 right-2 sm:top-2 sm:right-2">
-                    <Skeleton className="h-3 w-10 sm:w-16" />
+                  <div className="absolute top-1 right-1 sm:top-2 sm:right-2">
+                    <Skeleton className="h-2 w-8 sm:h-3 sm:w-16" />
                   </div>
                 </div>
               ))}
             </div>
           ) : displayedFixtures.length > 0 ? (
-            <div className="space-y-3">
+            <div className="space-y-2 sm:space-y-3">
               {displayedFixtures.map((fixture) => (
                 <FixtureCard
                   key={fixture.id}
@@ -77,10 +77,10 @@ const EnhancedRecentResultsCard = ({ recentFixtures, isLoading, onViewAll }: Enh
               ))}
             </div>
           ) : (
-            <div className="text-center text-muted-foreground py-6 sm:py-8">
-              <div className="space-y-2">
-                <div className="text-3xl sm:text-4xl">⚽</div>
-                <p className="text-base sm:text-lg font-medium">No recent results available</p>
+            <div className="text-center text-muted-foreground py-4 sm:py-8">
+              <div className="space-y-1 sm:space-y-2">
+                <div className="text-2xl sm:text-4xl">⚽</div>
+                <p className="text-sm sm:text-lg font-medium">No recent results available</p>
                 <p className="text-xs sm:text-sm">Check back after matches have been played</p>
               </div>
             </div>
