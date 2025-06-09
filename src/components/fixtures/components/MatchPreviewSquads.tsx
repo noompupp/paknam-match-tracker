@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -88,8 +87,8 @@ const MatchPreviewSquads = ({ homeTeam, awayTeam, homeSquad, awaySquad }: MatchP
         </div>
         {(isTopScorer || isTopAssister) && (
           <div className="flex gap-1">
-            {isTopScorer && <Star className="h-3 w-3 text-yellow-500" title="Top Scorer" />}
-            {isTopAssister && <Trophy className="h-3 w-3 text-blue-500" title="Top Assists" />}
+            {isTopScorer && <Star className="h-3 w-3 text-yellow-500" />}
+            {isTopAssister && <Trophy className="h-3 w-3 text-blue-500" />}
           </div>
         )}
       </div>
