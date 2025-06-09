@@ -47,24 +47,24 @@ const MatchPreviewOverview = ({ homeTeam, awayTeam, headToHead }: MatchPreviewOv
   const h2hSummary = getHeadToHeadSummary();
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* League Positions */}
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <Trophy className="h-5 w-5" />
+        <CardHeader className="pb-3 sm:pb-4">
+          <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
+            <Trophy className="h-4 w-4 sm:h-5 sm:w-5" />
             League Standings
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="text-center space-y-2">
-              <h4 className="font-semibold">{homeTeam.name}</h4>
+        <CardContent className="pt-0">
+          <div className="space-y-4 sm:space-y-0 sm:grid sm:grid-cols-2 sm:gap-4">
+            <div className="text-center space-y-2 p-3 rounded-lg bg-muted/30 sm:bg-transparent sm:p-0">
+              <h4 className="font-semibold text-sm sm:text-base">{homeTeam.name}</h4>
               <div className="space-y-1">
-                <Badge variant="outline" className="text-lg font-bold">
+                <Badge variant="outline" className="text-base sm:text-lg font-bold">
                   #{homeStats.position}
                 </Badge>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-xs sm:text-sm text-muted-foreground">
                   {homeStats.points} pts • {homeStats.played} played
                 </p>
                 <p className="text-xs text-muted-foreground">
@@ -73,13 +73,13 @@ const MatchPreviewOverview = ({ homeTeam, awayTeam, headToHead }: MatchPreviewOv
               </div>
             </div>
             
-            <div className="text-center space-y-2">
-              <h4 className="font-semibold">{awayTeam.name}</h4>
+            <div className="text-center space-y-2 p-3 rounded-lg bg-muted/30 sm:bg-transparent sm:p-0">
+              <h4 className="font-semibold text-sm sm:text-base">{awayTeam.name}</h4>
               <div className="space-y-1">
-                <Badge variant="outline" className="text-lg font-bold">
+                <Badge variant="outline" className="text-base sm:text-lg font-bold">
                   #{awayStats.position}
                 </Badge>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-xs sm:text-sm text-muted-foreground">
                   {awayStats.points} pts • {awayStats.played} played
                 </p>
                 <p className="text-xs text-muted-foreground">
@@ -93,24 +93,24 @@ const MatchPreviewOverview = ({ homeTeam, awayTeam, headToHead }: MatchPreviewOv
 
       {/* Season Form */}
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <TrendingUp className="h-5 w-5" />
+        <CardHeader className="pb-3 sm:pb-4">
+          <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
+            <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5" />
             Season Record
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="text-center space-y-2">
-              <h4 className="font-semibold">{homeTeam.name}</h4>
+        <CardContent className="pt-0">
+          <div className="space-y-4 sm:space-y-0 sm:grid sm:grid-cols-2 sm:gap-4">
+            <div className="text-center space-y-2 p-3 rounded-lg bg-muted/30 sm:bg-transparent sm:p-0">
+              <h4 className="font-semibold text-sm sm:text-base">{homeTeam.name}</h4>
               <p className="text-sm font-mono">{homeStats.form}</p>
               <div className="text-xs text-muted-foreground space-y-1">
                 <p>Goals: {homeTeam.goals_for} scored, {homeTeam.goals_against} conceded</p>
               </div>
             </div>
             
-            <div className="text-center space-y-2">
-              <h4 className="font-semibold">{awayTeam.name}</h4>
+            <div className="text-center space-y-2 p-3 rounded-lg bg-muted/30 sm:bg-transparent sm:p-0">
+              <h4 className="font-semibold text-sm sm:text-base">{awayTeam.name}</h4>
               <p className="text-sm font-mono">{awayStats.form}</p>
               <div className="text-xs text-muted-foreground space-y-1">
                 <p>Goals: {awayTeam.goals_for} scored, {awayTeam.goals_against} conceded</p>
@@ -123,38 +123,38 @@ const MatchPreviewOverview = ({ homeTeam, awayTeam, headToHead }: MatchPreviewOv
       {/* Head to Head */}
       {headToHead.length > 0 && (
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Target className="h-5 w-5" />
+          <CardHeader className="pb-3 sm:pb-4">
+            <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
+              <Target className="h-4 w-4 sm:h-5 sm:w-5" />
               Head to Head ({headToHead.length} matches)
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="flex justify-between items-center">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-green-600">{h2hSummary.homeWins}</div>
-                <p className="text-xs text-muted-foreground">{homeTeam.name}</p>
+          <CardContent className="pt-0">
+            <div className="flex justify-between items-center mb-4">
+              <div className="text-center flex-1">
+                <div className="text-xl sm:text-2xl font-bold text-green-600">{h2hSummary.homeWins}</div>
+                <p className="text-xs sm:text-sm text-muted-foreground truncate">{homeTeam.name}</p>
               </div>
               
-              <div className="text-center">
-                <div className="text-2xl font-bold text-gray-600">{h2hSummary.draws}</div>
-                <p className="text-xs text-muted-foreground">Draws</p>
+              <div className="text-center flex-1">
+                <div className="text-xl sm:text-2xl font-bold text-gray-600">{h2hSummary.draws}</div>
+                <p className="text-xs sm:text-sm text-muted-foreground">Draws</p>
               </div>
               
-              <div className="text-center">
-                <div className="text-2xl font-bold text-blue-600">{h2hSummary.awayWins}</div>
-                <p className="text-xs text-muted-foreground">{awayTeam.name}</p>
+              <div className="text-center flex-1">
+                <div className="text-xl sm:text-2xl font-bold text-blue-600">{h2hSummary.awayWins}</div>
+                <p className="text-xs sm:text-sm text-muted-foreground truncate">{awayTeam.name}</p>
               </div>
             </div>
             
             {headToHead.length > 0 && (
-              <div className="mt-4 space-y-2">
+              <div className="space-y-2">
                 <p className="text-sm font-medium">Recent Meetings:</p>
                 <div className="space-y-1">
                   {headToHead.slice(0, 3).map((match) => (
-                    <div key={match.id} className="text-xs text-muted-foreground flex justify-between">
+                    <div key={match.id} className="text-xs text-muted-foreground flex justify-between p-2 rounded bg-muted/30">
                       <span>{formatDateDisplay(match.match_date)}</span>
-                      <span>{match.home_score} - {match.away_score}</span>
+                      <span className="font-medium">{match.home_score} - {match.away_score}</span>
                     </div>
                   ))}
                 </div>

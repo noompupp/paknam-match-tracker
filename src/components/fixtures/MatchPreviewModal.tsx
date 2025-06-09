@@ -66,11 +66,11 @@ const MatchPreviewModal = ({ fixture, isOpen, onClose }: MatchPreviewModalProps)
 
   return (
     <EnhancedDialog open={isOpen} onOpenChange={handleClose}>
-      <EnhancedDialogContent className="w-full h-full max-w-none max-h-none p-0 sm:max-w-4xl sm:max-h-[95vh] sm:h-auto sm:p-0 sm:rounded-lg overflow-hidden">
+      <EnhancedDialogContent className="w-[95vw] h-[90vh] max-w-none max-h-none p-0 sm:max-w-4xl sm:max-h-[95vh] sm:h-auto sm:p-0 sm:rounded-lg overflow-hidden">
         <div className="flex flex-col h-full">
           {/* Header - Fixed */}
-          <EnhancedDialogHeader className="px-4 py-3 sm:px-6 sm:py-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 flex-shrink-0">
-            <EnhancedDialogTitle className="text-lg font-bold">
+          <EnhancedDialogHeader className="px-3 py-2 sm:px-6 sm:py-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 flex-shrink-0">
+            <EnhancedDialogTitle className="text-base sm:text-lg font-bold">
               Match Preview
             </EnhancedDialogTitle>
           </EnhancedDialogHeader>
@@ -78,36 +78,36 @@ const MatchPreviewModal = ({ fixture, isOpen, onClose }: MatchPreviewModalProps)
           {/* Content - Scrollable */}
           <div className="flex-1 overflow-hidden">
             {isLoading ? (
-              <div className="p-4 sm:p-6 space-y-6">
+              <div className="p-3 sm:p-6 space-y-4 sm:space-y-6">
                 {/* Loading skeleton */}
-                <div className="space-y-4">
+                <div className="space-y-3 sm:space-y-4">
                   <div className="flex items-center justify-between">
-                    <Skeleton className="h-6 w-20" />
-                    <Skeleton className="h-6 w-32" />
+                    <Skeleton className="h-5 w-16 sm:h-6 sm:w-20" />
+                    <Skeleton className="h-5 w-24 sm:h-6 sm:w-32" />
                   </div>
-                  <div className="flex items-center justify-center gap-8 py-6">
+                  <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-8 py-4 sm:py-6">
                     <div className="flex items-center gap-3">
-                      <Skeleton className="h-16 w-16 rounded-full" />
+                      <Skeleton className="h-12 w-12 sm:h-16 sm:w-16 rounded-full" />
                       <div className="space-y-2">
-                        <Skeleton className="h-6 w-24" />
-                        <Skeleton className="h-4 w-16" />
+                        <Skeleton className="h-5 w-20 sm:h-6 sm:w-24" />
+                        <Skeleton className="h-3 w-12 sm:h-4 sm:w-16" />
                       </div>
                     </div>
-                    <Skeleton className="h-12 w-16" />
+                    <Skeleton className="h-8 w-12 sm:h-12 sm:w-16" />
                     <div className="flex items-center gap-3">
                       <div className="space-y-2">
-                        <Skeleton className="h-6 w-24" />
-                        <Skeleton className="h-4 w-16" />
+                        <Skeleton className="h-5 w-20 sm:h-6 sm:w-24" />
+                        <Skeleton className="h-3 w-12 sm:h-4 sm:w-16" />
                       </div>
-                      <Skeleton className="h-16 w-16 rounded-full" />
+                      <Skeleton className="h-12 w-12 sm:h-16 sm:w-16 rounded-full" />
                     </div>
                   </div>
                 </div>
-                <Skeleton className="h-40 w-full" />
-                <Skeleton className="h-32 w-full" />
+                <Skeleton className="h-32 w-full sm:h-40" />
+                <Skeleton className="h-24 w-full sm:h-32" />
               </div>
             ) : error ? (
-              <div className="p-4 sm:p-6">
+              <div className="p-3 sm:p-6">
                 <Alert>
                   <Info className="h-4 w-4" />
                   <AlertDescription>{error}</AlertDescription>
@@ -115,7 +115,7 @@ const MatchPreviewModal = ({ fixture, isOpen, onClose }: MatchPreviewModalProps)
               </div>
             ) : matchData ? (
               <ScrollArea className="h-full">
-                <div className="p-4 sm:p-6 space-y-6">
+                <div className="p-3 sm:p-6 space-y-4 sm:space-y-6">
                   {/* Enhanced Match Header */}
                   <MatchPreviewHeader 
                     fixture={matchData.fixture}
@@ -127,19 +127,19 @@ const MatchPreviewModal = ({ fixture, isOpen, onClose }: MatchPreviewModalProps)
                   
                   {/* Tabbed Content */}
                   <Tabs defaultValue="overview" className="w-full">
-                    <TabsList className="grid w-full grid-cols-3 mb-6">
-                      <TabsTrigger value="overview" className="text-xs sm:text-sm font-medium">
+                    <TabsList className="grid w-full grid-cols-3 mb-4 sm:mb-6 h-9 sm:h-10">
+                      <TabsTrigger value="overview" className="text-xs sm:text-sm font-medium py-1.5 sm:py-2">
                         Overview
                       </TabsTrigger>
-                      <TabsTrigger value="squads" className="text-xs sm:text-sm font-medium">
+                      <TabsTrigger value="squads" className="text-xs sm:text-sm font-medium py-1.5 sm:py-2">
                         Squads
                       </TabsTrigger>
-                      <TabsTrigger value="form" className="text-xs sm:text-sm font-medium">
+                      <TabsTrigger value="form" className="text-xs sm:text-sm font-medium py-1.5 sm:py-2">
                         Form
                       </TabsTrigger>
                     </TabsList>
                     
-                    <TabsContent value="overview" className="space-y-6 mt-0">
+                    <TabsContent value="overview" className="space-y-4 sm:space-y-6 mt-0">
                       <MatchPreviewOverview 
                         homeTeam={matchData.homeTeam}
                         awayTeam={matchData.awayTeam}
@@ -147,7 +147,7 @@ const MatchPreviewModal = ({ fixture, isOpen, onClose }: MatchPreviewModalProps)
                       />
                     </TabsContent>
                     
-                    <TabsContent value="squads" className="space-y-6 mt-0">
+                    <TabsContent value="squads" className="space-y-4 sm:space-y-6 mt-0">
                       <MatchPreviewSquads 
                         homeTeam={matchData.homeTeam}
                         awayTeam={matchData.awayTeam}
@@ -156,7 +156,7 @@ const MatchPreviewModal = ({ fixture, isOpen, onClose }: MatchPreviewModalProps)
                       />
                     </TabsContent>
                     
-                    <TabsContent value="form" className="space-y-6 mt-0">
+                    <TabsContent value="form" className="space-y-4 sm:space-y-6 mt-0">
                       <MatchPreviewForm 
                         homeTeam={matchData.homeTeam}
                         awayTeam={matchData.awayTeam}
