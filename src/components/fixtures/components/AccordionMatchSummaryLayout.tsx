@@ -7,7 +7,7 @@ import {
   AccordionItem, 
   AccordionTrigger 
 } from "@/components/ui/accordion";
-import { Clock, BarChart3, Timeline, Trophy } from "lucide-react";
+import { Clock, BarChart3, Trophy } from "lucide-react";
 import MatchHeaderSection from "./MatchHeaderSection";
 import MatchEventsSection from "./MatchEventsSection";
 import EnhancedMatchStats from "./EnhancedMatchStats";
@@ -141,7 +141,7 @@ const AccordionMatchSummaryLayout = ({
               <AccordionItem value="match-timeline" className="border-b last:border-b-0">
                 <AccordionTrigger className="px-6 py-4 hover:no-underline">
                   <div className="flex items-center gap-3">
-                    <Timeline className="h-5 w-5 text-primary" />
+                    <Clock className="h-5 w-5 text-primary" />
                     <span className="font-semibold">Match Timeline</span>
                     <span className="text-sm text-muted-foreground ml-2">
                       ({timelineEvents.length} events)
