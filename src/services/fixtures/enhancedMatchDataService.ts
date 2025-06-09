@@ -44,13 +44,26 @@ export const enhancedMatchDataService = {
         return null;
       }
 
-      const homeTeam = teams?.find(t => t.__id__ === fixture.home_team_id);
-      const awayTeam = teams?.find(t => t.__id__ === fixture.away_team_id);
+      const homeTeamData = teams?.find(t => t.__id__ === fixture.home_team_id);
+      const awayTeamData = teams?.find(t => t.__id__ === fixture.away_team_id);
 
-      if (!homeTeam || !awayTeam) {
+      if (!homeTeamData || !awayTeamData) {
         console.error('❌ Enhanced Match Data: Teams not found');
         return null;
       }
+
+      // Transform team data to match Team interface
+      const homeTeam: Team = {
+        ...homeTeamData,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+
+      const awayTeam: Team = {
+        ...awayTeamData,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
 
       // Get squad members for both teams
       const { data: members, error: membersError } = await supabase
@@ -79,13 +92,19 @@ export const enhancedMatchDataService = {
         console.error('❌ Enhanced Match Data: Error fetching recent matches:', recentError);
       }
 
+      // Transform fixture data to match Fixture interface
+      const transformFixture = (fixtureData: any): Fixture => ({
+        ...fixtureData,
+        match_time: fixtureData.match_time || fixtureData.time || '18:00:00'
+      });
+
       const homeRecentForm = recentMatches?.filter(m => 
         m.home_team_id === fixture.home_team_id || m.away_team_id === fixture.home_team_id
-      ).slice(0, 5) || [];
+      ).slice(0, 5).map(transformFixture) || [];
 
       const awayRecentForm = recentMatches?.filter(m => 
         m.home_team_id === fixture.away_team_id || m.away_team_id === fixture.away_team_id
-      ).slice(0, 5) || [];
+      ).slice(0, 5).map(transformFixture) || [];
 
       // Get head-to-head history
       const { data: headToHead, error: h2hError } = await supabase
@@ -102,11 +121,11 @@ export const enhancedMatchDataService = {
       }
 
       const enhancedData: EnhancedMatchData = {
-        fixture: {
+        fixture: transformFixture({
           ...fixture,
           home_team: homeTeam,
           away_team: awayTeam
-        },
+        }),
         homeTeam,
         awayTeam,
         homeSquad,
@@ -115,7 +134,7 @@ export const enhancedMatchDataService = {
           homeTeam: homeRecentForm,
           awayTeam: awayRecentForm
         },
-        headToHead: headToHead || []
+        headToHead: headToHead?.map(transformFixture) || []
       };
 
       console.log('✅ Enhanced Match Data: Successfully fetched comprehensive data:', {

@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Trophy, TrendingUp, Users, Target } from "lucide-react";
 import { Team, Fixture } from "@/types/database";
+import { formatDateDisplay } from "@/utils/timeUtils";
 
 interface MatchPreviewOverviewProps {
   homeTeam: Team;
