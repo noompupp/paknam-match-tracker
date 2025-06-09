@@ -24,12 +24,12 @@ const RefereePageContainer = ({
 
   return (
     <div className={cn(
-      "referee-full-background",
+      "gradient-bg",
       "w-full",
       "overflow-x-hidden",
       isMobile && isIOS && "referee-ios-safe",
       isMobile && !isIOS && "referee-mobile-container",
-      !isMobile && "min-h-screen bg-background",
+      !isMobile && "min-h-screen",
       className
     )}>
       <div className={cn(

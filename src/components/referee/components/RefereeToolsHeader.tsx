@@ -96,7 +96,7 @@ const RefereeToolsHeader = ({
               </div>
             )}
 
-            {!enhancedPlayersData.hasValidData && enhancedPlayersData.dataIssues.length > 0 && (
+            {selectedFixture && !enhancedPlayersData.hasValidData && enhancedPlayersData.dataIssues.length > 0 && (
               <div className="flex items-start gap-2 p-3 bg-orange-50 border border-orange-200 rounded-lg dark:bg-orange-900/10 dark:border-orange-800">
                 <AlertTriangle className="h-4 w-4 text-orange-600 mt-0.5" />
                 <div className="text-sm">

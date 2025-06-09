@@ -154,7 +154,7 @@ const RoleBasedNavigation = ({ activeTab, onTabChange }: RoleBasedNavigationProp
             title={`Sign out (${user.email})`}
           >
             <LogOut className="h-5 w-5" />
-            <span className="text-xs font-medium">Exit</span>
+            <span className="text-xs font-medium">Sign out</span>
           </Button>
         ) : (
           <Button
