@@ -1,5 +1,5 @@
 
-import UnifiedMatchSummaryLayout from "./components/UnifiedMatchSummaryLayout";
+import AccordionMatchSummaryLayout from "./components/AccordionMatchSummaryLayout";
 
 interface PremierLeagueStyleSummaryProps {
   fixture: any;
@@ -32,9 +32,9 @@ const PremierLeagueStyleSummary = ({
   getCardType,
   isCardRed
 }: PremierLeagueStyleSummaryProps) => {
-  // Use the unified layout for all cases
+  // Use the new accordion layout for enhanced match summary display
   return (
-    <UnifiedMatchSummaryLayout
+    <AccordionMatchSummaryLayout
       fixture={fixture}
       goals={goals}
       cards={cards}
