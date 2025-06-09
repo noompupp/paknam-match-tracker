@@ -1,9 +1,10 @@
+
 import { Calendar, MapPin, AlertTriangle } from "lucide-react";
 import RefereeCard from "../shared/RefereeCard";
 import RefereeFormField from "../shared/RefereeFormField";
 import TournamentLogo from "../../TournamentLogo";
 import MobileOptimizedFixtureSelect from "./MobileOptimizedFixtureSelect";
-import { useMobile } from "@/hooks/use-mobile";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface RefereeToolsHeaderProps {
   fixtures: any[];
@@ -21,7 +22,7 @@ const RefereeToolsHeader = ({
   onFixtureChange,
   enhancedPlayersData
 }: RefereeToolsHeaderProps) => {
-  const isMobile = useMobile();
+  const isMobile = useIsMobile();
   const selectedFixtureData = fixtures.find(f => f.id.toString() === selectedFixture);
 
   return (
