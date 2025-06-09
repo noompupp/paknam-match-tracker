@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { Fixture, Team, Member } from '@/types/database';
 import { refereeAssignmentService, RefereeTeamAssignment } from './refereeAssignmentService';
@@ -77,9 +76,9 @@ export const enhancedMatchDataService = {
         updated_at: new Date().toISOString()
       };
 
-      // Get referee assignment
+      // Get referee assignment - use the correct property name
       const refereeAssignment = refereeAssignmentService.getRefereeAssignment(
-        fixture.match_time || fixture.time || '18:00:00',
+        fixture.time || '18:00:00',
         fixture.home_team_id,
         fixture.away_team_id,
         allTeams || []
@@ -102,7 +101,7 @@ export const enhancedMatchDataService = {
       const { data: recentMatches, error: recentError } = await supabase
         .from('fixtures')
         .select('*')
-        .or(`home_team_id.eq.${fixture.home_team_id},away_team_id.eq.${fixture.home_team_id},home_team_id.eq.${fixture.away_team_id},away_team_id.eq.${fixture.away_team_id}`)
+        .or(`and(home_team_id.eq.${fixture.home_team_id},away_team_id.eq.${fixture.home_team_id}),and(home_team_id.eq.${fixture.away_team_id},away_team_id.eq.${fixture.home_team_id})`)
         .eq('status', 'completed')
         .neq('id', fixtureId)
         .order('match_date', { ascending: false })
@@ -115,7 +114,7 @@ export const enhancedMatchDataService = {
       // Transform fixture data to match Fixture interface
       const transformFixture = (fixtureData: any): Fixture => ({
         ...fixtureData,
-        match_time: fixtureData.match_time || fixtureData.time || '18:00:00'
+        match_time: fixtureData.time || '18:00:00'
       });
 
       const homeRecentForm = recentMatches?.filter(m => 

@@ -1,6 +1,6 @@
 
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, MapPin, Whistle } from "lucide-react";
+import { Calendar, Clock, MapPin, Users } from "lucide-react";
 import { Fixture, Team } from "@/types/database";
 import { formatDateDisplay, formatTimeDisplay } from "@/utils/timeUtils";
 import { RefereeTeamAssignment, refereeAssignmentService } from "@/services/fixtures/refereeAssignmentService";
@@ -147,7 +147,7 @@ const MatchPreviewHeader = ({
         {/* Referee Assignment */}
         {refereeAssignment && (
           <div className="flex items-center gap-2 text-sm">
-            <Whistle className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+            <Users className="h-4 w-4 text-muted-foreground flex-shrink-0" />
             <div>
               <p className="text-xs text-muted-foreground mb-1">Referee Teams</p>
               <p className="font-medium text-xs">
