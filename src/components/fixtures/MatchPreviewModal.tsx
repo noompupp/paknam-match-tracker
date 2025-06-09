@@ -66,27 +66,48 @@ const MatchPreviewModal = ({ fixture, isOpen, onClose }: MatchPreviewModalProps)
 
   return (
     <EnhancedDialog open={isOpen} onOpenChange={handleClose}>
-      <EnhancedDialogContent className="w-full h-full max-w-none max-h-none p-0 sm:max-w-4xl sm:max-h-[90vh] sm:h-auto sm:p-6 sm:rounded-lg">
+      <EnhancedDialogContent className="w-full h-full max-w-none max-h-none p-0 sm:max-w-4xl sm:max-h-[95vh] sm:h-auto sm:p-0 sm:rounded-lg overflow-hidden">
         <div className="flex flex-col h-full">
-          <EnhancedDialogHeader className="px-4 py-3 sm:px-0 sm:py-0 border-b sm:border-b-0">
+          {/* Header - Fixed */}
+          <EnhancedDialogHeader className="px-4 py-3 sm:px-6 sm:py-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 flex-shrink-0">
             <EnhancedDialogTitle className="text-lg font-bold">
               Match Preview
             </EnhancedDialogTitle>
           </EnhancedDialogHeader>
 
+          {/* Content - Scrollable */}
           <div className="flex-1 overflow-hidden">
             {isLoading ? (
-              <div className="p-4 space-y-4">
-                <div className="flex items-center justify-center gap-4 p-6">
-                  <Skeleton className="h-12 w-12 rounded-full" />
-                  <Skeleton className="h-8 w-16" />
-                  <Skeleton className="h-12 w-12 rounded-full" />
+              <div className="p-4 sm:p-6 space-y-6">
+                {/* Loading skeleton */}
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <Skeleton className="h-6 w-20" />
+                    <Skeleton className="h-6 w-32" />
+                  </div>
+                  <div className="flex items-center justify-center gap-8 py-6">
+                    <div className="flex items-center gap-3">
+                      <Skeleton className="h-16 w-16 rounded-full" />
+                      <div className="space-y-2">
+                        <Skeleton className="h-6 w-24" />
+                        <Skeleton className="h-4 w-16" />
+                      </div>
+                    </div>
+                    <Skeleton className="h-12 w-16" />
+                    <div className="flex items-center gap-3">
+                      <div className="space-y-2">
+                        <Skeleton className="h-6 w-24" />
+                        <Skeleton className="h-4 w-16" />
+                      </div>
+                      <Skeleton className="h-16 w-16 rounded-full" />
+                    </div>
+                  </div>
                 </div>
-                <Skeleton className="h-32 w-full" />
+                <Skeleton className="h-40 w-full" />
                 <Skeleton className="h-32 w-full" />
               </div>
             ) : error ? (
-              <div className="p-4">
+              <div className="p-4 sm:p-6">
                 <Alert>
                   <Info className="h-4 w-4" />
                   <AlertDescription>{error}</AlertDescription>
@@ -94,21 +115,31 @@ const MatchPreviewModal = ({ fixture, isOpen, onClose }: MatchPreviewModalProps)
               </div>
             ) : matchData ? (
               <ScrollArea className="h-full">
-                <div className="p-4 sm:p-0">
+                <div className="p-4 sm:p-6 space-y-6">
+                  {/* Enhanced Match Header */}
                   <MatchPreviewHeader 
                     fixture={matchData.fixture}
                     homeTeam={matchData.homeTeam}
                     awayTeam={matchData.awayTeam}
+                    refereeAssignment={matchData.refereeAssignment}
+                    venue={matchData.venue}
                   />
                   
-                  <Tabs defaultValue="overview" className="mt-6">
-                    <TabsList className="grid w-full grid-cols-3">
-                      <TabsTrigger value="overview" className="text-xs sm:text-sm">Overview</TabsTrigger>
-                      <TabsTrigger value="squads" className="text-xs sm:text-sm">Squads</TabsTrigger>
-                      <TabsTrigger value="form" className="text-xs sm:text-sm">Form</TabsTrigger>
+                  {/* Tabbed Content */}
+                  <Tabs defaultValue="overview" className="w-full">
+                    <TabsList className="grid w-full grid-cols-3 mb-6">
+                      <TabsTrigger value="overview" className="text-xs sm:text-sm font-medium">
+                        Overview
+                      </TabsTrigger>
+                      <TabsTrigger value="squads" className="text-xs sm:text-sm font-medium">
+                        Squads
+                      </TabsTrigger>
+                      <TabsTrigger value="form" className="text-xs sm:text-sm font-medium">
+                        Form
+                      </TabsTrigger>
                     </TabsList>
                     
-                    <TabsContent value="overview" className="mt-4">
+                    <TabsContent value="overview" className="space-y-6 mt-0">
                       <MatchPreviewOverview 
                         homeTeam={matchData.homeTeam}
                         awayTeam={matchData.awayTeam}
@@ -116,7 +147,7 @@ const MatchPreviewModal = ({ fixture, isOpen, onClose }: MatchPreviewModalProps)
                       />
                     </TabsContent>
                     
-                    <TabsContent value="squads" className="mt-4">
+                    <TabsContent value="squads" className="space-y-6 mt-0">
                       <MatchPreviewSquads 
                         homeTeam={matchData.homeTeam}
                         awayTeam={matchData.awayTeam}
@@ -125,7 +156,7 @@ const MatchPreviewModal = ({ fixture, isOpen, onClose }: MatchPreviewModalProps)
                       />
                     </TabsContent>
                     
-                    <TabsContent value="form" className="mt-4">
+                    <TabsContent value="form" className="space-y-6 mt-0">
                       <MatchPreviewForm 
                         homeTeam={matchData.homeTeam}
                         awayTeam={matchData.awayTeam}

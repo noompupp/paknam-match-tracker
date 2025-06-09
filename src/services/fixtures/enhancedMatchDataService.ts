@@ -1,6 +1,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { Fixture, Team, Member } from '@/types/database';
+import { refereeAssignmentService, RefereeTeamAssignment } from './refereeAssignmentService';
 
 export interface EnhancedMatchData {
   fixture: Fixture;
@@ -13,7 +14,8 @@ export interface EnhancedMatchData {
     awayTeam: Fixture[];
   };
   headToHead: Fixture[];
-  referee?: string;
+  refereeAssignment?: RefereeTeamAssignment;
+  venue?: string;
 }
 
 export const enhancedMatchDataService = {
@@ -33,7 +35,17 @@ export const enhancedMatchDataService = {
         return null;
       }
 
-      // Get teams data
+      // Get all teams for referee assignment
+      const { data: allTeams, error: allTeamsError } = await supabase
+        .from('teams')
+        .select('*');
+
+      if (allTeamsError) {
+        console.error('❌ Enhanced Match Data: Error fetching all teams:', allTeamsError);
+        return null;
+      }
+
+      // Get specific teams data
       const { data: teams, error: teamsError } = await supabase
         .from('teams')
         .select('*')
@@ -64,6 +76,14 @@ export const enhancedMatchDataService = {
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       };
+
+      // Get referee assignment
+      const refereeAssignment = refereeAssignmentService.getRefereeAssignment(
+        fixture.match_time || fixture.time || '18:00:00',
+        fixture.home_team_id,
+        fixture.away_team_id,
+        allTeams || []
+      );
 
       // Get squad members for both teams
       const { data: members, error: membersError } = await supabase
@@ -134,7 +154,9 @@ export const enhancedMatchDataService = {
           homeTeam: homeRecentForm,
           awayTeam: awayRecentForm
         },
-        headToHead: headToHead?.map(transformFixture) || []
+        headToHead: headToHead?.map(transformFixture) || [],
+        refereeAssignment,
+        venue: fixture.venue
       };
 
       console.log('✅ Enhanced Match Data: Successfully fetched comprehensive data:', {
@@ -144,7 +166,8 @@ export const enhancedMatchDataService = {
         homeSquadSize: homeSquad.length,
         awaySquadSize: awaySquad.length,
         recentFormCount: homeRecentForm.length + awayRecentForm.length,
-        headToHeadCount: headToHead?.length || 0
+        headToHeadCount: headToHead?.length || 0,
+        refereeAssignment: refereeAssignment ? refereeAssignmentService.formatRefereeAssignment(refereeAssignment) : 'None'
       });
 
       return enhancedData;

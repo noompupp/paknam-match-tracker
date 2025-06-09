@@ -20,23 +20,25 @@ const FixtureCard = ({
 }: FixtureCardProps) => {
   
   const handleCardClick = () => {
+    // Always open preview for any fixture
+    if (onPreviewClick) {
+      onPreviewClick(fixture);
+    } else if (fixture.status === 'completed' && onFixtureClick) {
+      // Fallback to match summary for completed fixtures
+      onFixtureClick(fixture);
+    }
+  };
+
+  const handleSummaryClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
     if (fixture.status === 'completed' && onFixtureClick) {
       onFixtureClick(fixture);
     }
   };
 
-  const handlePreviewClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (onPreviewClick) {
-      onPreviewClick(fixture);
-    }
-  };
-
   return (
     <Card 
-      className={`card-shadow-lg hover:card-shadow-lg hover:scale-105 transition-all duration-300 relative group ${
-        fixture.status === 'completed' ? 'cursor-pointer' : ''
-      }`}
+      className="card-shadow-lg hover:card-shadow-lg hover:scale-105 transition-all duration-300 relative group cursor-pointer"
       onClick={handleCardClick}
     >
       <CardContent className="p-6">
@@ -52,17 +54,15 @@ const FixtureCard = ({
               {fixture.status}
             </Badge>
             
-            {/* Preview Button */}
-            <button
-              onClick={handlePreviewClick}
-              className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded-full hover:bg-muted/50"
-              aria-label="Preview match details"
-            >
-              <Info className="h-4 w-4 text-muted-foreground hover:text-foreground" />
-            </button>
-            
+            {/* Match Summary Button for completed matches */}
             {fixture.status === 'completed' && (
-              <Eye className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+              <button
+                onClick={handleSummaryClick}
+                className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded-full hover:bg-muted/50"
+                aria-label="View match summary"
+              >
+                <Eye className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+              </button>
             )}
           </div>
         </div>
@@ -116,9 +116,9 @@ const FixtureCard = ({
 
           {/* Click hints */}
           <div className="flex justify-between items-center text-xs text-muted-foreground">
-            <span>Tap info icon for preview</span>
+            <span>Tap card for match preview</span>
             {fixture.status === 'completed' && (
-              <span>Tap card for match summary</span>
+              <span>Tap eye icon for match summary</span>
             )}
           </div>
         </div>
