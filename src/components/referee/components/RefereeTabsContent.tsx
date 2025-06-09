@@ -1,9 +1,8 @@
 
 import { TabsContent } from "@/components/ui/tabs";
 import ScoreTab from "./tabs/ScoreTab";
-import TimerTab from "./tabs/TimerTab";
+import UnifiedTimerTab from "./tabs/UnifiedTimerTab";
 import CardsTab from "./tabs/CardsTab";
-import EnhancedTimeTab from "./tabs/EnhancedTimeTab";
 import SummaryTab from "./tabs/SummaryTab";
 import { ComponentPlayer } from "../hooks/useRefereeState";
 
@@ -113,16 +112,23 @@ const RefereeTabsContent = ({
         />
       </TabsContent>
 
-      <TabsContent value="timer">
-        <TimerTab
+      <TabsContent value="timer-tracking">
+        <UnifiedTimerTab
           selectedFixtureData={selectedFixtureData}
           homeScore={homeScore}
           awayScore={awayScore}
           matchTime={matchTime}
           isRunning={isRunning}
           formatTime={formatTime}
+          allPlayers={allPlayers}
+          homeTeamPlayers={homeTeamPlayers}
+          awayTeamPlayers={awayTeamPlayers}
+          trackedPlayers={trackedPlayers}
           onToggleTimer={onToggleTimer}
           onResetMatch={onResetMatch}
+          onAddPlayer={onAddPlayer}
+          onRemovePlayer={onRemovePlayer}
+          onTogglePlayerTime={onTogglePlayerTime}
         />
       </TabsContent>
 
@@ -140,25 +146,6 @@ const RefereeTabsContent = ({
           onPlayerSelect={setSelectedPlayer}
           onTeamChange={setSelectedTeam}
           onCardTypeChange={setSelectedCardType}
-          formatTime={formatTime}
-        />
-      </TabsContent>
-
-      <TabsContent value="time">
-        <EnhancedTimeTab
-          allPlayers={allPlayers}
-          homeTeamPlayers={homeTeamPlayers}
-          awayTeamPlayers={awayTeamPlayers}
-          trackedPlayers={trackedPlayers}
-          selectedPlayer={selectedTimePlayer}
-          selectedTimeTeam={selectedTimeTeam}
-          matchTime={matchTime}
-          isTimerRunning={isRunning}
-          onPlayerSelect={setSelectedTimePlayer}
-          onTimeTeamChange={setSelectedTimeTeam}
-          onAddPlayer={onAddPlayer}
-          onRemovePlayer={onRemovePlayer}
-          onTogglePlayerTime={onTogglePlayerTime}
           formatTime={formatTime}
         />
       </TabsContent>

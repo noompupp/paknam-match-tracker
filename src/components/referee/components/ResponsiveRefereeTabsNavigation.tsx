@@ -1,5 +1,5 @@
 
-import { Target, Timer, CreditCard, Clock, BarChart3 } from "lucide-react";
+import { Target, Timer, CreditCard, BarChart3 } from "lucide-react";
 import ResponsiveTabsList from "../shared/ResponsiveTabsList";
 
 const ResponsiveRefereeTabsNavigation = () => {
@@ -10,19 +10,14 @@ const ResponsiveRefereeTabsNavigation = () => {
       icon: <Target className="h-4 w-4" />
     },
     {
-      value: "timer", 
-      label: "Timer",
+      value: "timer-tracking", 
+      label: "Timer & Tracking",
       icon: <Timer className="h-4 w-4" />
     },
     {
       value: "cards",
       label: "Cards", 
       icon: <CreditCard className="h-4 w-4" />
-    },
-    {
-      value: "time",
-      label: "Time",
-      icon: <Clock className="h-4 w-4" />
     },
     {
       value: "summary",

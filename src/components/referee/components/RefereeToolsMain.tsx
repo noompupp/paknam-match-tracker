@@ -1,11 +1,11 @@
+
 import { useState } from "react";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import RefereeTabsNavigation from "./RefereeTabsNavigation";
 import ScoreTab from "./tabs/ScoreTab";
-import TimerTab from "./tabs/TimerTab";
+import UnifiedTimerTab from "./tabs/UnifiedTimerTab";
 import GoalsTab from "./tabs/GoalsTab";
 import CardsTab from "./tabs/CardsTab";
-import TimeTab from "./tabs/TimeTab";
 import SummaryTab from "./tabs/SummaryTab";
 import GoalEntryWizard from "./GoalEntryWizard";
 import { ComponentPlayer } from "../hooks/useRefereeState";
@@ -189,16 +189,23 @@ const RefereeToolsMain = (props: RefereeToolsMainProps) => {
         />
       </TabsContent>
 
-      <TabsContent value="timer" className="mt-6">
-        <TimerTab
+      <TabsContent value="timer-tracking" className="mt-6">
+        <UnifiedTimerTab
           selectedFixtureData={props.selectedFixtureData}
           homeScore={props.homeScore}
           awayScore={props.awayScore}
           matchTime={props.matchTime}
           isRunning={props.isRunning}
           formatTime={props.formatTime}
+          allPlayers={props.allPlayers}
+          homeTeamPlayers={props.homeTeamPlayers}
+          awayTeamPlayers={props.awayTeamPlayers}
+          trackedPlayers={props.trackedPlayers}
           onToggleTimer={props.toggleTimer}
           onResetMatch={handleResetMatch}
+          onAddPlayer={props.addPlayer}
+          onRemovePlayer={props.removePlayer}
+          onTogglePlayerTime={props.togglePlayerTime}
         />
       </TabsContent>
 
@@ -238,25 +245,6 @@ const RefereeToolsMain = (props: RefereeToolsMainProps) => {
           onTeamChange={props.setSelectedTeam}
           onCardTypeChange={props.setSelectedCardType}
           formatTime={props.formatTime}
-        />
-      </TabsContent>
-
-      <TabsContent value="time" className="mt-6">
-        <TimeTab
-          allPlayers={props.allPlayers}
-          homeTeamPlayers={props.homeTeamPlayers}
-          awayTeamPlayers={props.awayTeamPlayers}
-          trackedPlayers={props.trackedPlayers}
-          selectedPlayer={props.selectedTimePlayer}
-          selectedTimeTeam={props.selectedTimeTeam}
-          matchTime={props.matchTime}
-          onPlayerSelect={props.setSelectedTimePlayer}
-          onTimeTeamChange={props.setSelectedTimeTeam}
-          onAddPlayer={props.addPlayer}
-          onRemovePlayer={props.removePlayer}
-          onTogglePlayerTime={props.togglePlayerTime}
-          formatTime={props.formatTime}
-          selectedFixtureData={props.selectedFixtureData}
         />
       </TabsContent>
 
