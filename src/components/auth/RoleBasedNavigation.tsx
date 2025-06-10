@@ -1,9 +1,10 @@
 
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useSecureAuth } from "@/contexts/SecureAuthContext";
 import { Button } from "@/components/ui/button";
 import { Home, Calendar, Trophy, Flag, LogOut, User, Lock, Users } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { usePlatformDetection } from "@/hooks/usePlatformDetection";
 
 interface RoleBasedNavigationProps {
   activeTab: string;
@@ -13,6 +14,8 @@ interface RoleBasedNavigationProps {
 const RoleBasedNavigation = ({ activeTab, onTabChange }: RoleBasedNavigationProps) => {
   const { user, signOut } = useSecureAuth();
   const { toast } = useToast();
+  const { isStandalone } = usePlatformDetection();
+  const textRefs = useRef<(HTMLSpanElement | null)[]>([]);
 
   const handleSignOut = async () => {
     try {
@@ -48,6 +51,23 @@ const RoleBasedNavigation = ({ activeTab, onTabChange }: RoleBasedNavigationProp
     }
   };
 
+  // Dynamic text optimization for PWA mode
+  useEffect(() => {
+    if (isStandalone) {
+      textRefs.current.forEach((textElement) => {
+        if (textElement) {
+          const text = textElement.textContent || '';
+          // Mark long text for special styling
+          if (text.length > 7) {
+            textElement.setAttribute('data-long-text', 'true');
+          } else {
+            textElement.removeAttribute('data-long-text');
+          }
+        }
+      });
+    }
+  }, [isStandalone]);
+
   // Base navigation items available to all users (including non-authenticated)
   const baseNavItems = [
     { id: "dashboard", label: "Latest", icon: Home },
@@ -78,9 +98,9 @@ const RoleBasedNavigation = ({ activeTab, onTabChange }: RoleBasedNavigationProp
         height: `calc(70px + env(safe-area-inset-bottom))`
       }}
     >
-      <div className="flex justify-between items-center max-w-md mx-auto px-4 py-2 h-[70px]">
+      <div className="flex justify-between items-center px-4 py-2 h-[70px]">
         {/* Base navigation items - always visible */}
-        {baseNavItems.map((item) => {
+        {baseNavItems.map((item, index) => {
           const Icon = item.icon;
           const isActive = activeTab === item.id;
           
@@ -102,16 +122,22 @@ const RoleBasedNavigation = ({ activeTab, onTabChange }: RoleBasedNavigationProp
               } : {}}
             >
               <Icon className="h-5 w-5" />
-              <span className="text-xs font-medium">{item.label}</span>
+              <span 
+                ref={(el) => textRefs.current[index] = el}
+                className="text-xs font-medium"
+              >
+                {item.label}
+              </span>
             </Button>
           );
         })}
 
         {/* Protected navigation items with visual indicators */}
-        {protectedNavItems.map((item) => {
+        {protectedNavItems.map((item, index) => {
           const Icon = item.icon;
           const isActive = activeTab === item.id;
           const isAccessible = user; // For now, any authenticated user can access
+          const refIndex = baseNavItems.length + index;
           
           return (
             <Button
@@ -139,7 +165,12 @@ const RoleBasedNavigation = ({ activeTab, onTabChange }: RoleBasedNavigationProp
                   <Lock className="h-3 w-3 absolute -top-1 -right-1 text-muted-foreground/60" />
                 )}
               </div>
-              <span className="text-xs font-medium">{item.label}</span>
+              <span 
+                ref={(el) => textRefs.current[refIndex] = el}
+                className="text-xs font-medium"
+              >
+                {item.label}
+              </span>
             </Button>
           );
         })}
@@ -154,7 +185,12 @@ const RoleBasedNavigation = ({ activeTab, onTabChange }: RoleBasedNavigationProp
             title={`Sign out (${user.email})`}
           >
             <LogOut className="h-5 w-5" />
-            <span className="text-xs font-medium">Sign out</span>
+            <span 
+              ref={(el) => textRefs.current[baseNavItems.length + protectedNavItems.length] = el}
+              className="text-xs font-medium"
+            >
+              Sign out
+            </span>
           </Button>
         ) : (
           <Button
@@ -165,7 +201,12 @@ const RoleBasedNavigation = ({ activeTab, onTabChange }: RoleBasedNavigationProp
             title="Sign in to access referee tools"
           >
             <User className="h-5 w-5" />
-            <span className="text-xs font-medium">Login</span>
+            <span 
+              ref={(el) => textRefs.current[baseNavItems.length + protectedNavItems.length] = el}
+              className="text-xs font-medium"
+            >
+              Login
+            </span>
           </Button>
         )}
       </div>

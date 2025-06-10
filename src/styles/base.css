@@ -164,7 +164,8 @@
   
   body {
     @apply bg-background text-foreground;
-    /* Only apply horizontal safe area padding by default - PWA overrides will handle full safe areas */
+    /* BROWSER MODE: Only apply horizontal safe area padding for browser view */
+    /* PWA overrides will handle full safe areas in standalone mode */
     padding-left: var(--safe-area-inset-left);
     padding-right: var(--safe-area-inset-right);
     
@@ -205,5 +206,20 @@
     html {
       background-color: hsl(var(--background));
     }
+  }
+}
+
+/* Browser-specific navigation constraints (non-PWA) */
+@media not all and (display-mode: standalone) {
+  /* Apply max-width constraint only in browser mode */
+  nav[class*="fixed bottom-0"] > div {
+    max-width: 480px !important;
+    margin: 0 auto !important;
+  }
+  
+  /* Ensure proper centering in browser mode */
+  nav[class*="fixed bottom-0"] {
+    display: flex !important;
+    justify-content: center !important;
   }
 }
