@@ -2,7 +2,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, ChevronRight } from "lucide-react";
+import { ArrowRight, Eye } from "lucide-react";
 import { Fixture } from "@/types/database";
 import { formatDateDisplay, formatTimeDisplay } from "@/utils/timeUtils";
 import TeamLogo from "../teams/TeamLogo";
@@ -11,9 +11,22 @@ interface UpcomingFixturesCardProps {
   upcomingFixtures: Fixture[] | undefined;
   isLoading: boolean;
   onViewAll: () => void;
+  onFixturePreview?: (fixture: Fixture) => void;
 }
 
-const UpcomingFixturesCard = ({ upcomingFixtures, isLoading, onViewAll }: UpcomingFixturesCardProps) => {
+const UpcomingFixturesCard = ({ 
+  upcomingFixtures, 
+  isLoading, 
+  onViewAll,
+  onFixturePreview 
+}: UpcomingFixturesCardProps) => {
+  
+  const handleFixtureClick = (fixture: Fixture) => {
+    if (onFixturePreview) {
+      onFixturePreview(fixture);
+    }
+  };
+
   return (
     <Card className="card-shadow-lg animate-fade-in">
       <CardHeader className="flex flex-row items-center justify-between pb-2 sm:pb-4">
@@ -46,12 +59,20 @@ const UpcomingFixturesCard = ({ upcomingFixtures, isLoading, onViewAll }: Upcomi
           ))
         ) : upcomingFixtures && upcomingFixtures.length > 0 ? (
           upcomingFixtures.map((fixture) => (
-            <div key={fixture.id} className="p-3 sm:p-4 rounded-lg bg-muted/20 hover:bg-muted/40 transition-colors">
+            <div 
+              key={fixture.id} 
+              className="p-3 sm:p-4 rounded-lg bg-muted/20 hover:bg-muted/40 transition-colors cursor-pointer group"
+              onClick={() => handleFixtureClick(fixture)}
+            >
               <div className="flex items-center justify-between">
                 <div className="text-xs sm:text-sm text-muted-foreground">
                   {formatDateDisplay(fixture.match_date)} • {formatTimeDisplay(fixture.match_time)}
                 </div>
-                <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
+                <div className="flex items-center gap-2">
+                  <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Eye className="h-3 w-3 sm:h-4 sm:w-4 text-primary" />
+                  </div>
+                </div>
               </div>
               <div className="grid grid-cols-5 items-center gap-1 sm:gap-2 mt-1 sm:mt-2">
                 <div className="col-span-2 flex items-center gap-1 sm:gap-2 justify-end">
@@ -65,6 +86,9 @@ const UpcomingFixturesCard = ({ upcomingFixtures, isLoading, onViewAll }: Upcomi
                   <TeamLogo team={fixture.away_team} size="small" />
                   <span className="font-semibold text-xs sm:text-sm">{fixture.away_team?.name || 'TBD'}</span>
                 </div>
+              </div>
+              <div className="mt-2 text-center">
+                <span className="text-xs text-muted-foreground/70">Tap for Match Preview</span>
               </div>
             </div>
           ))

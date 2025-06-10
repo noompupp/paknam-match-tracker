@@ -1,426 +1,64 @@
 
-/* Enhanced responsive utilities */
-@media (max-width: 640px) {
-  .text-responsive {
-    font-size: 0.875rem;
-  }
-  
-  .container-responsive {
-    padding-left: 1rem;
-    padding-right: 1rem;
-  }
+/* Text truncation utilities */
+.line-clamp-1 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
 }
 
-/* Enhanced focus styles for accessibility */
-.focus-visible:focus-visible {
-  outline: 2px solid hsl(var(--ring));
-  outline-offset: 2px;
+.line-clamp-2 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 
-/* Better touch targets for mobile */
-@media (max-width: 768px) {
-  button, 
-  [role="button"],
-  .touch-target {
-    min-height: 44px;
-    min-width: 44px;
-  }
+.line-clamp-3 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
 }
 
-/* Mobile League Table Optimizations */
-@media (max-width: 767px) and (orientation: portrait) {
-  .league-table-mobile-portrait {
-    font-size: 0.75rem;
-  }
-  
-  .league-table-mobile-portrait th,
-  .league-table-mobile-portrait td {
-    padding: 0.25rem 0.125rem;
-  }
-  
-  .league-table-mobile-portrait .team-column {
-    padding: 0.5rem 0.25rem;
-  }
-  
-  .league-table-mobile-portrait .points-column {
-    padding: 0.5rem 0.25rem;
-    font-weight: 700;
-  }
+/* Highlight section animation for navigation */
+.highlight-section {
+  animation: highlight-pulse 2s ease-in-out;
 }
 
-@media (max-width: 767px) and (orientation: landscape) {
-  .league-table-mobile-landscape {
-    font-size: 0.875rem;
-  }
-  
-  .league-table-mobile-landscape th,
-  .league-table-mobile-landscape td {
-    padding: 0.5rem;
-  }
+@keyframes highlight-pulse {
+  0% { background-color: transparent; }
+  50% { background-color: hsl(var(--primary) / 0.1); }
+  100% { background-color: transparent; }
 }
 
-/* Smooth orientation transitions */
-@media (max-width: 767px) {
-  .league-table-responsive {
-    transition: all 0.3s ease-in-out;
-  }
+/* Loading states */
+.loading-shimmer {
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
 }
 
-/* Mobile Portrait Fixture Card Optimizations */
-@media (max-width: 480px) and (orientation: portrait) {
-  .mobile-fixture-card-portrait {
-    padding: 1rem;
-  }
-  
-  .mobile-fixture-card-portrait .team-logo {
-    width: 2.5rem;
-    height: 2.5rem;
-  }
-  
-  .mobile-fixture-card-portrait .team-name {
-    font-size: 0.75rem;
-    line-height: 1.2;
-    max-width: 5rem;
-  }
-  
-  .mobile-fixture-card-portrait .score-text {
-    font-size: 1.5rem;
-    font-weight: 700;
-    line-height: 1;
-  }
-  
-  .mobile-fixture-card-portrait .match-status {
-    font-size: 0.75rem;
-    padding: 0.25rem 0.5rem;
-  }
-  
-  .mobile-fixture-card-portrait .vs-text {
-    font-size: 1.125rem;
-    font-weight: 300;
-  }
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
 }
 
-/* Enhanced mobile score styling */
-@media (max-width: 480px) {
-  .mobile-score-enhanced {
-    letter-spacing: -0.025em;
-  }
-  
-  .mobile-score-glow {
-    filter: drop-shadow(0 0 4px rgba(59, 130, 246, 0.15));
-  }
+/* Card hover effects */
+.card-hover-lift {
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
 }
 
-/* Enhanced Mobile Portrait Result Card Optimizations */
-@media (max-width: 480px) and (orientation: portrait) {
-  .mobile-portrait-result-card {
-    padding: 1rem;
-    min-height: 140px;
-  }
-  
-  .mobile-portrait-result-card .team-name-container {
-    max-width: 80px;
-    margin: 0 auto;
-  }
-  
-  .mobile-portrait-result-card .team-name-text {
-    font-size: 0.75rem;
-    line-height: 1.2;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 100%;
-  }
-  
-  .mobile-portrait-result-card .score-display {
-    font-size: 1.75rem;
-    font-weight: 800;
-    line-height: 1;
-    margin-top: 0.25rem;
-  }
-  
-  .mobile-portrait-result-card .date-time-display {
-    max-width: 140px;
-    font-size: 0.75rem;
-    line-height: 1.1;
-    word-wrap: break-word;
-    hyphens: auto;
-  }
-  
-  .mobile-portrait-result-card .match-status-badge {
-    font-size: 0.75rem;
-    padding: 0.25rem 0.5rem;
-    min-width: auto;
-  }
-  
-  .mobile-portrait-result-card .vs-text {
-    font-size: 1rem;
-    font-weight: 300;
-    color: hsl(var(--muted-foreground));
-  }
+.card-hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.1);
 }
 
-/* Theme-aware neutral score styling for results */
-.neutral-score-mobile {
-  color: hsl(var(--foreground));
-  font-weight: 800;
-  letter-spacing: -0.02em;
+/* News feed specific styles */
+.news-item-gradient {
+  background: linear-gradient(135deg, hsl(var(--muted) / 0.2), hsl(var(--muted) / 0.05));
 }
 
-/* Light mode: minimal shadows */
-@media (prefers-color-scheme: light) {
-  .neutral-score-mobile {
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-  }
-}
-
-/* Dark mode: enhanced shadows */
-@media (prefers-color-scheme: dark) {
-  .neutral-score-mobile {
-    text-shadow: 
-      0 2px 8px rgba(0, 0, 0, 0.6),
-      0 4px 16px rgba(0, 0, 0, 0.3),
-      0 1px 0 rgba(255, 255, 255, 0.2);
-    filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.4));
-  }
-}
-
-/* Force dark mode styling when .dark class is present */
-.dark .neutral-score-mobile {
-  text-shadow: 
-    0 2px 8px rgba(0, 0, 0, 0.6),
-    0 4px 16px rgba(0, 0, 0, 0.3),
-    0 1px 0 rgba(255, 255, 255, 0.2);
-  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.4));
-}
-
-/* Enhanced Mobile Referee Tools Optimizations */
-@media (max-width: 768px) {
-  .referee-tabs-mobile {
-    gap: 0.5rem;
-  }
-  
-  .referee-tabs-mobile .tab-trigger {
-    padding: 0.375rem 0.5rem;
-    font-size: 0.75rem;
-    min-height: 44px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 0.25rem;
-  }
-  
-  .referee-tabs-mobile .tab-icon {
-    flex-shrink: 0;
-  }
-  
-  /* Ensure active state doesn't break layout */
-  .referee-tabs-mobile [data-state="active"] {
-    position: relative;
-    z-index: 1;
-  }
-}
-
-/* Mobile Select Dropdown Optimizations */
-@media (max-width: 640px) {
-  .mobile-select-content {
-    max-width: calc(100vw - 2rem);
-    margin-left: 1rem;
-    margin-right: 1rem;
-  }
-  
-  .mobile-select-item {
-    padding: 0.75rem 0.5rem;
-    min-height: 44px;
-  }
-  
-  .mobile-select-item .team-info {
-    flex-wrap: wrap;
-    gap: 0.25rem;
-  }
-  
-  .mobile-select-item .team-name {
-    max-width: 4rem;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-}
-
-/* Mobile Portrait Referee Tools Specific */
-@media (max-width: 480px) and (orientation: portrait) {
-  .mobile-referee-portrait {
-    padding: 0.75rem;
-  }
-  
-  .mobile-referee-portrait .select-trigger {
-    min-height: 44px;
-    font-size: 0.875rem;
-  }
-  
-  .mobile-referee-portrait .tab-container {
-    gap: 0.375rem;
-  }
-  
-  .mobile-referee-portrait .tab-item {
-    min-height: 44px;
-    padding: 0.5rem 0.25rem;
-    font-size: 0.75rem;
-  }
-  
-  .mobile-referee-portrait .tab-icon {
-    width: 1rem;
-    height: 1rem;
-  }
-}
-
-/* Mobile Landscape Referee Tools */
-@media (max-width: 768px) and (orientation: landscape) {
-  .mobile-referee-landscape .tab-container {
-    display: flex;
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-  }
-  
-  .mobile-referee-landscape .tab-container::-webkit-scrollbar {
-    display: none;
-  }
-  
-  .mobile-referee-landscape .tab-item {
-    flex: 0 0 auto;
-    scroll-snap-align: start;
-    min-width: 80px;
-  }
-}
-
-/* Enhanced touch targets for referee controls */
-@media (max-width: 768px) {
-  .referee-control-button {
-    min-height: 44px;
-    min-width: 44px;
-    touch-action: manipulation;
-  }
-  
-  .referee-select-dropdown {
-    min-height: 44px;
-  }
-  
-  .referee-tab-trigger {
-    min-height: 44px;
-    touch-action: manipulation;
-  }
-}
-
-/* Mobile Optimized Fixture Select Styles */
-@media (max-width: 768px) {
-  .mobile-fixture-select-trigger {
-    min-height: 48px;
-    font-size: 0.875rem;
-  }
-  
-  .mobile-fixture-dropdown-container {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    z-index: 9999;
-    margin-top: 0.25rem;
-    background: hsl(var(--popover));
-    border: 1px solid hsl(var(--border));
-    border-radius: 0.375rem;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-    max-height: 60vh;
-    overflow-y: auto;
-    animation: fadeIn 0.15s ease-in-out;
-  }
-  
-  .mobile-fixture-dropdown-content {
-    padding: 0.25rem 0;
-  }
-  
-  .mobile-fixture-item {
-    cursor: pointer;
-    transition: background-color 0.15s ease-in-out;
-    border-bottom: 1px solid hsl(var(--border));
-  }
-  
-  .mobile-fixture-item:last-child {
-    border-bottom: none;
-  }
-  
-  .mobile-fixture-item:hover {
-    background-color: hsl(var(--accent));
-  }
-  
-  .mobile-fixture-item:active {
-    background-color: hsl(var(--accent));
-    transform: scale(0.98);
-  }
-}
-
-/* Mobile Substitution Modal Optimizations */
-@media (max-width: 768px) {
-  .mobile-substitution-modal {
-    margin: 1rem;
-    max-width: calc(100vw - 2rem);
-    max-height: calc(100vh - 4rem);
-    overflow-y: auto;
-  }
-  
-  .mobile-optimized-select {
-    min-height: 48px;
-    font-size: 0.875rem;
-  }
-  
-  .mobile-select-content-optimized {
-    max-height: 50vh;
-    overflow-y: auto;
-    z-index: 9999;
-  }
-  
-  .mobile-action-button {
-    min-height: 48px;
-    font-size: 0.875rem;
-    touch-action: manipulation;
-  }
-}
-
-/* Enhanced Modal Z-Index Management */
-@media (max-width: 768px) {
-  .mobile-substitution-modal [data-radix-popper-content-wrapper] {
-    z-index: 10000 !important;
-  }
-  
-  .mobile-select-content-optimized {
-    z-index: 10001 !important;
-  }
-}
-
-/* Responsive Animation Keyframes */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-0.5rem);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Enhanced Mobile Portrait */
-@media (max-width: 480px) and (orientation: portrait) {
-  .mobile-fixture-dropdown-container {
-    max-height: 50vh;
-    left: -0.5rem;
-    right: -0.5rem;
-  }
-  
-  .mobile-substitution-modal {
-    margin: 0.5rem;
-    max-width: calc(100vw - 1rem);
-  }
+.news-item-gradient:hover {
+  background: linear-gradient(135deg, hsl(var(--muted) / 0.4), hsl(var(--muted) / 0.1));
 }
