@@ -1,9 +1,10 @@
-
 import { Card, CardContent } from "@/components/ui/card";
 import { Calendar } from "lucide-react";
 import CompactFixtureCard from "../shared/CompactFixtureCard";
 import LoadingCard from "./LoadingCard";
+import DateGroupHeader from "../shared/DateGroupHeader";
 import { useDeviceOrientation } from "@/hooks/useDeviceOrientation";
+import { groupFixturesByDate } from "@/utils/dateGroupingUtils";
 
 interface AllFixturesSectionProps {
   sortedAllFixtures: any[];
@@ -21,6 +22,9 @@ const AllFixturesSection = ({
   const { isMobile, isPortrait } = useDeviceOrientation();
   const isMobilePortrait = isMobile && isPortrait;
 
+  // Group fixtures by date, but keep chronological order for mixed status
+  const groupedFixtures = groupFixturesByDate(sortedAllFixtures || []);
+
   return (
     <div id="all-fixtures" className="scroll-mt-20">
       <div className="flex items-center gap-2 mb-6">
@@ -28,20 +32,34 @@ const AllFixturesSection = ({
         <h2 className="text-2xl font-bold text-white">All Fixtures</h2>
       </div>
       
-      <div className="grid gap-3">
+      <div className="space-y-4">
         {isLoading ? (
-          Array.from({ length: 6 }).map((_, index) => (
-            <LoadingCard key={index} />
-          ))
-        ) : sortedAllFixtures && sortedAllFixtures.length > 0 ? (
-          sortedAllFixtures.map((fixture) => (
-            <CompactFixtureCard 
-              key={fixture.id} 
-              fixture={fixture} 
-              onFixtureClick={onFixtureClick}
-              onPreviewClick={onPreviewClick}
-              showVenue={true}
-            />
+          <div className="grid gap-3">
+            {Array.from({ length: 6 }).map((_, index) => (
+              <LoadingCard key={index} />
+            ))}
+          </div>
+        ) : groupedFixtures && groupedFixtures.length > 0 ? (
+          groupedFixtures.map((group) => (
+            <div key={group.date} className="space-y-3">
+              <DateGroupHeader
+                date={group.date}
+                displayDate={group.displayDate}
+                fixtureCount={group.fixtures.length}
+              />
+              <div className="grid gap-3">
+                {group.fixtures.map((fixture) => (
+                  <CompactFixtureCard 
+                    key={fixture.id} 
+                    fixture={fixture} 
+                    onFixtureClick={onFixtureClick}
+                    onPreviewClick={onPreviewClick}
+                    showDate={false}
+                    showVenue={true}
+                  />
+                ))}
+              </div>
+            </div>
           ))
         ) : (
           <Card className="card-shadow-lg">

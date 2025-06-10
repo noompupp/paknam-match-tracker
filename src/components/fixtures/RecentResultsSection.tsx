@@ -3,7 +3,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Trophy } from "lucide-react";
 import CompactFixtureCard from "../shared/CompactFixtureCard";
 import LoadingCard from "./LoadingCard";
+import DateGroupHeader from "../shared/DateGroupHeader";
 import { useDeviceOrientation } from "@/hooks/useDeviceOrientation";
+import { groupFixturesByDate } from "@/utils/dateGroupingUtils";
 
 interface RecentResultsSectionProps {
   recentFixtures: any[];
@@ -26,6 +28,9 @@ const RecentResultsSection = ({
     return null; // Don't show section if no results
   }
 
+  // Group fixtures by date
+  const groupedFixtures = groupFixturesByDate(completedFixtures);
+
   return (
     <div id="recent-results" className="scroll-mt-20 mb-8">
       <div className="flex items-center gap-2 mb-6">
@@ -33,28 +38,33 @@ const RecentResultsSection = ({
         <h2 className="text-2xl font-bold text-white">Recent Results</h2>
       </div>
       
-      <div className="grid gap-3">
+      <div className="space-y-4">
         {isLoading ? (
-          Array.from({ length: 3 }).map((_, index) => (
-            <LoadingCard key={index} />
-          ))
+          <div className="grid gap-3">
+            {Array.from({ length: 3 }).map((_, index) => (
+              <LoadingCard key={index} />
+            ))}
+          </div>
         ) : (
-          completedFixtures.map((fixture) => (
-            isMobilePortrait ? (
-              <CompactFixtureCard 
-                key={fixture.id} 
-                fixture={fixture} 
-                onFixtureClick={onFixtureClick}
-                showVenue={true}
+          groupedFixtures.map((group) => (
+            <div key={group.date} className="space-y-3">
+              <DateGroupHeader
+                date={group.date}
+                displayDate={group.displayDate}
+                fixtureCount={group.fixtures.length}
               />
-            ) : (
-              <CompactFixtureCard 
-                key={fixture.id} 
-                fixture={fixture} 
-                onFixtureClick={onFixtureClick}
-                showVenue={true}
-              />
-            )
+              <div className="grid gap-3">
+                {group.fixtures.map((fixture) => (
+                  <CompactFixtureCard 
+                    key={fixture.id} 
+                    fixture={fixture} 
+                    onFixtureClick={onFixtureClick}
+                    showDate={false}
+                    showVenue={true}
+                  />
+                ))}
+              </div>
+            </div>
           ))
         )}
       </div>
