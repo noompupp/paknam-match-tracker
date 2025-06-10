@@ -5,6 +5,7 @@ import { Trophy, TrendingUp, Target, Activity, Zap } from "lucide-react";
 import { Team, Fixture } from "@/types/database";
 import { formatDateDisplay } from "@/utils/timeUtils";
 import MatchPreviewLeagueTable from "./MatchPreviewLeagueTable";
+import { calculateMatchInsights } from "./MatchInsightsCalculator";
 
 interface MatchPreviewOverviewProps {
   homeTeam: Team;
@@ -55,6 +56,8 @@ const MatchPreviewOverview = ({ homeTeam, awayTeam, headToHead }: MatchPreviewOv
     if (percentage >= 0.4) return 'text-yellow-600';
     return 'text-red-600';
   };
+
+  const matchInsights = calculateMatchInsights(homeTeam, awayTeam);
 
   return (
     <div className="space-y-6">
@@ -187,7 +190,7 @@ const MatchPreviewOverview = ({ homeTeam, awayTeam, headToHead }: MatchPreviewOv
         </Card>
       )}
 
-      {/* Match Prediction Insight */}
+      {/* Enhanced Match Insights */}
       <Card className="bg-gradient-to-br from-primary/5 to-secondary/5 border border-primary/20">
         <CardHeader className="pb-4">
           <CardTitle className="flex items-center gap-2 text-lg">
@@ -196,32 +199,13 @@ const MatchPreviewOverview = ({ homeTeam, awayTeam, headToHead }: MatchPreviewOv
           </CardTitle>
         </CardHeader>
         <CardContent className="pt-0">
-          <div className="space-y-3 text-sm">
-            {homeStats.position < awayStats.position ? (
-              <p className="p-3 rounded-lg bg-green-50 border border-green-200 text-green-800">
-                <strong>{homeTeam.name}</strong> currently sits {homeStats.position - awayStats.position} positions higher in the table.
-              </p>
-            ) : awayStats.position < homeStats.position ? (
-              <p className="p-3 rounded-lg bg-blue-50 border border-blue-200 text-blue-800">
-                <strong>{awayTeam.name}</strong> currently sits {awayStats.position - homeStats.position} positions higher in the table.
-              </p>
-            ) : (
-              <p className="p-3 rounded-lg bg-yellow-50 border border-yellow-200 text-yellow-800">
-                Both teams are level on league position - this should be a closely contested match.
-              </p>
-            )}
-            
-            {homeStats.attackStrength > awayStats.attackStrength + 0.5 && (
-              <p className="p-3 rounded-lg bg-orange-50 border border-orange-200 text-orange-800">
-                <strong>{homeTeam.name}</strong> has a significantly stronger attack, averaging {homeStats.attackStrength.toFixed(1)} goals per game.
-              </p>
-            )}
-            
-            {awayStats.attackStrength > homeStats.attackStrength + 0.5 && (
-              <p className="p-3 rounded-lg bg-purple-50 border border-purple-200 text-purple-800">
-                <strong>{awayTeam.name}</strong> has a significantly stronger attack, averaging {awayStats.attackStrength.toFixed(1)} goals per game.
-              </p>
-            )}
+          <div className="space-y-3">
+            {matchInsights.map((insight, index) => (
+              <div key={index} className={`p-3 rounded-lg border ${insight.color}`}>
+                <h6 className="font-semibold text-sm mb-1">{insight.title}</h6>
+                <p className="text-sm">{insight.description}</p>
+              </div>
+            ))}
           </div>
         </CardContent>
       </Card>

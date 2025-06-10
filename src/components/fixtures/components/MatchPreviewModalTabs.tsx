@@ -18,14 +18,14 @@ const MatchPreviewModalTabs = ({ matchData }: MatchPreviewModalTabsProps) => {
   return (
     <Tabs defaultValue="overview" className="w-full">
       <TabsList className={cn(
-        "grid w-full grid-cols-3 mb-6 bg-muted/50 backdrop-blur-sm border border-border/30 rounded-lg p-1",
-        isMobilePortrait ? "h-10" : "h-11"
+        "grid w-full grid-cols-3 mb-6 bg-muted/50 backdrop-blur-sm border border-border/30 rounded-lg",
+        isMobilePortrait ? "h-10 p-1" : "h-11 p-1"
       )}>
         <TabsTrigger 
           value="overview" 
           className={cn(
-            "font-medium rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:border data-[state=active]:border-border/40 transition-all duration-200",
-            isMobilePortrait ? "text-xs py-2 px-2" : "text-sm py-2.5 px-3"
+            "font-medium rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:border data-[state=active]:border-border/40 transition-all duration-200 flex items-center justify-center",
+            isMobilePortrait ? "text-xs h-8 px-2" : "text-sm h-9 px-3"
           )}
         >
           Overview
@@ -33,8 +33,8 @@ const MatchPreviewModalTabs = ({ matchData }: MatchPreviewModalTabsProps) => {
         <TabsTrigger 
           value="squads" 
           className={cn(
-            "font-medium rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:border data-[state=active]:border-border/40 transition-all duration-200",
-            isMobilePortrait ? "text-xs py-2 px-2" : "text-sm py-2.5 px-3"
+            "font-medium rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:border data-[state=active]:border-border/40 transition-all duration-200 flex items-center justify-center",
+            isMobilePortrait ? "text-xs h-8 px-2" : "text-sm h-9 px-3"
           )}
         >
           Squads
@@ -42,8 +42,8 @@ const MatchPreviewModalTabs = ({ matchData }: MatchPreviewModalTabsProps) => {
         <TabsTrigger 
           value="form" 
           className={cn(
-            "font-medium rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:border data-[state=active]:border-border/40 transition-all duration-200",
-            isMobilePortrait ? "text-xs py-2 px-2" : "text-sm py-2.5 px-3"
+            "font-medium rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:border data-[state=active]:border-border/40 transition-all duration-200 flex items-center justify-center",
+            isMobilePortrait ? "text-xs h-8 px-2" : "text-sm h-9 px-3"
           )}
         >
           Form
