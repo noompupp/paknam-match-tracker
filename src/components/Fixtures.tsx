@@ -52,6 +52,7 @@ const Fixtures = () => {
         <div className="max-w-7xl mx-auto container-responsive py-8 space-y-8 mobile-content-spacing">
           <UpcomingFixturesSection 
             upcomingFixtures={upcomingFixtures || []}
+            allFixtures={allFixtures || []}
             isLoading={upcomingLoading}
             onFixtureClick={handleFixtureClick}
             onPreviewClick={handlePreviewClick}

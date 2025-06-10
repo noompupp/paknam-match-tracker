@@ -5,10 +5,12 @@ import CompactFixtureCard from "../shared/CompactFixtureCard";
 import LoadingCard from "./LoadingCard";
 import DateGroupHeader from "../shared/DateGroupHeader";
 import { useDeviceOrientation } from "@/hooks/useDeviceOrientation";
-import { groupFixturesByDate } from "@/utils/dateGroupingUtils";
+import { groupFixturesByDate, initializeGameweekMappings } from "@/utils/dateGroupingUtils";
+import { useEffect } from "react";
 
 interface UpcomingFixturesSectionProps {
   upcomingFixtures: any[];
+  allFixtures?: any[]; // Add this to initialize gameweek mappings
   isLoading: boolean;
   onFixtureClick: (fixture: any) => void;
   onPreviewClick?: (fixture: any) => void;
@@ -16,12 +18,20 @@ interface UpcomingFixturesSectionProps {
 
 const UpcomingFixturesSection = ({ 
   upcomingFixtures, 
+  allFixtures = [],
   isLoading, 
   onFixtureClick,
   onPreviewClick
 }: UpcomingFixturesSectionProps) => {
   const { isMobile, isPortrait } = useDeviceOrientation();
   const isMobilePortrait = isMobile && isPortrait;
+
+  // Initialize gameweek mappings when fixtures are available
+  useEffect(() => {
+    if (allFixtures.length > 0) {
+      initializeGameweekMappings(allFixtures);
+    }
+  }, [allFixtures]);
 
   // Group fixtures by date
   const groupedFixtures = groupFixturesByDate(upcomingFixtures || []);
@@ -48,6 +58,8 @@ const UpcomingFixturesSection = ({
                 displayDate={group.displayDate}
                 fixtureCount={group.fixtures.length}
                 gameweek={group.gameweek}
+                gameweekLabel={group.gameweekLabel}
+                isFinalGameweek={group.isFinalGameweek}
               />
               <div className="grid gap-3">
                 {group.fixtures.map((fixture) => (

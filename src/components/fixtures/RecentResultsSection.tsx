@@ -5,21 +5,31 @@ import CompactFixtureCard from "../shared/CompactFixtureCard";
 import LoadingCard from "./LoadingCard";
 import DateGroupHeader from "../shared/DateGroupHeader";
 import { useDeviceOrientation } from "@/hooks/useDeviceOrientation";
-import { groupFixturesByDate } from "@/utils/dateGroupingUtils";
+import { groupFixturesByDate, initializeGameweekMappings } from "@/utils/dateGroupingUtils";
+import { useEffect } from "react";
 
 interface RecentResultsSectionProps {
   recentFixtures: any[];
+  allFixtures?: any[]; // Add this to initialize gameweek mappings
   isLoading: boolean;
   onFixtureClick: (fixture: any) => void;
 }
 
 const RecentResultsSection = ({ 
   recentFixtures, 
+  allFixtures = [],
   isLoading, 
   onFixtureClick 
 }: RecentResultsSectionProps) => {
   const { isMobile, isPortrait } = useDeviceOrientation();
   const isMobilePortrait = isMobile && isPortrait;
+  
+  // Initialize gameweek mappings when fixtures are available
+  useEffect(() => {
+    if (allFixtures.length > 0) {
+      initializeGameweekMappings(allFixtures);
+    }
+  }, [allFixtures]);
   
   // Filter to only show completed fixtures
   const completedFixtures = recentFixtures.filter(fixture => fixture.status === 'completed');
@@ -53,6 +63,8 @@ const RecentResultsSection = ({
                 displayDate={group.displayDate}
                 fixtureCount={group.fixtures.length}
                 gameweek={group.gameweek}
+                gameweekLabel={group.gameweekLabel}
+                isFinalGameweek={group.isFinalGameweek}
               />
               <div className="grid gap-3">
                 {group.fixtures.map((fixture) => (
@@ -60,7 +72,7 @@ const RecentResultsSection = ({
                     key={fixture.id} 
                     fixture={fixture} 
                     onFixtureClick={onFixtureClick}
-                    showDate={false}
+                    showDate={true}
                     showVenue={true}
                   />
                 ))}

@@ -1,11 +1,11 @@
-
 import { Card, CardContent } from "@/components/ui/card";
 import { Calendar } from "lucide-react";
 import CompactFixtureCard from "../shared/CompactFixtureCard";
 import LoadingCard from "./LoadingCard";
 import DateGroupHeader from "../shared/DateGroupHeader";
 import { useDeviceOrientation } from "@/hooks/useDeviceOrientation";
-import { groupFixturesByDate } from "@/utils/dateGroupingUtils";
+import { groupFixturesByDate, initializeGameweekMappings } from "@/utils/dateGroupingUtils";
+import { useEffect } from "react";
 
 interface AllFixturesSectionProps {
   sortedAllFixtures: any[];
@@ -22,6 +22,13 @@ const AllFixturesSection = ({
 }: AllFixturesSectionProps) => {
   const { isMobile, isPortrait } = useDeviceOrientation();
   const isMobilePortrait = isMobile && isPortrait;
+
+  // Initialize gameweek mappings when fixtures are available
+  useEffect(() => {
+    if (sortedAllFixtures.length > 0) {
+      initializeGameweekMappings(sortedAllFixtures);
+    }
+  }, [sortedAllFixtures]);
 
   // Group fixtures by date, but keep chronological order for mixed status
   const groupedFixtures = groupFixturesByDate(sortedAllFixtures || []);
@@ -48,6 +55,8 @@ const AllFixturesSection = ({
                 displayDate={group.displayDate}
                 fixtureCount={group.fixtures.length}
                 gameweek={group.gameweek}
+                gameweekLabel={group.gameweekLabel}
+                isFinalGameweek={group.isFinalGameweek}
               />
               <div className="grid gap-3">
                 {group.fixtures.map((fixture) => (

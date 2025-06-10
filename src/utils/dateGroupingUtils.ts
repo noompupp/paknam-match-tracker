@@ -1,29 +1,51 @@
 
 import { formatDateDisplay } from "@/utils/timeUtils";
+import { GameweekCalculationService, GameweekMapping } from "@/services/gameweekCalculationService";
 
 export interface GroupedFixtures {
   date: string;
   displayDate: string;
   fixtures: any[];
   gameweek?: number;
+  gameweekLabel?: string;
+  isFinalGameweek?: boolean;
 }
 
+// Global gameweek mappings cache
+let gameweekMappingsCache: Map<string, GameweekMapping> | null = null;
+
 /**
- * Calculate gameweek number based on date
- * For now, using a simple calculation based on weeks since a start date
- * This can be adjusted based on actual league schedule
+ * Initialize gameweek mappings from fixtures
  */
-export const calculateGameweek = (dateString: string): number => {
-  // Using a hypothetical season start date - adjust this based on your league
-  const seasonStart = new Date('2024-09-01'); // September 1st, 2024
-  const matchDate = new Date(dateString);
-  
-  // Calculate weeks difference
-  const timeDiff = matchDate.getTime() - seasonStart.getTime();
-  const weeksDiff = Math.floor(timeDiff / (1000 * 3600 * 24 * 7));
-  
-  // Ensure gameweek is at least 1
-  return Math.max(1, weeksDiff + 1);
+export const initializeGameweekMappings = (allFixtures: any[]) => {
+  const result = GameweekCalculationService.calculateGameweeks(allFixtures);
+  gameweekMappingsCache = result.gameweekMappings;
+  console.log('🎯 Gameweek mappings initialized:', {
+    totalGameweeks: result.totalGameweeks,
+    earliestDate: result.earliestMatchDate,
+    latestDate: result.latestMatchDate,
+    mappings: Array.from(result.gameweekMappings.entries())
+  });
+};
+
+/**
+ * Get gameweek information for a date
+ */
+export const getGameweekInfo = (dateString: string) => {
+  if (!gameweekMappingsCache) {
+    return { gameweek: undefined, gameweekLabel: undefined, isFinalGameweek: false };
+  }
+
+  const mapping = GameweekCalculationService.getGameweekForDate(dateString, gameweekMappingsCache);
+  if (!mapping) {
+    return { gameweek: undefined, gameweekLabel: undefined, isFinalGameweek: false };
+  }
+
+  return {
+    gameweek: mapping.gameweek,
+    gameweekLabel: mapping.displayLabel,
+    isFinalGameweek: mapping.isFinal || false
+  };
 };
 
 /**
@@ -32,6 +54,11 @@ export const calculateGameweek = (dateString: string): number => {
 export const groupFixturesByDate = (fixtures: any[]): GroupedFixtures[] => {
   if (!fixtures || fixtures.length === 0) {
     return [];
+  }
+
+  // Initialize gameweek mappings if not already done
+  if (!gameweekMappingsCache) {
+    initializeGameweekMappings(fixtures);
   }
 
   // Create a map to group fixtures by date
@@ -57,6 +84,8 @@ export const groupFixturesByDate = (fixtures: any[]): GroupedFixtures[] => {
 
   sortedDates.forEach(date => {
     const fixtures = groupedMap.get(date)!;
+    const gameweekInfo = getGameweekInfo(date);
+    
     groupedArray.push({
       date,
       displayDate: formatDateDisplay(date),
@@ -66,7 +95,9 @@ export const groupFixturesByDate = (fixtures: any[]): GroupedFixtures[] => {
         const timeB = b.match_time || '18:00:00';
         return timeA.localeCompare(timeB);
       }),
-      gameweek: calculateGameweek(date)
+      gameweek: gameweekInfo.gameweek,
+      gameweekLabel: gameweekInfo.gameweekLabel,
+      isFinalGameweek: gameweekInfo.isFinalGameweek
     });
   });
 

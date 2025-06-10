@@ -1,5 +1,5 @@
 
-import { useRecentFixtures } from "@/hooks/useFixtures";
+import { useRecentFixtures, useFixtures } from "@/hooks/useFixtures";
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Trophy } from "lucide-react";
@@ -8,9 +8,11 @@ import LoadingCard from "./fixtures/LoadingCard";
 import MatchSummaryDialog from "./fixtures/MatchSummaryDialog";
 import ResultsHeader from "./results/ResultsHeader";
 import { useDeviceOrientation } from "@/hooks/useDeviceOrientation";
+import RecentResultsSection from "./fixtures/RecentResultsSection";
 
 const Results = () => {
   const { data: recentFixtures, isLoading, error } = useRecentFixtures();
+  const { data: allFixtures } = useFixtures(); // Get all fixtures for gameweek calculation
   const [selectedFixture, setSelectedFixture] = useState<any>(null);
   const [showSummary, setShowSummary] = useState(false);
   const { isMobile, isPortrait } = useDeviceOrientation();
@@ -40,36 +42,12 @@ const Results = () => {
 
         {/* Results Content */}
         <div className="max-w-7xl mx-auto container-responsive py-8 space-y-8 mobile-content-spacing">
-          <Card className="card-shadow-lg">
-            <CardHeader className="flex flex-row items-center gap-2">
-              <Trophy className="h-5 w-5 text-primary" />
-              <CardTitle>Recent Results</CardTitle>
-            </CardHeader>
-            <CardContent className={`${isMobilePortrait ? 'space-y-3' : 'space-y-4'}`}>
-              {isLoading ? (
-                Array.from({ length: 5 }).map((_, index) => (
-                  <LoadingCard key={index} />
-                ))
-              ) : recentFixtures && recentFixtures.length > 0 ? (
-                recentFixtures.map((fixture) => (
-                  <CompactFixtureCard 
-                    key={fixture.id} 
-                    fixture={fixture} 
-                    onFixtureClick={handleFixtureClick}
-                    showVenue={true}
-                  />
-                ))
-              ) : (
-                <div className="text-center text-muted-foreground py-8">
-                  <div className="space-y-2">
-                    <div className="text-4xl">⚽</div>
-                    <p className="text-lg font-medium">No results available</p>
-                    <p className="text-sm">Check back after matches have been completed</p>
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          <RecentResultsSection 
+            recentFixtures={recentFixtures || []}
+            allFixtures={allFixtures || []}
+            isLoading={isLoading}
+            onFixtureClick={handleFixtureClick}
+          />
         </div>
       </div>
 
