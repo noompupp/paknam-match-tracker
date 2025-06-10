@@ -92,7 +92,7 @@ const EnhancedTeamSquad = ({ teamId, teamName }: EnhancedTeamSquadProps) => {
                       <PlayerAvatar 
                         player={{
                           ...player,
-                          number: player.number || (index + 1)
+                          number: player.number || (index + 1).toString()
                         }} 
                         size="large" 
                         showStats={true}

@@ -67,11 +67,11 @@ const PlayerAvatar = ({
       >
         {/* Front Side - Avatar or Number */}
         <div className="absolute inset-0 backface-hidden">
-          {player.picture ? (
+          {player.ProfileURL ? (
             <Avatar className={cn(sizeClasses[size], "border-2 border-primary/20")}>
-              <AvatarImage src={player.picture} alt={player.name} />
+              <AvatarImage src={player.ProfileURL} alt={player.name || 'Player'} />
               <AvatarFallback className="bg-gradient-to-br from-primary/20 to-primary/10 text-primary font-bold">
-                {getPlayerInitials(player.name)}
+                {getPlayerInitials(player.name || 'Player')}
               </AvatarFallback>
             </Avatar>
           ) : (
