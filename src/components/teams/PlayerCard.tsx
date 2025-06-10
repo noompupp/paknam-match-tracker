@@ -10,25 +10,25 @@ interface PlayerCardProps {
 const PlayerCard = ({ player, index }: PlayerCardProps) => {
   return (
     <div className="flex items-center justify-between p-4 rounded-lg bg-muted/20 hover:bg-muted/40 transition-colors border border-transparent hover:border-muted">
-      <div className="flex items-center space-x-4">
-        <div className="w-12 h-12 bg-gradient-to-br from-primary/20 to-primary/10 rounded-full flex items-center justify-center font-bold text-primary text-lg border-2 border-primary/20">
+      <div className="flex items-center space-x-4 min-w-0 flex-1">
+        <div className="w-12 h-12 bg-gradient-to-br from-primary/20 to-primary/10 rounded-full flex items-center justify-center font-bold text-primary text-lg border-2 border-primary/20 flex-shrink-0">
           {player.number || index + 1}
         </div>
-        <div>
+        <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 mb-1">
-            <p className="font-semibold text-lg">{player.name}</p>
+            <p className="font-semibold text-lg truncate">{player.name}</p>
             {player.role === "Captain" && (
-              <Badge variant="default" className="text-xs bg-yellow-600">
+              <Badge variant="default" className="text-xs bg-yellow-600 flex-shrink-0">
                 Captain
               </Badge>
             )}
             {player.role === "S-class" && (
-              <Badge variant="default" className="text-xs bg-purple-600">
+              <Badge variant="default" className="text-xs bg-purple-600 flex-shrink-0">
                 S-class
               </Badge>
             )}
             {player.role === "Starter" && (
-              <Badge variant="outline" className="text-xs">
+              <Badge variant="outline" className="text-xs flex-shrink-0">
                 Starter
               </Badge>
             )}
@@ -38,7 +38,7 @@ const PlayerCard = ({ player, index }: PlayerCardProps) => {
           </div>
         </div>
       </div>
-      <div className="text-right">
+      <div className="text-right flex-shrink-0">
         <div className="grid grid-cols-5 gap-3 mb-1">
           <div className="text-center">
             <p className="text-lg font-bold text-green-600">{player.goals || 0}</p>

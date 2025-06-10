@@ -69,17 +69,17 @@ const PlayersList = ({ players, isLoading }: PlayersListProps) => {
       <div className="space-y-2">
         {players.map((player, index) => (
           <div key={player.id || index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-            <div className="flex items-center space-x-3">
-              <div className="h-8 w-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+            <div className="flex items-center space-x-3 min-w-0 flex-1">
+              <div className="h-8 w-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
                 <User className="h-4 w-4 text-white" />
               </div>
-              <div>
-                <div className="font-medium">{player.name}</div>
-                <div className="text-sm text-gray-500">{player.position || 'Player'}</div>
+              <div className="min-w-0 flex-1">
+                <div className="font-medium truncate">{player.name}</div>
+                <div className="text-sm text-gray-500 truncate">{player.position || 'Player'}</div>
               </div>
             </div>
             
-            <div className="flex items-center gap-2 flex-wrap">
+            <div className="flex items-center gap-2 flex-wrap flex-shrink-0">
               {/* Goals */}
               {(player.goals || 0) > 0 && (
                 <Badge variant="default" className="flex items-center gap-1">

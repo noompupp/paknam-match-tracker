@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -70,41 +71,46 @@ const MatchPreviewSquads = ({ homeTeam, awayTeam, homeSquad, awaySquad }: MatchP
     isTopScorer?: boolean, 
     isTopAssister?: boolean 
   }) => (
-    <div className="flex items-center justify-between p-3 rounded-lg bg-background border border-border/50 hover:border-border transition-colors">
-      <div className="flex items-center gap-3">
-        <div className="flex items-center gap-2">
+    <div className="flex items-center justify-between p-3 rounded-lg bg-background/60 backdrop-blur-sm border border-border/30 hover:border-border/50 transition-all duration-200">
+      <div className="flex items-center gap-3 min-w-0 flex-1">
+        <div className="flex items-center gap-2 flex-shrink-0">
           {player.number && (
             <Badge variant="outline" className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold">
               {player.number}
             </Badge>
           )}
-          <div>
-            <p className="font-medium text-sm">{player.name}</p>
+          <div className="min-w-0">
+            <p className="font-medium text-sm truncate">{player.name}</p>
             {player.nickname && (
-              <p className="text-xs text-muted-foreground">"{player.nickname}"</p>
+              <p className="text-xs text-muted-foreground truncate max-w-[120px] sm:max-w-[200px]">
+                "{player.nickname}"
+              </p>
             )}
           </div>
         </div>
         {(isTopScorer || isTopAssister) && (
-          <div className="flex gap-1">
+          <div className="flex gap-1 flex-shrink-0">
             {isTopScorer && <Star className="h-3 w-3 text-yellow-500" />}
             {isTopAssister && <Trophy className="h-3 w-3 text-blue-500" />}
           </div>
         )}
       </div>
       
-      <div className="flex items-center gap-4 text-xs text-muted-foreground">
+      <div className="flex items-center gap-2 sm:gap-4 text-xs text-muted-foreground flex-shrink-0">
         <div className="text-center">
           <p className="font-semibold text-foreground">{player.goals || 0}</p>
-          <p>Goals</p>
+          <p className="hidden sm:block">Goals</p>
+          <p className="sm:hidden">G</p>
         </div>
         <div className="text-center">
           <p className="font-semibold text-foreground">{player.assists || 0}</p>
-          <p>Assists</p>
+          <p className="hidden sm:block">Assists</p>
+          <p className="sm:hidden">A</p>
         </div>
         <div className="text-center">
           <p className="font-semibold text-foreground">{player.matches_played || 0}</p>
-          <p>Apps</p>
+          <p className="hidden sm:block">Apps</p>
+          <p className="sm:hidden">M</p>
         </div>
       </div>
     </div>
@@ -116,12 +122,12 @@ const MatchPreviewSquads = ({ homeTeam, awayTeam, homeSquad, awaySquad }: MatchP
     const topAssister = squad.length > 0 ? getTopAssister(squad) : null;
 
     return (
-      <Card className={`${teamColor} border-2`}>
+      <Card className={`${teamColor} border-2 transition-all duration-300 hover:shadow-md`}>
         <CardHeader className="pb-4">
           <CardTitle className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Users className="h-5 w-5" />
-              {team.name} Squad
+              <span className="truncate">{team.name} Squad</span>
             </div>
             <Badge variant="outline">
               {squad.length} players
@@ -179,7 +185,7 @@ const MatchPreviewSquads = ({ homeTeam, awayTeam, homeSquad, awaySquad }: MatchP
     <div className="space-y-6">
       {/* Squad Overview Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-        <Card className="bg-gradient-to-r from-primary/5 to-transparent border-primary/20">
+        <Card className="bg-gradient-to-r from-primary/5 to-transparent border-primary/20 border-2 transition-all duration-300 hover:shadow-md hover:border-primary/30">
           <CardHeader className="pb-3">
             <CardTitle className="text-lg">{homeTeam.name} Overview</CardTitle>
           </CardHeader>
@@ -205,7 +211,7 @@ const MatchPreviewSquads = ({ homeTeam, awayTeam, homeSquad, awaySquad }: MatchP
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-l from-secondary/5 to-transparent border-secondary/20">
+        <Card className="bg-gradient-to-l from-secondary/5 to-transparent border-secondary/20 border-2 transition-all duration-300 hover:shadow-md hover:border-secondary/30">
           <CardHeader className="pb-3">
             <CardTitle className="text-lg">{awayTeam.name} Overview</CardTitle>
           </CardHeader>
