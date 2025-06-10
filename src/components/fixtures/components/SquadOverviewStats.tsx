@@ -1,7 +1,6 @@
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Team, Member } from "@/types/database";
+import UnifiedOverviewCard from "./UnifiedOverviewCard";
 
 interface SquadOverviewStatsProps {
   homeTeam: Team;
@@ -11,59 +10,31 @@ interface SquadOverviewStatsProps {
 }
 
 const SquadOverviewStats = ({ homeTeam, awayTeam, homeSquad, awaySquad }: SquadOverviewStatsProps) => {
+  const homeStats = [
+    { value: homeSquad.length, label: "Players" },
+    { value: homeSquad.reduce((sum, p) => sum + (p.goals || 0), 0), label: "Goals", color: "text-green-600" },
+    { value: homeSquad.reduce((sum, p) => sum + (p.assists || 0), 0), label: "Assists", color: "text-blue-600" }
+  ];
+
+  const awayStats = [
+    { value: awaySquad.length, label: "Players" },
+    { value: awaySquad.reduce((sum, p) => sum + (p.goals || 0), 0), label: "Goals", color: "text-green-600" },
+    { value: awaySquad.reduce((sum, p) => sum + (p.assists || 0), 0), label: "Assists", color: "text-blue-600" }
+  ];
+
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6 w-full">
-      <Card className="bg-gradient-to-r from-primary/5 to-transparent border border-primary/20 transition-all duration-300 hover:shadow-md hover:border-primary/30 w-full">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg truncate text-foreground">{homeTeam.name} Overview</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-3 gap-4 text-center">
-            <div>
-              <p className="text-2xl font-bold text-primary">{homeSquad.length}</p>
-              <p className="text-xs text-muted-foreground">Players</p>
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-green-600">
-                {homeSquad.reduce((sum, p) => sum + (p.goals || 0), 0)}
-              </p>
-              <p className="text-xs text-muted-foreground">Goals</p>
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-blue-600">
-                {homeSquad.reduce((sum, p) => sum + (p.assists || 0), 0)}
-              </p>
-              <p className="text-xs text-muted-foreground">Assists</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card className="bg-gradient-to-l from-secondary/5 to-transparent border border-secondary/20 transition-all duration-300 hover:shadow-md hover:border-secondary/30 w-full">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg truncate text-foreground">{awayTeam.name} Overview</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-3 gap-4 text-center">
-            <div>
-              <p className="text-2xl font-bold text-secondary">{awaySquad.length}</p>
-              <p className="text-xs text-muted-foreground">Players</p>
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-green-600">
-                {awaySquad.reduce((sum, p) => sum + (p.goals || 0), 0)}
-              </p>
-              <p className="text-xs text-muted-foreground">Goals</p>
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-blue-600">
-                {awaySquad.reduce((sum, p) => sum + (p.assists || 0), 0)}
-              </p>
-              <p className="text-xs text-muted-foreground">Assists</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      <UnifiedOverviewCard
+        title={`${homeTeam.name} Overview`}
+        variant="primary"
+        stats={homeStats}
+      />
+      
+      <UnifiedOverviewCard
+        title={`${awayTeam.name} Overview`}
+        variant="secondary"
+        stats={awayStats}
+      />
     </div>
   );
 };

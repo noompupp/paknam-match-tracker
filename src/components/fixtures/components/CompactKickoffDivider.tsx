@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Calendar, Clock } from "lucide-react";
 import { Fixture } from "@/types/database";
 import { formatDateDisplay, formatTimeDisplay } from "@/utils/timeUtils";
+import { cn } from "@/lib/utils";
 
 interface CompactKickoffDividerProps {
   fixture: Fixture;
@@ -47,41 +48,41 @@ const CompactKickoffDivider = ({ fixture, className = "" }: CompactKickoffDivide
   };
 
   return (
-    <div className={`flex items-center justify-center py-2 ${className}`}>
-      {/* Subtle decorative line on left */}
+    <div className={cn("flex items-center justify-center py-3", className)}>
+      {/* Decorative line on left */}
       <div className="flex-1 h-px bg-gradient-to-r from-transparent to-border/40"></div>
       
-      {/* More compact center content */}
-      <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-3 px-4 text-center">
-        {/* Status badge - more compact */}
+      {/* Center content with consistent styling */}
+      <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 px-6 text-center">
+        {/* Status badge with consistent styling */}
         <Badge 
           variant="outline" 
-          className="text-xs px-2 py-1 font-medium border-border/50 bg-background/50"
+          className="text-xs px-3 py-1.5 font-medium border-border/50 bg-background/80 backdrop-blur-sm"
         >
           {getStatusText(fixture.status)}
         </Badge>
         
-        {/* Score or VS - reduced size */}
-        <span className="text-base sm:text-lg font-semibold text-muted-foreground">
+        {/* Score or VS with enhanced styling */}
+        <span className="text-lg sm:text-xl font-bold text-foreground">
           {getCenterContent()}
         </span>
         
-        {/* Date and time - more compact layout */}
-        <div className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 text-xs text-muted-foreground">
-          <span className="flex items-center gap-1">
-            <Calendar className="h-3 w-3" />
+        {/* Date and time with consistent layout */}
+        <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-3 text-sm text-muted-foreground">
+          <span className="flex items-center gap-1.5">
+            <Calendar className="h-4 w-4" />
             <span className="hidden sm:inline">{formatDateDisplay(fixture.match_date)}</span>
             <span className="sm:hidden">{formatDateDisplay(fixture.match_date).slice(0, 5)}</span>
           </span>
-          <span className="hidden sm:inline">•</span>
-          <span className="flex items-center gap-1">
-            <Clock className="h-3 w-3" />
+          <span className="hidden sm:inline text-border/60">•</span>
+          <span className="flex items-center gap-1.5">
+            <Clock className="h-4 w-4" />
             {formatTimeDisplay(fixture.match_time)}
           </span>
         </div>
       </div>
       
-      {/* Subtle decorative line on right */}
+      {/* Decorative line on right */}
       <div className="flex-1 h-px bg-gradient-to-l from-transparent to-border/40"></div>
     </div>
   );

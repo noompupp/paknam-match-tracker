@@ -5,14 +5,15 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Users, Star, Shield, Zap, Trophy } from "lucide-react";
 import { Team, Member } from "@/types/database";
 import SquadPlayerCard from "./SquadPlayerCard";
+import { cn } from "@/lib/utils";
 
 interface TeamSquadSectionProps {
   team: Team;
   squad: Member[];
-  teamColor: string;
+  variant: 'primary' | 'secondary';
 }
 
-const TeamSquadSection = ({ team, squad, teamColor }: TeamSquadSectionProps) => {
+const TeamSquadSection = ({ team, squad, variant }: TeamSquadSectionProps) => {
   const getPlayersByPosition = (squad: Member[]) => {
     const positions = {
       Goalkeeper: squad.filter(p => p.position === 'Goalkeeper'),
@@ -70,8 +71,16 @@ const TeamSquadSection = ({ team, squad, teamColor }: TeamSquadSectionProps) => 
   const topScorer = squad.length > 0 ? getTopScorer(squad) : null;
   const topAssister = squad.length > 0 ? getTopAssister(squad) : null;
 
+  const variantStyles = {
+    primary: "bg-gradient-to-r from-primary/5 to-transparent border-primary/20 hover:border-primary/30",
+    secondary: "bg-gradient-to-l from-secondary/5 to-transparent border-secondary/20 hover:border-secondary/30"
+  };
+
   return (
-    <Card className={`${teamColor} border transition-all duration-300 hover:shadow-md w-full`}>
+    <Card className={cn(
+      "transition-all duration-300 hover:shadow-md w-full",
+      variantStyles[variant]
+    )}>
       <CardHeader className="pb-4">
         <CardTitle className="flex items-center justify-between">
           <div className="flex items-center gap-2 min-w-0 flex-1">
@@ -106,7 +115,7 @@ const TeamSquadSection = ({ team, squad, teamColor }: TeamSquadSectionProps) => 
                     </div>
                   </AccordionTrigger>
                   <AccordionContent className="pt-2 w-full">
-                    <div className={`p-3 rounded-lg ${getPositionColor(position)} mb-3 border`}>
+                    <div className={cn("p-3 rounded-lg mb-3 border", getPositionColor(position))}>
                       <p className="text-sm font-medium">{position} Squad</p>
                     </div>
                     <div className="space-y-2 w-full">

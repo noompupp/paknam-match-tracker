@@ -26,13 +26,13 @@ const MatchPreviewSquads = ({ homeTeam, awayTeam, homeSquad, awaySquad }: MatchP
         <TeamSquadSection 
           team={homeTeam} 
           squad={homeSquad} 
-          teamColor="bg-gradient-to-r from-primary/5 to-transparent border-primary/30"
+          variant="primary"
         />
         
         <TeamSquadSection 
           team={awayTeam} 
           squad={awaySquad} 
-          teamColor="bg-gradient-to-l from-secondary/5 to-transparent border-secondary/30"
+          variant="secondary"
         />
       </div>
     </div>

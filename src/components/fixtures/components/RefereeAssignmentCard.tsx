@@ -1,6 +1,7 @@
 
 import { Users } from "lucide-react";
 import { RefereeTeamAssignment } from "@/services/fixtures/refereeAssignmentService";
+import BaseInfoCard from "./BaseInfoCard";
 
 interface RefereeAssignmentCardProps {
   refereeAssignment: RefereeTeamAssignment;
@@ -8,24 +9,20 @@ interface RefereeAssignmentCardProps {
 
 const RefereeAssignmentCard = ({ refereeAssignment }: RefereeAssignmentCardProps) => {
   return (
-    <div className="flex items-start gap-4 text-sm p-4 rounded-xl bg-gradient-to-r from-secondary/8 via-secondary/4 to-transparent border border-secondary/20 backdrop-blur-sm transition-all duration-300 hover:shadow-md hover:border-secondary/30">
-      <div className="flex-shrink-0 p-2 rounded-lg bg-secondary/10 border border-secondary/20">
-        <Users className="h-5 w-5 text-secondary" />
-      </div>
-      <div className="flex-1 min-w-0">
-        <p className="text-xs text-muted-foreground mb-2 font-medium uppercase tracking-wide">
-          Referee Teams
+    <BaseInfoCard
+      title="Referee Teams"
+      icon={<Users className="h-5 w-5" />}
+      variant="secondary"
+    >
+      <div className="space-y-1">
+        <p className="font-semibold text-base leading-relaxed truncate">
+          Home: {refereeAssignment.homeTeamReferee}
         </p>
-        <div className="space-y-1">
-          <p className="font-semibold text-foreground text-base leading-relaxed truncate">
-            Home: {refereeAssignment.homeTeamReferee}
-          </p>
-          <p className="font-semibold text-foreground text-base leading-relaxed truncate">
-            Away: {refereeAssignment.awayTeamReferee}
-          </p>
-        </div>
+        <p className="font-semibold text-base leading-relaxed truncate">
+          Away: {refereeAssignment.awayTeamReferee}
+        </p>
       </div>
-    </div>
+    </BaseInfoCard>
   );
 };
 
