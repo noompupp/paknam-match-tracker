@@ -8,7 +8,6 @@ import TopScorersCard from "./dashboard/TopScorersCard";
 import TopAssistsCard from "./dashboard/TopAssistsCard";
 import EnhancedRecentResultsCard from "./dashboard/EnhancedRecentResultsCard";
 import UpcomingFixturesCard from "./dashboard/UpcomingFixturesCard";
-import NewsFeedCard from "./dashboard/NewsFeedCard";
 import MatchPreviewModal from "./fixtures/MatchPreviewModal";
 import { useState } from "react";
 import { Fixture } from "@/types/database";
@@ -101,8 +100,6 @@ const Dashboard = ({ onNavigateToResults, onNavigateToFixtures }: DashboardProps
             onViewAll={handleViewAllUpcomingFixtures}
             onFixturePreview={handleFixturePreview}
           />
-
-          <NewsFeedCard />
         </div>
       </div>
 

@@ -5,6 +5,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
 import { Users, Target, Trophy, Clock, Award, Zap } from "lucide-react";
 import { useTeamPlayerStats } from "@/hooks/usePlayerStats";
+import PlayerAvatar from "@/components/shared/PlayerAvatar";
 
 interface EnhancedTeamSquadProps {
   teamId: string;
@@ -88,11 +89,14 @@ const EnhancedTeamSquad = ({ teamId, teamName }: EnhancedTeamSquadProps) => {
                 <div key={player.id || index} className="flex items-center justify-between p-4 hover:bg-muted/30 transition-colors group">
                   <div className="flex items-center space-x-4">
                     <div className="relative">
-                      <div className="w-14 h-14 bg-gradient-to-br from-primary/20 to-primary/10 rounded-xl flex items-center justify-center border-2 border-primary/20 group-hover:border-primary/40 transition-colors">
-                        <span className="font-bold text-lg text-primary">
-                          {player.number || (index + 1)}
-                        </span>
-                      </div>
+                      <PlayerAvatar 
+                        player={{
+                          ...player,
+                          number: player.number || (index + 1)
+                        }} 
+                        size="large" 
+                        showStats={true}
+                      />
                       {/* Top performer indicators */}
                       {(player.goals || 0) >= 3 && (
                         <div className="absolute -top-1 -right-1 w-5 h-5 bg-yellow-500 rounded-full flex items-center justify-center">

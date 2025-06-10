@@ -187,6 +187,7 @@ export type Database = {
           nickname: string | null
           number: string | null
           position: string | null
+          ProfileURL: string | null
           red_cards: number | null
           role: string | null
           sync_status: string | null
@@ -208,6 +209,7 @@ export type Database = {
           nickname?: string | null
           number?: string | null
           position?: string | null
+          ProfileURL?: string | null
           red_cards?: number | null
           role?: string | null
           sync_status?: string | null
@@ -229,6 +231,7 @@ export type Database = {
           nickname?: string | null
           number?: string | null
           position?: string | null
+          ProfileURL?: string | null
           red_cards?: number | null
           role?: string | null
           sync_status?: string | null

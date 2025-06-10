@@ -2,6 +2,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Star, Trophy } from "lucide-react";
 import { Member } from "@/types/database";
+import PlayerAvatar from "@/components/shared/PlayerAvatar";
 
 interface SquadPlayerCardProps {
   player: Member;
@@ -14,11 +15,11 @@ const SquadPlayerCard = ({ player, isTopScorer = false, isTopAssister = false }:
     <div className="flex items-center justify-between p-3 rounded-lg bg-background/60 backdrop-blur-sm border border-border/30 hover:border-border/50 transition-all duration-200">
       <div className="flex items-center gap-3 min-w-0 flex-1">
         <div className="flex items-center gap-2 flex-shrink-0">
-          {player.number && (
-            <Badge variant="outline" className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">
-              {player.number}
-            </Badge>
-          )}
+          <PlayerAvatar 
+            player={player} 
+            size="small" 
+            showStats={true}
+          />
           <div className="min-w-0 flex-1">
             <p className="font-medium text-sm truncate">{player.name}</p>
           </div>

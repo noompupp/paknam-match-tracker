@@ -1,6 +1,7 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Calendar } from "lucide-react";
+import PlayerAvatar from "@/components/shared/PlayerAvatar";
 
 interface PlayerCardProps {
   player: any;
@@ -11,9 +12,14 @@ const PlayerCard = ({ player, index }: PlayerCardProps) => {
   return (
     <div className="flex items-center justify-between p-4 rounded-lg bg-muted/20 hover:bg-muted/40 transition-colors border border-transparent hover:border-muted">
       <div className="flex items-center space-x-4 min-w-0 flex-1">
-        <div className="w-12 h-12 bg-gradient-to-br from-primary/20 to-primary/10 rounded-full flex items-center justify-center font-bold text-primary text-lg border-2 border-primary/20 flex-shrink-0">
-          {player.number || index + 1}
-        </div>
+        <PlayerAvatar 
+          player={{
+            ...player,
+            number: player.number || index + 1
+          }} 
+          size="large" 
+          showStats={true}
+        />
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 mb-1">
             <p className="font-semibold text-lg truncate">{player.name}</p>
