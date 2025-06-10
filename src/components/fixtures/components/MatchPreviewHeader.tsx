@@ -29,17 +29,17 @@ const MatchPreviewHeader = ({
         className="w-full transform transition-all duration-500 hover:scale-[1.01]"
       />
 
-      {/* Compact Kickoff Divider - much more subtle */}
-      <CompactKickoffDivider 
-        fixture={fixture}
-        className="w-full"
-      />
-
       {/* Away Team Banner - Reversed Layout */}
       <TeamBanner 
         team={awayTeam} 
         variant="away"
         className="w-full transform transition-all duration-500 hover:scale-[1.01] flex-row-reverse"
+      />
+
+      {/* Compact Kickoff Divider - moved after team banners */}
+      <CompactKickoffDivider 
+        fixture={fixture}
+        className="w-full"
       />
 
       {/* Enhanced Match Information Cards */}

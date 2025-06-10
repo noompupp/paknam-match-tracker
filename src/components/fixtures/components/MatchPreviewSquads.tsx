@@ -79,10 +79,10 @@ const MatchPreviewSquads = ({ homeTeam, awayTeam, homeSquad, awaySquad }: MatchP
               {player.number}
             </Badge>
           )}
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <p className="font-medium text-sm truncate">{player.name}</p>
             {player.nickname && (
-              <p className="text-xs text-muted-foreground truncate max-w-[100px] sm:max-w-[150px] md:max-w-[200px]">
+              <p className="text-xs text-muted-foreground truncate leading-tight">
                 "{player.nickname}"
               </p>
             )}
@@ -122,14 +122,14 @@ const MatchPreviewSquads = ({ homeTeam, awayTeam, homeSquad, awaySquad }: MatchP
     const topAssister = squad.length > 0 ? getTopAssister(squad) : null;
 
     return (
-      <Card className={`${teamColor} border transition-all duration-300 hover:shadow-md`}>
+      <Card className={`${teamColor} border transition-all duration-300 hover:shadow-md w-full`}>
         <CardHeader className="pb-4">
           <CardTitle className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Users className="h-5 w-5" />
+            <div className="flex items-center gap-2 min-w-0 flex-1">
+              <Users className="h-5 w-5 flex-shrink-0" />
               <span className="truncate">{team.name} Squad</span>
             </div>
-            <Badge variant="outline">
+            <Badge variant="outline" className="flex-shrink-0">
               {squad.length} players
             </Badge>
           </CardTitle>
@@ -146,21 +146,21 @@ const MatchPreviewSquads = ({ homeTeam, awayTeam, homeSquad, awaySquad }: MatchP
                 if (players.length === 0) return null;
                 
                 return (
-                  <AccordionItem key={position} value={position}>
-                    <AccordionTrigger className="hover:no-underline">
-                      <div className="flex items-center gap-2">
+                  <AccordionItem key={position} value={position} className="w-full">
+                    <AccordionTrigger className="hover:no-underline w-full">
+                      <div className="flex items-center gap-2 w-full">
                         {getPositionIcon(position)}
-                        <span className="font-medium">{position}s</span>
-                        <Badge variant="secondary" className="ml-auto mr-2">
+                        <span className="font-medium truncate flex-1 text-left">{position}s</span>
+                        <Badge variant="secondary" className="ml-auto mr-2 flex-shrink-0">
                           {players.length}
                         </Badge>
                       </div>
                     </AccordionTrigger>
-                    <AccordionContent className="pt-2">
+                    <AccordionContent className="pt-2 w-full">
                       <div className={`p-3 rounded-lg ${getPositionColor(position)} mb-3`}>
                         <p className="text-sm font-medium">{position} Squad</p>
                       </div>
-                      <div className="space-y-2">
+                      <div className="space-y-2 w-full">
                         {players.map((player) => (
                           <PlayerCard 
                             key={player.id} 
@@ -182,12 +182,12 @@ const MatchPreviewSquads = ({ homeTeam, awayTeam, homeSquad, awaySquad }: MatchP
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 w-full">
       {/* Squad Overview Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-        <Card className="bg-gradient-to-r from-primary/5 to-transparent border-primary/20 border transition-all duration-300 hover:shadow-md hover:border-primary/30">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6 w-full">
+        <Card className="bg-gradient-to-r from-primary/5 to-transparent border-primary/20 border transition-all duration-300 hover:shadow-md hover:border-primary/30 w-full">
           <CardHeader className="pb-3">
-            <CardTitle className="text-lg">{homeTeam.name} Overview</CardTitle>
+            <CardTitle className="text-lg truncate">{homeTeam.name} Overview</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-3 gap-4 text-center">
@@ -211,9 +211,9 @@ const MatchPreviewSquads = ({ homeTeam, awayTeam, homeSquad, awaySquad }: MatchP
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-l from-secondary/5 to-transparent border-secondary/20 border transition-all duration-300 hover:shadow-md hover:border-secondary/30">
+        <Card className="bg-gradient-to-l from-secondary/5 to-transparent border-secondary/20 border transition-all duration-300 hover:shadow-md hover:border-secondary/30 w-full">
           <CardHeader className="pb-3">
-            <CardTitle className="text-lg">{awayTeam.name} Overview</CardTitle>
+            <CardTitle className="text-lg truncate">{awayTeam.name} Overview</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-3 gap-4 text-center">
@@ -239,7 +239,7 @@ const MatchPreviewSquads = ({ homeTeam, awayTeam, homeSquad, awaySquad }: MatchP
       </div>
 
       {/* Team Squads */}
-      <div className="space-y-6">
+      <div className="space-y-6 w-full">
         <TeamSquad 
           team={homeTeam} 
           squad={homeSquad} 

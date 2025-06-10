@@ -19,8 +19,8 @@ const MatchPreviewModalContent = ({ matchData, isLoading, error }: MatchPreviewM
 
   if (error) {
     return (
-      <div className="p-4 sm:p-6">
-        <Alert className="border-destructive/50 bg-destructive/5">
+      <div className="p-3 sm:p-6 w-full">
+        <Alert className="border-destructive/50 bg-destructive/5 w-full">
           <Info className="h-4 w-4" />
           <AlertDescription className="text-destructive-foreground">
             {error}
@@ -35,7 +35,7 @@ const MatchPreviewModalContent = ({ matchData, isLoading, error }: MatchPreviewM
   }
 
   return (
-    <div className="p-4 sm:p-6 space-y-6">
+    <div className="p-3 sm:p-6 space-y-6 w-full">
       {/* New Mobile-First Match Header */}
       <MatchPreviewHeader 
         fixture={matchData.fixture}
