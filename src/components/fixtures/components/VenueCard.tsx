@@ -11,11 +11,17 @@ const VenueCard = ({ venue }: VenueCardProps) => {
   }
 
   return (
-    <div className="flex items-center gap-3 text-sm p-3 rounded-lg bg-muted/30 border border-border/50">
-      <MapPin className="h-4 w-4 text-primary flex-shrink-0" />
-      <div>
-        <p className="text-xs text-muted-foreground mb-1">Venue</p>
-        <p className="font-medium">{venue}</p>
+    <div className="flex items-center gap-4 text-sm p-4 rounded-xl bg-gradient-to-r from-primary/8 via-primary/4 to-transparent border border-primary/20 backdrop-blur-sm transition-all duration-300 hover:shadow-md hover:border-primary/30">
+      <div className="flex-shrink-0 p-2 rounded-lg bg-primary/10 border border-primary/20">
+        <MapPin className="h-5 w-5 text-primary" />
+      </div>
+      <div className="flex-1">
+        <p className="text-xs text-muted-foreground mb-1 font-medium uppercase tracking-wide">
+          Venue
+        </p>
+        <p className="font-semibold text-foreground text-base">
+          {venue}
+        </p>
       </div>
     </div>
   );

@@ -21,31 +21,31 @@ const MatchPreviewHeader = ({
   venue 
 }: MatchPreviewHeaderProps) => {
   return (
-    <div className="space-y-6 pb-6 border-b border-border/50">
-      {/* Mobile-First Dual Banner Layout */}
-      <div className="space-y-4">
+    <div className="space-y-8 pb-8 border-b border-border/50">
+      {/* Enhanced Mobile-First Dual Banner Layout */}
+      <div className="space-y-6">
         {/* Home Team Banner */}
         <TeamBanner 
           team={homeTeam} 
           variant="home"
-          className="w-full"
+          className="w-full transform transition-all duration-500 hover:scale-[1.02]"
         />
 
-        {/* Kickoff Section */}
+        {/* Enhanced Kickoff Section */}
         <KickoffSection 
           fixture={fixture}
-          className="w-full"
+          className="w-full transform transition-all duration-500 hover:scale-[1.01]"
         />
 
         {/* Away Team Banner */}
         <TeamBanner 
           team={awayTeam} 
           variant="away"
-          className="w-full"
+          className="w-full transform transition-all duration-500 hover:scale-[1.02]"
         />
       </div>
 
-      {/* Match Information Cards */}
+      {/* Enhanced Match Information Cards */}
       <MatchInformationSection 
         venue={venue}
         refereeAssignment={refereeAssignment}
