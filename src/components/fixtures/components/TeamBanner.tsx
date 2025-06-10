@@ -109,7 +109,7 @@ const TeamBanner = ({ team, variant, className = "" }: TeamBannerProps) => {
             <div className={`flex items-center gap-4 mb-4 ${shouldReverse ? 'flex-row-reverse' : ''}`}>
               <Badge 
                 variant="outline" 
-                className={`text-sm border-2 px-3 py-1 font-semibold ${getPositionColor(team.position)}`}
+                className={`text-sm border px-3 py-1 font-semibold ${getPositionColor(team.position)}`}
                 style={isTeamColored ? { 
                   borderColor: team.color + '60',
                   backgroundColor: team.color + '15'
@@ -159,7 +159,7 @@ const TeamBanner = ({ team, variant, className = "" }: TeamBannerProps) => {
             </p>
             {team.color && (
               <div 
-                className="w-4 h-4 rounded-full border-2 border-white/30 shadow-lg"
+                className="w-4 h-4 rounded-full border border-white/30 shadow-lg"
                 style={{ backgroundColor: team.color }}
               />
             )}

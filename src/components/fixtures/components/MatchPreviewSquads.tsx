@@ -82,7 +82,7 @@ const MatchPreviewSquads = ({ homeTeam, awayTeam, homeSquad, awaySquad }: MatchP
           <div className="min-w-0">
             <p className="font-medium text-sm truncate">{player.name}</p>
             {player.nickname && (
-              <p className="text-xs text-muted-foreground truncate max-w-[120px] sm:max-w-[200px]">
+              <p className="text-xs text-muted-foreground truncate max-w-[100px] sm:max-w-[150px] md:max-w-[200px]">
                 "{player.nickname}"
               </p>
             )}
@@ -122,7 +122,7 @@ const MatchPreviewSquads = ({ homeTeam, awayTeam, homeSquad, awaySquad }: MatchP
     const topAssister = squad.length > 0 ? getTopAssister(squad) : null;
 
     return (
-      <Card className={`${teamColor} border-2 transition-all duration-300 hover:shadow-md`}>
+      <Card className={`${teamColor} border transition-all duration-300 hover:shadow-md`}>
         <CardHeader className="pb-4">
           <CardTitle className="flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -185,7 +185,7 @@ const MatchPreviewSquads = ({ homeTeam, awayTeam, homeSquad, awaySquad }: MatchP
     <div className="space-y-6">
       {/* Squad Overview Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-        <Card className="bg-gradient-to-r from-primary/5 to-transparent border-primary/20 border-2 transition-all duration-300 hover:shadow-md hover:border-primary/30">
+        <Card className="bg-gradient-to-r from-primary/5 to-transparent border-primary/20 border transition-all duration-300 hover:shadow-md hover:border-primary/30">
           <CardHeader className="pb-3">
             <CardTitle className="text-lg">{homeTeam.name} Overview</CardTitle>
           </CardHeader>
@@ -211,7 +211,7 @@ const MatchPreviewSquads = ({ homeTeam, awayTeam, homeSquad, awaySquad }: MatchP
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-l from-secondary/5 to-transparent border-secondary/20 border-2 transition-all duration-300 hover:shadow-md hover:border-secondary/30">
+        <Card className="bg-gradient-to-l from-secondary/5 to-transparent border-secondary/20 border transition-all duration-300 hover:shadow-md hover:border-secondary/30">
           <CardHeader className="pb-3">
             <CardTitle className="text-lg">{awayTeam.name} Overview</CardTitle>
           </CardHeader>
