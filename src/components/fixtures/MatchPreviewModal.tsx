@@ -6,16 +6,9 @@ import {
   EnhancedDialogHeader,
   EnhancedDialogTitle,
 } from "@/components/ui/enhanced-dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Info } from "lucide-react";
 import { Fixture } from "@/types/database";
 import { enhancedMatchDataService, EnhancedMatchData } from "@/services/fixtures/enhancedMatchDataService";
-import MatchPreviewHeader from "./components/MatchPreviewHeader";
-import MatchPreviewOverview from "./components/MatchPreviewOverview";
-import MatchPreviewSquads from "./components/MatchPreviewSquads";
-import MatchPreviewForm from "./components/MatchPreviewForm";
+import MatchPreviewModalContent from "./components/MatchPreviewModalContent";
 
 interface MatchPreviewModalProps {
   fixture: Fixture | null;
@@ -76,117 +69,11 @@ const MatchPreviewModal = ({ fixture, isOpen, onClose }: MatchPreviewModalProps)
 
           {/* Scrollable Content Container */}
           <div className="flex-1 overflow-y-auto">
-            {isLoading ? (
-              <div className="p-4 sm:p-6 space-y-6">
-                {/* Enhanced Mobile-First Loading Skeleton */}
-                <div className="space-y-4">
-                  {/* Team Banner Skeletons */}
-                  {[1, 2].map((i) => (
-                    <div key={i} className="p-4 rounded-lg border space-y-3">
-                      <div className="flex items-center gap-4">
-                        <Skeleton className="h-16 w-16 rounded-full" />
-                        <div className="flex-1 space-y-2">
-                          <Skeleton className="h-5 w-32" />
-                          <Skeleton className="h-4 w-24" />
-                          <div className="flex gap-2">
-                            <Skeleton className="h-4 w-8" />
-                            <Skeleton className="h-4 w-8" />
-                            <Skeleton className="h-4 w-8" />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                  
-                  {/* Kickoff Section Skeleton */}
-                  <div className="text-center py-6 rounded-lg border space-y-3">
-                    <Skeleton className="h-6 w-20 mx-auto" />
-                    <Skeleton className="h-12 w-24 mx-auto" />
-                    <div className="flex justify-center gap-4">
-                      <Skeleton className="h-4 w-20" />
-                      <Skeleton className="h-4 w-16" />
-                    </div>
-                  </div>
-                </div>
-                
-                {/* Tabs Skeleton */}
-                <div className="grid grid-cols-3 gap-2">
-                  <Skeleton className="h-10 w-full" />
-                  <Skeleton className="h-10 w-full" />
-                  <Skeleton className="h-10 w-full" />
-                </div>
-                <Skeleton className="h-40 w-full" />
-              </div>
-            ) : error ? (
-              <div className="p-4 sm:p-6">
-                <Alert className="border-destructive/50 bg-destructive/5">
-                  <Info className="h-4 w-4" />
-                  <AlertDescription className="text-destructive-foreground">
-                    {error}
-                  </AlertDescription>
-                </Alert>
-              </div>
-            ) : matchData ? (
-              <div className="p-4 sm:p-6 space-y-6">
-                {/* New Mobile-First Match Header */}
-                <MatchPreviewHeader 
-                  fixture={matchData.fixture}
-                  homeTeam={matchData.homeTeam}
-                  awayTeam={matchData.awayTeam}
-                  refereeAssignment={matchData.refereeAssignment}
-                  venue={matchData.venue}
-                />
-                
-                {/* Enhanced Mobile-Optimized Tabs */}
-                <Tabs defaultValue="overview" className="w-full">
-                  <TabsList className="grid w-full grid-cols-3 mb-6 h-12 bg-muted/50 backdrop-blur-sm">
-                    <TabsTrigger 
-                      value="overview" 
-                      className="text-sm font-medium py-3 data-[state=active]:bg-background data-[state=active]:shadow-sm"
-                    >
-                      Overview
-                    </TabsTrigger>
-                    <TabsTrigger 
-                      value="squads" 
-                      className="text-sm font-medium py-3 data-[state=active]:bg-background data-[state=active]:shadow-sm"
-                    >
-                      Squads
-                    </TabsTrigger>
-                    <TabsTrigger 
-                      value="form" 
-                      className="text-sm font-medium py-3 data-[state=active]:bg-background data-[state=active]:shadow-sm"
-                    >
-                      Form
-                    </TabsTrigger>
-                  </TabsList>
-                  
-                  <TabsContent value="overview" className="space-y-6 mt-0">
-                    <MatchPreviewOverview 
-                      homeTeam={matchData.homeTeam}
-                      awayTeam={matchData.awayTeam}
-                      headToHead={matchData.headToHead}
-                    />
-                  </TabsContent>
-                  
-                  <TabsContent value="squads" className="space-y-6 mt-0">
-                    <MatchPreviewSquads 
-                      homeTeam={matchData.homeTeam}
-                      awayTeam={matchData.awayTeam}
-                      homeSquad={matchData.homeSquad}
-                      awaySquad={matchData.awaySquad}
-                    />
-                  </TabsContent>
-                  
-                  <TabsContent value="form" className="space-y-6 mt-0">
-                    <MatchPreviewForm 
-                      homeTeam={matchData.homeTeam}
-                      awayTeam={matchData.awayTeam}
-                      recentForm={matchData.recentForm}
-                    />
-                  </TabsContent>
-                </Tabs>
-              </div>
-            ) : null}
+            <MatchPreviewModalContent 
+              matchData={matchData}
+              isLoading={isLoading}
+              error={error}
+            />
           </div>
         </div>
       </EnhancedDialogContent>
