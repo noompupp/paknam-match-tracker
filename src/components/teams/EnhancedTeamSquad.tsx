@@ -3,6 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTeamPlayerStats } from "@/hooks/usePlayerStats";
 import { useTeams } from "@/hooks/useTeams";
+import { Member } from "@/types/database";
 import TeamSquadHeader from "./components/TeamSquadHeader";
 import TeamPlayersList from "./components/TeamPlayersList";
 import TeamStatsSummary from "./components/TeamStatsSummary";
@@ -13,11 +14,31 @@ interface EnhancedTeamSquadProps {
 }
 
 const EnhancedTeamSquad = ({ teamId, teamName }: EnhancedTeamSquadProps) => {
-  const { data: players, isLoading, error } = useTeamPlayerStats(teamId);
+  const { data: playerStatsData, isLoading, error } = useTeamPlayerStats(teamId);
   const { data: teams } = useTeams();
 
   // Find the team data for colors and additional info
   const teamData = teams?.find(team => team.__id__ === teamId || team.id.toString() === teamId);
+
+  // Transform PlayerStatsData[] to Member[] by adding missing properties
+  const players: Member[] = playerStatsData ? playerStatsData.map(playerStat => ({
+    id: playerStat.id,
+    name: playerStat.name,
+    nickname: undefined,
+    number: playerStat.number,
+    position: playerStat.position,
+    role: 'Player', // Default role
+    goals: playerStat.goals,
+    assists: playerStat.assists,
+    yellow_cards: playerStat.yellow_cards,
+    red_cards: playerStat.red_cards,
+    total_minutes_played: playerStat.total_minutes_played,
+    matches_played: playerStat.matches_played,
+    team_id: playerStat.team_id,
+    created_at: new Date().toISOString(), // Default created_at
+    updated_at: new Date().toISOString(), // Default updated_at
+    ProfileURL: playerStat.ProfileURL
+  })) : [];
 
   if (error) {
     return (
