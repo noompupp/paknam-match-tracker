@@ -8,48 +8,35 @@ import { getResponsiveTeamName } from "@/utils/teamNameUtils";
 import { useDeviceOrientation } from "@/hooks/useDeviceOrientation";
 import TeamLogo from "../teams/TeamLogo";
 import MobilePortraitFixtureCard from "./MobilePortraitFixtureCard";
-import CompactFixtureCard from "../fixtures/components/CompactFixtureCard";
 
 interface FixtureCardProps {
   fixture: Fixture;
   onClick?: (fixture: Fixture) => void;
-  onPreviewClick?: (fixture: Fixture) => void;
-  onSummaryClick?: (fixture: Fixture) => void;
   showDate?: boolean;
   className?: string;
-  useCompactLayout?: boolean;
 }
 
-const FixtureCard = ({ 
-  fixture, 
-  onClick, 
-  onPreviewClick,
-  onSummaryClick,
-  showDate = true, 
-  className = "",
-  useCompactLayout = false
-}: FixtureCardProps) => {
+const FixtureCard = ({ fixture, onClick, showDate = true, className = "" }: FixtureCardProps) => {
   const { isMobile, isPortrait } = useDeviceOrientation();
   
-  // Use compact layout if requested or for mobile devices
-  if (useCompactLayout || isMobile) {
+  // Use mobile portrait layout for screens ≤ 480px in portrait mode
+  const shouldUseMobilePortrait = isMobile && isPortrait && window.innerWidth <= 480;
+
+  if (shouldUseMobilePortrait) {
     return (
-      <CompactFixtureCard
+      <MobilePortraitFixtureCard 
         fixture={fixture}
-        onPreviewClick={onPreviewClick || onClick}
-        onSummaryClick={onSummaryClick || onClick}
+        onClick={onClick}
         showDate={showDate}
         className={className}
       />
     );
   }
 
-  // Legacy layout for backwards compatibility
+  // Default layout for larger screens and landscape
   const handleClick = () => {
-    if (fixture.status === 'completed' && (onSummaryClick || onClick)) {
-      (onSummaryClick || onClick)?.(fixture);
-    } else if (onPreviewClick || onClick) {
-      (onPreviewClick || onClick)?.(fixture);
+    if (onClick && fixture.status === 'completed') {
+      onClick(fixture);
     }
   };
 
@@ -58,7 +45,9 @@ const FixtureCard = ({
 
   return (
     <div 
-      className={`relative p-3 sm:p-4 rounded-lg bg-muted/20 hover:bg-muted/40 transition-all duration-200 cursor-pointer group hover:shadow-md border border-transparent hover:border-muted-foreground/20 ${className}`}
+      className={`relative p-3 sm:p-4 rounded-lg bg-muted/20 hover:bg-muted/40 transition-all duration-200 ${
+        fixture.status === 'completed' ? 'cursor-pointer group hover:shadow-md border border-transparent hover:border-muted-foreground/20' : ''
+      } ${className}`}
       onClick={handleClick}
     >
       {/* Match date - top right */}

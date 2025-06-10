@@ -1,6 +1,6 @@
 
 import { Card, CardContent } from "@/components/ui/card";
-import { Calendar, Trophy, Clock } from "lucide-react";
+import { Calendar, Trophy } from "lucide-react";
 import FixtureCard from "./FixtureCard";
 import LoadingCard from "./LoadingCard";
 
@@ -18,23 +18,12 @@ const UpcomingFixturesSection = ({
   onPreviewClick
 }: UpcomingFixturesSectionProps) => (
   <div id="upcoming-fixtures" className="scroll-mt-20">
-    <div className="flex items-center gap-3 mb-6 px-1">
-      <div className="p-2 rounded-lg bg-blue-500/10 border border-blue-200">
-        <Clock className="h-5 w-5 text-blue-600" />
-      </div>
-      <div>
-        <h2 className="text-xl font-bold text-foreground">Upcoming Matches</h2>
-        <p className="text-sm text-muted-foreground">Scheduled fixtures</p>
-      </div>
-      {upcomingFixtures && upcomingFixtures.length > 0 && (
-        <div className="ml-auto flex items-center gap-1 px-2 py-1 rounded-full bg-blue-500/10 text-blue-600">
-          <Calendar className="h-3 w-3" />
-          <span className="text-xs font-medium">{upcomingFixtures.length}</span>
-        </div>
-      )}
+    <div className="flex items-center gap-2 mb-6">
+      <Trophy className="h-6 w-6 text-white" />
+      <h2 className="text-2xl font-bold text-white">Upcoming Matches</h2>
     </div>
     
-    <div className="grid gap-3">
+    <div className="grid gap-4">
       {isLoading ? (
         Array.from({ length: 3 }).map((_, index) => (
           <LoadingCard key={index} />
@@ -46,15 +35,13 @@ const UpcomingFixturesSection = ({
             fixture={fixture} 
             onFixtureClick={onFixtureClick}
             onPreviewClick={onPreviewClick}
-            useCompactLayout={true}
           />
         ))
       ) : (
-        <Card className="border border-dashed border-muted-foreground/20 bg-muted/10">
+        <Card className="card-shadow-lg">
           <CardContent className="p-8 text-center text-muted-foreground">
-            <Calendar className="h-12 w-12 mx-auto mb-4 opacity-40" />
-            <p className="font-medium">No upcoming fixtures scheduled</p>
-            <p className="text-sm mt-1">Check back later for new matches</p>
+            <Calendar className="h-12 w-12 mx-auto mb-4 opacity-50" />
+            <p>No upcoming fixtures scheduled</p>
           </CardContent>
         </Card>
       )}
