@@ -25,35 +25,34 @@ const TeamBanner = ({ team, variant, className = "" }: TeamBannerProps) => {
       : '59, 130, 246'; // fallback blue
   };
 
-  // Enhanced background styling with stronger gradients
+  // Premier League-style diagonal gradient background
   const getBackgroundStyle = () => {
     if (!team.color) {
       return {};
     }
     
-    // Create stronger, more vibrant gradients using team colors
     const teamColor = team.color;
-    const lightOpacity = 'rgba(' + hexToRgb(teamColor) + ', 0.25)'; // Increased from 0.12
-    const mediumOpacity = 'rgba(' + hexToRgb(teamColor) + ', 0.15)'; // Increased from 0.06
-    const softOpacity = 'rgba(' + hexToRgb(teamColor) + ', 0.08)'; // Increased from 0.02
-    const borderOpacity = 'rgba(' + hexToRgb(teamColor) + ', 0.35)'; // Increased from 0.2
+    const primaryOpacity = 'rgba(' + hexToRgb(teamColor) + ', 0.15)';
+    const secondaryOpacity = 'rgba(' + hexToRgb(teamColor) + ', 0.25)';
+    const accentOpacity = 'rgba(' + hexToRgb(teamColor) + ', 0.08)';
     
+    // Premier League-style diagonal stripe pattern
     return {
       background: variant === 'home' 
-        ? `linear-gradient(135deg, ${lightOpacity} 0%, ${mediumOpacity} 40%, ${softOpacity} 100%)`
-        : `linear-gradient(225deg, ${lightOpacity} 0%, ${mediumOpacity} 40%, ${softOpacity} 100%)`,
-      borderColor: borderOpacity
+        ? `linear-gradient(135deg, ${secondaryOpacity} 0%, ${primaryOpacity} 25%, ${accentOpacity} 50%, ${primaryOpacity} 75%, ${secondaryOpacity} 100%)`
+        : `linear-gradient(-135deg, ${secondaryOpacity} 0%, ${primaryOpacity} 25%, ${accentOpacity} 50%, ${primaryOpacity} 75%, ${secondaryOpacity} 100%)`,
+      borderColor: `rgba(${hexToRgb(teamColor)}, 0.3)`
     };
   };
 
   const getBackgroundClassName = () => {
     if (team.color) {
-      return 'border-opacity-20';
+      return 'border-opacity-30';
     }
     
     return variant === 'home' 
-      ? 'bg-gradient-to-br from-primary/20 via-primary/12 to-primary/6 border-primary/30' 
-      : 'bg-gradient-to-bl from-secondary/20 via-secondary/12 to-secondary/6 border-secondary/30';
+      ? 'bg-gradient-to-br from-primary/15 via-primary/8 to-primary/15 border-primary/30' 
+      : 'bg-gradient-to-bl from-secondary/15 via-secondary/8 to-secondary/15 border-secondary/30';
   };
 
   const backgroundStyle = getBackgroundStyle();
@@ -69,19 +68,24 @@ const TeamBanner = ({ team, variant, className = "" }: TeamBannerProps) => {
       className={`relative overflow-hidden rounded-xl border backdrop-blur-sm transition-all duration-300 hover:shadow-lg ${backgroundClassName} ${className}`}
       style={backgroundStyle}
     >
-      {/* Enhanced decorative elements with stronger opacity */}
-      <div className="absolute inset-0 opacity-15">
-        <div className={`absolute ${shouldReverse ? '-top-4 -left-4' : '-top-4 -right-4'} w-24 h-24 rounded-full ${
-          variant === 'home' ? 'bg-primary' : 'bg-secondary'
-        }`} style={isTeamColored ? { backgroundColor: team.color } : {}} />
-        <div className={`absolute ${shouldReverse ? '-bottom-2 -right-2' : '-bottom-2 -left-2'} w-16 h-16 rounded-full ${
-          variant === 'home' ? 'bg-primary' : 'bg-secondary'
-        }`} style={isTeamColored ? { backgroundColor: team.color } : {}} />
+      {/* Premier League-style diagonal accent stripes */}
+      <div className="absolute inset-0 opacity-10">
+        <div 
+          className={`absolute inset-0 ${variant === 'home' ? 'bg-gradient-to-br' : 'bg-gradient-to-bl'} from-transparent via-current to-transparent`}
+          style={isTeamColored ? { color: team.color } : {}}
+        />
+        {/* Additional diagonal pattern for depth */}
+        <div 
+          className={`absolute ${shouldReverse ? 'top-0 left-0' : 'top-0 right-0'} w-32 h-32 opacity-20 transform ${shouldReverse ? 'rotate-45' : '-rotate-45'}`}
+          style={isTeamColored ? { 
+            background: `linear-gradient(45deg, transparent 40%, ${team.color} 50%, transparent 60%)`
+          } : {}}
+        />
       </div>
 
-      {/* Premier League-style accent line */}
+      {/* Premier League-style side accent */}
       <div 
-        className={`absolute ${shouldReverse ? 'left-0' : 'right-0'} top-0 bottom-0 w-1 bg-gradient-to-b from-transparent via-current to-transparent opacity-30`}
+        className={`absolute ${shouldReverse ? 'left-0' : 'right-0'} top-0 bottom-0 w-1 bg-gradient-to-b from-transparent via-current to-transparent opacity-40`}
         style={isTeamColored ? { color: team.color } : {}}
       />
 
@@ -89,9 +93,9 @@ const TeamBanner = ({ team, variant, className = "" }: TeamBannerProps) => {
         <div className={`flex items-center gap-4 ${flexDirection}`}>
           <div className="relative">
             <TeamLogo team={team} size="large" showColor={true} />
-            {/* Enhanced glow effect around logo */}
+            {/* Enhanced logo glow */}
             <div 
-              className="absolute inset-0 rounded-full blur-xl opacity-40 -z-10"
+              className="absolute inset-0 rounded-full blur-lg opacity-30 -z-10"
               style={isTeamColored ? { backgroundColor: team.color } : {}}
             />
           </div>
@@ -101,7 +105,7 @@ const TeamBanner = ({ team, variant, className = "" }: TeamBannerProps) => {
               {team.name}
             </h3>
             
-            {/* Enhanced Position and Points Row */}
+            {/* Position and Points Row */}
             <div className={`flex items-center gap-4 mb-4 ${shouldReverse ? 'flex-row-reverse' : ''}`}>
               <Badge 
                 variant="outline" 
@@ -123,7 +127,7 @@ const TeamBanner = ({ team, variant, className = "" }: TeamBannerProps) => {
               </div>
             </div>
 
-            {/* Enhanced Record Stats with better spacing */}
+            {/* Record Stats */}
             <div className="grid grid-cols-3 gap-4 text-sm">
               <div className="flex items-center gap-2 p-2 rounded-lg bg-background/60 backdrop-blur-sm border border-border/30">
                 <Trophy className="h-4 w-4 text-green-600" />
@@ -144,13 +148,12 @@ const TeamBanner = ({ team, variant, className = "" }: TeamBannerProps) => {
           </div>
         </div>
         
-        {/* Enhanced Team Label with accent styling */}
+        {/* Team Label */}
         <div className="mt-4 pt-4 border-t border-border/50">
           <div className={`flex items-center justify-between ${shouldReverse ? 'flex-row-reverse' : ''}`}>
             <p className="text-sm font-semibold text-muted-foreground tracking-wide uppercase">
               {variant === 'home' ? 'Home Team' : 'Away Team'}
             </p>
-            {/* Enhanced team color indicator */}
             {team.color && (
               <div 
                 className="w-4 h-4 rounded-full border-2 border-white/30 shadow-lg"

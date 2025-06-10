@@ -8,6 +8,7 @@ export interface RefereeTeamAssignment {
 export const refereeAssignmentService = {
   /**
    * Assigns referee teams based on match time and team participation
+   * Only assigns 2 teams - one for home side and one for away side
    */
   getRefereeAssignment(
     matchTime: string,
@@ -21,9 +22,6 @@ export const refereeAssignmentService = {
       awayTeamId
     });
 
-    // Parse match time to determine time slot
-    const timeSlot = this.getTimeSlot(matchTime);
-    
     // Get teams not playing in this match
     const availableTeams = allTeams.filter(team => 
       team.__id__ !== homeTeamId && team.__id__ !== awayTeamId
@@ -38,6 +36,7 @@ export const refereeAssignmentService = {
     }
 
     // Assign referee teams based on alphabetical order for consistency
+    // Only assign 2 teams - one for each side
     const sortedAvailableTeams = [...availableTeams].sort((a, b) => 
       (a.name || '').localeCompare(b.name || '')
     );
@@ -46,11 +45,6 @@ export const refereeAssignmentService = {
       homeTeamReferee: sortedAvailableTeams[0]?.name || 'TBD',
       awayTeamReferee: sortedAvailableTeams[1]?.name || 'TBD'
     };
-
-    // For important matches (evening slots), assign a main referee if available
-    if (timeSlot === 'evening' && sortedAvailableTeams.length > 2) {
-      assignment.mainReferee = sortedAvailableTeams[2]?.name;
-    }
 
     console.log('✅ Referee Assignment: Assigned referee teams', assignment);
     return assignment;
@@ -69,16 +63,13 @@ export const refereeAssignmentService = {
 
   /**
    * Gets a user-friendly referee assignment display
+   * Only shows 2 teams - home and away referees
    */
   formatRefereeAssignment(assignment: RefereeTeamAssignment): string {
     const parts = [
       `Home: ${assignment.homeTeamReferee}`,
       `Away: ${assignment.awayTeamReferee}`
     ];
-
-    if (assignment.mainReferee) {
-      parts.unshift(`Main: ${assignment.mainReferee}`);
-    }
 
     return parts.join(' • ');
   }

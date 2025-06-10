@@ -58,9 +58,9 @@ const MatchPreviewModal = ({ fixture, isOpen, onClose }: MatchPreviewModalProps)
 
   return (
     <EnhancedDialog open={isOpen} onOpenChange={handleClose}>
-      <EnhancedDialogContent className="w-[95vw] h-[95vh] max-w-none max-h-none p-0 sm:max-w-4xl sm:max-h-[90vh] sm:h-auto sm:rounded-lg bg-gradient-to-b from-background via-background to-muted/20">
-        <div className="flex flex-col h-full">
-          {/* Enhanced Header */}
+      <EnhancedDialogContent className="w-[95vw] max-w-4xl max-h-[90vh] p-0 bg-gradient-to-b from-background via-background to-muted/20">
+        <div className="flex flex-col h-full max-h-[90vh]">
+          {/* Fixed Header */}
           <EnhancedDialogHeader className="px-4 py-3 sm:px-6 sm:py-4 border-b bg-gradient-to-r from-primary/5 to-secondary/5 backdrop-blur-sm flex-shrink-0">
             <EnhancedDialogTitle className="text-lg sm:text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
               Match Preview
@@ -68,7 +68,7 @@ const MatchPreviewModal = ({ fixture, isOpen, onClose }: MatchPreviewModalProps)
           </EnhancedDialogHeader>
 
           {/* Scrollable Content Container */}
-          <div className="flex-1 overflow-y-auto">
+          <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-border/50">
             <MatchPreviewModalContent 
               matchData={matchData}
               isLoading={isLoading}

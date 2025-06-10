@@ -38,56 +38,50 @@ const CompactKickoffDivider = ({ fixture, className = "" }: CompactKickoffDivide
 
   const getCenterContent = () => {
     if (fixture.status === 'completed') {
-      return (
-        <div className="text-2xl font-bold text-green-600">
-          {fixture.home_score || 0} - {fixture.away_score || 0}
-        </div>
-      );
+      return `${fixture.home_score || 0} - ${fixture.away_score || 0}`;
     } else if (fixture.status === 'live') {
-      return (
-        <div className="text-2xl font-bold text-red-600 animate-pulse">
-          {fixture.home_score || 0} - {fixture.away_score || 0}
-        </div>
-      );
+      return `${fixture.home_score || 0} - ${fixture.away_score || 0}`;
     } else {
-      return (
-        <div className="text-xl font-bold text-muted-foreground">
-          VS
-        </div>
-      );
+      return 'VS';
     }
   };
 
   return (
-    <div className={`relative flex items-center justify-between py-4 px-6 bg-gradient-to-r from-muted/30 via-background/60 to-muted/30 rounded-lg border backdrop-blur-sm ${className}`}>
-      {/* Decorative line on left */}
-      <div className="flex-1 h-px bg-gradient-to-r from-transparent to-border"></div>
+    <div className={`flex items-center justify-center py-3 ${className}`}>
+      {/* Subtle decorative line on left */}
+      <div className="flex-1 h-px bg-gradient-to-r from-transparent to-border/40"></div>
       
-      {/* Center content */}
-      <div className="flex items-center gap-4 px-6">
-        {/* Status badge */}
-        <Badge className={`${getStatusColor(fixture.status)} text-white font-medium px-3 py-1 text-xs border shadow-sm`}>
+      {/* Compact center content - text only */}
+      <div className="flex items-center gap-3 px-6 text-center">
+        {/* Status badge - smaller and more subtle */}
+        <Badge 
+          variant="outline" 
+          className="text-xs px-2 py-1 font-medium border-border/50 bg-background/50"
+        >
           {getStatusText(fixture.status)}
         </Badge>
         
-        {/* Score or VS */}
-        {getCenterContent()}
+        {/* Score or VS - smaller text */}
+        <span className="text-lg font-semibold text-muted-foreground">
+          {getCenterContent()}
+        </span>
         
-        {/* Date and time */}
-        <div className="flex items-center gap-3 text-xs text-muted-foreground">
-          <div className="flex items-center gap-1">
+        {/* Date and time - inline and compact */}
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <span className="flex items-center gap-1">
             <Calendar className="h-3 w-3" />
-            <span>{formatDateDisplay(fixture.match_date)}</span>
-          </div>
-          <div className="flex items-center gap-1">
+            {formatDateDisplay(fixture.match_date)}
+          </span>
+          <span>•</span>
+          <span className="flex items-center gap-1">
             <Clock className="h-3 w-3" />
-            <span>{formatTimeDisplay(fixture.match_time)}</span>
-          </div>
+            {formatTimeDisplay(fixture.match_time)}
+          </span>
         </div>
       </div>
       
-      {/* Decorative line on right */}
-      <div className="flex-1 h-px bg-gradient-to-l from-transparent to-border"></div>
+      {/* Subtle decorative line on right */}
+      <div className="flex-1 h-px bg-gradient-to-l from-transparent to-border/40"></div>
     </div>
   );
 };

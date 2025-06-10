@@ -21,25 +21,25 @@ const MatchPreviewHeader = ({
   venue 
 }: MatchPreviewHeaderProps) => {
   return (
-    <div className="space-y-6 pb-8 border-b border-border/50">
+    <div className="space-y-4 pb-6 border-b border-border/50">
       {/* Home Team Banner */}
       <TeamBanner 
         team={homeTeam} 
         variant="home"
-        className="w-full transform transition-all duration-500 hover:scale-[1.02]"
+        className="w-full transform transition-all duration-500 hover:scale-[1.01]"
       />
 
-      {/* Compact Kickoff Divider */}
+      {/* Compact Kickoff Divider - much more subtle */}
       <CompactKickoffDivider 
         fixture={fixture}
-        className="w-full transform transition-all duration-300 hover:scale-[1.01]"
+        className="w-full"
       />
 
       {/* Away Team Banner - Reversed Layout */}
       <TeamBanner 
         team={awayTeam} 
         variant="away"
-        className="w-full transform transition-all duration-500 hover:scale-[1.02] flex-row-reverse"
+        className="w-full transform transition-all duration-500 hover:scale-[1.01] flex-row-reverse"
       />
 
       {/* Enhanced Match Information Cards */}
