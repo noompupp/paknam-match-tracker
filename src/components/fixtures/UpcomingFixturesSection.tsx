@@ -35,6 +35,7 @@ const UpcomingFixturesSection = ({
             fixture={fixture} 
             onFixtureClick={onFixtureClick}
             onPreviewClick={onPreviewClick}
+            useCompactLayout={true}
           />
         ))
       ) : (

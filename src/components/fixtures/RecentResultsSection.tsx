@@ -8,12 +8,14 @@ interface RecentResultsSectionProps {
   recentFixtures: any[];
   isLoading: boolean;
   onFixtureClick: (fixture: any) => void;
+  onPreviewClick?: (fixture: any) => void;
 }
 
 const RecentResultsSection = ({ 
   recentFixtures, 
   isLoading, 
-  onFixtureClick 
+  onFixtureClick,
+  onPreviewClick
 }: RecentResultsSectionProps) => {
   // Filter to only show completed fixtures
   const completedFixtures = recentFixtures.filter(fixture => fixture.status === 'completed');
@@ -41,6 +43,8 @@ const RecentResultsSection = ({
               fixture={fixture} 
               showScore={true} 
               onFixtureClick={onFixtureClick}
+              onPreviewClick={onPreviewClick}
+              useCompactLayout={true}
             />
           ))
         )}

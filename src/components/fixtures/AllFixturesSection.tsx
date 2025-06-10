@@ -36,6 +36,7 @@ const AllFixturesSection = ({
             showScore={fixture.status === 'completed'} 
             onFixtureClick={onFixtureClick}
             onPreviewClick={onPreviewClick}
+            useCompactLayout={true}
           />
         ))
       ) : (

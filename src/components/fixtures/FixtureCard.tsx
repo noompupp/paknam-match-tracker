@@ -4,21 +4,39 @@ import { Badge } from "@/components/ui/badge";
 import { Calendar, Clock, MapPin, Eye, Info } from "lucide-react";
 import TeamLogo from "../teams/TeamLogo";
 import { formatDate, formatTime } from "@/utils/fixtureUtils";
+import CompactFixtureCard from "./components/CompactFixtureCard";
+import { useDeviceOrientation } from "@/hooks/useDeviceOrientation";
 
 interface FixtureCardProps {
   fixture: any;
   showScore?: boolean;
   onFixtureClick?: (fixture: any) => void;
   onPreviewClick?: (fixture: any) => void;
+  useCompactLayout?: boolean;
 }
 
 const FixtureCard = ({ 
   fixture, 
   showScore = false, 
   onFixtureClick,
-  onPreviewClick 
+  onPreviewClick,
+  useCompactLayout = false
 }: FixtureCardProps) => {
+  const { isMobile } = useDeviceOrientation();
   
+  // Use compact layout for mobile or when explicitly requested
+  if (useCompactLayout || isMobile) {
+    return (
+      <CompactFixtureCard
+        fixture={fixture}
+        onPreviewClick={onPreviewClick}
+        onSummaryClick={onFixtureClick}
+        showDate={true}
+      />
+    );
+  }
+  
+  // Legacy desktop layout
   const handleCardClick = () => {
     // Always open preview for any fixture
     if (onPreviewClick) {
