@@ -59,7 +59,7 @@ export const generateTeamAbbreviation = (teamName: string): string => {
     { regex: /\bHotspur\b/gi, replacement: 'HOTSPUR' },
     { regex: /\bAlbion\b/gi, replacement: 'ALBION' },
     { regex: /\bPalace\b/gi, replacement: 'PALACE' },
-    { regex: /\bVilla\b/gi, replacement: 'VILLA' }
+    { regex: /\bVilla\b/gi, replacement: 'VILLA'
   ];
   
   abbreviations.forEach(abbrev => {
@@ -108,6 +108,63 @@ export const generateTeamAbbreviation = (teamName: string): string => {
   }
 };
 
+// Generate 3-letter abbreviation specifically for mobile portrait mode
+export const generateThreeLetterAbbreviation = (teamName: string): string => {
+  if (!teamName || teamName === 'TBD') return 'TBD';
+  
+  // Special 3-letter cases
+  const threeLetterCases: Record<string, string> = {
+    'Manchester United': 'MUN',
+    'Manchester City': 'MCI',
+    'Real Madrid': 'RMA',
+    'FC Barcelona': 'BAR',
+    'Barcelona': 'BAR',
+    'Bayern Munich': 'BAY',
+    'Paris Saint-Germain': 'PSG',
+    'Borussia Dortmund': 'BVB',
+    'Atlético Madrid': 'ATM',
+    'Tottenham Hotspur': 'TOT',
+    'Leicester City': 'LEI',
+    'West Ham United': 'WHU',
+    'Newcastle United': 'NEW',
+    'Brighton & Hove Albion': 'BRI',
+    'Crystal Palace': 'CRY',
+    'Wolverhampton Wanderers': 'WOL',
+    'Sheffield United': 'SHU',
+    'Norwich City': 'NOR',
+    'Aston Villa': 'AVL',
+    'Arsenal': 'ARS',
+    'Chelsea': 'CHE',
+    'Liverpool': 'LIV',
+    'Leeds United': 'LEE',
+    'Everton': 'EVE'
+  };
+  
+  // Check for exact matches first
+  if (threeLetterCases[teamName]) {
+    return threeLetterCases[teamName];
+  }
+  
+  // Clean the name and take first 3 letters
+  let cleanName = teamName
+    .replace(/^(FC|CF|AC|AS|SK|FK|SC|RC|SL|BK|IF|IK|GK|HK|NK|PK|RK|TK|VK|AK|BV|SV|TSV|VfB|VfL|1\.|Sporting|Club|Real|Athletic|Atlético|Borussia)\s+/i, '')
+    .replace(/\s+(FC|CF|AC|AS|SK|FK|SC|RC|SL|BK|IF|IK|GK|HK|NK|PK|RK|TK|VK|AK|BV|SV|TSV|VfB|VfL|United|City|Town|Rovers|Wanderers|Athletic|Albion|Palace|Villa|County|Borough|Rangers|Celtic|Hotspur|Wednesday|Saturday|Sunday|Monday|Tuesday|Thursday|Friday|Football|Club)$/i, '');
+  
+  cleanName = cleanName.trim();
+  
+  // If multiple words, try to take first letter of each word
+  const words = cleanName.split(/\s+/);
+  if (words.length >= 3) {
+    return (words[0].charAt(0) + words[1].charAt(0) + words[2].charAt(0)).toUpperCase();
+  } else if (words.length === 2) {
+    // Take first 2 letters of first word + first letter of second word
+    return (words[0].substring(0, 2) + words[1].charAt(0)).toUpperCase();
+  } else {
+    // Single word - take first 3 letters
+    return words[0].substring(0, 3).toUpperCase();
+  }
+};
+
 // Get team abbreviation with fallback
 export const getTeamAbbreviation = (teamName: string): string => {
   try {
@@ -115,5 +172,15 @@ export const getTeamAbbreviation = (teamName: string): string => {
   } catch (error) {
     console.warn('Error generating team abbreviation:', error);
     return teamName?.substring(0, 8).toUpperCase() || 'TBD';
+  }
+};
+
+// Get 3-letter abbreviation for mobile portrait
+export const getThreeLetterAbbreviation = (teamName: string): string => {
+  try {
+    return generateThreeLetterAbbreviation(teamName);
+  } catch (error) {
+    console.warn('Error generating 3-letter abbreviation:', error);
+    return teamName?.substring(0, 3).toUpperCase() || 'TBD';
   }
 };

@@ -6,7 +6,8 @@ import { ArrowRight, Eye } from "lucide-react";
 import { Fixture } from "@/types/database";
 import { useState } from "react";
 import MatchSummaryDialog from "../fixtures/MatchSummaryDialog";
-import FixtureCard from "../shared/FixtureCard";
+import CompactFixtureCard from "../shared/CompactFixtureCard";
+import { useDeviceOrientation } from "@/hooks/useDeviceOrientation";
 
 interface EnhancedRecentResultsCardProps {
   recentFixtures: Fixture[] | undefined;
@@ -16,6 +17,8 @@ interface EnhancedRecentResultsCardProps {
 
 const EnhancedRecentResultsCard = ({ recentFixtures, isLoading, onViewAll }: EnhancedRecentResultsCardProps) => {
   const [selectedFixture, setSelectedFixture] = useState<Fixture | null>(null);
+  const { isMobile, isPortrait } = useDeviceOrientation();
+  const isMobilePortrait = isMobile && isPortrait;
 
   const handleFixtureClick = (fixture: Fixture) => {
     setSelectedFixture(fixture);
@@ -44,11 +47,11 @@ const EnhancedRecentResultsCard = ({ recentFixtures, isLoading, onViewAll }: Enh
             <ArrowRight className="h-3 w-3 sm:h-4 sm:w-4" />
           </Button>
         </CardHeader>
-        <CardContent className="space-y-2 sm:space-y-4 px-3 sm:px-6">
+        <CardContent className={`${isMobilePortrait ? 'space-y-3 px-3' : 'space-y-4 px-6'}`}>
           {isLoading ? (
-            <div className="space-y-2 sm:space-y-3">
+            <div className={`${isMobilePortrait ? 'space-y-2' : 'space-y-3'}`}>
               {Array.from({ length: 3 }).map((_, index) => (
-                <div key={index} className="p-2 sm:p-4 rounded-lg bg-muted/20 relative">
+                <div key={index} className={`${isMobilePortrait ? 'p-2' : 'p-4'} rounded-lg bg-muted/20 relative`}>
                   <div className="flex items-center justify-center gap-3 sm:gap-6 md:gap-8">
                     <div className="flex items-center gap-1 sm:gap-3 flex-1 justify-end">
                       <Skeleton className="h-3 w-10 sm:h-4 sm:w-20" />
@@ -67,12 +70,13 @@ const EnhancedRecentResultsCard = ({ recentFixtures, isLoading, onViewAll }: Enh
               ))}
             </div>
           ) : displayedFixtures.length > 0 ? (
-            <div className="space-y-2 sm:space-y-3">
+            <div className={`${isMobilePortrait ? 'space-y-2' : 'space-y-3'}`}>
               {displayedFixtures.map((fixture) => (
-                <FixtureCard
+                <CompactFixtureCard
                   key={fixture.id}
                   fixture={fixture}
-                  onClick={handleFixtureClick}
+                  onFixtureClick={handleFixtureClick}
+                  showVenue={true}
                 />
               ))}
             </div>

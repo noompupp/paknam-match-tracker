@@ -3,8 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, Clock, MapPin } from "lucide-react";
 import { Fixture } from "@/types/database";
-import { formatDateDisplay, formatTimeDisplay } from "@/utils/timeUtils";
-import { generateTeamAbbreviation } from "@/utils/teamAbbreviations";
+import { formatCombinedDateTime } from "@/utils/dateTimeUtils";
 import { useDeviceOrientation } from "@/hooks/useDeviceOrientation";
 import TeamLogo from "../teams/TeamLogo";
 import { cn } from "@/lib/utils";
@@ -28,9 +27,6 @@ const CompactFixtureCard = ({
 }: CompactFixtureCardProps) => {
   const { isMobile, isPortrait } = useDeviceOrientation();
   const isMobilePortrait = isMobile && isPortrait;
-
-  const homeTeamAbbr = generateTeamAbbreviation(fixture.home_team?.name || 'TBD');
-  const awayTeamAbbr = generateTeamAbbreviation(fixture.away_team?.name || 'TBD');
 
   const handleCardClick = () => {
     if (fixture.status === 'completed' && onFixtureClick) {
@@ -71,7 +67,7 @@ const CompactFixtureCard = ({
     return (
       <div className="flex items-center gap-1 text-sm text-muted-foreground">
         <Clock className="h-3 w-3" />
-        <span>{formatTimeDisplay(fixture.match_time)}</span>
+        <span>{formatCombinedDateTime(fixture.match_date, fixture.match_time)}</span>
       </div>
     );
   };
@@ -92,24 +88,24 @@ const CompactFixtureCard = ({
             {showDate && (
               <div className="flex items-center gap-1 text-xs text-muted-foreground">
                 <Calendar className="h-3 w-3" />
-                <span>{formatDateDisplay(fixture.match_date)}</span>
+                <span>{formatCombinedDateTime(fixture.match_date, fixture.match_time)}</span>
               </div>
             )}
             {getStatusBadge()}
           </div>
 
-          {/* Teams row 1: Home team */}
+          {/* Teams displayed vertically */}
           <div className="space-y-2">
+            {/* Home team (top) */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3 flex-1 min-w-0">
                 <div className="w-6 h-6 flex-shrink-0">
                   <TeamLogo team={fixture.home_team} size="small" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium text-sm truncate">{homeTeamAbbr}</span>
-                    <span className="text-xs text-muted-foreground">HOME</span>
-                  </div>
+                  <span className="font-medium text-sm truncate">
+                    {fixture.home_team?.name || 'TBD'}
+                  </span>
                 </div>
               </div>
               {fixture.status === 'completed' || fixture.status === 'live' ? (
@@ -117,17 +113,16 @@ const CompactFixtureCard = ({
               ) : null}
             </div>
 
-            {/* Teams row 2: Away team */}
+            {/* Away team (bottom) */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3 flex-1 min-w-0">
                 <div className="w-6 h-6 flex-shrink-0">
                   <TeamLogo team={fixture.away_team} size="small" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium text-sm truncate">{awayTeamAbbr}</span>
-                    <span className="text-xs text-muted-foreground">AWAY</span>
-                  </div>
+                  <span className="font-medium text-sm truncate">
+                    {fixture.away_team?.name || 'TBD'}
+                  </span>
                 </div>
               </div>
               {fixture.status === 'completed' || fixture.status === 'live' ? (
@@ -174,7 +169,7 @@ const CompactFixtureCard = ({
           {showDate && (
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Calendar className="h-4 w-4" />
-              <span>{formatDateDisplay(fixture.match_date)}</span>
+              <span>{formatCombinedDateTime(fixture.match_date, fixture.match_time)}</span>
             </div>
           )}
           {getStatusBadge()}
@@ -185,8 +180,7 @@ const CompactFixtureCard = ({
           <div className="flex items-center gap-3 flex-1 min-w-0">
             <TeamLogo team={fixture.home_team} size="small" />
             <div>
-              <p className="font-semibold text-sm">{homeTeamAbbr}</p>
-              <p className="text-xs text-muted-foreground">Home</p>
+              <p className="font-semibold text-sm">{fixture.home_team?.name || 'TBD'}</p>
             </div>
           </div>
 
@@ -198,8 +192,7 @@ const CompactFixtureCard = ({
           {/* Away team */}
           <div className="flex items-center gap-3 flex-1 min-w-0 justify-end">
             <div className="text-right">
-              <p className="font-semibold text-sm">{awayTeamAbbr}</p>
-              <p className="text-xs text-muted-foreground">Away</p>
+              <p className="font-semibold text-sm">{fixture.away_team?.name || 'TBD'}</p>
             </div>
             <TeamLogo team={fixture.away_team} size="small" />
           </div>

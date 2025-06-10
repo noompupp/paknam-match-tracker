@@ -2,7 +2,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Team } from "@/types/database";
-import { generateTeamAbbreviation } from "@/utils/teamAbbreviations";
+import { getThreeLetterAbbreviation } from "@/utils/teamAbbreviations";
 import { useDeviceOrientation } from "@/hooks/useDeviceOrientation";
 import TeamLogo from "../teams/TeamLogo";
 import RealTimeRankIndicator from "./RealTimeRankIndicator";
@@ -127,10 +127,8 @@ const LeagueTable = ({ teams, isLoading }: LeagueTableProps) => {
                           isMobileLandscape && "font-semibold"
                         )}>
                           {isMobilePortrait 
-                            ? generateTeamAbbreviation(team.name) 
-                            : isMobileLandscape 
-                              ? team.name 
-                              : team.name
+                            ? getThreeLetterAbbreviation(team.name) 
+                            : team.name
                           }
                         </span>
                       </div>
