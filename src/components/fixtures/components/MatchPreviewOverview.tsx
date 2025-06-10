@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Trophy, TrendingUp, Target, Activity, Zap } from "lucide-react";
 import { Team, Fixture } from "@/types/database";
 import { formatDateDisplay } from "@/utils/timeUtils";
+import MatchPreviewLeagueTable from "./MatchPreviewLeagueTable";
 
 interface MatchPreviewOverviewProps {
   homeTeam: Team;
@@ -55,63 +56,13 @@ const MatchPreviewOverview = ({ homeTeam, awayTeam, headToHead }: MatchPreviewOv
     return 'text-red-600';
   };
 
-  const getPositionTrend = (position: number) => {
-    if (position <= 3) return { color: 'text-green-600', label: 'Top 3' };
-    if (position <= 6) return { color: 'text-blue-600', label: 'Mid Table' };
-    if (position <= 9) return { color: 'text-orange-600', label: 'Lower Mid' };
-    return { color: 'text-red-600', label: 'Bottom' };
-  };
-
   return (
     <div className="space-y-6">
-      {/* League Position Comparison */}
-      <Card className="overflow-hidden bg-gradient-to-r from-primary/5 via-background to-secondary/5">
-        <CardHeader className="pb-4">
-          <CardTitle className="flex items-center gap-2 text-lg">
-            <Trophy className="h-5 w-5 text-primary" />
-            League Position
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="pt-0">
-          <div className="grid grid-cols-2 gap-6">
-            <div className="text-center space-y-3 p-4 rounded-lg bg-background/50 border border-primary/20">
-              <h4 className="font-semibold text-lg">{homeTeam.name}</h4>
-              <div className="space-y-2">
-                <Badge 
-                  variant="outline" 
-                  className={`text-2xl font-bold px-4 py-2 ${getPositionTrend(homeStats.position).color}`}
-                >
-                  #{homeStats.position}
-                </Badge>
-                <p className="text-sm text-muted-foreground">
-                  {homeStats.points} points • {homeStats.played} played
-                </p>
-                <Badge variant="secondary" className="text-xs">
-                  {getPositionTrend(homeStats.position).label}
-                </Badge>
-              </div>
-            </div>
-            
-            <div className="text-center space-y-3 p-4 rounded-lg bg-background/50 border border-secondary/20">
-              <h4 className="font-semibold text-lg">{awayTeam.name}</h4>
-              <div className="space-y-2">
-                <Badge 
-                  variant="outline" 
-                  className={`text-2xl font-bold px-4 py-2 ${getPositionTrend(awayStats.position).color}`}
-                >
-                  #{awayStats.position}
-                </Badge>
-                <p className="text-sm text-muted-foreground">
-                  {awayStats.points} points • {awayStats.played} played
-                </p>
-                <Badge variant="secondary" className="text-xs">
-                  {getPositionTrend(awayStats.position).label}
-                </Badge>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      {/* League Table with Highlighted Teams */}
+      <MatchPreviewLeagueTable 
+        homeTeam={homeTeam}
+        awayTeam={awayTeam}
+      />
 
       {/* Team Performance Metrics */}
       <Card>
