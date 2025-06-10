@@ -18,12 +18,17 @@ const TeamBanner = ({ team, variant, className = "" }: TeamBannerProps) => {
     return 'text-muted-foreground';
   };
 
-  // Enhanced team-colored gradient backgrounds
-  const getTeamColoredBackground = () => {
+  const hexToRgb = (hex: string) => {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result 
+      ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}`
+      : '59, 130, 246'; // fallback blue
+  };
+
+  // Separate background styling logic
+  const getBackgroundStyle = () => {
     if (!team.color) {
-      return variant === 'home' 
-        ? 'bg-gradient-to-br from-primary/15 via-primary/8 to-primary/3 border-primary/25' 
-        : 'bg-gradient-to-bl from-secondary/15 via-secondary/8 to-secondary/3 border-secondary/25';
+      return {};
     }
     
     // Create sophisticated gradients using team colors
@@ -41,22 +46,24 @@ const TeamBanner = ({ team, variant, className = "" }: TeamBannerProps) => {
     };
   };
 
-  const hexToRgb = (hex: string) => {
-    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    return result 
-      ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}`
-      : '59, 130, 246'; // fallback blue
+  const getBackgroundClassName = () => {
+    if (team.color) {
+      return 'border-opacity-20';
+    }
+    
+    return variant === 'home' 
+      ? 'bg-gradient-to-br from-primary/15 via-primary/8 to-primary/3 border-primary/25' 
+      : 'bg-gradient-to-bl from-secondary/15 via-secondary/8 to-secondary/3 border-secondary/25';
   };
 
-  const backgroundStyle = getTeamColoredBackground();
+  const backgroundStyle = getBackgroundStyle();
+  const backgroundClassName = getBackgroundClassName();
   const isTeamColored = !!team.color;
 
   return (
     <div 
-      className={`relative overflow-hidden rounded-xl border backdrop-blur-sm transition-all duration-300 hover:shadow-lg ${
-        isTeamColored ? 'border-opacity-20' : ''
-      } ${className}`}
-      style={isTeamColored ? backgroundStyle : {}}
+      className={`relative overflow-hidden rounded-xl border backdrop-blur-sm transition-all duration-300 hover:shadow-lg ${backgroundClassName} ${className}`}
+      style={backgroundStyle}
     >
       {/* Subtle decorative elements */}
       <div className="absolute inset-0 opacity-5">
