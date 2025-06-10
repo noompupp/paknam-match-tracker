@@ -2,7 +2,7 @@
 import { Fixture, Team } from "@/types/database";
 import { RefereeTeamAssignment } from "@/services/fixtures/refereeAssignmentService";
 import TeamBanner from "./TeamBanner";
-import KickoffSection from "./KickoffSection";
+import CompactKickoffDivider from "./CompactKickoffDivider";
 import MatchInformationSection from "./MatchInformationSection";
 
 interface MatchPreviewHeaderProps {
@@ -21,29 +21,26 @@ const MatchPreviewHeader = ({
   venue 
 }: MatchPreviewHeaderProps) => {
   return (
-    <div className="space-y-8 pb-8 border-b border-border/50">
-      {/* Enhanced Mobile-First Dual Banner Layout */}
-      <div className="space-y-6">
-        {/* Home Team Banner */}
-        <TeamBanner 
-          team={homeTeam} 
-          variant="home"
-          className="w-full transform transition-all duration-500 hover:scale-[1.02]"
-        />
+    <div className="space-y-6 pb-8 border-b border-border/50">
+      {/* Home Team Banner */}
+      <TeamBanner 
+        team={homeTeam} 
+        variant="home"
+        className="w-full transform transition-all duration-500 hover:scale-[1.02]"
+      />
 
-        {/* Enhanced Kickoff Section */}
-        <KickoffSection 
-          fixture={fixture}
-          className="w-full transform transition-all duration-500 hover:scale-[1.01]"
-        />
+      {/* Compact Kickoff Divider */}
+      <CompactKickoffDivider 
+        fixture={fixture}
+        className="w-full transform transition-all duration-300 hover:scale-[1.01]"
+      />
 
-        {/* Away Team Banner */}
-        <TeamBanner 
-          team={awayTeam} 
-          variant="away"
-          className="w-full transform transition-all duration-500 hover:scale-[1.02]"
-        />
-      </div>
+      {/* Away Team Banner - Reversed Layout */}
+      <TeamBanner 
+        team={awayTeam} 
+        variant="away"
+        className="w-full transform transition-all duration-500 hover:scale-[1.02] flex-row-reverse"
+      />
 
       {/* Enhanced Match Information Cards */}
       <MatchInformationSection 

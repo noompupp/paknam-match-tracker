@@ -6,7 +6,6 @@ import {
   EnhancedDialogHeader,
   EnhancedDialogTitle,
 } from "@/components/ui/enhanced-dialog";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -66,7 +65,7 @@ const MatchPreviewModal = ({ fixture, isOpen, onClose }: MatchPreviewModalProps)
 
   return (
     <EnhancedDialog open={isOpen} onOpenChange={handleClose}>
-      <EnhancedDialogContent className="w-[95vw] h-[95vh] max-w-none max-h-none p-0 sm:max-w-4xl sm:max-h-[90vh] sm:h-auto sm:rounded-lg overflow-hidden bg-gradient-to-b from-background via-background to-muted/20">
+      <EnhancedDialogContent className="w-[95vw] h-[95vh] max-w-none max-h-none p-0 sm:max-w-4xl sm:max-h-[90vh] sm:h-auto sm:rounded-lg bg-gradient-to-b from-background via-background to-muted/20">
         <div className="flex flex-col h-full">
           {/* Enhanced Header */}
           <EnhancedDialogHeader className="px-4 py-3 sm:px-6 sm:py-4 border-b bg-gradient-to-r from-primary/5 to-secondary/5 backdrop-blur-sm flex-shrink-0">
@@ -75,8 +74,8 @@ const MatchPreviewModal = ({ fixture, isOpen, onClose }: MatchPreviewModalProps)
             </EnhancedDialogTitle>
           </EnhancedDialogHeader>
 
-          {/* Content - Optimized for Mobile */}
-          <div className="flex-1 overflow-hidden">
+          {/* Scrollable Content Container */}
+          <div className="flex-1 overflow-y-auto">
             {isLoading ? (
               <div className="p-4 sm:p-6 space-y-6">
                 {/* Enhanced Mobile-First Loading Skeleton */}
@@ -128,67 +127,65 @@ const MatchPreviewModal = ({ fixture, isOpen, onClose }: MatchPreviewModalProps)
                 </Alert>
               </div>
             ) : matchData ? (
-              <ScrollArea className="h-full">
-                <div className="p-4 sm:p-6 space-y-6">
-                  {/* New Mobile-First Match Header */}
-                  <MatchPreviewHeader 
-                    fixture={matchData.fixture}
-                    homeTeam={matchData.homeTeam}
-                    awayTeam={matchData.awayTeam}
-                    refereeAssignment={matchData.refereeAssignment}
-                    venue={matchData.venue}
-                  />
+              <div className="p-4 sm:p-6 space-y-6">
+                {/* New Mobile-First Match Header */}
+                <MatchPreviewHeader 
+                  fixture={matchData.fixture}
+                  homeTeam={matchData.homeTeam}
+                  awayTeam={matchData.awayTeam}
+                  refereeAssignment={matchData.refereeAssignment}
+                  venue={matchData.venue}
+                />
+                
+                {/* Enhanced Mobile-Optimized Tabs */}
+                <Tabs defaultValue="overview" className="w-full">
+                  <TabsList className="grid w-full grid-cols-3 mb-6 h-12 bg-muted/50 backdrop-blur-sm">
+                    <TabsTrigger 
+                      value="overview" 
+                      className="text-sm font-medium py-3 data-[state=active]:bg-background data-[state=active]:shadow-sm"
+                    >
+                      Overview
+                    </TabsTrigger>
+                    <TabsTrigger 
+                      value="squads" 
+                      className="text-sm font-medium py-3 data-[state=active]:bg-background data-[state=active]:shadow-sm"
+                    >
+                      Squads
+                    </TabsTrigger>
+                    <TabsTrigger 
+                      value="form" 
+                      className="text-sm font-medium py-3 data-[state=active]:bg-background data-[state=active]:shadow-sm"
+                    >
+                      Form
+                    </TabsTrigger>
+                  </TabsList>
                   
-                  {/* Enhanced Mobile-Optimized Tabs */}
-                  <Tabs defaultValue="overview" className="w-full">
-                    <TabsList className="grid w-full grid-cols-3 mb-6 h-12 bg-muted/50 backdrop-blur-sm">
-                      <TabsTrigger 
-                        value="overview" 
-                        className="text-sm font-medium py-3 data-[state=active]:bg-background data-[state=active]:shadow-sm"
-                      >
-                        Overview
-                      </TabsTrigger>
-                      <TabsTrigger 
-                        value="squads" 
-                        className="text-sm font-medium py-3 data-[state=active]:bg-background data-[state=active]:shadow-sm"
-                      >
-                        Squads
-                      </TabsTrigger>
-                      <TabsTrigger 
-                        value="form" 
-                        className="text-sm font-medium py-3 data-[state=active]:bg-background data-[state=active]:shadow-sm"
-                      >
-                        Form
-                      </TabsTrigger>
-                    </TabsList>
-                    
-                    <TabsContent value="overview" className="space-y-6 mt-0">
-                      <MatchPreviewOverview 
-                        homeTeam={matchData.homeTeam}
-                        awayTeam={matchData.awayTeam}
-                        headToHead={matchData.headToHead}
-                      />
-                    </TabsContent>
-                    
-                    <TabsContent value="squads" className="space-y-6 mt-0">
-                      <MatchPreviewSquads 
-                        homeTeam={matchData.homeTeam}
-                        awayTeam={matchData.awayTeam}
-                        homeSquad={matchData.homeSquad}
-                        awaySquad={matchData.awaySquad}
-                      />
-                    </TabsContent>
-                    
-                    <TabsContent value="form" className="space-y-6 mt-0">
-                      <MatchPreviewForm 
-                        homeTeam={matchData.homeTeam}
-                        awayTeam={matchData.awayTeam}
-                        recentForm={matchData.recentForm}
-                      />
-                    </TabsContent>
-                  </Tabs>
-                </div>
-              </ScrollArea>
+                  <TabsContent value="overview" className="space-y-6 mt-0">
+                    <MatchPreviewOverview 
+                      homeTeam={matchData.homeTeam}
+                      awayTeam={matchData.awayTeam}
+                      headToHead={matchData.headToHead}
+                    />
+                  </TabsContent>
+                  
+                  <TabsContent value="squads" className="space-y-6 mt-0">
+                    <MatchPreviewSquads 
+                      homeTeam={matchData.homeTeam}
+                      awayTeam={matchData.awayTeam}
+                      homeSquad={matchData.homeSquad}
+                      awaySquad={matchData.awaySquad}
+                    />
+                  </TabsContent>
+                  
+                  <TabsContent value="form" className="space-y-6 mt-0">
+                    <MatchPreviewForm 
+                      homeTeam={matchData.homeTeam}
+                      awayTeam={matchData.awayTeam}
+                      recentForm={matchData.recentForm}
+                    />
+                  </TabsContent>
+                </Tabs>
+              </div>
             ) : null}
           </div>
         </div>

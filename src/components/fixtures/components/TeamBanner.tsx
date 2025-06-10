@@ -25,18 +25,18 @@ const TeamBanner = ({ team, variant, className = "" }: TeamBannerProps) => {
       : '59, 130, 246'; // fallback blue
   };
 
-  // Separate background styling logic
+  // Enhanced background styling with stronger gradients
   const getBackgroundStyle = () => {
     if (!team.color) {
       return {};
     }
     
-    // Create sophisticated gradients using team colors
+    // Create stronger, more vibrant gradients using team colors
     const teamColor = team.color;
-    const lightOpacity = 'rgba(' + hexToRgb(teamColor) + ', 0.12)';
-    const mediumOpacity = 'rgba(' + hexToRgb(teamColor) + ', 0.06)';
-    const softOpacity = 'rgba(' + hexToRgb(teamColor) + ', 0.02)';
-    const borderOpacity = 'rgba(' + hexToRgb(teamColor) + ', 0.2)';
+    const lightOpacity = 'rgba(' + hexToRgb(teamColor) + ', 0.25)'; // Increased from 0.12
+    const mediumOpacity = 'rgba(' + hexToRgb(teamColor) + ', 0.15)'; // Increased from 0.06
+    const softOpacity = 'rgba(' + hexToRgb(teamColor) + ', 0.08)'; // Increased from 0.02
+    const borderOpacity = 'rgba(' + hexToRgb(teamColor) + ', 0.35)'; // Increased from 0.2
     
     return {
       background: variant === 'home' 
@@ -52,53 +52,63 @@ const TeamBanner = ({ team, variant, className = "" }: TeamBannerProps) => {
     }
     
     return variant === 'home' 
-      ? 'bg-gradient-to-br from-primary/15 via-primary/8 to-primary/3 border-primary/25' 
-      : 'bg-gradient-to-bl from-secondary/15 via-secondary/8 to-secondary/3 border-secondary/25';
+      ? 'bg-gradient-to-br from-primary/20 via-primary/12 to-primary/6 border-primary/30' 
+      : 'bg-gradient-to-bl from-secondary/20 via-secondary/12 to-secondary/6 border-secondary/30';
   };
 
   const backgroundStyle = getBackgroundStyle();
   const backgroundClassName = getBackgroundClassName();
   const isTeamColored = !!team.color;
 
+  // Determine if we should reverse the layout for away team
+  const shouldReverse = variant === 'away';
+  const flexDirection = shouldReverse ? 'flex-row-reverse' : '';
+
   return (
     <div 
       className={`relative overflow-hidden rounded-xl border backdrop-blur-sm transition-all duration-300 hover:shadow-lg ${backgroundClassName} ${className}`}
       style={backgroundStyle}
     >
-      {/* Subtle decorative elements */}
-      <div className="absolute inset-0 opacity-5">
-        <div className={`absolute -top-4 -right-4 w-24 h-24 rounded-full ${
+      {/* Enhanced decorative elements with stronger opacity */}
+      <div className="absolute inset-0 opacity-15">
+        <div className={`absolute ${shouldReverse ? '-top-4 -left-4' : '-top-4 -right-4'} w-24 h-24 rounded-full ${
           variant === 'home' ? 'bg-primary' : 'bg-secondary'
         }`} style={isTeamColored ? { backgroundColor: team.color } : {}} />
-        <div className={`absolute -bottom-2 -left-2 w-16 h-16 rounded-full ${
+        <div className={`absolute ${shouldReverse ? '-bottom-2 -right-2' : '-bottom-2 -left-2'} w-16 h-16 rounded-full ${
           variant === 'home' ? 'bg-primary' : 'bg-secondary'
         }`} style={isTeamColored ? { backgroundColor: team.color } : {}} />
       </div>
 
+      {/* Premier League-style accent line */}
+      <div 
+        className={`absolute ${shouldReverse ? 'left-0' : 'right-0'} top-0 bottom-0 w-1 bg-gradient-to-b from-transparent via-current to-transparent opacity-30`}
+        style={isTeamColored ? { color: team.color } : {}}
+      />
+
       <div className="relative p-5">
-        <div className="flex items-center gap-4">
+        <div className={`flex items-center gap-4 ${flexDirection}`}>
           <div className="relative">
             <TeamLogo team={team} size="large" showColor={true} />
-            {/* Subtle glow effect around logo */}
+            {/* Enhanced glow effect around logo */}
             <div 
-              className="absolute inset-0 rounded-full blur-xl opacity-20 -z-10"
+              className="absolute inset-0 rounded-full blur-xl opacity-40 -z-10"
               style={isTeamColored ? { backgroundColor: team.color } : {}}
             />
           </div>
           
-          <div className="flex-1 min-w-0">
+          <div className={`flex-1 min-w-0 ${shouldReverse ? 'text-right' : ''}`}>
             <h3 className="font-bold text-xl mb-3 truncate text-foreground">
               {team.name}
             </h3>
             
             {/* Enhanced Position and Points Row */}
-            <div className="flex items-center gap-4 mb-4">
+            <div className={`flex items-center gap-4 mb-4 ${shouldReverse ? 'flex-row-reverse' : ''}`}>
               <Badge 
                 variant="outline" 
                 className={`text-sm border-2 px-3 py-1 font-semibold ${getPositionColor(team.position)}`}
                 style={isTeamColored ? { 
-                  borderColor: team.color + '40',
-                  backgroundColor: team.color + '08'
+                  borderColor: team.color + '60',
+                  backgroundColor: team.color + '15'
                 } : {}}
               >
                 #{team.position}
@@ -115,18 +125,18 @@ const TeamBanner = ({ team, variant, className = "" }: TeamBannerProps) => {
 
             {/* Enhanced Record Stats with better spacing */}
             <div className="grid grid-cols-3 gap-4 text-sm">
-              <div className="flex items-center gap-2 p-2 rounded-lg bg-background/50 backdrop-blur-sm">
+              <div className="flex items-center gap-2 p-2 rounded-lg bg-background/60 backdrop-blur-sm border border-border/30">
                 <Trophy className="h-4 w-4 text-green-600" />
                 <span className="font-bold text-lg">{team.won}</span>
                 <span className="text-muted-foreground text-xs">Wins</span>
               </div>
-              <div className="flex items-center gap-2 p-2 rounded-lg bg-background/50 backdrop-blur-sm">
-                <div className="w-4 h-4 bg-yellow-500 rounded-full"></div>
+              <div className="flex items-center gap-2 p-2 rounded-lg bg-background/60 backdrop-blur-sm border border-border/30">
+                <div className="w-4 h-4 bg-yellow-500 rounded-full border border-yellow-600"></div>
                 <span className="font-bold text-lg">{team.drawn}</span>
                 <span className="text-muted-foreground text-xs">Draws</span>
               </div>
-              <div className="flex items-center gap-2 p-2 rounded-lg bg-background/50 backdrop-blur-sm">
-                <div className="w-4 h-4 bg-red-500 rounded-full"></div>
+              <div className="flex items-center gap-2 p-2 rounded-lg bg-background/60 backdrop-blur-sm border border-border/30">
+                <div className="w-4 h-4 bg-red-500 rounded-full border border-red-600"></div>
                 <span className="font-bold text-lg">{team.lost}</span>
                 <span className="text-muted-foreground text-xs">Losses</span>
               </div>
@@ -135,15 +145,15 @@ const TeamBanner = ({ team, variant, className = "" }: TeamBannerProps) => {
         </div>
         
         {/* Enhanced Team Label with accent styling */}
-        <div className="mt-4 pt-4 border-t border-border/40">
-          <div className="flex items-center justify-between">
+        <div className="mt-4 pt-4 border-t border-border/50">
+          <div className={`flex items-center justify-between ${shouldReverse ? 'flex-row-reverse' : ''}`}>
             <p className="text-sm font-semibold text-muted-foreground tracking-wide uppercase">
               {variant === 'home' ? 'Home Team' : 'Away Team'}
             </p>
-            {/* Team color indicator */}
+            {/* Enhanced team color indicator */}
             {team.color && (
               <div 
-                className="w-3 h-3 rounded-full border border-white/20 shadow-sm"
+                className="w-4 h-4 rounded-full border-2 border-white/30 shadow-lg"
                 style={{ backgroundColor: team.color }}
               />
             )}
