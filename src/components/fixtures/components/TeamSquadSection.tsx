@@ -5,6 +5,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Users, Star, Shield, Zap, Trophy } from "lucide-react";
 import { Team, Member } from "@/types/database";
 import SquadPlayerCard from "./SquadPlayerCard";
+import MobileTeamName from "./MobileTeamName";
 import { cn } from "@/lib/utils";
 
 interface TeamSquadSectionProps {
@@ -85,9 +86,14 @@ const TeamSquadSection = ({ team, squad, variant }: TeamSquadSectionProps) => {
         <CardTitle className="flex items-center justify-between">
           <div className="flex items-center gap-2 min-w-0 flex-1">
             <Users className="h-5 w-5 flex-shrink-0" />
-            <span className="truncate text-foreground">{team.name} Squad</span>
+            <div className="min-w-0 flex-1">
+              <MobileTeamName 
+                teamName={`${team.name} Squad`} 
+                className="text-left"
+              />
+            </div>
           </div>
-          <Badge variant="outline" className="flex-shrink-0">
+          <Badge variant="outline" className="flex-shrink-0 ml-2">
             {squad.length} players
           </Badge>
         </CardTitle>
@@ -108,8 +114,10 @@ const TeamSquadSection = ({ team, squad, variant }: TeamSquadSectionProps) => {
                   <AccordionTrigger className="hover:no-underline w-full py-3">
                     <div className="flex items-center gap-2 w-full">
                       {getPositionIcon(position)}
-                      <span className="font-medium truncate flex-1 text-left text-foreground">{position}s</span>
-                      <Badge variant="secondary" className="ml-auto mr-2 flex-shrink-0">
+                      <span className="font-medium flex-1 text-left text-foreground text-sm sm:text-base">
+                        {position}s
+                      </span>
+                      <Badge variant="secondary" className="ml-auto mr-2 flex-shrink-0 text-xs">
                         {players.length}
                       </Badge>
                     </div>

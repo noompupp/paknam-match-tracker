@@ -23,15 +23,17 @@ const SquadOverviewStats = ({ homeTeam, awayTeam, homeSquad, awaySquad }: SquadO
   ];
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6 w-full">
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-6 w-full">
       <UnifiedOverviewCard
         title={`${homeTeam.name} Overview`}
+        teamName={homeTeam.name}
         variant="primary"
         stats={homeStats}
       />
       
       <UnifiedOverviewCard
         title={`${awayTeam.name} Overview`}
+        teamName={awayTeam.name}
         variant="secondary"
         stats={awayStats}
       />
