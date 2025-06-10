@@ -3,15 +3,18 @@ import { useRecentFixtures } from "@/hooks/useFixtures";
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Trophy } from "lucide-react";
-import UnifiedFixtureCard from "./shared/UnifiedFixtureCard";
+import CompactFixtureCard from "./shared/CompactFixtureCard";
 import LoadingCard from "./fixtures/LoadingCard";
 import MatchSummaryDialog from "./fixtures/MatchSummaryDialog";
 import ResultsHeader from "./results/ResultsHeader";
+import { useDeviceOrientation } from "@/hooks/useDeviceOrientation";
 
 const Results = () => {
   const { data: recentFixtures, isLoading, error } = useRecentFixtures();
   const [selectedFixture, setSelectedFixture] = useState<any>(null);
   const [showSummary, setShowSummary] = useState(false);
+  const { isMobile, isPortrait } = useDeviceOrientation();
+  const isMobilePortrait = isMobile && isPortrait;
 
   if (error) {
     return (
@@ -42,18 +45,17 @@ const Results = () => {
               <Trophy className="h-5 w-5 text-primary" />
               <CardTitle>Recent Results</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className={`${isMobilePortrait ? 'space-y-3' : 'space-y-4'}`}>
               {isLoading ? (
                 Array.from({ length: 5 }).map((_, index) => (
                   <LoadingCard key={index} />
                 ))
               ) : recentFixtures && recentFixtures.length > 0 ? (
                 recentFixtures.map((fixture) => (
-                  <UnifiedFixtureCard 
+                  <CompactFixtureCard 
                     key={fixture.id} 
                     fixture={fixture} 
                     onFixtureClick={handleFixtureClick}
-                    variant="compact"
                     showVenue={true}
                   />
                 ))

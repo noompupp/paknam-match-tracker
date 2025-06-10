@@ -1,8 +1,9 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Trophy } from "lucide-react";
-import UnifiedFixtureCard from "../shared/UnifiedFixtureCard";
+import CompactFixtureCard from "../shared/CompactFixtureCard";
 import LoadingCard from "./LoadingCard";
+import { useDeviceOrientation } from "@/hooks/useDeviceOrientation";
 
 interface RecentResultsSectionProps {
   recentFixtures: any[];
@@ -15,6 +16,9 @@ const RecentResultsSection = ({
   isLoading, 
   onFixtureClick 
 }: RecentResultsSectionProps) => {
+  const { isMobile, isPortrait } = useDeviceOrientation();
+  const isMobilePortrait = isMobile && isPortrait;
+  
   // Filter to only show completed fixtures
   const completedFixtures = recentFixtures.filter(fixture => fixture.status === 'completed');
 
@@ -29,20 +33,28 @@ const RecentResultsSection = ({
         <h2 className="text-2xl font-bold text-white">Recent Results</h2>
       </div>
       
-      <div className="grid gap-4">
+      <div className="grid gap-3">
         {isLoading ? (
           Array.from({ length: 3 }).map((_, index) => (
             <LoadingCard key={index} />
           ))
         ) : (
           completedFixtures.map((fixture) => (
-            <UnifiedFixtureCard 
-              key={fixture.id} 
-              fixture={fixture} 
-              onFixtureClick={onFixtureClick}
-              variant="compact"
-              showVenue={true}
-            />
+            isMobilePortrait ? (
+              <CompactFixtureCard 
+                key={fixture.id} 
+                fixture={fixture} 
+                onFixtureClick={onFixtureClick}
+                showVenue={true}
+              />
+            ) : (
+              <CompactFixtureCard 
+                key={fixture.id} 
+                fixture={fixture} 
+                onFixtureClick={onFixtureClick}
+                showVenue={true}
+              />
+            )
           ))
         )}
       </div>
