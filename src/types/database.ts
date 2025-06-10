@@ -1,3 +1,4 @@
+
 export interface Team {
   id: number;
   name: string;
@@ -37,6 +38,7 @@ export interface Member {
   team_id: string; // Keep as string
   created_at: string;
   updated_at: string;
+  ProfileURL?: string; // Add ProfileURL property
   team?: Team;
 }
 

@@ -91,8 +91,21 @@ const EnhancedTeamSquad = ({ teamId, teamName }: EnhancedTeamSquadProps) => {
                     <div className="relative">
                       <PlayerAvatar 
                         player={{
-                          ...player,
-                          number: player.number || (index + 1).toString()
+                          id: player.id,
+                          name: player.name || 'Unknown Player',
+                          number: player.number || (index + 1).toString(),
+                          position: player.position || 'Player',
+                          role: 'Player',
+                          goals: player.goals || 0,
+                          assists: player.assists || 0,
+                          yellow_cards: player.yellow_cards || 0,
+                          red_cards: player.red_cards || 0,
+                          total_minutes_played: player.total_minutes_played || 0,
+                          matches_played: player.matches_played || 0,
+                          team_id: player.team_id || teamId,
+                          created_at: new Date().toISOString(),
+                          updated_at: new Date().toISOString(),
+                          ProfileURL: player.ProfileURL
                         }} 
                         size="large" 
                         showStats={true}
