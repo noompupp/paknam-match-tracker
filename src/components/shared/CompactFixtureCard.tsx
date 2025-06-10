@@ -39,11 +39,11 @@ const CompactFixtureCard = ({
   const getStatusBadge = () => {
     switch (fixture.status) {
       case 'completed':
-        return <Badge variant="default" className="text-xs px-2 py-1">FT</Badge>;
+        return <Badge variant="default" className="text-xs px-2 py-1">Full Time</Badge>;
       case 'live':
         return <Badge variant="destructive" className="text-xs px-2 py-1 animate-pulse">LIVE</Badge>;
       default:
-        return <Badge variant="outline" className="text-xs px-2 py-1">SCH</Badge>;
+        return <Badge variant="outline" className="text-xs px-2 py-1">Scheduled</Badge>;
     }
   };
 
@@ -83,14 +83,8 @@ const CompactFixtureCard = ({
         onClick={handleCardClick}
       >
         <CardContent className="p-3">
-          {/* Header with date and status */}
-          <div className="flex justify-between items-center mb-3">
-            {showDate && (
-              <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                <Calendar className="h-3 w-3" />
-                <span>{formatCombinedDateTime(fixture.match_date, fixture.match_time)}</span>
-              </div>
-            )}
+          {/* Header with status only */}
+          <div className="flex justify-end items-center mb-3">
             {getStatusBadge()}
           </div>
 
@@ -138,14 +132,8 @@ const CompactFixtureCard = ({
             </div>
           )}
 
-          {/* Footer with venue and action text */}
-          <div className="mt-3 pt-2 border-t space-y-1">
-            {showVenue && fixture.venue && fixture.venue !== 'TBD' && (
-              <div className="flex items-center gap-1 text-xs text-muted-foreground justify-center">
-                <MapPin className="h-3 w-3" />
-                <span className="truncate">{fixture.venue}</span>
-              </div>
-            )}
+          {/* Footer with action text only */}
+          <div className="mt-3 pt-2 border-t">
             <div className="text-center">
               <span className="text-xs text-muted-foreground/70">{getActionText()}</span>
             </div>
