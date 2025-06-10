@@ -59,7 +59,7 @@ export const generateTeamAbbreviation = (teamName: string): string => {
     { regex: /\bHotspur\b/gi, replacement: 'HOTSPUR' },
     { regex: /\bAlbion\b/gi, replacement: 'ALBION' },
     { regex: /\bPalace\b/gi, replacement: 'PALACE' },
-    { regex: /\bVilla\b/gi, replacement: 'VILLA'
+    { regex: /\bVilla\b/gi, replacement: 'VILLA' }
   ];
   
   abbreviations.forEach(abbrev => {
