@@ -70,9 +70,9 @@ export class GameweekCalculationService {
       
       let displayLabel: string;
       if (isFinal) {
-        displayLabel = "Final GW";
+        displayLabel = "Final MD";
       } else {
-        displayLabel = `GW${gameweekNumber}`;
+        displayLabel = `MD${gameweekNumber}`;
       }
 
       gameweekMappings.set(date, {

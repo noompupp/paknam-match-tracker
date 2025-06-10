@@ -76,6 +76,7 @@ const EnhancedRecentResultsCard = ({ recentFixtures, isLoading, onViewAll }: Enh
                   key={fixture.id}
                   fixture={fixture}
                   onFixtureClick={handleFixtureClick}
+                  showDate={true}
                   showVenue={true}
                 />
               ))}
