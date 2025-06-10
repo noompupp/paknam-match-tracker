@@ -16,12 +16,13 @@
   transform: rotateY(180deg);
 }
 
-/* Smooth rotation animation */
+/* Smooth rotation animation with better mobile performance */
 .avatar-container .relative {
   transition: transform 0.6s cubic-bezier(0.4, 0.0, 0.2, 1);
+  will-change: transform;
 }
 
-/* Hover effect for interactive avatars */
+/* Enhanced hover effect for interactive avatars */
 .avatar-container:hover .relative {
   transform: scale(1.05);
 }
@@ -30,7 +31,55 @@
   transform: scale(1.05) rotateY(180deg);
 }
 
-/* Glow effect for stats side */
+/* Improved glow effect for jersey side */
 .avatar-container .rotate-y-180 {
   box-shadow: 0 0 20px rgba(34, 197, 94, 0.3);
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  .avatar-container {
+    perspective: 800px;
+  }
+  
+  .avatar-container .relative {
+    transition: transform 0.4s ease-out;
+  }
+  
+  /* Reduce hover effects on mobile for better performance */
+  .avatar-container:hover .relative {
+    transform: scale(1.02);
+  }
+  
+  .avatar-container:hover .relative.rotate-y-180 {
+    transform: scale(1.02) rotateY(180deg);
+  }
+}
+
+/* Accessibility improvements */
+@media (prefers-reduced-motion: reduce) {
+  .avatar-container .relative {
+    transition: none;
+  }
+  
+  .avatar-container:hover .relative,
+  .avatar-container:hover .relative.rotate-y-180 {
+    transform: none;
+  }
+}
+
+/* Focus styles for keyboard navigation */
+.avatar-container:focus {
+  outline: 2px solid hsl(var(--primary));
+  outline-offset: 2px;
+  border-radius: 50%;
+}
+
+/* Active state for better touch feedback */
+.avatar-container:active .relative {
+  transform: scale(0.98);
+}
+
+.avatar-container:active .relative.rotate-y-180 {
+  transform: scale(0.98) rotateY(180deg);
 }

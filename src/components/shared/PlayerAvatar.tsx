@@ -45,6 +45,9 @@ const PlayerAvatar = ({
     setIsFlipped(!isFlipped);
   };
 
+  // Get display number with fallback
+  const displayNumber = player.number || '?';
+
   return (
     <div 
       className={cn(
@@ -61,7 +64,7 @@ const PlayerAvatar = ({
           isFlipped && "rotate-y-180"
         )}
       >
-        {/* Front Side - Avatar or Number */}
+        {/* Front Side - Avatar or Player Number Badge */}
         <div className="absolute inset-0 backface-hidden">
           {player.ProfileURL ? (
             <Avatar className={cn(sizeClasses[size], "border-2 border-primary/20")}>
@@ -78,26 +81,26 @@ const PlayerAvatar = ({
                 "rounded-full flex items-center justify-center font-bold bg-gradient-to-br from-primary/20 to-primary/10 border-primary/20 text-primary"
               )}
             >
-              {player.number || '?'}
+              {displayNumber}
             </Badge>
           )}
         </div>
 
-        {/* Back Side - Shirt Number */}
+        {/* Back Side - Shirt Number (Always Available) */}
         <div className={cn(
           "absolute inset-0 backface-hidden rotate-y-180 rounded-full bg-gradient-to-br from-primary to-primary/80 border-2 border-white/20 flex flex-col items-center justify-center text-white font-bold shadow-lg",
           sizeClasses[size]
         )}>
           <div className="text-center">
             <div className={cn(
-              "font-bold",
-              size === "small" ? "text-lg" : size === "medium" ? "text-xl" : "text-2xl"
+              "font-bold leading-none",
+              size === "small" ? "text-sm" : size === "medium" ? "text-lg" : "text-2xl"
             )}>
-              {player.number || '?'}
+              {displayNumber}
             </div>
             {size !== "small" && (
-              <div className="text-xs opacity-80 mt-1">
-                #{player.number || '?'}
+              <div className="text-xs opacity-80 mt-0.5 leading-none">
+                #{displayNumber}
               </div>
             )}
           </div>
@@ -106,7 +109,7 @@ const PlayerAvatar = ({
 
       {/* Flip indicator - now shows for all players */}
       <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-primary rounded-full border border-background flex items-center justify-center">
-        <span className="text-[8px] text-primary-foreground">↻</span>
+        <span className="text-[8px] text-primary-foreground font-bold">↻</span>
       </div>
     </div>
   );
