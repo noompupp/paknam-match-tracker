@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -69,7 +68,8 @@ const PlayerAvatar = ({
       primary: '#3b82f6',
       secondary: '#1e40af',
       accent: '#60a5fa',
-      contrast: '#ffffff'
+      contrast: '#ffffff',
+      shadow: 'rgba(0,0,0,0.3)'
     };
 
     if (!team?.color) return defaultColors;
