@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { enhancedMemberStatsService } from './enhancedMemberStatsService';
 import { operationLoggingService } from './operationLoggingService';
@@ -15,6 +16,7 @@ interface PlayerStatsData {
   red_cards: number;
   total_minutes_played: number;
   matches_played: number;
+  ProfileURL?: string; // Add ProfileURL property
 }
 
 // Fallback query function for when relationships fail
@@ -36,7 +38,8 @@ async function fallbackPlayerQuery(): Promise<PlayerStatsData[]> {
         matches_played,
         position,
         number,
-        team_id
+        team_id,
+        ProfileURL
       `)
       .order('name', { ascending: true });
 
@@ -71,7 +74,8 @@ async function fallbackPlayerQuery(): Promise<PlayerStatsData[]> {
         yellow_cards: member.yellow_cards || 0,
         red_cards: member.red_cards || 0,
         total_minutes_played: member.total_minutes_played || 0,
-        matches_played: member.matches_played || 0
+        matches_played: member.matches_played || 0,
+        ProfileURL: member.ProfileURL
       };
     });
 
@@ -104,6 +108,7 @@ export const playerStatsApi = {
           position,
           number,
           team_id,
+          ProfileURL,
           teams!inner(
             id,
             __id__,
@@ -139,7 +144,8 @@ export const playerStatsApi = {
         yellow_cards: player.yellow_cards || 0,
         red_cards: player.red_cards || 0,
         total_minutes_played: player.total_minutes_played || 0,
-        matches_played: player.matches_played || 0
+        matches_played: player.matches_played || 0,
+        ProfileURL: player.ProfileURL
       }));
 
       await operationLoggingService.logOperation({
@@ -186,6 +192,7 @@ export const playerStatsApi = {
           position,
           number,
           team_id,
+          ProfileURL,
           teams!inner(name)
         `)
         .gte('goals', 0)
@@ -222,7 +229,8 @@ export const playerStatsApi = {
         yellow_cards: player.yellow_cards || 0,
         red_cards: player.red_cards || 0,
         total_minutes_played: player.total_minutes_played || 0,
-        matches_played: player.matches_played || 0
+        matches_played: player.matches_played || 0,
+        ProfileURL: player.ProfileURL
       }));
 
       console.log('✅ PlayerStatsAPI: Top scorers fetched successfully:', transformedData.length);
@@ -253,6 +261,7 @@ export const playerStatsApi = {
           position,
           number,
           team_id,
+          ProfileURL,
           teams!inner(name)
         `)
         .gte('assists', 0)
@@ -289,7 +298,8 @@ export const playerStatsApi = {
         yellow_cards: player.yellow_cards || 0,
         red_cards: player.red_cards || 0,
         total_minutes_played: player.total_minutes_played || 0,
-        matches_played: player.matches_played || 0
+        matches_played: player.matches_played || 0,
+        ProfileURL: player.ProfileURL
       }));
 
       console.log('✅ PlayerStatsAPI: Top assists fetched successfully:', transformedData.length);
@@ -320,6 +330,7 @@ export const playerStatsApi = {
           position,
           number,
           team_id,
+          ProfileURL,
           teams!inner(name)
         `)
         .eq('team_id', teamId)
@@ -346,7 +357,8 @@ export const playerStatsApi = {
         yellow_cards: player.yellow_cards || 0,
         red_cards: player.red_cards || 0,
         total_minutes_played: player.total_minutes_played || 0,
-        matches_played: player.matches_played || 0
+        matches_played: player.matches_played || 0,
+        ProfileURL: player.ProfileURL
       }));
 
       console.log('✅ PlayerStatsAPI: Team players fetched successfully:', transformedData.length);
