@@ -66,42 +66,51 @@ const MatchPreviewModal = ({ fixture, isOpen, onClose }: MatchPreviewModalProps)
 
   return (
     <EnhancedDialog open={isOpen} onOpenChange={handleClose}>
-      <EnhancedDialogContent className="w-[95vw] h-[95vh] max-w-none max-h-none p-0 sm:max-w-5xl sm:max-h-[90vh] sm:h-auto sm:rounded-lg overflow-hidden bg-gradient-to-b from-background via-background to-muted/30">
+      <EnhancedDialogContent className="w-[95vw] h-[95vh] max-w-none max-h-none p-0 sm:max-w-4xl sm:max-h-[90vh] sm:h-auto sm:rounded-lg overflow-hidden bg-gradient-to-b from-background via-background to-muted/20">
         <div className="flex flex-col h-full">
-          {/* Header - Fixed with gradient */}
+          {/* Enhanced Header */}
           <EnhancedDialogHeader className="px-4 py-3 sm:px-6 sm:py-4 border-b bg-gradient-to-r from-primary/5 to-secondary/5 backdrop-blur-sm flex-shrink-0">
             <EnhancedDialogTitle className="text-lg sm:text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
               Match Preview
             </EnhancedDialogTitle>
           </EnhancedDialogHeader>
 
-          {/* Content - Scrollable */}
+          {/* Content - Optimized for Mobile */}
           <div className="flex-1 overflow-hidden">
             {isLoading ? (
               <div className="p-4 sm:p-6 space-y-6">
-                {/* Enhanced loading skeleton */}
+                {/* Enhanced Mobile-First Loading Skeleton */}
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <Skeleton className="h-6 w-24" />
-                    <Skeleton className="h-6 w-32" />
-                  </div>
-                  <div className="grid grid-cols-3 gap-4 py-6">
-                    <div className="text-center space-y-2">
-                      <Skeleton className="h-16 w-16 rounded-full mx-auto" />
-                      <Skeleton className="h-4 w-20 mx-auto" />
-                      <Skeleton className="h-6 w-16 mx-auto" />
+                  {/* Team Banner Skeletons */}
+                  {[1, 2].map((i) => (
+                    <div key={i} className="p-4 rounded-lg border space-y-3">
+                      <div className="flex items-center gap-4">
+                        <Skeleton className="h-16 w-16 rounded-full" />
+                        <div className="flex-1 space-y-2">
+                          <Skeleton className="h-5 w-32" />
+                          <Skeleton className="h-4 w-24" />
+                          <div className="flex gap-2">
+                            <Skeleton className="h-4 w-8" />
+                            <Skeleton className="h-4 w-8" />
+                            <Skeleton className="h-4 w-8" />
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                    <div className="text-center space-y-2">
-                      <Skeleton className="h-8 w-12 mx-auto" />
-                      <Skeleton className="h-4 w-16 mx-auto" />
-                    </div>
-                    <div className="text-center space-y-2">
-                      <Skeleton className="h-16 w-16 rounded-full mx-auto" />
-                      <Skeleton className="h-4 w-20 mx-auto" />
-                      <Skeleton className="h-6 w-16 mx-auto" />
+                  ))}
+                  
+                  {/* Kickoff Section Skeleton */}
+                  <div className="text-center py-6 rounded-lg border space-y-3">
+                    <Skeleton className="h-6 w-20 mx-auto" />
+                    <Skeleton className="h-12 w-24 mx-auto" />
+                    <div className="flex justify-center gap-4">
+                      <Skeleton className="h-4 w-20" />
+                      <Skeleton className="h-4 w-16" />
                     </div>
                   </div>
                 </div>
+                
+                {/* Tabs Skeleton */}
                 <div className="grid grid-cols-3 gap-2">
                   <Skeleton className="h-10 w-full" />
                   <Skeleton className="h-10 w-full" />
@@ -121,7 +130,7 @@ const MatchPreviewModal = ({ fixture, isOpen, onClose }: MatchPreviewModalProps)
             ) : matchData ? (
               <ScrollArea className="h-full">
                 <div className="p-4 sm:p-6 space-y-6">
-                  {/* Enhanced Match Header */}
+                  {/* New Mobile-First Match Header */}
                   <MatchPreviewHeader 
                     fixture={matchData.fixture}
                     homeTeam={matchData.homeTeam}
@@ -130,7 +139,7 @@ const MatchPreviewModal = ({ fixture, isOpen, onClose }: MatchPreviewModalProps)
                     venue={matchData.venue}
                   />
                   
-                  {/* Enhanced Tabbed Content */}
+                  {/* Enhanced Mobile-Optimized Tabs */}
                   <Tabs defaultValue="overview" className="w-full">
                     <TabsList className="grid w-full grid-cols-3 mb-6 h-12 bg-muted/50 backdrop-blur-sm">
                       <TabsTrigger 
