@@ -5,6 +5,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
 import { Users, Target, Trophy, Clock, Award, Zap } from "lucide-react";
 import { useTeamPlayerStats } from "@/hooks/usePlayerStats";
+import { useTeams } from "@/hooks/useTeams";
 import PlayerAvatar from "@/components/shared/PlayerAvatar";
 
 interface EnhancedTeamSquadProps {
@@ -14,6 +15,10 @@ interface EnhancedTeamSquadProps {
 
 const EnhancedTeamSquad = ({ teamId, teamName }: EnhancedTeamSquadProps) => {
   const { data: players, isLoading, error } = useTeamPlayerStats(teamId);
+  const { data: teams } = useTeams();
+
+  // Find the team data for colors and additional info
+  const teamData = teams?.find(team => team.__id__ === teamId || team.id.toString() === teamId);
 
   // Helper function to convert seconds to minutes
   const formatPlayingTime = (totalMinutesPlayed: number | null | undefined): string => {
@@ -106,7 +111,8 @@ const EnhancedTeamSquad = ({ teamId, teamName }: EnhancedTeamSquadProps) => {
                           created_at: new Date().toISOString(),
                           updated_at: new Date().toISOString(),
                           ProfileURL: player.ProfileURL
-                        }} 
+                        }}
+                        team={teamData}
                         size="large" 
                         showStats={true}
                       />
