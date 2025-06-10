@@ -15,11 +15,11 @@ const VenueCard = ({ venue }: VenueCardProps) => {
       <div className="flex-shrink-0 p-2 rounded-lg bg-primary/10 border border-primary/20">
         <MapPin className="h-5 w-5 text-primary" />
       </div>
-      <div className="flex-1">
+      <div className="flex-1 min-w-0">
         <p className="text-xs text-muted-foreground mb-2 font-medium uppercase tracking-wide">
           Venue
         </p>
-        <p className="font-semibold text-foreground text-base leading-relaxed">
+        <p className="font-semibold text-foreground text-base leading-relaxed truncate">
           {venue}
         </p>
       </div>

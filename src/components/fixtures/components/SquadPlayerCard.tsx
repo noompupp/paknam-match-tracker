@@ -15,7 +15,7 @@ const SquadPlayerCard = ({ player, isTopScorer = false, isTopAssister = false }:
       <div className="flex items-center gap-3 min-w-0 flex-1">
         <div className="flex items-center gap-2 flex-shrink-0">
           {player.number && (
-            <Badge variant="outline" className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold">
+            <Badge variant="outline" className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">
               {player.number}
             </Badge>
           )}
@@ -36,21 +36,21 @@ const SquadPlayerCard = ({ player, isTopScorer = false, isTopAssister = false }:
         )}
       </div>
       
-      <div className="flex items-center gap-2 sm:gap-4 text-xs text-muted-foreground flex-shrink-0">
-        <div className="text-center">
+      <div className="flex items-center gap-1 sm:gap-3 text-xs text-muted-foreground flex-shrink-0 ml-2">
+        <div className="text-center min-w-[24px]">
           <p className="font-semibold text-foreground">{player.goals || 0}</p>
-          <p className="hidden sm:block">Goals</p>
-          <p className="sm:hidden">G</p>
+          <p className="hidden sm:block text-[10px]">Goals</p>
+          <p className="sm:hidden text-[10px]">G</p>
         </div>
-        <div className="text-center">
+        <div className="text-center min-w-[24px]">
           <p className="font-semibold text-foreground">{player.assists || 0}</p>
-          <p className="hidden sm:block">Assists</p>
-          <p className="sm:hidden">A</p>
+          <p className="hidden sm:block text-[10px]">Assists</p>
+          <p className="sm:hidden text-[10px]">A</p>
         </div>
-        <div className="text-center">
+        <div className="text-center min-w-[24px]">
           <p className="font-semibold text-foreground">{player.matches_played || 0}</p>
-          <p className="hidden sm:block">Apps</p>
-          <p className="sm:hidden">M</p>
+          <p className="hidden sm:block text-[10px]">Apps</p>
+          <p className="sm:hidden text-[10px]">M</p>
         </div>
       </div>
     </div>

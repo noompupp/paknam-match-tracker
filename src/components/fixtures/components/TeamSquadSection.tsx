@@ -42,15 +42,15 @@ const TeamSquadSection = ({ team, squad, teamColor }: TeamSquadSectionProps) => 
   const getPositionColor = (position: string) => {
     switch (position) {
       case 'Goalkeeper':
-        return 'bg-blue-50 border-blue-200 text-blue-800';
+        return 'bg-blue-50 border-blue-200 text-blue-800 dark:bg-blue-950/30 dark:border-blue-800/50 dark:text-blue-300';
       case 'Defender':
-        return 'bg-green-50 border-green-200 text-green-800';
+        return 'bg-green-50 border-green-200 text-green-800 dark:bg-green-950/30 dark:border-green-800/50 dark:text-green-300';
       case 'Midfielder':
-        return 'bg-yellow-50 border-yellow-200 text-yellow-800';
+        return 'bg-yellow-50 border-yellow-200 text-yellow-800 dark:bg-yellow-950/30 dark:border-yellow-800/50 dark:text-yellow-300';
       case 'Forward':
-        return 'bg-red-50 border-red-200 text-red-800';
+        return 'bg-red-50 border-red-200 text-red-800 dark:bg-red-950/30 dark:border-red-800/50 dark:text-red-300';
       default:
-        return 'bg-gray-50 border-gray-200 text-gray-800';
+        return 'bg-gray-50 border-gray-200 text-gray-800 dark:bg-gray-950/30 dark:border-gray-800/50 dark:text-gray-300';
     }
   };
 
@@ -76,7 +76,7 @@ const TeamSquadSection = ({ team, squad, teamColor }: TeamSquadSectionProps) => 
         <CardTitle className="flex items-center justify-between">
           <div className="flex items-center gap-2 min-w-0 flex-1">
             <Users className="h-5 w-5 flex-shrink-0" />
-            <span className="truncate">{team.name} Squad</span>
+            <span className="truncate text-foreground">{team.name} Squad</span>
           </div>
           <Badge variant="outline" className="flex-shrink-0">
             {squad.length} players
@@ -95,18 +95,18 @@ const TeamSquadSection = ({ team, squad, teamColor }: TeamSquadSectionProps) => 
               if (players.length === 0) return null;
               
               return (
-                <AccordionItem key={position} value={position} className="w-full">
-                  <AccordionTrigger className="hover:no-underline w-full">
+                <AccordionItem key={position} value={position} className="w-full border-border/30">
+                  <AccordionTrigger className="hover:no-underline w-full py-3">
                     <div className="flex items-center gap-2 w-full">
                       {getPositionIcon(position)}
-                      <span className="font-medium truncate flex-1 text-left">{position}s</span>
+                      <span className="font-medium truncate flex-1 text-left text-foreground">{position}s</span>
                       <Badge variant="secondary" className="ml-auto mr-2 flex-shrink-0">
                         {players.length}
                       </Badge>
                     </div>
                   </AccordionTrigger>
                   <AccordionContent className="pt-2 w-full">
-                    <div className={`p-3 rounded-lg ${getPositionColor(position)} mb-3`}>
+                    <div className={`p-3 rounded-lg ${getPositionColor(position)} mb-3 border`}>
                       <p className="text-sm font-medium">{position} Squad</p>
                     </div>
                     <div className="space-y-2 w-full">

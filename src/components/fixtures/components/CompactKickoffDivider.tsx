@@ -47,13 +47,13 @@ const CompactKickoffDivider = ({ fixture, className = "" }: CompactKickoffDivide
   };
 
   return (
-    <div className={`flex items-center justify-center py-3 ${className}`}>
+    <div className={`flex items-center justify-center py-2 ${className}`}>
       {/* Subtle decorative line on left */}
       <div className="flex-1 h-px bg-gradient-to-r from-transparent to-border/40"></div>
       
-      {/* Compact center content - text only */}
-      <div className="flex items-center gap-3 px-6 text-center">
-        {/* Status badge - smaller and more subtle */}
+      {/* More compact center content */}
+      <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-3 px-4 text-center">
+        {/* Status badge - more compact */}
         <Badge 
           variant="outline" 
           className="text-xs px-2 py-1 font-medium border-border/50 bg-background/50"
@@ -61,18 +61,19 @@ const CompactKickoffDivider = ({ fixture, className = "" }: CompactKickoffDivide
           {getStatusText(fixture.status)}
         </Badge>
         
-        {/* Score or VS - smaller text */}
-        <span className="text-lg font-semibold text-muted-foreground">
+        {/* Score or VS - reduced size */}
+        <span className="text-base sm:text-lg font-semibold text-muted-foreground">
           {getCenterContent()}
         </span>
         
-        {/* Date and time - inline and compact */}
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+        {/* Date and time - more compact layout */}
+        <div className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 text-xs text-muted-foreground">
           <span className="flex items-center gap-1">
             <Calendar className="h-3 w-3" />
-            {formatDateDisplay(fixture.match_date)}
+            <span className="hidden sm:inline">{formatDateDisplay(fixture.match_date)}</span>
+            <span className="sm:hidden">{formatDateDisplay(fixture.match_date).slice(0, 5)}</span>
           </span>
-          <span>•</span>
+          <span className="hidden sm:inline">•</span>
           <span className="flex items-center gap-1">
             <Clock className="h-3 w-3" />
             {formatTimeDisplay(fixture.match_time)}

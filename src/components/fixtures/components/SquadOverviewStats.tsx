@@ -13,9 +13,9 @@ interface SquadOverviewStatsProps {
 const SquadOverviewStats = ({ homeTeam, awayTeam, homeSquad, awaySquad }: SquadOverviewStatsProps) => {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6 w-full">
-      <Card className="bg-gradient-to-r from-primary/5 to-transparent border-primary/20 border transition-all duration-300 hover:shadow-md hover:border-primary/30 w-full">
+      <Card className="bg-gradient-to-r from-primary/5 to-transparent border border-primary/20 transition-all duration-300 hover:shadow-md hover:border-primary/30 w-full">
         <CardHeader className="pb-3">
-          <CardTitle className="text-lg truncate">{homeTeam.name} Overview</CardTitle>
+          <CardTitle className="text-lg truncate text-foreground">{homeTeam.name} Overview</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-3 gap-4 text-center">
@@ -39,9 +39,9 @@ const SquadOverviewStats = ({ homeTeam, awayTeam, homeSquad, awaySquad }: SquadO
         </CardContent>
       </Card>
 
-      <Card className="bg-gradient-to-l from-secondary/5 to-transparent border-secondary/20 border transition-all duration-300 hover:shadow-md hover:border-secondary/30 w-full">
+      <Card className="bg-gradient-to-l from-secondary/5 to-transparent border border-secondary/20 transition-all duration-300 hover:shadow-md hover:border-secondary/30 w-full">
         <CardHeader className="pb-3">
-          <CardTitle className="text-lg truncate">{awayTeam.name} Overview</CardTitle>
+          <CardTitle className="text-lg truncate text-foreground">{awayTeam.name} Overview</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-3 gap-4 text-center">

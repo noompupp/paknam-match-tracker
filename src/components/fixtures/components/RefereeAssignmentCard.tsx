@@ -12,16 +12,16 @@ const RefereeAssignmentCard = ({ refereeAssignment }: RefereeAssignmentCardProps
       <div className="flex-shrink-0 p-2 rounded-lg bg-secondary/10 border border-secondary/20">
         <Users className="h-5 w-5 text-secondary" />
       </div>
-      <div className="flex-1">
+      <div className="flex-1 min-w-0">
         <p className="text-xs text-muted-foreground mb-2 font-medium uppercase tracking-wide">
           Referee Teams
         </p>
         <div className="space-y-1">
-          <p className="font-semibold text-foreground text-sm leading-relaxed">
-            {refereeAssignment.homeTeamReferee}
+          <p className="font-semibold text-foreground text-base leading-relaxed truncate">
+            Home: {refereeAssignment.homeTeamReferee}
           </p>
-          <p className="font-semibold text-foreground text-sm leading-relaxed">
-            {refereeAssignment.awayTeamReferee}
+          <p className="font-semibold text-foreground text-base leading-relaxed truncate">
+            Away: {refereeAssignment.awayTeamReferee}
           </p>
         </div>
       </div>
