@@ -1,0 +1,63 @@
+
+/* Accessibility and user preference optimizations */
+
+/* Enhanced accessibility improvements */
+@media (prefers-reduced-motion: reduce) {
+  .avatar-container .relative {
+    transition: transform 0.2s ease-out;
+  }
+  
+  .avatar-container:hover .relative,
+  .avatar-container:hover .relative.rotate-y-180 {
+    transform: scale(1.01);
+  }
+
+  /* Maintain accessibility feedback */
+  .avatar-container:active .relative {
+    transform: scale(0.99);
+  }
+
+  .avatar-container:active .relative.rotate-y-180 {
+    transform: scale(0.99) rotateY(180deg);
+  }
+}
+
+/* High contrast mode support with better visibility */
+@media (prefers-contrast: high) {
+  .avatar-container {
+    border: 2px solid;
+  }
+  
+  .avatar-container:focus {
+    outline-width: 4px;
+    outline-color: ButtonText;
+  }
+  
+  .avatar-container .rotate-y-180 {
+    filter: contrast(1.2) saturate(1.1);
+  }
+}
+
+/* Dark mode optimizations with enhanced shadows */
+@media (prefers-color-scheme: dark) {
+  .avatar-container .rotate-y-180 {
+    filter: 
+      drop-shadow(0 0 12px rgba(255, 255, 255, 0.08)) 
+      drop-shadow(0 0 6px rgba(0, 0, 0, 0.4))
+      drop-shadow(0 2px 8px rgba(0, 0, 0, 0.3));
+  }
+}
+
+/* Print styles */
+@media print {
+  .avatar-container .relative {
+    transition: none;
+    transform: none !important;
+  }
+  
+  .avatar-container .rotate-y-180 {
+    transform: none !important;
+    filter: none;
+    box-shadow: none;
+  }
+}

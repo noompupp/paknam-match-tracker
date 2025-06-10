@@ -1,0 +1,7 @@
+
+/* Avatar styles entry point - imports all avatar-related styles */
+@import './core-animations.css';
+@import './interactive-states.css';
+@import './responsive-optimizations.css';
+@import './accessibility-features.css';
+@import './jersey-effects.css';

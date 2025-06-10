@@ -1,0 +1,38 @@
+
+/* Interactive hover, focus, and active states */
+
+/* Enhanced hover effects with dynamic scaling */
+.avatar-container:hover .relative {
+  transform: scale(1.05);
+}
+
+.avatar-container:hover .relative.rotate-y-180 {
+  transform: scale(1.05) rotateY(180deg);
+}
+
+/* Enhanced focus styles for keyboard navigation */
+.avatar-container:focus {
+  outline: 2px solid hsl(var(--primary));
+  outline-offset: 2px;
+  border-radius: 50%;
+}
+
+.avatar-container:focus-visible {
+  outline: 3px solid hsl(var(--primary));
+  outline-offset: 3px;
+  box-shadow: 
+    0 0 0 1px hsl(var(--background)),
+    0 0 8px hsl(var(--primary) / 0.3);
+}
+
+/* Team color integration helpers */
+.avatar-container[data-team-color] {
+  --team-glow: var(--team-primary-color, hsl(var(--primary)));
+}
+
+.avatar-container[data-team-color]:hover .rotate-y-180 {
+  filter: 
+    drop-shadow(0 0 12px var(--team-glow))
+    drop-shadow(0 0 6px rgba(0, 0, 0, 0.2))
+    drop-shadow(0 2px 8px rgba(0, 0, 0, 0.15));
+}
