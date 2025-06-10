@@ -127,22 +127,25 @@ const TeamBanner = ({ team, variant, className = "" }: TeamBannerProps) => {
               </div>
             </div>
 
-            {/* Record Stats */}
+            {/* Record Stats - Mobile optimized labels */}
             <div className="grid grid-cols-3 gap-4 text-sm">
               <div className="flex items-center gap-2 p-2 rounded-lg bg-background/60 backdrop-blur-sm border border-border/30">
                 <Trophy className="h-4 w-4 text-green-600" />
                 <span className="font-bold text-lg">{team.won}</span>
-                <span className="text-muted-foreground text-xs">Wins</span>
+                <span className="text-muted-foreground text-xs hidden sm:inline">Wins</span>
+                <span className="text-muted-foreground text-xs sm:hidden">W</span>
               </div>
               <div className="flex items-center gap-2 p-2 rounded-lg bg-background/60 backdrop-blur-sm border border-border/30">
                 <div className="w-4 h-4 bg-yellow-500 rounded-full border border-yellow-600"></div>
                 <span className="font-bold text-lg">{team.drawn}</span>
-                <span className="text-muted-foreground text-xs">Draws</span>
+                <span className="text-muted-foreground text-xs hidden sm:inline">Draws</span>
+                <span className="text-muted-foreground text-xs sm:hidden">D</span>
               </div>
               <div className="flex items-center gap-2 p-2 rounded-lg bg-background/60 backdrop-blur-sm border border-border/30">
                 <div className="w-4 h-4 bg-red-500 rounded-full border border-red-600"></div>
                 <span className="font-bold text-lg">{team.lost}</span>
-                <span className="text-muted-foreground text-xs">Losses</span>
+                <span className="text-muted-foreground text-xs hidden sm:inline">Losses</span>
+                <span className="text-muted-foreground text-xs sm:hidden">L</span>
               </div>
             </div>
           </div>
