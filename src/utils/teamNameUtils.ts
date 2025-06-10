@@ -1,3 +1,4 @@
+
 export const shortenTeamName = (teamName: string, maxLength: number = 12): string => {
   if (!teamName || teamName.length <= maxLength) return teamName;
   
@@ -41,34 +42,41 @@ export const shortenTeamName = (teamName: string, maxLength: number = 12): strin
   return shortened;
 };
 
+// Enhanced compact team name generation with better logic
 export const generateCompactTeamName = (teamName: string): string => {
   if (!teamName) return 'TM';
   
-  // Enhanced special cases for compact display
-  const compactSpecialCases: Record<string, string> = {
+  // Premier League and major European clubs
+  const eliteClubMappings: Record<string, string> = {
     'Manchester United': 'MUN',
-    'Manchester City': 'MCI',
-    'Real Madrid': 'RMA',
-    'FC Barcelona': 'BAR',
-    'Bayern Munich': 'BAY',
-    'Paris Saint-Germain': 'PSG',
-    'Borussia Dortmund': 'BVB',
-    'Atlético Madrid': 'ATM',
+    'Manchester City': 'MCI', 
+    'Liverpool': 'LIV',
+    'Chelsea': 'CHE',
+    'Arsenal': 'ARS',
     'Tottenham Hotspur': 'TOT',
-    'Leicester City': 'LEI',
-    'West Ham United': 'WHU',
     'Newcastle United': 'NEW',
+    'West Ham United': 'WHU',
+    'Leicester City': 'LEI',
     'Brighton & Hove Albion': 'BHA',
     'Crystal Palace': 'CRY',
+    'Aston Villa': 'AVL',
     'Wolverhampton Wanderers': 'WOL',
     'Sheffield United': 'SHU',
     'Norwich City': 'NOR',
-    'Aston Villa': 'AVL'
+    'Real Madrid': 'RMA',
+    'FC Barcelona': 'BAR',
+    'Atlético Madrid': 'ATM',
+    'Bayern Munich': 'BAY',
+    'Borussia Dortmund': 'BVB',
+    'Paris Saint-Germain': 'PSG',
+    'Juventus': 'JUV',
+    'AC Milan': 'MIL',
+    'Inter Milan': 'INT'
   };
   
-  // Check for special cases first
-  if (compactSpecialCases[teamName]) {
-    return compactSpecialCases[teamName];
+  // Check elite clubs first
+  if (eliteClubMappings[teamName]) {
+    return eliteClubMappings[teamName];
   }
   
   // Remove common prefixes and suffixes more aggressively
@@ -80,31 +88,61 @@ export const generateCompactTeamName = (teamName: string): string => {
   const words = cleanName.trim().split(/\s+/);
   
   if (words.length === 1) {
-    // Single word: take first 3 characters, max 4 for longer names
     const word = words[0];
-    if (word.length <= 4) return word.toUpperCase();
+    // For single words, be smarter about length
+    if (word.length <= 3) return word.toUpperCase();
+    if (word.length <= 5) return word.substring(0, 3).toUpperCase();
     return word.substring(0, 3).toUpperCase();
   } else if (words.length === 2) {
-    // Two words: more intelligent abbreviation
     const first = words[0];
     const second = words[1];
     
-    // If first word is very short, use more of it
-    if (first.length <= 2) {
+    // Enhanced two-word logic
+    if (first.length >= 3 && second.length >= 3) {
+      return (first.substring(0, 2) + second.substring(0, 1)).toUpperCase();
+    } else if (first.length <= 2) {
       return (first + second.substring(0, 2)).toUpperCase();
+    } else {
+      return (first.substring(0, 2) + second.substring(0, 1)).toUpperCase();
     }
-    // Otherwise, balanced approach
-    return (first.substring(0, 2) + second.substring(0, 1)).toUpperCase();
   } else {
-    // Three or more words: first char of each word, max 4 chars
-    return words.slice(0, 4).map(word => word.charAt(0)).join('').toUpperCase();
+    // Three or more words: first char of each word, max 3 chars
+    return words.slice(0, 3).map(word => word.charAt(0)).join('').toUpperCase();
   }
 };
 
-export const getResponsiveTeamName = (teamName: string): { full: string; mobile: string; compact: string } => {
+// Enhanced responsive team name system
+export const getResponsiveTeamName = (teamName: string): { 
+  full: string; 
+  mobile: string; 
+  compact: string;
+  ultraCompact: string;
+} => {
   return {
     full: teamName,
     mobile: shortenTeamName(teamName, 12),
-    compact: generateCompactTeamName(teamName)
+    compact: generateCompactTeamName(teamName),
+    ultraCompact: generateCompactTeamName(teamName).substring(0, 3)
   };
+};
+
+// Utility for getting team name by screen size
+export const getTeamNameForScreen = (
+  teamName: string, 
+  screenType: 'desktop' | 'tablet' | 'mobile' | 'compact'
+): string => {
+  const names = getResponsiveTeamName(teamName);
+  
+  switch (screenType) {
+    case 'desktop':
+      return names.full;
+    case 'tablet':
+      return names.mobile;
+    case 'mobile':
+      return names.compact;
+    case 'compact':
+      return names.ultraCompact;
+    default:
+      return names.full;
+  }
 };

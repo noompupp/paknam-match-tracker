@@ -1,6 +1,6 @@
 
 import { Card, CardContent } from "@/components/ui/card";
-import { Trophy } from "lucide-react";
+import { Trophy, TrendingUp } from "lucide-react";
 import FixtureCard from "./FixtureCard";
 import LoadingCard from "./LoadingCard";
 
@@ -26,12 +26,23 @@ const RecentResultsSection = ({
 
   return (
     <div id="recent-results" className="scroll-mt-20 mb-8">
-      <div className="flex items-center gap-2 mb-6">
-        <Trophy className="h-6 w-6 text-white" />
-        <h2 className="text-2xl font-bold text-white">Recent Results</h2>
+      <div className="flex items-center gap-3 mb-6 px-1">
+        <div className="p-2 rounded-lg bg-emerald-500/10 border border-emerald-200">
+          <Trophy className="h-5 w-5 text-emerald-600" />
+        </div>
+        <div>
+          <h2 className="text-xl font-bold text-foreground">Recent Results</h2>
+          <p className="text-sm text-muted-foreground">Latest completed matches</p>
+        </div>
+        {completedFixtures.length > 0 && (
+          <div className="ml-auto flex items-center gap-1 px-2 py-1 rounded-full bg-emerald-500/10 text-emerald-600">
+            <TrendingUp className="h-3 w-3" />
+            <span className="text-xs font-medium">{completedFixtures.length}</span>
+          </div>
+        )}
       </div>
       
-      <div className="grid gap-4">
+      <div className="grid gap-3">
         {isLoading ? (
           Array.from({ length: 3 }).map((_, index) => (
             <LoadingCard key={index} />
