@@ -1,7 +1,7 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Calendar } from "lucide-react";
-import FixtureCard from "./FixtureCard";
+import UnifiedFixtureCard from "../shared/UnifiedFixtureCard";
 import LoadingCard from "./LoadingCard";
 
 interface AllFixturesSectionProps {
@@ -30,12 +30,13 @@ const AllFixturesSection = ({
         ))
       ) : sortedAllFixtures && sortedAllFixtures.length > 0 ? (
         sortedAllFixtures.map((fixture) => (
-          <FixtureCard 
+          <UnifiedFixtureCard 
             key={fixture.id} 
             fixture={fixture} 
-            showScore={fixture.status === 'completed'} 
             onFixtureClick={onFixtureClick}
             onPreviewClick={onPreviewClick}
+            variant="default"
+            showVenue={true}
           />
         ))
       ) : (

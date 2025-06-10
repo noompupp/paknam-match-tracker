@@ -1,7 +1,7 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Calendar, Trophy } from "lucide-react";
-import FixtureCard from "./FixtureCard";
+import UnifiedFixtureCard from "../shared/UnifiedFixtureCard";
 import LoadingCard from "./LoadingCard";
 
 interface UpcomingFixturesSectionProps {
@@ -30,11 +30,13 @@ const UpcomingFixturesSection = ({
         ))
       ) : upcomingFixtures && upcomingFixtures.length > 0 ? (
         upcomingFixtures.map((fixture) => (
-          <FixtureCard 
+          <UnifiedFixtureCard 
             key={fixture.id} 
             fixture={fixture} 
             onFixtureClick={onFixtureClick}
             onPreviewClick={onPreviewClick}
+            variant="default"
+            showVenue={true}
           />
         ))
       ) : (

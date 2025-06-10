@@ -1,7 +1,7 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Trophy } from "lucide-react";
-import FixtureCard from "./FixtureCard";
+import UnifiedFixtureCard from "../shared/UnifiedFixtureCard";
 import LoadingCard from "./LoadingCard";
 
 interface RecentResultsSectionProps {
@@ -36,11 +36,12 @@ const RecentResultsSection = ({
           ))
         ) : (
           completedFixtures.map((fixture) => (
-            <FixtureCard 
+            <UnifiedFixtureCard 
               key={fixture.id} 
               fixture={fixture} 
-              showScore={true} 
               onFixtureClick={onFixtureClick}
+              variant="compact"
+              showVenue={true}
             />
           ))
         )}

@@ -2,8 +2,8 @@
 import { useRecentFixtures } from "@/hooks/useFixtures";
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Clock } from "lucide-react";
-import FixtureCard from "./shared/FixtureCard";
+import { Trophy } from "lucide-react";
+import UnifiedFixtureCard from "./shared/UnifiedFixtureCard";
 import LoadingCard from "./fixtures/LoadingCard";
 import MatchSummaryDialog from "./fixtures/MatchSummaryDialog";
 import ResultsHeader from "./results/ResultsHeader";
@@ -26,10 +26,8 @@ const Results = () => {
   }
 
   const handleFixtureClick = (fixture: any) => {
-    if (fixture.status === 'completed') {
-      setSelectedFixture(fixture);
-      setShowSummary(true);
-    }
+    setSelectedFixture(fixture);
+    setShowSummary(true);
   };
 
   return (
@@ -41,7 +39,7 @@ const Results = () => {
         <div className="max-w-7xl mx-auto container-responsive py-8 space-y-8 mobile-content-spacing">
           <Card className="card-shadow-lg">
             <CardHeader className="flex flex-row items-center gap-2">
-              <Clock className="h-5 w-5 text-primary" />
+              <Trophy className="h-5 w-5 text-primary" />
               <CardTitle>Recent Results</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -51,10 +49,12 @@ const Results = () => {
                 ))
               ) : recentFixtures && recentFixtures.length > 0 ? (
                 recentFixtures.map((fixture) => (
-                  <FixtureCard 
+                  <UnifiedFixtureCard 
                     key={fixture.id} 
                     fixture={fixture} 
-                    onClick={handleFixtureClick}
+                    onFixtureClick={handleFixtureClick}
+                    variant="compact"
+                    showVenue={true}
                   />
                 ))
               ) : (
