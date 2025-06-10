@@ -44,10 +44,10 @@
     /* App gradient variables - Light mode */
     --app-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     
-    /* Header background for top notch and navigation - Light mode - Solid white for consistency */
-    --header-background: rgba(255, 255, 255, 0.98);
-    --header-backdrop-blur: blur(8px);
-    --header-border: rgba(229, 231, 235, 0.8);
+    /* Header background for top notch and navigation - Light mode */
+    --header-background: rgba(255, 255, 255, 0.95);
+    --header-backdrop-blur: blur(20px) saturate(180%);
+    --header-border: rgba(229, 231, 235, 0.6);
     --header-shadow: rgba(0, 0, 0, 0.1);
     
     /* Navigation active state - Light mode */
@@ -85,10 +85,10 @@
     /* App gradient variables - Dark mode */
     --app-gradient: linear-gradient(135deg, #2d1b69 0%, #11998e 100%);
     
-    /* Header background for top notch and navigation - Dark mode - Solid dark for consistency */
-    --header-background: rgba(17, 24, 39, 0.98);
-    --header-backdrop-blur: blur(12px);
-    --header-border: rgba(55, 65, 81, 0.8);
+    /* Header background for top notch and navigation - Dark mode */
+    --header-background: rgba(17, 24, 39, 0.95);
+    --header-backdrop-blur: blur(20px) saturate(180%);
+    --header-border: rgba(55, 65, 81, 0.6);
     --header-shadow: rgba(0, 0, 0, 0.3);
     
     /* Navigation active state - Dark mode */
@@ -127,9 +127,9 @@
       
       /* Dark mode gradients and headers for system preference */
       --app-gradient: linear-gradient(135deg, #2d1b69 0%, #11998e 100%);
-      --header-background: rgba(17, 24, 39, 0.98);
-      --header-backdrop-blur: blur(12px);
-      --header-border: rgba(55, 65, 81, 0.8);
+      --header-background: rgba(17, 24, 39, 0.95);
+      --header-backdrop-blur: blur(20px) saturate(180%);
+      --header-border: rgba(55, 65, 81, 0.6);
       --header-shadow: rgba(0, 0, 0, 0.3);
       
       /* Navigation active state - Dark mode for system preference */
@@ -164,10 +164,9 @@
   
   body {
     @apply bg-background text-foreground;
-    /* Only apply horizontal safe area padding by default */
+    /* Only apply horizontal safe area padding by default - PWA overrides will handle full safe areas */
     padding-left: var(--safe-area-inset-left);
     padding-right: var(--safe-area-inset-right);
-    /* PWA mode will override these with full safe area support */
     
     /* Ensure body extends full height on mobile to prevent white bars */
     min-height: 100vh;

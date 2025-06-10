@@ -6,6 +6,7 @@
 @import './styles/animations.css';
 @import './styles/referee.css';
 @import './styles/pwa.css';
+@import './styles/pwa-overrides.css';
 @import './styles/pull-to-refresh.css';
 @import './styles/avatar/index.css';
 

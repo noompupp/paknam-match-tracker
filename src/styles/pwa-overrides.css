@@ -1,0 +1,146 @@
+
+/* PWA-specific CSS overrides to fix UI inconsistencies */
+
+/* Only apply these overrides in PWA standalone mode */
+@media (display-mode: standalone) {
+  /* Reset body background and padding conflicts */
+  body {
+    background: var(--app-gradient) !important;
+    background-attachment: fixed !important;
+    /* Remove conflicting padding from base.css */
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    padding-top: var(--safe-area-inset-top) !important;
+    padding-bottom: var(--safe-area-inset-bottom) !important;
+    /* Ensure full viewport coverage */
+    min-height: 100vh !important;
+    min-height: 100dvh !important;
+    margin: 0 !important;
+    /* Prevent white gaps */
+    overflow-x: hidden !important;
+  }
+
+  /* Fix gradient background container */
+  .gradient-bg {
+    background: var(--app-gradient) !important;
+    background-attachment: fixed !important;
+    min-height: 100vh !important;
+    min-height: 100dvh !important;
+    /* Ensure it covers the full viewport including safe areas */
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Enhanced header transparency with better backdrop */
+  .border-b {
+    background: rgba(255, 255, 255, 0.95) !important;
+    backdrop-filter: blur(20px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2) !important;
+  }
+
+  /* Dark mode header adjustments */
+  .dark .border-b {
+    background: rgba(17, 24, 39, 0.95) !important;
+    border-bottom: 1px solid rgba(55, 65, 81, 0.3) !important;
+  }
+
+  /* Navigation container fixes */
+  nav[class*="fixed bottom-0"] {
+    background: rgba(255, 255, 255, 0.98) !important;
+    backdrop-filter: blur(20px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+    border-top: 1px solid rgba(229, 231, 235, 0.6) !important;
+    /* Ensure proper safe area handling */
+    padding-bottom: max(env(safe-area-inset-bottom), 0.5rem) !important;
+    height: calc(70px + env(safe-area-inset-bottom)) !important;
+  }
+
+  /* Dark mode navigation adjustments */
+  .dark nav[class*="fixed bottom-0"] {
+    background: rgba(17, 24, 39, 0.98) !important;
+    border-top: 1px solid rgba(55, 65, 81, 0.6) !important;
+  }
+
+  /* Content container adjustments for PWA */
+  .content-container,
+  .mobile-safe-bottom {
+    /* Remove double safe area padding */
+    padding-bottom: calc(70px + env(safe-area-inset-bottom)) !important;
+  }
+
+  /* Main content areas should not have background conflicts */
+  main {
+    background: transparent !important;
+  }
+
+  /* Prevent white flashes on page transitions */
+  .min-h-screen,
+  .min-h-dvh {
+    background: transparent !important;
+  }
+
+  /* Fix any cards or components that might show white backgrounds */
+  .bg-gray-50 {
+    background: rgba(249, 250, 251, 0.95) !important;
+  }
+
+  .dark .bg-gray-900 {
+    background: rgba(17, 24, 39, 0.95) !important;
+  }
+
+  /* Enhance safe area handling for top notch */
+  .safe-top,
+  .modal-safe-top {
+    padding-top: max(var(--safe-area-inset-top), 1rem) !important;
+  }
+
+  /* Top notch background enhancement */
+  .fixed.top-0[class*="z-40"] {
+    background: var(--header-background) !important;
+    backdrop-filter: blur(20px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+  }
+}
+
+/* iOS-specific PWA enhancements */
+@supports (-webkit-touch-callout: none) {
+  @media (display-mode: standalone) {
+    /* iOS Safari PWA specific fixes */
+    body {
+      /* Enhanced iOS background handling */
+      background: var(--app-gradient) !important;
+      background-attachment: fixed !important;
+      /* iOS viewport fix */
+      min-height: -webkit-fill-available !important;
+    }
+
+    /* iOS safe area enhancements */
+    .modal-close-safe {
+      top: max(var(--safe-area-inset-top, 0px) + 1.25rem, 1.25rem) !important;
+      right: max(var(--safe-area-inset-right, 0px) + 1rem, 1rem) !important;
+    }
+
+    /* iOS Dynamic Island handling for newer devices */
+    @media (max-height: 926px) and (min-height: 844px) {
+      .modal-close-safe {
+        top: max(var(--safe-area-inset-top, 0px) + 1.5rem, 1.5rem) !important;
+      }
+      
+      .modal-safe-top {
+        padding-top: max(var(--safe-area-inset-top, 0px) + 2rem, 2rem) !important;
+      }
+    }
+  }
+}
+
+/* Android PWA specific fixes */
+@media (display-mode: standalone) and (max-width: 768px) {
+  /* Android Chrome PWA enhancements */
+  body {
+    /* Prevent address bar appearance */
+    overscroll-behavior-y: contain !important;
+    /* Enhanced scroll performance */
+    -webkit-overflow-scrolling: touch !important;
+  }
+}
