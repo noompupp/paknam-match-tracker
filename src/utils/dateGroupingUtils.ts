@@ -5,7 +5,26 @@ export interface GroupedFixtures {
   date: string;
   displayDate: string;
   fixtures: any[];
+  gameweek?: number;
 }
+
+/**
+ * Calculate gameweek number based on date
+ * For now, using a simple calculation based on weeks since a start date
+ * This can be adjusted based on actual league schedule
+ */
+export const calculateGameweek = (dateString: string): number => {
+  // Using a hypothetical season start date - adjust this based on your league
+  const seasonStart = new Date('2024-09-01'); // September 1st, 2024
+  const matchDate = new Date(dateString);
+  
+  // Calculate weeks difference
+  const timeDiff = matchDate.getTime() - seasonStart.getTime();
+  const weeksDiff = Math.floor(timeDiff / (1000 * 3600 * 24 * 7));
+  
+  // Ensure gameweek is at least 1
+  return Math.max(1, weeksDiff + 1);
+};
 
 /**
  * Groups fixtures by date for better organization
@@ -46,7 +65,8 @@ export const groupFixturesByDate = (fixtures: any[]): GroupedFixtures[] => {
         const timeA = a.match_time || '18:00:00';
         const timeB = b.match_time || '18:00:00';
         return timeA.localeCompare(timeB);
-      })
+      }),
+      gameweek: calculateGameweek(date)
     });
   });
 

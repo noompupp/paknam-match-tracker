@@ -47,6 +47,7 @@ const UpcomingFixturesSection = ({
                 date={group.date}
                 displayDate={group.displayDate}
                 fixtureCount={group.fixtures.length}
+                gameweek={group.gameweek}
               />
               <div className="grid gap-3">
                 {group.fixtures.map((fixture) => (

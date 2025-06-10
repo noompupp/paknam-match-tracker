@@ -1,3 +1,4 @@
+
 import { Card, CardContent } from "@/components/ui/card";
 import { Calendar } from "lucide-react";
 import CompactFixtureCard from "../shared/CompactFixtureCard";
@@ -46,6 +47,7 @@ const AllFixturesSection = ({
                 date={group.date}
                 displayDate={group.displayDate}
                 fixtureCount={group.fixtures.length}
+                gameweek={group.gameweek}
               />
               <div className="grid gap-3">
                 {group.fixtures.map((fixture) => (

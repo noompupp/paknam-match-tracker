@@ -3,7 +3,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, Clock, MapPin } from "lucide-react";
 import { Fixture } from "@/types/database";
-import { formatCombinedDateTime } from "@/utils/dateTimeUtils";
+import { formatCombinedDateTime, formatMobileDateDisplay } from "@/utils/dateTimeUtils";
+import { formatTimeDisplay } from "@/utils/timeUtils";
 import { useDeviceOrientation } from "@/hooks/useDeviceOrientation";
 import TeamLogo from "../teams/TeamLogo";
 import { cn } from "@/lib/utils";
@@ -83,8 +84,12 @@ const CompactFixtureCard = ({
         onClick={handleCardClick}
       >
         <CardContent className="p-3">
-          {/* Header with status only */}
-          <div className="flex justify-end items-center mb-3">
+          {/* Header with kickoff time (left) and status (right) */}
+          <div className="flex justify-between items-center mb-3">
+            <div className="flex items-center gap-1 text-sm text-muted-foreground">
+              <Clock className="h-3 w-3" />
+              <span>{formatTimeDisplay(fixture.match_time)}</span>
+            </div>
             {getStatusBadge()}
           </div>
 
@@ -124,13 +129,6 @@ const CompactFixtureCard = ({
               ) : null}
             </div>
           </div>
-
-          {/* Time/Score center for non-completed matches */}
-          {fixture.status !== 'completed' && fixture.status !== 'live' && (
-            <div className="flex justify-center mt-2 pt-2 border-t">
-              {getScoreOrTime()}
-            </div>
-          )}
 
           {/* Footer with action text only */}
           <div className="mt-3 pt-2 border-t">

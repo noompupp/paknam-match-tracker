@@ -6,9 +6,10 @@ interface DateGroupHeaderProps {
   date: string;
   displayDate: string;
   fixtureCount: number;
+  gameweek?: number;
 }
 
-const DateGroupHeader = ({ date, displayDate, fixtureCount }: DateGroupHeaderProps) => {
+const DateGroupHeader = ({ date, displayDate, fixtureCount, gameweek }: DateGroupHeaderProps) => {
   const friendlyLabel = getFriendlyDateLabel(date, displayDate);
   
   return (
@@ -19,7 +20,7 @@ const DateGroupHeader = ({ date, displayDate, fixtureCount }: DateGroupHeaderPro
       </div>
       <div className="flex-1 h-px bg-border" />
       <span className="text-sm text-muted-foreground font-medium">
-        {fixtureCount} {fixtureCount === 1 ? 'match' : 'matches'}
+        {gameweek ? `GW${gameweek}` : `${fixtureCount} ${fixtureCount === 1 ? 'match' : 'matches'}`}
       </span>
     </div>
   );
