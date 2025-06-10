@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, ExternalLink, Rss, Sparkles } from "lucide-react";
 import { useNews } from "@/hooks/useNews";
 import { useDeviceOrientation } from "@/hooks/useDeviceOrientation";
+import { cn } from "@/lib/utils";
 import EnhancedNewsCard from "./EnhancedNewsCard";
 
 const NewsFeedCard = () => {
