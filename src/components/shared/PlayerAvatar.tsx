@@ -42,12 +42,8 @@ const PlayerAvatar = ({
   };
 
   const handleAvatarClick = () => {
-    if (showStats && ((player.goals || 0) > 0 || (player.assists || 0) > 0)) {
-      setIsFlipped(!isFlipped);
-    }
+    setIsFlipped(!isFlipped);
   };
-
-  const hasStats = showStats && ((player.goals || 0) > 0 || (player.assists || 0) > 0);
 
   return (
     <div 
@@ -87,38 +83,31 @@ const PlayerAvatar = ({
           )}
         </div>
 
-        {/* Back Side - Stats */}
-        {hasStats && (
-          <div className={cn(
-            "absolute inset-0 backface-hidden rotate-y-180 rounded-full bg-gradient-to-br from-green-500/90 to-blue-500/90 border-2 border-white/20 flex flex-col items-center justify-center text-white font-bold shadow-lg",
-            sizeClasses[size]
-          )}>
-            <div className="text-center">
-              <div className="text-xs leading-tight">
-                {(player.goals || 0) > 0 && (
-                  <div className="flex items-center gap-1">
-                    <span className="text-[10px]">⚽</span>
-                    <span>{player.goals}</span>
-                  </div>
-                )}
-                {(player.assists || 0) > 0 && (
-                  <div className="flex items-center gap-1">
-                    <span className="text-[10px]">🅰️</span>
-                    <span>{player.assists}</span>
-                  </div>
-                )}
-              </div>
+        {/* Back Side - Shirt Number */}
+        <div className={cn(
+          "absolute inset-0 backface-hidden rotate-y-180 rounded-full bg-gradient-to-br from-primary to-primary/80 border-2 border-white/20 flex flex-col items-center justify-center text-white font-bold shadow-lg",
+          sizeClasses[size]
+        )}>
+          <div className="text-center">
+            <div className={cn(
+              "font-bold",
+              size === "small" ? "text-lg" : size === "medium" ? "text-xl" : "text-2xl"
+            )}>
+              {player.number || '?'}
             </div>
+            {size !== "small" && (
+              <div className="text-xs opacity-80 mt-1">
+                #{player.number || '?'}
+              </div>
+            )}
           </div>
-        )}
+        </div>
       </div>
 
-      {/* Flip indicator for players with stats */}
-      {hasStats && (
-        <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-primary rounded-full border border-background flex items-center justify-center">
-          <span className="text-[8px] text-primary-foreground">↻</span>
-        </div>
-      )}
+      {/* Flip indicator - now shows for all players */}
+      <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-primary rounded-full border border-background flex items-center justify-center">
+        <span className="text-[8px] text-primary-foreground">↻</span>
+      </div>
     </div>
   );
 };
