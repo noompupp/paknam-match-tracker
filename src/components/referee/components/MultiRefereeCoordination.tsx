@@ -74,12 +74,28 @@ const MultiRefereeCoordination = ({
       if (error) throw error;
 
       if (data && data.length > 0) {
-        setCoordinationData(data[0]);
+        const coordinationInfo = data[0];
+        
+        // Parse assignments from JSON to Assignment array
+        const assignments = Array.isArray(coordinationInfo.assignments) 
+          ? coordinationInfo.assignments as Assignment[]
+          : [];
+
+        const parsedData: CoordinationData = {
+          coordination_id: coordinationInfo.coordination_id,
+          fixture_id: coordinationInfo.fixture_id,
+          status: coordinationInfo.status,
+          assignments: assignments,
+          completion_summary: coordinationInfo.completion_summary,
+          ready_for_review: coordinationInfo.ready_for_review
+        };
+
+        setCoordinationData(parsedData);
         
         // Check if current user has an assignment
         const user = await supabase.auth.getUser();
         if (user.data.user) {
-          const userAssignment = data[0].assignments.find(
+          const userAssignment = assignments.find(
             (a: Assignment) => a.referee_id === user.data.user?.id
           );
           if (userAssignment) {
@@ -105,12 +121,18 @@ const MultiRefereeCoordination = ({
     try {
       setIsLoading(true);
 
+      // Get current user first
+      const { data: userData, error: userError } = await supabase.auth.getUser();
+      if (userError || !userData.user) {
+        throw new Error('User not authenticated');
+      }
+
       // Create match coordination
       const { data: coordination, error: coordError } = await supabase
         .from('match_coordination')
         .insert({
           fixture_id: selectedFixtureData.id,
-          coordinator_referee_id: (await supabase.auth.getUser()).data.user?.id
+          coordinator_referee_id: userData.user.id
         })
         .select()
         .single();
@@ -122,7 +144,7 @@ const MultiRefereeCoordination = ({
       const assignments = roles.map(role => ({
         match_coordination_id: coordination.id,
         assigned_role: role,
-        referee_id: (await supabase.auth.getUser()).data.user?.id // Temporary, will be reassigned
+        referee_id: userData.user.id // Temporary, will be reassigned
       }));
 
       const { error: assignError } = await supabase
@@ -259,24 +281,32 @@ const MultiRefereeCoordination = ({
     try {
       setIsLoading(true);
 
+      // Get current user first
+      const { data: userData, error: userError } = await supabase.auth.getUser();
+      if (userError || !userData.user) {
+        throw new Error('User not authenticated');
+      }
+
       const { data, error } = await supabase.rpc('finalize_match_coordination', {
         p_coordination_id: coordinationData.coordination_id,
         p_final_review_data: {
-          finalized_by: (await supabase.auth.getUser()).data.user?.id,
+          finalized_by: userData.user.id,
           finalized_at: new Date().toISOString()
         }
       });
 
       if (error) throw error;
 
-      if (data.success) {
+      // Handle the response properly as JSON
+      const result = data as { success: boolean; error?: string };
+      if (result.success) {
         toast({
           title: "Success",
           description: "Match has been finalized successfully",
         });
         await loadCoordinationStatus();
       } else {
-        throw new Error(data.error || 'Failed to finalize match');
+        throw new Error(result.error || 'Failed to finalize match');
       }
     } catch (error) {
       console.error('Error finalizing match:', error);
