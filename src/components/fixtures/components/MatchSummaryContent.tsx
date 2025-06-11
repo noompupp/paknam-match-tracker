@@ -1,5 +1,6 @@
 
 import AccordionMatchSummaryLayout from "./AccordionMatchSummaryLayout";
+import UnifiedMatchSummaryLayout from "./UnifiedMatchSummaryLayout";
 
 interface MatchSummaryContentProps {
   fixture: any;
@@ -8,8 +9,7 @@ interface MatchSummaryContentProps {
   timelineEvents: any[];
   enhancedSuccess: boolean;
   enhancedData: any;
-  viewStyle?: 'compact' | 'full'; // Keep for backward compatibility but don't use
-  isExportMode?: boolean; // Keep for backward compatibility but ignore
+  isExportMode: boolean;
   formatTime: (seconds: number) => string;
   getGoalTeamId: (goal: any) => string;
   getGoalPlayerName: (goal: any) => string;
@@ -28,6 +28,7 @@ const MatchSummaryContent = ({
   timelineEvents,
   enhancedSuccess,
   enhancedData,
+  isExportMode,
   formatTime,
   getGoalTeamId,
   getGoalPlayerName,
@@ -38,30 +39,23 @@ const MatchSummaryContent = ({
   getCardType,
   isCardRed
 }: MatchSummaryContentProps) => {
+  // Use the new accordion layout by default for better UX
   return (
-    <div 
-      id="match-summary-content" 
-      className="space-y-6 w-full"
-    >
-      {/* Unified responsive container */}
-      <div className="w-full mx-auto max-w-4xl">
-        <AccordionMatchSummaryLayout
-          fixture={fixture}
-          goals={goals}
-          cards={cards}
-          timelineEvents={timelineEvents}
-          formatTime={formatTime}
-          getGoalTeamId={getGoalTeamId}
-          getGoalPlayerName={getGoalPlayerName}
-          getGoalTime={getGoalTime}
-          getCardTeamId={getCardTeamId}
-          getCardPlayerName={getCardPlayerName}
-          getCardTime={getCardTime}
-          getCardType={getCardType}
-          isCardRed={isCardRed}
-        />
-      </div>
-    </div>
+    <AccordionMatchSummaryLayout
+      fixture={fixture}
+      goals={goals}
+      cards={cards}
+      timelineEvents={timelineEvents}
+      formatTime={formatTime}
+      getGoalTeamId={getGoalTeamId}
+      getGoalPlayerName={getGoalPlayerName}
+      getGoalTime={getGoalTime}
+      getCardTeamId={getCardTeamId}
+      getCardPlayerName={getCardPlayerName}
+      getCardTime={getCardTime}
+      getCardType={getCardType}
+      isCardRed={isCardRed}
+    />
   );
 };
 
