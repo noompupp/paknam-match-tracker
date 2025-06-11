@@ -80,8 +80,8 @@ export const createEnhancedCardSlice: StateCreator<
           playerId: card.playerId || 0,
           playerName: card.playerName,
           teamId: card.teamId.toString(),
-          cardType: card.cardType,
-          eventTime: card.eventTime
+          cardType: card.type,
+          eventTime: card.time
         });
       }
 
