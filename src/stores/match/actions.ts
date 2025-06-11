@@ -23,6 +23,9 @@ export interface MatchActions {
   getPlayerTimesByFixture: (fixtureId: number) => MatchPlayerTime[];
   calculateTotalMinutesPlayed: (playerId: number) => number;
   getActivePlayersCount: () => number;
+  loadPlayerTimesFromDatabase: (fixtureId: number) => Promise<void>;
+  syncPlayerTimesToDatabase: (fixtureId: number) => Promise<void>;
+  clearPlayerTimes: () => void;
   
   // Computed getters
   getUnsavedGoalsCount: () => number;

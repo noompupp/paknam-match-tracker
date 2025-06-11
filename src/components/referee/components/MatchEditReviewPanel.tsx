@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -24,6 +24,7 @@ const MatchEditReviewPanel = ({
   formatTime
 }: MatchEditReviewPanelProps) => {
   const [activeTab, setActiveTab] = useState<'overview' | 'tracking' | 'review'>('overview');
+  const [isInitialized, setIsInitialized] = useState(false);
   
   // Get enhanced match data
   const { data: enhancedData, isLoading, refetch } = useEnhancedMatchSummary(selectedFixtureData?.id);
@@ -36,8 +37,33 @@ const MatchEditReviewPanel = ({
     cards, 
     playerTimes,
     hasUnsavedChanges,
-    getActivePlayersCount 
+    getActivePlayersCount,
+    getUnsavedItemsCount,
+    loadPlayerTimesFromDatabase,
+    syncPlayerTimesToDatabase,
+    setFixtureId
   } = useMatchStore();
+
+  // Initialize match store when fixture changes
+  useEffect(() => {
+    if (selectedFixtureData?.id && !isInitialized) {
+      console.log('🔄 Initializing match store for fixture:', selectedFixtureData.id);
+      setFixtureId(selectedFixtureData.id);
+      
+      // Load existing player times from database
+      loadPlayerTimesFromDatabase(selectedFixtureData.id)
+        .then(() => {
+          setIsInitialized(true);
+          console.log('✅ Match store initialized with database data');
+        })
+        .catch((error) => {
+          console.error('❌ Error initializing match store:', error);
+          setIsInitialized(true); // Continue even if loading fails
+        });
+    } else if (!selectedFixtureData?.id) {
+      setIsInitialized(false);
+    }
+  }, [selectedFixtureData?.id, setFixtureId, loadPlayerTimesFromDatabase, isInitialized]);
 
   if (!selectedFixtureData) {
     return (
@@ -61,6 +87,7 @@ const MatchEditReviewPanel = ({
   const localCardsCount = cards.length;
   const localPlayerTimesCount = playerTimes.length;
   const activePlayersCount = getActivePlayersCount();
+  const unsavedCounts = getUnsavedItemsCount();
 
   const databaseGoalsCount = enhancedData?.goals.length || 0;
   const databaseCardsCount = enhancedData?.cards.length || 0;
@@ -68,6 +95,20 @@ const MatchEditReviewPanel = ({
 
   const handleRefreshData = async () => {
     await refetch();
+    if (selectedFixtureData?.id) {
+      await loadPlayerTimesFromDatabase(selectedFixtureData.id);
+    }
+  };
+
+  const handleSyncData = async () => {
+    if (!selectedFixtureData?.id) return;
+    
+    try {
+      await syncPlayerTimesToDatabase(selectedFixtureData.id);
+      await refetch();
+    } catch (error) {
+      console.error('Error syncing data:', error);
+    }
   };
 
   return (
@@ -133,69 +174,85 @@ const MatchEditReviewPanel = ({
 
         <Separator />
 
+        {/* Loading State */}
+        {!isInitialized && (
+          <div className="text-center py-4">
+            <RefreshCw className="h-6 w-6 animate-spin mx-auto mb-2" />
+            <p className="text-sm text-muted-foreground">Initializing match data...</p>
+          </div>
+        )}
+
         {/* Tab Content */}
-        {activeTab === 'overview' && (
-          <MatchDataOverview
-            localData={{
-              goals: localGoalsCount,
-              cards: localCardsCount,
-              playerTimes: localPlayerTimesCount,
-              activePlayerCount: activePlayersCount
-            }}
-            databaseData={{
-              goals: databaseGoalsCount,
-              cards: databaseCardsCount,
-              playerTimes: databasePlayerTimesCount
-            }}
-            hasUnsavedChanges={hasUnsavedChanges}
-            isLoading={isLoading}
-            onRefreshData={handleRefreshData}
-          />
-        )}
+        {isInitialized && (
+          <>
+            {activeTab === 'overview' && (
+              <MatchDataOverview
+                localData={{
+                  goals: localGoalsCount,
+                  cards: localCardsCount,
+                  playerTimes: localPlayerTimesCount,
+                  activePlayerCount: activePlayersCount,
+                  unsyncedGoals: unsavedCounts.goals,
+                  unsyncedCards: unsavedCounts.cards,
+                  unsyncedPlayerTimes: unsavedCounts.playerTimes
+                }}
+                databaseData={{
+                  goals: databaseGoalsCount,
+                  cards: databaseCardsCount,
+                  playerTimes: databasePlayerTimesCount
+                }}
+                hasUnsavedChanges={hasUnsavedChanges}
+                isLoading={isLoading}
+                onRefreshData={handleRefreshData}
+                onSyncData={handleSyncData}
+              />
+            )}
 
-        {activeTab === 'tracking' && (
-          <PlayerTimeIntegrationPanel
-            selectedFixtureData={selectedFixtureData}
-            formatTime={formatTime}
-          />
-        )}
+            {activeTab === 'tracking' && (
+              <PlayerTimeIntegrationPanel
+                selectedFixtureData={selectedFixtureData}
+                formatTime={formatTime}
+              />
+            )}
 
-        {activeTab === 'review' && (
-          <div className="space-y-4">
-            <h4 className="font-semibold flex items-center gap-2">
-              <Eye className="h-4 w-4" />
-              Match Review Actions
-            </h4>
-            
-            <div className="grid grid-cols-1 gap-3">
-              <Button onClick={onEditMatch} className="w-full justify-start">
-                <Edit className="h-4 w-4 mr-2" />
-                Edit Match Details
-              </Button>
-              
-              <Button onClick={onViewSummary} variant="outline" className="w-full justify-start">
-                <Eye className="h-4 w-4 mr-2" />
-                View Complete Summary
-              </Button>
-              
-              <Button onClick={handleRefreshData} variant="outline" className="w-full justify-start">
-                <RefreshCw className="h-4 w-4 mr-2" />
-                Refresh Database Data
-              </Button>
-            </div>
-
-            {enhancedData && (
-              <div className="bg-green-50 border border-green-200 rounded-lg p-3 dark:bg-green-900/10 dark:border-green-800">
-                <div className="text-sm font-medium text-green-800 dark:text-green-400 mb-1">
-                  Database Summary Available
+            {activeTab === 'review' && (
+              <div className="space-y-4">
+                <h4 className="font-semibold flex items-center gap-2">
+                  <Eye className="h-4 w-4" />
+                  Match Review Actions
+                </h4>
+                
+                <div className="grid grid-cols-1 gap-3">
+                  <Button onClick={onEditMatch} className="w-full justify-start">
+                    <Edit className="h-4 w-4 mr-2" />
+                    Edit Match Details
+                  </Button>
+                  
+                  <Button onClick={onViewSummary} variant="outline" className="w-full justify-start">
+                    <Eye className="h-4 w-4 mr-2" />
+                    View Complete Summary
+                  </Button>
+                  
+                  <Button onClick={handleRefreshData} variant="outline" className="w-full justify-start">
+                    <RefreshCw className="h-4 w-4 mr-2" />
+                    Refresh Database Data
+                  </Button>
                 </div>
-                <div className="text-xs text-green-700 dark:text-green-500">
-                  Enhanced match data loaded with {enhancedData.goals.length} goals/assists, 
-                  {enhancedData.cards.length} cards, and {enhancedData.playerTimes.length} player time records.
-                </div>
+
+                {enhancedData && (
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-3 dark:bg-green-900/10 dark:border-green-800">
+                    <div className="text-sm font-medium text-green-800 dark:text-green-400 mb-1">
+                      Database Summary Available
+                    </div>
+                    <div className="text-xs text-green-700 dark:text-green-500">
+                      Enhanced match data loaded with {enhancedData.goals.length} goals/assists, 
+                      {enhancedData.cards.length} cards, and {enhancedData.playerTimes.length} player time records.
+                    </div>
+                  </div>
+                )}
               </div>
             )}
-          </div>
+          </>
         )}
 
         <Separator />
@@ -206,7 +263,7 @@ const MatchEditReviewPanel = ({
             onClick={onEditMatch} 
             size="sm" 
             className="flex-1"
-            disabled={!selectedFixtureData}
+            disabled={!selectedFixtureData || !isInitialized}
           >
             <Edit className="h-4 w-4 mr-1" />
             Edit Match
@@ -217,7 +274,7 @@ const MatchEditReviewPanel = ({
             variant="outline" 
             size="sm" 
             className="flex-1"
-            disabled={!selectedFixtureData}
+            disabled={!selectedFixtureData || !isInitialized}
           >
             <Eye className="h-4 w-4 mr-1" />
             View Summary

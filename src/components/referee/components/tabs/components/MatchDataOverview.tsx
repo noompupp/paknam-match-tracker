@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Database, Smartphone, AlertTriangle, RefreshCw } from "lucide-react";
+import { Loader2, Database, Smartphone, AlertTriangle, RefreshCw, Sync } from "lucide-react";
 
 interface MatchDataOverviewProps {
   localData: {
@@ -11,6 +11,9 @@ interface MatchDataOverviewProps {
     cards: number;
     playerTimes: number;
     activePlayerCount: number;
+    unsyncedPlayerTimes?: number;
+    unsyncedGoals?: number;
+    unsyncedCards?: number;
   };
   databaseData: {
     goals: number;
@@ -20,6 +23,7 @@ interface MatchDataOverviewProps {
   hasUnsavedChanges: boolean;
   isLoading: boolean;
   onRefreshData: () => void;
+  onSyncData?: () => void;
 }
 
 const MatchDataOverview = ({
@@ -27,7 +31,8 @@ const MatchDataOverview = ({
   databaseData,
   hasUnsavedChanges,
   isLoading,
-  onRefreshData
+  onRefreshData,
+  onSyncData
 }: MatchDataOverviewProps) => {
   const dataDiscrepancies = {
     goals: localData.goals !== databaseData.goals,
@@ -36,24 +41,42 @@ const MatchDataOverview = ({
   };
 
   const hasDiscrepancies = Object.values(dataDiscrepancies).some(Boolean);
+  const totalUnsyncedItems = (localData.unsyncedGoals || 0) + (localData.unsyncedCards || 0) + (localData.unsyncedPlayerTimes || 0);
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h4 className="font-semibold">Match Data Overview</h4>
-        <Button
-          onClick={onRefreshData}
-          variant="outline"
-          size="sm"
-          disabled={isLoading}
-        >
-          {isLoading ? (
-            <Loader2 className="h-4 w-4 animate-spin mr-1" />
-          ) : (
-            <RefreshCw className="h-4 w-4 mr-1" />
+        <div className="flex gap-2">
+          {totalUnsyncedItems > 0 && onSyncData && (
+            <Button
+              onClick={onSyncData}
+              variant="default"
+              size="sm"
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin mr-1" />
+              ) : (
+                <Sync className="h-4 w-4 mr-1" />
+              )}
+              Sync ({totalUnsyncedItems})
+            </Button>
           )}
-          Refresh
-        </Button>
+          <Button
+            onClick={onRefreshData}
+            variant="outline"
+            size="sm"
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <Loader2 className="h-4 w-4 animate-spin mr-1" />
+            ) : (
+              <RefreshCw className="h-4 w-4 mr-1" />
+            )}
+            Refresh
+          </Button>
+        </div>
       </div>
 
       {/* Data Comparison Cards */}
@@ -74,15 +97,36 @@ const MatchDataOverview = ({
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span>Goals/Assists:</span>
-                <span className="font-medium">{localData.goals}</span>
+                <div className="flex items-center gap-1">
+                  <span className="font-medium">{localData.goals}</span>
+                  {(localData.unsyncedGoals || 0) > 0 && (
+                    <Badge variant="outline" className="text-xs">
+                      {localData.unsyncedGoals} unsaved
+                    </Badge>
+                  )}
+                </div>
               </div>
               <div className="flex justify-between">
                 <span>Cards:</span>
-                <span className="font-medium">{localData.cards}</span>
+                <div className="flex items-center gap-1">
+                  <span className="font-medium">{localData.cards}</span>
+                  {(localData.unsyncedCards || 0) > 0 && (
+                    <Badge variant="outline" className="text-xs">
+                      {localData.unsyncedCards} unsaved
+                    </Badge>
+                  )}
+                </div>
               </div>
               <div className="flex justify-between">
                 <span>Player Times:</span>
-                <span className="font-medium">{localData.playerTimes}</span>
+                <div className="flex items-center gap-1">
+                  <span className="font-medium">{localData.playerTimes}</span>
+                  {(localData.unsyncedPlayerTimes || 0) > 0 && (
+                    <Badge variant="outline" className="text-xs">
+                      {localData.unsyncedPlayerTimes} unsaved
+                    </Badge>
+                  )}
+                </div>
               </div>
               <div className="flex justify-between">
                 <span>Active Players:</span>
@@ -135,8 +179,8 @@ const MatchDataOverview = ({
               </div>
               <div className="flex justify-between">
                 <span>Synced:</span>
-                <Badge variant={hasDiscrepancies ? "destructive" : "default"} className="text-xs">
-                  {hasDiscrepancies ? "No" : "Yes"}
+                <Badge variant={hasDiscrepancies || hasUnsavedChanges ? "destructive" : "default"} className="text-xs">
+                  {hasDiscrepancies || hasUnsavedChanges ? "No" : "Yes"}
                 </Badge>
               </div>
             </div>
@@ -155,6 +199,7 @@ const MatchDataOverview = ({
           </div>
           <p className="text-xs text-orange-700 dark:text-orange-500 mt-1">
             Local match data has been modified and needs to be saved to the database.
+            {totalUnsyncedItems > 0 && ` ${totalUnsyncedItems} items pending sync.`}
           </p>
         </div>
       )}
@@ -169,6 +214,20 @@ const MatchDataOverview = ({
           </div>
           <p className="text-xs text-blue-700 dark:text-blue-500 mt-1">
             Database contains different data. Refresh to see the latest information.
+          </p>
+        </div>
+      )}
+
+      {!hasDiscrepancies && !hasUnsavedChanges && totalUnsyncedItems === 0 && (
+        <div className="bg-green-50 border border-green-200 rounded-lg p-3 dark:bg-green-900/10 dark:border-green-800">
+          <div className="flex items-center gap-2">
+            <Database className="h-4 w-4 text-green-600" />
+            <span className="text-sm font-medium text-green-800 dark:text-green-400">
+              Data Synchronized
+            </span>
+          </div>
+          <p className="text-xs text-green-700 dark:text-green-500 mt-1">
+            All local and database data is synchronized and up to date.
           </p>
         </div>
       )}
