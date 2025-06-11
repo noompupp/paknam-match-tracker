@@ -1,211 +1,82 @@
 
+import { Team } from "@/types/database";
+import MatchPreviewSimplifiedTable from "./MatchPreviewSimplifiedTable";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Trophy, TrendingUp, Target, Activity, Zap } from "lucide-react";
-import { Team, Fixture } from "@/types/database";
-import { formatDateDisplay } from "@/utils/timeUtils";
-import MatchPreviewLeagueTable from "./MatchPreviewLeagueTable";
-import { calculateMatchInsights } from "./MatchInsightsCalculator";
+import { TrendingUp, Calendar, MapPin } from "lucide-react";
 
 interface MatchPreviewOverviewProps {
   homeTeam: Team;
   awayTeam: Team;
-  headToHead: Fixture[];
+  headToHead?: any[];
 }
 
 const MatchPreviewOverview = ({ homeTeam, awayTeam, headToHead }: MatchPreviewOverviewProps) => {
-  const getTeamStats = (team: Team) => ({
-    position: team.position,
-    points: team.points,
-    played: team.played,
-    goalDifference: team.goal_difference,
-    form: `${team.won}W ${team.drawn}D ${team.lost}L`,
-    attackStrength: team.goals_for / Math.max(team.played, 1),
-    defenseStrength: team.goals_against / Math.max(team.played, 1)
-  });
-
-  const homeStats = getTeamStats(homeTeam);
-  const awayStats = getTeamStats(awayTeam);
-
-  const getHeadToHeadSummary = () => {
-    let homeWins = 0;
-    let awayWins = 0;
-    let draws = 0;
-
-    headToHead.forEach(match => {
-      if (match.home_score === match.away_score) {
-        draws++;
-      } else if (
-        (match.home_team_id === homeTeam.__id__ && match.home_score! > match.away_score!) ||
-        (match.away_team_id === homeTeam.__id__ && match.away_score! > match.home_score!)
-      ) {
-        homeWins++;
-      } else {
-        awayWins++;
-      }
-    });
-
-    return { homeWins, awayWins, draws };
-  };
-
-  const h2hSummary = getHeadToHeadSummary();
-
-  const getFormColor = (won: number, total: number) => {
-    const percentage = won / Math.max(total, 1);
-    if (percentage >= 0.7) return 'text-green-600';
-    if (percentage >= 0.4) return 'text-yellow-600';
-    return 'text-red-600';
-  };
-
-  const matchInsights = calculateMatchInsights(homeTeam, awayTeam);
-
   return (
-    <div className="space-y-6">
-      {/* League Table with Highlighted Teams */}
-      <MatchPreviewLeagueTable 
+    <div className="space-y-4 sm:space-y-6">
+      {/* Simplified League Position Table */}
+      <MatchPreviewSimplifiedTable 
         homeTeam={homeTeam}
         awayTeam={awayTeam}
       />
 
-      {/* Team Performance Metrics */}
-      <Card>
-        <CardHeader className="pb-4">
-          <CardTitle className="flex items-center gap-2 text-lg">
-            <Activity className="h-5 w-5 text-secondary" />
-            Performance Metrics
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="pt-0">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            {/* Home Team Metrics */}
-            <div className="space-y-4">
-              <h4 className="font-semibold text-center text-lg border-b pb-2">{homeTeam.name}</h4>
-              <div className="space-y-3">
-                <div className="flex justify-between items-center p-2 rounded bg-muted/30">
-                  <span className="text-sm text-muted-foreground">Season Record</span>
-                  <span className={`font-mono text-sm ${getFormColor(homeTeam.won, homeStats.played)}`}>
-                    {homeStats.form}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center p-2 rounded bg-muted/30">
-                  <span className="text-sm text-muted-foreground">Goal Difference</span>
-                  <span className={`font-semibold ${homeStats.goalDifference >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                    {homeStats.goalDifference > 0 ? '+' : ''}{homeStats.goalDifference}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center p-2 rounded bg-muted/30">
-                  <span className="text-sm text-muted-foreground">Goals/Game</span>
-                  <span className="font-semibold">{homeStats.attackStrength.toFixed(1)}</span>
-                </div>
-                <div className="flex justify-between items-center p-2 rounded bg-muted/30">
-                  <span className="text-sm text-muted-foreground">Conceded/Game</span>
-                  <span className="font-semibold">{homeStats.defenseStrength.toFixed(1)}</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Away Team Metrics */}
-            <div className="space-y-4">
-              <h4 className="font-semibold text-center text-lg border-b pb-2">{awayTeam.name}</h4>
-              <div className="space-y-3">
-                <div className="flex justify-between items-center p-2 rounded bg-muted/30">
-                  <span className="text-sm text-muted-foreground">Season Record</span>
-                  <span className={`font-mono text-sm ${getFormColor(awayTeam.won, awayStats.played)}`}>
-                    {awayStats.form}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center p-2 rounded bg-muted/30">
-                  <span className="text-sm text-muted-foreground">Goal Difference</span>
-                  <span className={`font-semibold ${awayStats.goalDifference >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                    {awayStats.goalDifference > 0 ? '+' : ''}{awayStats.goalDifference}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center p-2 rounded bg-muted/30">
-                  <span className="text-sm text-muted-foreground">Goals/Game</span>
-                  <span className="font-semibold">{awayStats.attackStrength.toFixed(1)}</span>
-                </div>
-                <div className="flex justify-between items-center p-2 rounded bg-muted/30">
-                  <span className="text-sm text-muted-foreground">Conceded/Game</span>
-                  <span className="font-semibold">{awayStats.defenseStrength.toFixed(1)}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Head to Head */}
-      {headToHead.length > 0 && (
-        <Card>
-          <CardHeader className="pb-4">
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <Target className="h-5 w-5 text-primary" />
-              Head to Head Record
-              <Badge variant="outline" className="ml-auto">
-                {headToHead.length} matches
-              </Badge>
+      {/* Head-to-Head Section */}
+      {headToHead && headToHead.length > 0 && (
+        <Card className="card-shadow-lg animate-fade-in">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+              <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5" />
+              Head-to-Head
             </CardTitle>
           </CardHeader>
-          <CardContent className="pt-0">
-            {/* H2H Summary */}
-            <div className="grid grid-cols-3 gap-4 mb-6">
-              <div className="text-center p-4 rounded-lg bg-green-50 border border-green-200">
-                <div className="text-3xl font-bold text-green-600 mb-1">{h2hSummary.homeWins}</div>
-                <p className="text-sm text-green-700 font-medium truncate">{homeTeam.name} wins</p>
-              </div>
-              
-              <div className="text-center p-4 rounded-lg bg-gray-50 border border-gray-200">
-                <div className="text-3xl font-bold text-gray-600 mb-1">{h2hSummary.draws}</div>
-                <p className="text-sm text-gray-700 font-medium">Draws</p>
-              </div>
-              
-              <div className="text-center p-4 rounded-lg bg-blue-50 border border-blue-200">
-                <div className="text-3xl font-bold text-blue-600 mb-1">{h2hSummary.awayWins}</div>
-                <p className="text-sm text-blue-700 font-medium truncate">{awayTeam.name} wins</p>
-              </div>
-            </div>
-            
-            {/* Recent Meetings */}
-            <div className="space-y-3">
-              <h5 className="font-medium text-sm text-muted-foreground mb-3">Recent Meetings:</h5>
-              <div className="space-y-2">
-                {headToHead.slice(0, 5).map((match, index) => (
-                  <div key={match.id} className="flex justify-between items-center p-3 rounded-lg bg-muted/30 border border-border/50">
-                    <span className="text-sm text-muted-foreground">
-                      {formatDateDisplay(match.match_date)}
+          <CardContent className="space-y-3">
+            <p className="text-sm text-muted-foreground">
+              Recent encounters between these teams
+            </p>
+            <div className="grid gap-2">
+              {headToHead.slice(0, 3).map((match, index) => (
+                <div key={index} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
+                  <div className="flex items-center gap-2 text-sm">
+                    <Calendar className="h-3 w-3 text-muted-foreground" />
+                    <span className="text-muted-foreground">
+                      {new Date(match.date).toLocaleDateString()}
                     </span>
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium text-sm">
-                        {match.home_score} - {match.away_score}
-                      </span>
-                      {index === 0 && (
-                        <Badge variant="secondary" className="text-xs">Latest</Badge>
-                      )}
-                    </div>
                   </div>
-                ))}
-              </div>
+                  <div className="font-medium text-sm">
+                    {match.home_team_name} {match.home_score} - {match.away_score} {match.away_team_name}
+                  </div>
+                </div>
+              ))}
             </div>
           </CardContent>
         </Card>
       )}
 
-      {/* Enhanced Match Insights */}
-      <Card className="bg-gradient-to-br from-primary/5 to-secondary/5 border border-primary/20">
-        <CardHeader className="pb-4">
-          <CardTitle className="flex items-center gap-2 text-lg">
-            <Zap className="h-5 w-5 text-primary" />
-            Match Insights
+      {/* Match Context */}
+      <Card className="card-shadow-lg animate-fade-in">
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+            <MapPin className="h-4 w-4 sm:h-5 sm:w-5" />
+            Match Context
           </CardTitle>
         </CardHeader>
-        <CardContent className="pt-0">
-          <div className="space-y-3">
-            {matchInsights.map((insight, index) => (
-              <div key={index} className={`p-3 rounded-lg border ${insight.color}`}>
-                <h6 className="font-semibold text-sm mb-1">{insight.title}</h6>
-                <p className="text-sm">{insight.description}</p>
-              </div>
-            ))}
+        <CardContent className="space-y-3">
+          <div className="grid gap-3">
+            <div className="flex justify-between items-center p-3 bg-muted/30 rounded-lg">
+              <span className="text-sm font-medium">Home Team</span>
+              <span className="text-sm">{homeTeam.name}</span>
+            </div>
+            <div className="flex justify-between items-center p-3 bg-muted/30 rounded-lg">
+              <span className="text-sm font-medium">Away Team</span>
+              <span className="text-sm">{awayTeam.name}</span>
+            </div>
+            <div className="flex justify-between items-center p-3 bg-muted/30 rounded-lg">
+              <span className="text-sm font-medium">Home Position</span>
+              <span className="text-sm font-bold text-primary">{homeTeam.position}</span>
+            </div>
+            <div className="flex justify-between items-center p-3 bg-muted/30 rounded-lg">
+              <span className="text-sm font-medium">Away Position</span>
+              <span className="text-sm font-bold text-primary">{awayTeam.position}</span>
+            </div>
           </div>
         </CardContent>
       </Card>

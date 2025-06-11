@@ -18,7 +18,7 @@ const MatchPreviewModalTabs = ({ matchData }: MatchPreviewModalTabsProps) => {
   return (
     <Tabs defaultValue="overview" className="w-full">
       <TabsList className={cn(
-        "grid w-full grid-cols-3 mb-6 bg-muted/50 backdrop-blur-sm border border-border/30 rounded-lg",
+        "grid w-full grid-cols-3 mb-4 bg-muted/50 backdrop-blur-sm border border-border/30 rounded-lg",
         isMobilePortrait ? "h-10 p-1" : "h-11 p-1"
       )}>
         <TabsTrigger 
@@ -50,7 +50,7 @@ const MatchPreviewModalTabs = ({ matchData }: MatchPreviewModalTabsProps) => {
         </TabsTrigger>
       </TabsList>
       
-      <TabsContent value="overview" className="space-y-6 mt-0">
+      <TabsContent value="overview" className="space-y-4 mt-0">
         <MatchPreviewOverview 
           homeTeam={matchData.homeTeam}
           awayTeam={matchData.awayTeam}
@@ -58,7 +58,7 @@ const MatchPreviewModalTabs = ({ matchData }: MatchPreviewModalTabsProps) => {
         />
       </TabsContent>
       
-      <TabsContent value="squads" className="space-y-6 mt-0">
+      <TabsContent value="squads" className="space-y-4 mt-0">
         <MatchPreviewSquads 
           homeTeam={matchData.homeTeam}
           awayTeam={matchData.awayTeam}
@@ -67,7 +67,7 @@ const MatchPreviewModalTabs = ({ matchData }: MatchPreviewModalTabsProps) => {
         />
       </TabsContent>
       
-      <TabsContent value="form" className="space-y-6 mt-0">
+      <TabsContent value="form" className="space-y-4 mt-0">
         <MatchPreviewForm 
           homeTeam={matchData.homeTeam}
           awayTeam={matchData.awayTeam}

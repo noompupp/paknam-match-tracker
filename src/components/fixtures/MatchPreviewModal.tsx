@@ -60,41 +60,19 @@ const MatchPreviewModal = ({ fixture, isOpen, onClose }: MatchPreviewModalProps)
 
   return (
     <EnhancedDialog open={isOpen} onOpenChange={handleClose}>
-      <EnhancedDialogContent 
-        className={`
-          ${isMobile 
-            ? 'w-[100vw] max-w-[100vw] h-[100vh] max-h-[100vh] m-0 rounded-none p-0' 
-            : 'w-[95vw] max-w-4xl max-h-[90vh] p-0'
-          } 
-          bg-gradient-to-b from-background via-background to-muted/20
-        `}
-      >
-        <div className={`flex flex-col h-full ${isMobile ? 'max-h-[100vh]' : 'max-h-[90vh]'}`}>
-          {/* Fixed Header */}
-          <EnhancedDialogHeader 
-            className={`
-              mobile-modal-header flex-shrink-0 border-b bg-gradient-to-r from-primary/5 to-secondary/5 backdrop-blur-sm
-              ${isMobile ? 'px-4 py-3' : 'px-4 py-3 sm:px-6 sm:py-4'}
-            `}
-          >
-            <EnhancedDialogTitle className="text-lg sm:text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-              Match Preview
-            </EnhancedDialogTitle>
-          </EnhancedDialogHeader>
+      <EnhancedDialogContent className="w-[100vw] h-[100vh] sm:w-[95vw] sm:h-auto sm:max-w-4xl sm:max-h-[90vh] overflow-y-auto p-4 sm:p-6 sm:rounded-lg">
+        <EnhancedDialogHeader className="pb-3 sm:pb-4">
+          <EnhancedDialogTitle className="flex items-center gap-2 text-lg sm:text-xl font-bold">
+            Match Preview
+          </EnhancedDialogTitle>
+        </EnhancedDialogHeader>
 
-          {/* Scrollable Content Container */}
-          <div 
-            className={`
-              flex-1 overflow-y-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-border/50
-              ${isMobile ? 'mobile-modal-content' : ''}
-            `}
-          >
-            <MatchPreviewModalContent 
-              matchData={matchData}
-              isLoading={isLoading}
-              error={error}
-            />
-          </div>
+        <div className="space-y-4 sm:space-y-6">
+          <MatchPreviewModalContent 
+            matchData={matchData}
+            isLoading={isLoading}
+            error={error}
+          />
         </div>
       </EnhancedDialogContent>
     </EnhancedDialog>

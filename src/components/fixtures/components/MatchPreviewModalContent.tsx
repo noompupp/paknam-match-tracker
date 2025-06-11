@@ -19,14 +19,12 @@ const MatchPreviewModalContent = ({ matchData, isLoading, error }: MatchPreviewM
 
   if (error) {
     return (
-      <div className="p-3 sm:p-6 w-full">
-        <Alert className="border-destructive/50 bg-destructive/5 w-full">
-          <Info className="h-4 w-4" />
-          <AlertDescription className="text-destructive-foreground">
-            {error}
-          </AlertDescription>
-        </Alert>
-      </div>
+      <Alert className="border-destructive/50 bg-destructive/5 w-full">
+        <Info className="h-4 w-4" />
+        <AlertDescription className="text-destructive-foreground">
+          {error}
+        </AlertDescription>
+      </Alert>
     );
   }
 
@@ -35,8 +33,8 @@ const MatchPreviewModalContent = ({ matchData, isLoading, error }: MatchPreviewM
   }
 
   return (
-    <div className="p-3 sm:p-6 space-y-6 w-full">
-      {/* New Mobile-First Match Header */}
+    <div className="space-y-4 sm:space-y-6 w-full">
+      {/* Match Header */}
       <MatchPreviewHeader 
         fixture={matchData.fixture}
         homeTeam={matchData.homeTeam}
@@ -45,7 +43,7 @@ const MatchPreviewModalContent = ({ matchData, isLoading, error }: MatchPreviewM
         venue={matchData.venue}
       />
       
-      {/* Enhanced Mobile-Optimized Tabs */}
+      {/* Tabs Content */}
       <MatchPreviewModalTabs matchData={matchData} />
     </div>
   );
