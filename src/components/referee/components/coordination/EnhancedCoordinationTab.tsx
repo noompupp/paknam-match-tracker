@@ -1,13 +1,13 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Users, CheckCircle, Clock, AlertCircle, Play } from "lucide-react";
+import { Users, CheckCircle, AlertCircle } from "lucide-react";
 import { useCoordinationManager } from "../../hooks/useCoordinationManager";
 import { useRoleBasedAccess } from "../../hooks/useRoleBasedAccess";
 import { ROLE_LABELS } from './constants';
+import TaskCompletionButton from './TaskCompletionButton';
 
 interface EnhancedCoordinationTabProps {
   selectedFixtureData: any;
@@ -33,7 +33,7 @@ const EnhancedCoordinationTab = ({ selectedFixtureData }: EnhancedCoordinationTa
     );
   }
 
-  if (isLoading) {
+  if (isLoading && !coordinationData) {
     return (
       <Card>
         <CardContent className="flex items-center justify-center py-12">
@@ -138,31 +138,14 @@ const EnhancedCoordinationTab = ({ selectedFixtureData }: EnhancedCoordinationTa
                     </p>
                   )}
 
-                  {assignment.status !== 'completed' && (
-                    <div className="flex gap-2 mt-3">
-                      {assignment.status === 'assigned' && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => activateAssignment(assignment.assignment_id)}
-                          disabled={isLoading}
-                        >
-                          <Play className="h-3 w-3 mr-1" />
-                          Start Task
-                        </Button>
-                      )}
-                      {assignment.status === 'active' && (
-                        <Button
-                          size="sm"
-                          onClick={() => completeAssignment(assignment.assignment_id)}
-                          disabled={isLoading}
-                        >
-                          <CheckCircle className="h-3 w-3 mr-1" />
-                          Mark Complete
-                        </Button>
-                      )}
-                    </div>
-                  )}
+                  <div className="mt-3">
+                    <TaskCompletionButton
+                      assignment={assignment}
+                      onActivate={activateAssignment}
+                      onComplete={completeAssignment}
+                      isLoading={isLoading}
+                    />
+                  </div>
                 </div>
               ))}
             </div>

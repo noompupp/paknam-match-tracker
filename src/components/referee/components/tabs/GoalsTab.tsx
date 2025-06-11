@@ -1,65 +1,68 @@
 
-import { ComponentPlayer } from "../../hooks/useRefereeState";
-import GoalsTabContainer from "./components/GoalsTabContainer";
+import React from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Target } from "lucide-react";
+import ScoreDisplay from '../ScoreDisplay';
+import GoalEntryWizard from '../GoalEntryWizard';
+import { ComponentPlayer } from '../../hooks/useRefereeState';
 
 interface GoalsTabProps {
-  allPlayers: ComponentPlayer[];
+  selectedFixtureData: any;
   homeTeamPlayers?: ComponentPlayer[];
   awayTeamPlayers?: ComponentPlayer[];
-  goals: any[];
-  selectedPlayer: string;
-  selectedGoalType: 'goal' | 'assist';
-  selectedGoalTeam: string;
   matchTime: number;
-  selectedFixtureData: any;
-  onPlayerSelect: (value: string) => void;
-  onGoalTypeChange: (value: 'goal' | 'assist') => void;
-  onGoalTeamChange: (value: string) => void;
   formatTime: (seconds: number) => string;
-  assignGoal: (player: any, matchTime: number, fixtureId: number, homeTeam: any, awayTeam: any) => any;
+  onGoalAssigned: (goalData: any) => void;
+  homeScore: number;
+  awayScore: number;
+  showGoalWizard: boolean;
+  onCancelGoalWizard: () => void;
 }
 
-const GoalsTab = (props: GoalsTabProps) => {
-  // We need to add missing props that GoalsTabContainer expects
-  const handleAssignGoal = (player: ComponentPlayer) => {
-    if (!props.selectedFixtureData) return;
-    
-    const homeTeam = {
-      id: props.selectedFixtureData.home_team?.__id__ || props.selectedFixtureData.home_team_id,
-      name: props.selectedFixtureData.home_team?.name || 'Home Team'
-    };
-    
-    const awayTeam = {
-      id: props.selectedFixtureData.away_team?.__id__ || props.selectedFixtureData.away_team_id,
-      name: props.selectedFixtureData.away_team?.name || 'Away Team'
-    };
-    
-    props.assignGoal(player, props.matchTime, props.selectedFixtureData.id, homeTeam, awayTeam);
-  };
-
-  // Calculate scores from goals
-  const homeScore = props.goals.filter(g => g.team === 'home' && g.type === 'goal').length;
-  const awayScore = props.goals.filter(g => g.team === 'away' && g.type === 'goal').length;
-
+const GoalsTab = ({
+  selectedFixtureData,
+  homeTeamPlayers,
+  awayTeamPlayers,
+  matchTime,
+  formatTime,
+  onGoalAssigned,
+  homeScore,
+  awayScore,
+  showGoalWizard,
+  onCancelGoalWizard
+}: GoalsTabProps) => {
   return (
-    <GoalsTabContainer
-      allPlayers={props.allPlayers}
-      homeTeamPlayers={props.homeTeamPlayers}
-      awayTeamPlayers={props.awayTeamPlayers}
-      goals={props.goals}
-      selectedPlayer={props.selectedPlayer}
-      selectedGoalType={props.selectedGoalType}
-      selectedGoalTeam={props.selectedGoalTeam}
-      matchTime={props.matchTime}
-      onPlayerSelect={props.onPlayerSelect}
-      onGoalTypeChange={props.onGoalTypeChange}
-      onGoalTeamChange={props.onGoalTeamChange}
-      onAssignGoal={handleAssignGoal}
-      formatTime={props.formatTime}
-      homeScore={homeScore}
-      awayScore={awayScore}
-      selectedFixtureData={props.selectedFixtureData}
-    />
+    <div className="space-y-6">
+      {/* Database-driven scoreboard */}
+      <ScoreDisplay 
+        selectedFixtureData={selectedFixtureData}
+        localHomeScore={homeScore}
+        localAwayScore={awayScore}
+        showLocal={true}
+      />
+
+      {showGoalWizard && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Target className="h-5 w-5" />
+              Goal Entry
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <GoalEntryWizard
+              selectedFixtureData={selectedFixtureData}
+              homeTeamPlayers={homeTeamPlayers}
+              awayTeamPlayers={awayTeamPlayers}
+              matchTime={matchTime}
+              formatTime={formatTime}
+              onGoalAssigned={onGoalAssigned}
+              onCancel={onCancelGoalWizard}
+            />
+          </CardContent>
+        </Card>
+      )}
+    </div>
   );
 };
 
