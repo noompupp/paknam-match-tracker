@@ -18,6 +18,7 @@ interface CardsTabProps {
   onPlayerSelect: (value: string) => void;
   onTeamChange: (value: string) => void;
   onCardTypeChange: (value: 'yellow' | 'red') => void;
+  onCardAdded?: (cardData: any) => void; // Add callback for local state update
   formatTime: (seconds: number) => string;
 }
 
@@ -34,6 +35,7 @@ const CardsTab = ({
   onPlayerSelect,
   onTeamChange,
   onCardTypeChange,
+  onCardAdded,
   formatTime
 }: CardsTabProps) => {
   const { toast } = useToast();
@@ -72,7 +74,7 @@ const CardsTab = ({
     }
 
     try {
-      console.log('🟨🟥 CardsTab: Adding card with improved team ID resolution:', {
+      console.log('🟨🟥 CardsTab: Adding card with local state update:', {
         player: player.name,
         team: player.team,
         cardType: selectedCardType,
@@ -112,7 +114,39 @@ const CardsTab = ({
         eventTime: matchTime
       });
 
+      // Create local card data for immediate UI update
+      const localCardData = {
+        id: Date.now(), // Temporary ID for local state
+        player: player.name,
+        playerId: player.id,
+        team: selectedTeam,
+        teamId: normalizedTeamId,
+        type: selectedCardType,
+        cardType: selectedCardType,
+        time: matchTime,
+        timestamp: new Date().toISOString(),
+        synced: true // Mark as synced since we just saved to DB
+      };
+
+      // Update local state immediately
+      if (onCardAdded) {
+        onCardAdded(localCardData);
+      }
+
+      // Handle second yellow card scenario
       if (cardResult && cardResult.isSecondYellow) {
+        // Add red card to local state as well
+        const redCardData = {
+          ...localCardData,
+          id: Date.now() + 1,
+          type: 'red' as const,
+          cardType: 'red' as const
+        };
+        
+        if (onCardAdded) {
+          onCardAdded(redCardData);
+        }
+
         toast({
           title: "Second Yellow Card",
           description: `${player.name} receives automatic red card for second yellow`,
@@ -125,7 +159,10 @@ const CardsTab = ({
         });
       }
 
-      console.log('✅ CardsTab: Card successfully added and saved');
+      // Reset selection after successful add
+      onPlayerSelect('');
+
+      console.log('✅ CardsTab: Card successfully added and local state updated');
     } catch (error) {
       console.error('❌ CardsTab: Failed to add card:', error);
       

@@ -1,6 +1,7 @@
-
 import { useState } from "react";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { RefreshCw } from "lucide-react";
 import RefereeTabsNavigation from "./RefereeTabsNavigation";
 import ScoreTab from "./tabs/ScoreTab";
 import UnifiedTimerTab from "./tabs/UnifiedTimerTab";
@@ -10,6 +11,7 @@ import SummaryTab from "./tabs/SummaryTab";
 import MatchEditReviewPanel from "./MatchEditReviewPanel";
 import GoalEntryWizard from "./GoalEntryWizard";
 import { ComponentPlayer } from "../hooks/useRefereeState";
+import { useManualDataFetch } from "@/hooks/useManualDataFetch";
 
 interface RefereeToolsMainProps {
   selectedFixtureData: any;
@@ -47,12 +49,27 @@ interface RefereeToolsMainProps {
   addPlayer: (player: ComponentPlayer) => void;
   removePlayer: (playerId: number) => void;
   togglePlayerTime: (playerId: number) => void;
+  onCardAdded?: (cardData: any) => void; // Add callback for card management
+  onDataRefresh?: () => void; // Add callback for manual refresh
 }
 
 const RefereeToolsMain = (props: RefereeToolsMainProps) => {
   const [showGoalWizard, setShowGoalWizard] = useState(false);
   const [goalWizardInitialTeam, setGoalWizardInitialTeam] = useState<'home' | 'away' | undefined>(undefined);
   const [showMatchEdit, setShowMatchEdit] = useState(false);
+
+  // Manual data fetching (replaces real-time sync)
+  const { manualRefresh, isRefreshing } = useManualDataFetch({ 
+    fixtureId: props.selectedFixtureData?.id 
+  });
+
+  // Handle manual refresh
+  const handleManualRefresh = async () => {
+    await manualRefresh();
+    if (props.onDataRefresh) {
+      props.onDataRefresh();
+    }
+  };
 
   // Handle quick goal from Score tab
   const handleQuickGoal = (team: 'home' | 'away') => {
@@ -185,6 +202,20 @@ const RefereeToolsMain = (props: RefereeToolsMainProps) => {
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       {/* Main Content Area (2/3 width on large screens) */}
       <div className="lg:col-span-2">
+        {/* Manual Refresh Button */}
+        <div className="mb-4 flex justify-end">
+          <Button
+            onClick={handleManualRefresh}
+            disabled={isRefreshing}
+            variant="outline"
+            size="sm"
+            className="flex items-center gap-2"
+          >
+            <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+            {isRefreshing ? 'Refreshing...' : 'Refresh Data'}
+          </Button>
+        </div>
+
         <Tabs defaultValue="score" className="w-full">
           <RefereeTabsNavigation />
           
@@ -258,6 +289,7 @@ const RefereeToolsMain = (props: RefereeToolsMainProps) => {
               onPlayerSelect={props.setSelectedPlayer}
               onTeamChange={props.setSelectedTeam}
               onCardTypeChange={props.setSelectedCardType}
+              onCardAdded={props.onCardAdded}
               formatTime={props.formatTime}
             />
           </TabsContent>
