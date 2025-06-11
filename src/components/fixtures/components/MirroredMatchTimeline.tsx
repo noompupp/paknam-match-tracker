@@ -138,47 +138,60 @@ const MirroredMatchTimeline = ({
   };
 
   const TimelineEventCard = ({ event, isHome }: { event: TimelineEvent; isHome: boolean }) => (
-    <div className="animate-fade-in">
+    <div className="animate-fade-in w-full">
       <div 
         className={`
           ${isMobile ? 'p-2' : 'p-3'} 
           rounded-lg border-2 bg-muted/20 
           ${isHome ? 'border-l-4 border-r-0' : 'border-r-4 border-l-0'}
           transition-all duration-200 hover:bg-muted/30
+          w-full
         `}
         style={{ 
           borderLeftColor: isHome ? event.teamColor : 'transparent',
           borderRightColor: isHome ? 'transparent' : event.teamColor
         }}
       >
-        <div className={`flex items-center gap-2 ${isHome ? 'justify-start' : 'justify-end'}`}>
+        <div className={`flex items-center gap-2 ${isHome ? 'justify-start' : 'justify-end'} w-full`}>
           {isHome && (
-            <span className={`${isMobile ? 'text-sm' : 'text-lg'}`} role="img" aria-label={getEventLabel(event)}>
+            <span className={`${isMobile ? 'text-sm' : 'text-lg'} flex-shrink-0`} role="img" aria-label={getEventLabel(event)}>
               {getEventIcon(event)}
             </span>
           )}
           {isHome && (
-            <Badge variant={getEventBadgeVariant(event)} className={`${isMobile ? 'text-xs px-1.5 py-0.5' : 'text-xs'}`}>
+            <Badge variant={getEventBadgeVariant(event)} className={`${isMobile ? 'text-xs px-1.5 py-0.5' : 'text-xs'} flex-shrink-0`}>
               {getEventLabel(event)}
             </Badge>
           )}
-          <div className="min-w-0 flex-1">
-            <div className={`font-medium text-foreground break-words ${isMobile ? 'text-sm' : ''}`}>
+          
+          {/* Main text container with proper constraints */}
+          <div className={`
+            ${isMobile ? 'max-w-[120px]' : 'max-w-[140px]'} 
+            min-w-0 flex-1
+          `}>
+            <div className={`
+              font-medium text-foreground truncate leading-snug
+              ${isMobile ? 'text-sm' : 'text-base'}
+            `}>
               {event.playerName}
             </div>
             {event.assistPlayerName && (
-              <div className={`text-muted-foreground break-words ${isMobile ? 'text-xs' : 'text-xs'}`}>
+              <div className={`
+                text-muted-foreground leading-snug mt-0.5
+                ${isMobile ? 'text-xs line-clamp-2' : 'text-xs truncate'}
+              `}>
                 Assist: {event.assistPlayerName}
               </div>
             )}
           </div>
+          
           {!isHome && (
-            <Badge variant={getEventBadgeVariant(event)} className={`${isMobile ? 'text-xs px-1.5 py-0.5' : 'text-xs'}`}>
+            <Badge variant={getEventBadgeVariant(event)} className={`${isMobile ? 'text-xs px-1.5 py-0.5' : 'text-xs'} flex-shrink-0`}>
               {getEventLabel(event)}
             </Badge>
           )}
           {!isHome && (
-            <span className={`${isMobile ? 'text-sm' : 'text-lg'}`} role="img" aria-label={getEventLabel(event)}>
+            <span className={`${isMobile ? 'text-sm' : 'text-lg'} flex-shrink-0`} role="img" aria-label={getEventLabel(event)}>
               {getEventIcon(event)}
             </span>
           )}
@@ -216,16 +229,16 @@ const MirroredMatchTimeline = ({
             Match Timeline ({allEvents.length} events)
           </h4>
           
-          {/* Responsive 3-Column Grid Layout with Overflow Protection */}
+          {/* Fixed 3-Column Grid Layout */}
           <div className={`space-y-3 overflow-y-auto ${isMobile ? 'max-h-80' : 'max-h-96'}`}>
-            {/* Column Headers with Consistent Grid */}
-            <div className={`grid grid-cols-3 gap-3 pb-2 border-b ${isMobile ? 'gap-2' : ''}`}>
+            {/* Column Headers with Proper Grid Constraints */}
+            <div className="grid grid-cols-[1fr_auto_1fr] gap-3 pb-2 border-b">
               <div className={`text-center font-medium min-w-0 ${isMobile ? 'text-xs' : 'text-sm'}`} style={{ color: homeTeamColor }}>
                 <div className="truncate">
                   {isMobile ? (fixture.home_team?.name?.substring(0, 8) || 'Home') : fixture.home_team?.name}
                 </div>
               </div>
-              <div className={`text-center font-medium text-muted-foreground whitespace-nowrap ${isMobile ? 'text-xs' : 'text-sm'}`}>
+              <div className={`text-center font-medium text-muted-foreground whitespace-nowrap flex-shrink-0 ${isMobile ? 'text-xs' : 'text-sm'}`}>
                 Time
               </div>
               <div className={`text-center font-medium min-w-0 ${isMobile ? 'text-xs' : 'text-sm'}`} style={{ color: awayTeamColor }}>
@@ -235,40 +248,36 @@ const MirroredMatchTimeline = ({
               </div>
             </div>
 
-            {/* Timeline Events - Consistent 3-Column Grid */}
+            {/* Timeline Events with Fixed Grid Constraints */}
             {allEvents.map((event) => {
               const isHomeEvent = event.teamId === fixture.home_team_id;
               const isAwayEvent = event.teamId === fixture.away_team_id;
 
               return (
-                <div key={`timeline-${event.type}-${event.id}`} className={`grid grid-cols-3 items-center ${isMobile ? 'gap-2' : 'gap-3'}`}>
-                  {/* Home Team Event Column - Prevent Overflow */}
-                  <div className="min-w-0">
+                <div key={`timeline-${event.type}-${event.id}`} className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
+                  {/* Home Team Event Column with Proper Constraints */}
+                  <div className="min-w-0 w-full">
                     {isHomeEvent && (
-                      <div className="w-full">
-                        <TimelineEventCard event={event} isHome={true} />
-                      </div>
+                      <TimelineEventCard event={event} isHome={true} />
                     )}
                   </div>
 
-                  {/* Center Time Column - Fixed Width */}
-                  <div className="flex justify-center">
+                  {/* Center Time Column - Fixed Width with No Wrap */}
+                  <div className="flex justify-center flex-shrink-0">
                     <div className={`
                       flex items-center justify-center bg-primary/10 rounded-lg whitespace-nowrap
                       ${isMobile ? 'h-8 w-8' : 'h-12 w-12'}
                     `}>
-                      <span className={`font-mono text-primary font-bold ${isMobile ? 'text-xs' : 'text-sm'}`}>
+                      <span className={`font-mono text-primary font-bold whitespace-nowrap ${isMobile ? 'text-xs' : 'text-sm'}`}>
                         {Math.floor(event.time / 60)}'
                       </span>
                     </div>
                   </div>
 
-                  {/* Away Team Event Column - Prevent Overflow */}
-                  <div className="min-w-0">
+                  {/* Away Team Event Column with Proper Constraints */}
+                  <div className="min-w-0 w-full">
                     {isAwayEvent && (
-                      <div className="w-full">
-                        <TimelineEventCard event={event} isHome={false} />
-                      </div>
+                      <TimelineEventCard event={event} isHome={false} />
                     )}
                   </div>
                 </div>
