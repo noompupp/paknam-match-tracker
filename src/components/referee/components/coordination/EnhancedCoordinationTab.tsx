@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Users, CheckCircle, AlertCircle } from "lucide-react";
+import { Users, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
 import { useCoordinationManager } from "../../hooks/useCoordinationManager";
 import { useRoleBasedAccess } from "../../hooks/useRoleBasedAccess";
 import { ROLE_LABELS } from './constants';
@@ -15,7 +15,20 @@ interface EnhancedCoordinationTabProps {
 
 const EnhancedCoordinationTab = ({ selectedFixtureData }: EnhancedCoordinationTabProps) => {
   const { coordinationData, isLoading, completeAssignment, activateAssignment } = useCoordinationManager(selectedFixtureData?.id);
-  const { canAccessCoordination } = useRoleBasedAccess(selectedFixtureData?.id);
+  const { canAccessCoordination, isLoading: accessLoading } = useRoleBasedAccess(selectedFixtureData?.id);
+
+  if (accessLoading) {
+    return (
+      <Card>
+        <CardContent className="flex items-center justify-center py-12">
+          <div className="flex items-center gap-2">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            <p>Checking access permissions...</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   if (!canAccessCoordination) {
     return (
@@ -37,7 +50,10 @@ const EnhancedCoordinationTab = ({ selectedFixtureData }: EnhancedCoordinationTa
     return (
       <Card>
         <CardContent className="flex items-center justify-center py-12">
-          <p>Loading coordination data...</p>
+          <div className="flex items-center gap-2">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            <p>Loading coordination data...</p>
+          </div>
         </CardContent>
       </Card>
     );
