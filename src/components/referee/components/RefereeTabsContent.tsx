@@ -1,4 +1,3 @@
-
 import { TabsContent } from "@/components/ui/tabs";
 import { ComponentPlayer } from "../hooks/useRefereeState";
 import ScoreTab from "./tabs/ScoreTab";
@@ -98,20 +97,16 @@ const RefereeTabsContent = (props: RefereeTabsContentProps) => {
 
       <TabsContent value="goals" className="space-y-6">
         <GoalsTab
-          allPlayers={props.allPlayers}
+          selectedFixtureData={props.selectedFixtureData}
           homeTeamPlayers={props.homeTeamPlayers}
           awayTeamPlayers={props.awayTeamPlayers}
-          goals={props.goals}
-          selectedPlayer={props.selectedGoalPlayer}
-          selectedGoalType={props.selectedGoalType}
-          selectedGoalTeam={props.selectedGoalTeam}
           matchTime={props.matchTime}
-          selectedFixtureData={props.selectedFixtureData}
-          onPlayerSelect={props.setSelectedGoalPlayer}
-          onGoalTypeChange={props.setSelectedGoalType}
-          onGoalTeamChange={props.setSelectedGoalTeam}
           formatTime={props.formatTime}
-          assignGoal={props.onAssignGoal}
+          onGoalAssigned={props.onAssignGoal}
+          homeScore={props.homeScore}
+          awayScore={props.awayScore}
+          showGoalWizard={false}
+          onCancelGoalWizard={() => {}}
         />
       </TabsContent>
 
