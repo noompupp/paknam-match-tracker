@@ -86,7 +86,7 @@ const AccordionMatchSummaryLayout = ({
           <Accordion 
             type="multiple" 
             value={accordionValue}
-            onOpenChange={setAccordionValue}
+            onValueChange={setAccordionValue}
             className="w-full"
           >
             {/* Match Statistics */}
