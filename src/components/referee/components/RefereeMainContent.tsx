@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Tabs } from "@/components/ui/tabs";
 import RefereeTabsNavigation from "./RefereeTabsNavigation";
@@ -119,7 +120,7 @@ const RefereeMainContent = (props: RefereeMainContentProps) => {
           events={props.events}
           onAddGoal={handleAddGoal}
           onRemoveGoal={handleRemoveGoal}
-          onToggleTimer={props.onToggleTimer}
+          onToggleTimer={props.toggleTimer}
           onResetMatch={props.onResetMatch}
           onSaveMatch={props.onSaveMatch}
           onQuickGoal={handleQuickGoal}
