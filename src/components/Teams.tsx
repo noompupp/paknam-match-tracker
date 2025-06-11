@@ -52,11 +52,9 @@ const Teams = () => {
       {/* Header */}
       <UnifiedPageHeader>
         <div className="text-center">
-          <div className="flex items-center justify-center gap-3 mb-3">
+          <div className="flex items-center justify-center">
             <TournamentLogo />
-            <h1 className="text-3xl font-bold text-foreground">Teams & Players</h1>
           </div>
-          <p className="text-muted-foreground">Meet our {teams?.length || 0} competing teams</p>
         </div>
       </UnifiedPageHeader>
 
