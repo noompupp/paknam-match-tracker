@@ -46,10 +46,10 @@
     --nav-background-desktop: rgba(255, 255, 255, 1.0);
     --nav-background-mobile: rgba(255, 255, 255, 0.95);
     
-    /* Mobile notch and safe area variables - Updated header top to 10vh */
+    /* Mobile notch and safe area variables - Updated header top to 5vh */
     --mobile-safe-top: max(15vh, env(safe-area-inset-top, 0px) + 2rem);
     --mobile-modal-top: max(10vh, env(safe-area-inset-top, 0px) + 1.5rem);
-    --mobile-header-top: max(10vh, env(safe-area-inset-top, 0px) + 1rem);
+    --mobile-header-top: max(5vh, env(safe-area-inset-top, 0px) + 1rem);
   }
 
   .dark {
@@ -128,7 +128,7 @@
     background-attachment: fixed;
   }
 
-  /* Global Mobile Safe Area Utilities - Enhanced with 10vh header top */
+  /* Global Mobile Safe Area Utilities - Enhanced with 5vh header top */
   .mobile-safe-page {
     @apply sm:pt-0;
     padding-top: var(--mobile-safe-top);
