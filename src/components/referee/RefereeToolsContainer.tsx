@@ -2,9 +2,14 @@
 import RefereeToolsHeader from "./components/RefereeToolsHeader";
 import RefereeMainContent from "./components/RefereeMainContent";
 import RefereePageContainer from "./shared/RefereePageContainer";
+import WorkflowModeManager from "./workflows/WorkflowModeManager";
 import { useRefereeStateOrchestrator } from "./hooks/useRefereeStateOrchestrator";
+import { useState } from "react";
+import { WorkflowModeConfig } from "./workflows/types";
 
 const RefereeToolsContainer = () => {
+  const [workflowConfig, setWorkflowConfig] = useState<WorkflowModeConfig | null>(null);
+
   const {
     // Base state
     fixtures,
@@ -78,13 +83,19 @@ const RefereeToolsContainer = () => {
     handleManualRefresh
   } = useRefereeStateOrchestrator();
 
+  const handleWorkflowConfigured = (config: WorkflowModeConfig) => {
+    console.log('🎯 Workflow configured in container:', config);
+    setWorkflowConfig(config);
+  };
+
   console.log('🎮 RefereeToolsContainer: Manual data management active:', {
     selectedGoalTeam,
     selectedTimeTeam,
     homePlayersCount: homeTeamPlayers?.length || 0,
     awayPlayersCount: awayTeamPlayers?.length || 0,
     hasValidData: enhancedPlayersData.hasValidData,
-    manualScore: { homeScore, awayScore }
+    manualScore: { homeScore, awayScore },
+    workflowConfigured: !!workflowConfig
   });
 
   if (fixturesLoading) {
@@ -106,7 +117,16 @@ const RefereeToolsContainer = () => {
         enhancedPlayersData={enhancedPlayersData}
       />
 
-      {selectedFixture && (
+      {selectedFixture && !workflowConfig && (
+        <div className="container mx-auto p-4">
+          <WorkflowModeManager
+            selectedFixtureData={selectedFixtureData}
+            onWorkflowConfigured={handleWorkflowConfigured}
+          />
+        </div>
+      )}
+
+      {selectedFixture && workflowConfig && (
         <div className="container mx-auto p-4">
           <RefereeMainContent
             selectedFixtureData={selectedFixtureData}
@@ -148,6 +168,7 @@ const RefereeToolsContainer = () => {
             onSaveMatch={handleSaveMatch}
             onResetMatch={handleResetMatch}
             onDataRefresh={handleManualRefresh}
+            workflowConfig={workflowConfig}
           />
         </div>
       )}

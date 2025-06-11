@@ -1,12 +1,12 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { CoordinationData, Assignment, MultiRefereeCoordinationProps } from './coordination/types';
-import { WorkflowModeConfig, RefereeWorkflowMode } from '../workflows/types';
+import { WorkflowModeConfig } from '../workflows/types';
 import { WORKFLOW_MODES } from '../workflows/constants';
 import NoMatchSelected from './coordination/NoMatchSelected';
-import WorkflowModeManager from '../workflows/WorkflowModeManager';
 import CoordinationHeader from './coordination/CoordinationHeader';
 import InitializationSection from './coordination/InitializationSection';
 import ProgressOverview from './coordination/ProgressOverview';
@@ -14,60 +14,26 @@ import RoleAssignments from './coordination/RoleAssignments';
 import CurrentUserRole from './coordination/CurrentUserRole';
 import FinalizationSection from './coordination/FinalizationSection';
 
+interface ExtendedMultiRefereeCoordinationProps extends MultiRefereeCoordinationProps {
+  workflowConfig: WorkflowModeConfig;
+}
+
 const MultiRefereeCoordination = ({ 
   selectedFixtureData, 
+  workflowConfig,
   onRoleAssigned 
-}: MultiRefereeCoordinationProps) => {
-  const [workflowMode, setWorkflowMode] = useState<RefereeWorkflowMode | null>(null);
-  const [workflowConfig, setWorkflowConfig] = useState<WorkflowModeConfig | null>(null);
+}: ExtendedMultiRefereeCoordinationProps) => {
   const [coordinationData, setCoordinationData] = useState<CoordinationData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [currentUserRole, setCurrentUserRole] = useState<string | null>(null);
   const { toast } = useToast();
 
-  // Load workflow mode and coordination status
+  // Load coordination status when fixture or workflow changes
   useEffect(() => {
-    if (selectedFixtureData?.id) {
-      loadWorkflowAndCoordination();
+    if (selectedFixtureData?.id && workflowConfig.mode === WORKFLOW_MODES.MULTI_REFEREE) {
+      loadCoordinationStatus();
     }
-  }, [selectedFixtureData?.id]);
-
-  const loadWorkflowAndCoordination = async () => {
-    if (!selectedFixtureData?.id) return;
-
-    try {
-      setIsLoading(true);
-      
-      // Check for existing workflow configuration
-      // For now, we'll default to multi-referee mode to maintain compatibility
-      // In a full implementation, this would check a workflow_configurations table
-      
-      const { data, error } = await supabase.rpc('get_match_coordination_status', {
-        p_fixture_id: selectedFixtureData.id
-      });
-
-      if (error) throw error;
-
-      if (data && data.length > 0) {
-        // Existing coordination found - assume multi-referee mode
-        setWorkflowMode(WORKFLOW_MODES.MULTI_REFEREE);
-        loadCoordinationStatus();
-      } else {
-        // No coordination found - show workflow selector
-        setWorkflowMode(null);
-        setCoordinationData(null);
-      }
-    } catch (error) {
-      console.error('Error loading workflow and coordination:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load coordination status",
-        variant: "destructive"
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  }, [selectedFixtureData?.id, workflowConfig]);
 
   const loadCoordinationStatus = async () => {
     if (!selectedFixtureData?.id) return;
@@ -121,21 +87,6 @@ const MultiRefereeCoordination = ({
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleWorkflowConfigured = async (config: WorkflowModeConfig) => {
-    console.log('🎯 Workflow configured:', config);
-    
-    setWorkflowConfig(config);
-    setWorkflowMode(config.mode);
-    
-    // For multi-referee mode, initialize coordination
-    if (config.mode === WORKFLOW_MODES.MULTI_REFEREE) {
-      await initializeCoordination();
-    }
-    
-    // For two-referees mode, we would initialize a different coordination system
-    // This would be implemented in a future iteration
   };
 
   const initializeCoordination = async () => {
@@ -347,31 +298,7 @@ const MultiRefereeCoordination = ({
     return <NoMatchSelected />;
   }
 
-  // Show workflow mode selector if no mode is selected
-  if (!workflowMode) {
-    return (
-      <WorkflowModeManager
-        selectedFixtureData={selectedFixtureData}
-        onWorkflowConfigured={handleWorkflowConfigured}
-      />
-    );
-  }
-
-  // Handle Two Referees Mode (simplified workflow)
-  if (workflowMode === WORKFLOW_MODES.TWO_REFEREES) {
-    return (
-      <Card>
-        <CardContent className="text-center py-12">
-          <h3 className="text-lg font-semibold mb-2">Two Referees Mode Active</h3>
-          <p className="text-muted-foreground">
-            Team-based referee coordination is now active for this match.
-          </p>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  // Handle Multi-Referee Mode (existing full coordination system)
+  // Calculate progress
   const completedTasks = coordinationData?.assignments.filter(a => a.status === 'completed').length || 0;
   const totalTasks = coordinationData?.assignments.length || 4;
   const progressPercentage = (completedTasks / totalTasks) * 100;
