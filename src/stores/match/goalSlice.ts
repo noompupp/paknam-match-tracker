@@ -9,6 +9,7 @@ export interface GoalSlice {
   addAssist: MatchActions['addAssist'];
   updateGoal: MatchActions['updateGoal'];
   removeGoal: MatchActions['removeGoal'];
+  undoGoal: MatchActions['undoGoal'];
   getUnassignedGoalsCount: MatchActions['getUnassignedGoalsCount'];
   getUnassignedGoals: MatchActions['getUnassignedGoals'];
 }
@@ -115,6 +116,33 @@ export const createGoalSlice: StateCreator<
       // Only decrement score if it's an actual goal, not an assist
       const newHomeScore = goalToRemove.team === 'home' && goalToRemove.type === 'goal' ? state.homeScore - 1 : state.homeScore;
       const newAwayScore = goalToRemove.team === 'away' && goalToRemove.type === 'goal' ? state.awayScore - 1 : state.awayScore;
+
+      return {
+        goals: state.goals.filter(g => g.id !== goalId),
+        homeScore: Math.max(0, newHomeScore),
+        awayScore: Math.max(0, newAwayScore),
+        hasUnsavedChanges: true,
+        lastUpdated: Date.now()
+      };
+    });
+  },
+
+  undoGoal: (goalId) => {
+    // For now, undoGoal is the same as removeGoal
+    // This could be enhanced later to have different behavior (e.g., soft delete vs hard delete)
+    set((state) => {
+      const goalToUndo = state.goals.find(g => g.id === goalId);
+      if (!goalToUndo) return state;
+
+      // Only decrement score if it's an actual goal, not an assist
+      const newHomeScore = goalToUndo.team === 'home' && goalToUndo.type === 'goal' ? state.homeScore - 1 : state.homeScore;
+      const newAwayScore = goalToUndo.team === 'away' && goalToUndo.type === 'goal' ? state.awayScore - 1 : state.awayScore;
+
+      console.log('🔄 MatchStore: Goal undone:', {
+        goalId,
+        goalToUndo,
+        newScore: `${Math.max(0, newHomeScore)}-${Math.max(0, newAwayScore)}`
+      });
 
       return {
         goals: state.goals.filter(g => g.id !== goalId),
