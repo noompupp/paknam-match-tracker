@@ -9,6 +9,7 @@ interface SaveNowButtonProps {
   disabled?: boolean;
   variant?: 'default' | 'outline' | 'secondary';
   size?: 'sm' | 'default' | 'lg';
+  children?: React.ReactNode;
 }
 
 const SaveNowButton = ({ 
@@ -16,7 +17,8 @@ const SaveNowButton = ({
   isLoading = false, 
   disabled = false,
   variant = 'default',
-  size = 'default'
+  size = 'default',
+  children
 }: SaveNowButtonProps) => {
   const handleSave = async () => {
     try {
@@ -39,7 +41,7 @@ const SaveNowButton = ({
       ) : (
         <Save className="h-4 w-4" />
       )}
-      {isLoading ? 'Saving...' : 'Save Now'}
+      {children || (isLoading ? 'Saving...' : 'Save Now')}
     </Button>
   );
 };

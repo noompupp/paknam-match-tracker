@@ -18,7 +18,7 @@ export const memberStatsService = {
     console.log('🏆 Getting top scorers with own goal filtering:', { limit, excludeOwnGoals });
     
     try {
-      // Get member stats with team information
+      // Get member stats with team information - fix the relationship hint
       const { data: members, error: membersError } = await supabase
         .from('members')
         .select(`
@@ -29,7 +29,7 @@ export const memberStatsService = {
           total_minutes_played,
           matches_played,
           team_id,
-          teams:team_id (
+          teams!members_team_id_fkey (
             name
           )
         `)
@@ -42,9 +42,9 @@ export const memberStatsService = {
         return [];
       }
 
-      // Get own goals count for each member if excluding own goals
+      // Verify and recalculate stats based on actual fixture results
       const topScorers: TopScorerData[] = [];
-      
+
       for (const member of members) {
         let regularGoals = member.goals || 0;
         let ownGoals = 0;
