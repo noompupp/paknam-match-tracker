@@ -1,25 +1,22 @@
 
-import { useState, useEffect, useCallback } from 'react';
-import { useToast } from "@/hooks/use-toast";
-import { coordinationService, CoordinationData } from '@/services/referee/coordinationService';
+import { useState, useEffect } from 'react';
+import { useToast } from '@/hooks/use-toast';
+import { coordinationService, type CoordinationData } from '@/services/referee/coordinationService';
 
 export const useCoordinationManager = (fixtureId: number | null) => {
   const [coordinationData, setCoordinationData] = useState<CoordinationData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  const loadCoordinationData = useCallback(async () => {
-    if (!fixtureId) {
-      setCoordinationData(null);
-      return;
-    }
+  const fetchCoordinationData = async () => {
+    if (!fixtureId) return;
 
+    setIsLoading(true);
     try {
-      setIsLoading(true);
       const data = await coordinationService.getCoordinationData(fixtureId);
       setCoordinationData(data);
     } catch (error) {
-      console.error('Error loading coordination data:', error);
+      console.error('Error fetching coordination data:', error);
       toast({
         title: "Error",
         description: "Failed to load coordination data",
@@ -28,44 +25,17 @@ export const useCoordinationManager = (fixtureId: number | null) => {
     } finally {
       setIsLoading(false);
     }
-  }, [fixtureId, toast]);
+  };
 
-  const completeAssignment = useCallback(async (assignmentId: string, notes?: string) => {
+  const activateAssignment = async (assignmentId: string) => {
+    setIsLoading(true);
     try {
-      setIsLoading(true);
-      const result = await coordinationService.completeAssignment(assignmentId, notes);
-      
-      if (result.success) {
-        toast({
-          title: "Success",
-          description: "Assignment completed successfully",
-        });
-        await loadCoordinationData();
-      } else {
-        throw new Error(result.error || 'Failed to complete assignment');
-      }
-    } catch (error) {
-      console.error('Error completing assignment:', error);
-      toast({
-        title: "Error",
-        description: "Failed to complete assignment",
-        variant: "destructive"
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  }, [loadCoordinationData, toast]);
-
-  const activateAssignment = useCallback(async (assignmentId: string) => {
-    try {
-      setIsLoading(true);
       await coordinationService.activateAssignment(assignmentId);
-      
+      await fetchCoordinationData(); // Refresh data
       toast({
         title: "Success",
-        description: "Assignment activated successfully",
+        description: "Assignment activated successfully"
       });
-      await loadCoordinationData();
     } catch (error) {
       console.error('Error activating assignment:', error);
       toast({
@@ -76,17 +46,38 @@ export const useCoordinationManager = (fixtureId: number | null) => {
     } finally {
       setIsLoading(false);
     }
-  }, [loadCoordinationData, toast]);
+  };
+
+  const completeAssignment = async (assignmentId: string, notes?: string) => {
+    setIsLoading(true);
+    try {
+      await coordinationService.completeAssignment(assignmentId, notes);
+      await fetchCoordinationData(); // Refresh data
+      toast({
+        title: "Success",
+        description: "Assignment completed successfully"
+      });
+    } catch (error) {
+      console.error('Error completing assignment:', error);
+      toast({
+        title: "Error",
+        description: "Failed to complete assignment",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
-    loadCoordinationData();
-  }, [loadCoordinationData]);
+    fetchCoordinationData();
+  }, [fixtureId]);
 
   return {
     coordinationData,
     isLoading,
-    loadCoordinationData,
+    activateAssignment,
     completeAssignment,
-    activateAssignment
+    refreshData: fetchCoordinationData
   };
 };

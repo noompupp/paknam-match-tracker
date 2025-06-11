@@ -166,6 +166,50 @@ export type Database = {
           },
         ]
       }
+      league_table_operations: {
+        Row: {
+          away_score: number
+          away_team_id: string
+          created_at: string | null
+          fixture_id: number
+          home_score: number
+          home_team_id: string
+          id: string
+          operation_hash: string
+          operation_type: string
+        }
+        Insert: {
+          away_score: number
+          away_team_id: string
+          created_at?: string | null
+          fixture_id: number
+          home_score: number
+          home_team_id: string
+          id?: string
+          operation_hash: string
+          operation_type: string
+        }
+        Update: {
+          away_score?: number
+          away_team_id?: string
+          created_at?: string | null
+          fixture_id?: number
+          home_score?: number
+          home_team_id?: string
+          id?: string
+          operation_hash?: string
+          operation_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "league_table_operations_fixture_id_fkey"
+            columns: ["fixture_id"]
+            isOneToOne: false
+            referencedRelation: "fixtures"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       match_coordination: {
         Row: {
           completion_summary: Json | null
@@ -209,6 +253,7 @@ export type Database = {
       }
       match_events: {
         Row: {
+          affected_team_id: string | null
           card_type: string | null
           created_at: string | null
           description: string
@@ -216,11 +261,14 @@ export type Database = {
           event_type: string
           fixture_id: number
           id: number
+          is_own_goal: boolean | null
           own_goal: boolean | null
           player_name: string
+          scoring_team_id: string | null
           team_id: string
         }
         Insert: {
+          affected_team_id?: string | null
           card_type?: string | null
           created_at?: string | null
           description: string
@@ -228,11 +276,14 @@ export type Database = {
           event_type: string
           fixture_id: number
           id?: number
+          is_own_goal?: boolean | null
           own_goal?: boolean | null
           player_name: string
+          scoring_team_id?: string | null
           team_id: string
         }
         Update: {
+          affected_team_id?: string | null
           card_type?: string | null
           created_at?: string | null
           description?: string
@@ -240,8 +291,10 @@ export type Database = {
           event_type?: string
           fixture_id?: number
           id?: number
+          is_own_goal?: boolean | null
           own_goal?: boolean | null
           player_name?: string
+          scoring_team_id?: string | null
           team_id?: string
         }
         Relationships: [
@@ -372,6 +425,7 @@ export type Database = {
           created_at: string | null
           goals: number | null
           id: number
+          last_time_sync: string | null
           last_updated_by: string | null
           matches_played: number | null
           name: string | null
@@ -384,6 +438,7 @@ export type Database = {
           sync_status: string | null
           team_id: string | null
           total_minutes_played: number | null
+          total_minutes_this_season: number | null
           updated_at: string | null
           validation_status: string | null
           yellow_cards: number | null
@@ -394,6 +449,7 @@ export type Database = {
           created_at?: string | null
           goals?: number | null
           id?: number
+          last_time_sync?: string | null
           last_updated_by?: string | null
           matches_played?: number | null
           name?: string | null
@@ -406,6 +462,7 @@ export type Database = {
           sync_status?: string | null
           team_id?: string | null
           total_minutes_played?: number | null
+          total_minutes_this_season?: number | null
           updated_at?: string | null
           validation_status?: string | null
           yellow_cards?: number | null
@@ -416,6 +473,7 @@ export type Database = {
           created_at?: string | null
           goals?: number | null
           id?: number
+          last_time_sync?: string | null
           last_updated_by?: string | null
           matches_played?: number | null
           name?: string | null
@@ -428,6 +486,7 @@ export type Database = {
           sync_status?: string | null
           team_id?: string | null
           total_minutes_played?: number | null
+          total_minutes_this_season?: number | null
           updated_at?: string | null
           validation_status?: string | null
           yellow_cards?: number | null
@@ -660,6 +719,15 @@ export type Database = {
         Args: { p_coordination_id: string; p_final_review_data?: Json }
         Returns: Json
       }
+      generate_league_operation_hash: {
+        Args: {
+          p_fixture_id: number
+          p_operation_type: string
+          p_home_score: number
+          p_away_score: number
+        }
+        Returns: string
+      }
       get_coordination_with_assignments: {
         Args: { p_fixture_id: number }
         Returns: {
@@ -683,6 +751,22 @@ export type Database = {
           player_times: Json
           summary_stats: Json
           timeline_events: Json
+        }[]
+      }
+      get_enhanced_match_summary_v2: {
+        Args: { p_fixture_id: number }
+        Returns: {
+          fixture_id: number
+          home_team_id: string
+          away_team_id: string
+          home_score: number
+          away_score: number
+          goals: Json
+          cards: Json
+          player_times: Json
+          summary_stats: Json
+          timeline_events: Json
+          own_goals_summary: Json
         }[]
       }
       get_fixture_all_assignments: {

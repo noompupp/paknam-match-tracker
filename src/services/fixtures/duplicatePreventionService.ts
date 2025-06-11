@@ -1,129 +1,147 @@
 
 import { supabase } from '@/integrations/supabase/client';
 
-interface DuplicateCheckResult {
-  isDuplicate: boolean;
-  existingEventId?: number;
-  message?: string;
+interface LeagueOperation {
+  fixtureId: number;
+  operationType: 'score_update' | 'result_finalization' | 'stats_calculation';
+  homeTeamId: string;
+  awayTeamId: string;
+  homeScore: number;
+  awayScore: number;
 }
 
 export const duplicatePreventionService = {
-  async checkGoalEventDuplicate(
-    fixtureId: number,
-    teamId: string, // Changed from number to string
-    playerName: string,
-    eventTime: number
-  ): Promise<DuplicateCheckResult> {
-    console.log('🔍 DuplicatePreventionService: Checking for goal event duplicates:', {
-      fixtureId,
-      teamId,
-      playerName,
-      eventTime
-    });
-
+  async preventDuplicateOperation(operation: LeagueOperation): Promise<{ allowed: boolean; reason?: string; operationHash?: string }> {
+    console.log('🛡️ DuplicatePreventionService: Checking for duplicate operation:', operation);
+    
     try {
-      const { data: existingEvents, error } = await supabase
-        .from('match_events')
-        .select('id, player_name, event_time')
-        .eq('fixture_id', fixtureId)
-        .eq('team_id', teamId)
-        .eq('event_type', 'goal')
-        .eq('player_name', playerName)
-        .eq('event_time', eventTime);
+      // Generate operation hash
+      const { data: hashData, error: hashError } = await supabase
+        .rpc('generate_league_operation_hash', {
+          p_fixture_id: operation.fixtureId,
+          p_operation_type: operation.operationType,
+          p_home_score: operation.homeScore,
+          p_away_score: operation.awayScore
+        });
 
-      if (error) {
-        console.error('❌ DuplicatePreventionService: Error checking duplicates:', error);
-        return { isDuplicate: false, message: 'Error checking for duplicates' };
+      if (hashError) {
+        console.error('❌ DuplicatePreventionService: Error generating hash:', hashError);
+        throw hashError;
       }
 
-      if (existingEvents && existingEvents.length > 0) {
-        console.log('⚠️ DuplicatePreventionService: Duplicate goal event found:', existingEvents[0]);
+      const operationHash = hashData;
+      console.log('🔐 DuplicatePreventionService: Generated operation hash:', operationHash);
+
+      // Check if operation already exists
+      const { data: existingOp, error: checkError } = await supabase
+        .from('league_table_operations')
+        .select('id, created_at')
+        .eq('operation_hash', operationHash)
+        .maybeSingle();
+
+      if (checkError) {
+        console.error('❌ DuplicatePreventionService: Error checking existing operation:', checkError);
+        throw checkError;
+      }
+
+      if (existingOp) {
+        console.warn('🚫 DuplicatePreventionService: Duplicate operation detected');
         return {
-          isDuplicate: true,
-          existingEventId: existingEvents[0].id,
-          message: `Goal already assigned to ${playerName} at ${eventTime} seconds`
+          allowed: false,
+          reason: `Operation already performed at ${new Date(existingOp.created_at).toLocaleString()}`,
+          operationHash
         };
       }
 
-      console.log('✅ DuplicatePreventionService: No duplicates found');
-      return { isDuplicate: false };
+      // Record this operation to prevent future duplicates
+      const { error: insertError } = await supabase
+        .from('league_table_operations')
+        .insert({
+          fixture_id: operation.fixtureId,
+          operation_type: operation.operationType,
+          home_team_id: operation.homeTeamId,
+          away_team_id: operation.awayTeamId,
+          home_score: operation.homeScore,
+          away_score: operation.awayScore,
+          operation_hash: operationHash
+        });
+
+      if (insertError) {
+        console.error('❌ DuplicatePreventionService: Error recording operation:', insertError);
+        
+        // If it's a unique constraint violation, it means another process just inserted the same operation
+        if (insertError.code === '23505') {
+          return {
+            allowed: false,
+            reason: 'Operation was performed by another process simultaneously',
+            operationHash
+          };
+        }
+        
+        throw insertError;
+      }
+
+      console.log('✅ DuplicatePreventionService: Operation allowed and recorded');
+      return {
+        allowed: true,
+        operationHash
+      };
 
     } catch (error) {
-      console.error('❌ DuplicatePreventionService: Critical error:', error);
-      return { isDuplicate: false, message: 'Critical error checking duplicates' };
+      console.error('❌ DuplicatePreventionService: Error in preventDuplicateOperation:', error);
+      throw error;
     }
   },
 
-  async cleanupDuplicateGoalEvents(fixtureId: number): Promise<{ removedCount: number; errors: string[] }> {
-    console.log('🧹 DuplicatePreventionService: Cleaning up duplicate goal events for fixture:', fixtureId);
+  async getOperationHistory(fixtureId: number): Promise<any[]> {
+    console.log('📊 DuplicatePreventionService: Getting operation history for fixture:', fixtureId);
     
-    const result = { removedCount: 0, errors: [] };
-
     try {
-      // Get all goal events for this fixture
-      const { data: events, error } = await supabase
-        .from('match_events')
+      const { data, error } = await supabase
+        .from('league_table_operations')
         .select('*')
         .eq('fixture_id', fixtureId)
-        .eq('event_type', 'goal')
-        .order('created_at', { ascending: true });
+        .order('created_at', { ascending: false });
 
       if (error) {
-        result.errors.push(`Error fetching events: ${error.message}`);
-        return result;
+        console.error('❌ DuplicatePreventionService: Error fetching operation history:', error);
+        throw error;
       }
 
-      if (!events || events.length === 0) {
-        console.log('📊 DuplicatePreventionService: No goal events found for cleanup');
-        return result;
-      }
-
-      // Group events by team_id, player_name, and event_time
-      const eventGroups = new Map<string, any[]>();
-      
-      for (const event of events) {
-        const key = `${event.team_id}-${event.player_name}-${event.event_time}`;
-        if (!eventGroups.has(key)) {
-          eventGroups.set(key, []);
-        }
-        eventGroups.get(key)!.push(event);
-      }
-
-      // Remove duplicates (keep the first one, remove the rest)
-      for (const [key, groupEvents] of eventGroups) {
-        if (groupEvents.length > 1) {
-          console.log(`🗑️ DuplicatePreventionService: Found ${groupEvents.length} duplicates for key: ${key}`);
-          
-          // Keep the first event, remove the rest
-          const eventsToRemove = groupEvents.slice(1);
-          
-          for (const eventToRemove of eventsToRemove) {
-            try {
-              const { error: deleteError } = await supabase
-                .from('match_events')
-                .delete()
-                .eq('id', eventToRemove.id);
-
-              if (deleteError) {
-                result.errors.push(`Failed to delete event ${eventToRemove.id}: ${deleteError.message}`);
-              } else {
-                result.removedCount++;
-                console.log(`✅ DuplicatePreventionService: Removed duplicate event:`, eventToRemove);
-              }
-            } catch (error) {
-              result.errors.push(`Error deleting event ${eventToRemove.id}: ${error instanceof Error ? error.message : 'Unknown error'}`);
-            }
-          }
-        }
-      }
-
-      console.log(`✅ DuplicatePreventionService: Cleanup completed. Removed ${result.removedCount} duplicates`);
-      return result;
+      console.log(`📊 DuplicatePreventionService: Found ${data?.length || 0} operations`);
+      return data || [];
 
     } catch (error) {
-      console.error('❌ DuplicatePreventionService: Critical error during cleanup:', error);
-      result.errors.push(`Critical cleanup error: ${error instanceof Error ? error.message : 'Unknown error'}`);
-      return result;
+      console.error('❌ DuplicatePreventionService: Error in getOperationHistory:', error);
+      throw error;
+    }
+  },
+
+  async cleanupOldOperations(daysOld: number = 30): Promise<{ deletedCount: number }> {
+    console.log(`🧹 DuplicatePreventionService: Cleaning up operations older than ${daysOld} days`);
+    
+    try {
+      const cutoffDate = new Date(Date.now() - daysOld * 24 * 60 * 60 * 1000).toISOString();
+      
+      const { data, error } = await supabase
+        .from('league_table_operations')
+        .delete()
+        .lt('created_at', cutoffDate)
+        .select();
+
+      if (error) {
+        console.error('❌ DuplicatePreventionService: Error cleaning up operations:', error);
+        throw error;
+      }
+
+      const deletedCount = data?.length || 0;
+      console.log(`✅ DuplicatePreventionService: Cleaned up ${deletedCount} old operations`);
+      
+      return { deletedCount };
+
+    } catch (error) {
+      console.error('❌ DuplicatePreventionService: Error in cleanupOldOperations:', error);
+      throw error;
     }
   }
 };
