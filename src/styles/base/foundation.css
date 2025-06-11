@@ -4,8 +4,9 @@
 }
 
 body {
-  background: var(--app-gradient) !important;
-  background-attachment: fixed !important;
+  /* Only apply gradient to body, not forced everywhere */
+  background: var(--app-gradient);
+  background-attachment: fixed;
   color: hsl(var(--foreground));
   font-feature-settings: "rlig" 1, "calt" 1;
   min-height: 100vh;
@@ -16,7 +17,7 @@ body {
   padding-right: var(--safe-area-inset-right);
 }
 
-/* Force gradient background application */
+/* Apply gradient only to specific containers that need it */
 .gradient-bg {
   background: var(--app-gradient) !important;
   background-attachment: fixed !important;
@@ -24,15 +25,15 @@ body {
   min-height: 100dvh;
 }
 
-/* Force background for all main containers */
+/* Root container should have gradient */
 #root {
-  background: var(--app-gradient) !important;
-  background-attachment: fixed !important;
+  background: var(--app-gradient);
+  background-attachment: fixed;
   min-height: 100vh;
   min-height: 100dvh;
 }
 
-/* SOLID modal and dialog backgrounds */
+/* SOLID modal and dialog backgrounds - NO gradients */
 [data-radix-dialog-overlay] {
   background: var(--modal-backdrop) !important;
   backdrop-filter: blur(8px) !important;
@@ -41,17 +42,20 @@ body {
 [data-radix-dialog-content] {
   background: var(--modal-background) !important;
   border: 1px solid var(--header-border) !important;
+  backdrop-filter: none !important;
 }
 
-/* SOLID navigation and header backgrounds */
+/* SOLID navigation and header backgrounds - NO gradients */
 .mobile-nav-enhanced {
   background: var(--navigation-background) !important;
   border-top: 1px solid var(--header-border) !important;
+  backdrop-filter: var(--header-backdrop-blur) !important;
 }
 
 .sticky-background-enhanced {
   background: var(--header-background) !important;
   border-bottom: 1px solid var(--header-border) !important;
+  backdrop-filter: var(--header-backdrop-blur) !important;
 }
 
 /* Mobile safe area implementation */
@@ -60,8 +64,6 @@ body {
     min-height: -webkit-fill-available;
     padding-top: var(--safe-area-inset-top);
     padding-bottom: var(--safe-area-inset-bottom);
-    background: var(--app-gradient) !important;
-    background-attachment: fixed !important;
   }
 }
 
@@ -70,7 +72,5 @@ body {
   body {
     padding-top: var(--safe-area-inset-top);
     padding-bottom: var(--safe-area-inset-bottom);
-    background: var(--app-gradient) !important;
-    background-attachment: fixed !important;
   }
 }

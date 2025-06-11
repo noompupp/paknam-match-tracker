@@ -29,13 +29,7 @@ const AppContent = () => {
 
   if (loading) {
     return (
-      <div 
-        className="min-h-screen gradient-bg flex items-center justify-center"
-        style={{
-          background: 'var(--app-gradient)',
-          backgroundAttachment: 'fixed'
-        }}
-      >
+      <div className="min-h-screen gradient-bg flex items-center justify-center">
         <div className="text-center text-foreground">
           <h2 className="text-2xl font-bold mb-4">Loading...</h2>
           <p>Initializing secure session...</p>
@@ -78,13 +72,7 @@ const AppContent = () => {
   };
 
   return (
-    <div 
-      className="min-h-screen gradient-bg"
-      style={{
-        background: 'var(--app-gradient)',
-        backgroundAttachment: 'fixed'
-      }}
-    >
+    <div className="min-h-screen gradient-bg">
       <main 
         className="pt-4 px-4 pb-24 min-h-screen"
         style={{
@@ -113,16 +101,8 @@ function App() {
       >
         <SecureAuthProvider>
           <AuthProvider>
-            <div 
-              style={{
-                background: 'var(--app-gradient)',
-                backgroundAttachment: 'fixed',
-                minHeight: '100vh'
-              }}
-            >
-              <AppContent />
-              <Toaster />
-            </div>
+            <AppContent />
+            <Toaster />
           </AuthProvider>
         </SecureAuthProvider>
       </ThemeProvider>

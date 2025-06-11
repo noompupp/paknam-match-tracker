@@ -22,7 +22,7 @@
   --ring: 221.2 83.2% 53.3%;
   --radius: 0.75rem;
 
-  /* SOLID app gradient system */
+  /* Clean app gradient system - only for main background */
   --app-gradient: linear-gradient(135deg, 
     #667eea 0%,
     #764ba2 25%,
@@ -31,11 +31,11 @@
     #4facfe 100%
   );
 
-  /* SOLID modal and navigation backgrounds */
-  --modal-background: rgb(255, 255, 255);
+  /* Solid modal and navigation backgrounds - NO gradients */
+  --modal-background: rgba(255, 255, 255, 0.98);
   --modal-backdrop: rgba(0, 0, 0, 0.75);
-  --navigation-background: rgb(255, 255, 255);
-  --header-background: rgb(255, 255, 255);
+  --navigation-background: rgba(255, 255, 255, 0.95);
+  --header-background: rgba(255, 255, 255, 0.95);
   --header-backdrop-blur: blur(20px) saturate(180%);
   --header-border: rgba(0, 0, 0, 0.15);
   
@@ -71,7 +71,7 @@
   --input: 217.2 32.6% 17.5%;
   --ring: 224.3 76.3% 94.1%;
 
-  /* SOLID dark mode gradient */
+  /* Dark mode gradient */
   --app-gradient: linear-gradient(135deg,
     #2d1b69 0%,
     #11998e 25%,
@@ -80,11 +80,11 @@
     #764ba2 100%
   );
 
-  /* SOLID dark mode modal and navigation backgrounds */
-  --modal-background: rgb(17, 24, 39);
+  /* Solid dark mode modal and navigation backgrounds - NO gradients */
+  --modal-background: rgba(17, 24, 39, 0.98);
   --modal-backdrop: rgba(0, 0, 0, 0.85);
-  --navigation-background: rgb(17, 24, 39);
-  --header-background: rgb(17, 24, 39);
+  --navigation-background: rgba(17, 24, 39, 0.95);
+  --header-background: rgba(17, 24, 39, 0.95);
   --header-backdrop-blur: blur(20px) saturate(180%);
   --header-border: rgba(255, 255, 255, 0.15);
 }
