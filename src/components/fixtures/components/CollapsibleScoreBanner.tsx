@@ -1,14 +1,10 @@
 
-import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { ChevronDown, Trophy } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Trophy, Target, AlertTriangle } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import MobileMatchHeader from "./MobileMatchHeader";
 import DesktopMatchHeader from "./DesktopMatchHeader";
-import MatchEventsSection from "./MatchEventsSection";
-import EnhancedMatchEventsTimeline from "../../referee/components/EnhancedMatchEventsTimeline";
+import CompactGoalScorers from "./CompactGoalScorers";
 
 interface CollapsibleScoreBannerProps {
   fixture: any;
@@ -32,96 +28,98 @@ const CollapsibleScoreBanner = ({
   fixture,
   goals,
   cards,
-  timelineEvents,
+  processedEvents,
   homeTeamColor,
   awayTeamColor,
-  processedEvents,
-  formatTime,
   getGoalPlayerName,
-  getGoalTime,
-  getCardTeamId,
-  getCardPlayerName,
-  getCardTime,
-  getCardType,
-  isCardRed
+  getGoalTime
 }: CollapsibleScoreBannerProps) => {
-  const [isOpen, setIsOpen] = useState(false);
   const isMobile = useIsMobile();
-
   const totalEvents = goals.length + cards.length;
 
   return (
     <Card className="overflow-hidden premier-card-shadow-lg match-border-gradient w-full">
-      <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-        <CollapsibleTrigger asChild>
-          <div className={`${isMobile ? 'p-4' : 'p-6'} match-gradient-header w-full cursor-pointer hover:bg-muted/5 transition-colors`}>
-            <div className="flex items-center justify-between">
-              <div className="flex-1">
-                {isMobile ? (
-                  <MobileMatchHeader 
-                    fixture={fixture}
-                    homeTeamColor={homeTeamColor}
-                    awayTeamColor={awayTeamColor}
+      <div className={`${isMobile ? 'p-4' : 'p-6'} match-gradient-header w-full`}>
+        {/* Score Display */}
+        <div className="flex-1 mb-4">
+          {isMobile ? (
+            <MobileMatchHeader 
+              fixture={fixture}
+              homeTeamColor={homeTeamColor}
+              awayTeamColor={awayTeamColor}
+            />
+          ) : (
+            <DesktopMatchHeader 
+              fixture={fixture}
+              homeTeamColor={homeTeamColor}
+              awayTeamColor={awayTeamColor}
+            />
+          )}
+        </div>
+
+        {/* Compact Goal Scorers and Events Summary */}
+        {totalEvents > 0 && (
+          <div className="mt-4 pt-4 border-t border-border/20">
+            <div className="grid md:grid-cols-2 gap-4">
+              {/* Home Team Goals */}
+              {processedEvents.homeGoals.length > 0 && (
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <Target className="h-4 w-4" style={{ color: homeTeamColor }} />
+                    <span className="text-sm font-medium text-foreground">
+                      {fixture.home_team?.name} Goals ({processedEvents.homeGoals.length})
+                    </span>
+                  </div>
+                  <CompactGoalScorers
+                    goals={processedEvents.homeGoals}
+                    teamColor={homeTeamColor}
+                    teamName={fixture.home_team?.name}
+                    getGoalPlayerName={getGoalPlayerName}
+                    getGoalTime={getGoalTime}
                   />
-                ) : (
-                  <DesktopMatchHeader 
-                    fixture={fixture}
-                    homeTeamColor={homeTeamColor}
-                    awayTeamColor={awayTeamColor}
-                  />
-                )}
-              </div>
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <div className="flex items-center gap-1 text-xs md:text-sm">
-                  <Trophy className="h-3 w-3 md:h-4 md:w-4" />
-                  <span>{totalEvents} events</span>
                 </div>
-                <ChevronDown className={cn(
-                  "h-4 w-4 transition-transform duration-200",
-                  isOpen && "rotate-180"
-                )} />
-              </div>
-            </div>
-          </div>
-        </CollapsibleTrigger>
-        
-        <CollapsibleContent>
-          <CardContent className="p-4 md:p-6 border-t">
-            <div className="space-y-6">
-              {/* Events Summary */}
-              <MatchEventsSection
-                goals={goals}
-                cards={cards}
-                processedEvents={processedEvents}
-                homeTeamColor={homeTeamColor}
-                awayTeamColor={awayTeamColor}
-                getGoalPlayerName={getGoalPlayerName}
-                getGoalTime={getGoalTime}
-                getCardTeamId={getCardTeamId}
-                getCardPlayerName={getCardPlayerName}
-                getCardTime={getCardTime}
-                getCardType={getCardType}
-                isCardRed={isCardRed}
-                fixture={fixture}
-              />
-              
-              {/* Timeline */}
-              {timelineEvents.length > 0 && (
-                <div className="mt-6">
-                  <h4 className="text-sm font-medium mb-2 flex items-center gap-2">
-                    <Trophy className="h-4 w-4" />
-                    Full Match Timeline
-                  </h4>
-                  <EnhancedMatchEventsTimeline
-                    timelineEvents={timelineEvents}
-                    formatTime={formatTime}
+              )}
+
+              {/* Away Team Goals */}
+              {processedEvents.awayGoals.length > 0 && (
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <Target className="h-4 w-4" style={{ color: awayTeamColor }} />
+                    <span className="text-sm font-medium text-foreground">
+                      {fixture.away_team?.name} Goals ({processedEvents.awayGoals.length})
+                    </span>
+                  </div>
+                  <CompactGoalScorers
+                    goals={processedEvents.awayGoals}
+                    teamColor={awayTeamColor}
+                    teamName={fixture.away_team?.name}
+                    getGoalPlayerName={getGoalPlayerName}
+                    getGoalTime={getGoalTime}
                   />
                 </div>
               )}
             </div>
-          </CardContent>
-        </CollapsibleContent>
-      </Collapsible>
+
+            {/* Cards Summary */}
+            {cards.length > 0 && (
+              <div className="flex items-center gap-3 mt-3 pt-3 border-t border-border/10">
+                <AlertTriangle className="h-4 w-4 text-yellow-500" />
+                <span className="text-xs text-muted-foreground">
+                  {cards.length} disciplinary action{cards.length !== 1 ? 's' : ''}
+                </span>
+              </div>
+            )}
+
+            {/* Event Count */}
+            <div className="flex items-center justify-center mt-3 pt-3 border-t border-border/10">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <Trophy className="h-3 w-3" />
+                <span>{totalEvents} total events</span>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </Card>
   );
 };

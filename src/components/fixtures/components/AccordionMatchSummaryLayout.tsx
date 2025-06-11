@@ -7,9 +7,10 @@ import {
   AccordionItem, 
   AccordionTrigger 
 } from "@/components/ui/accordion";
-import { BarChart3, Trophy } from "lucide-react";
+import { BarChart3, Trophy, Clock } from "lucide-react";
 import CollapsibleScoreBanner from "./CollapsibleScoreBanner";
 import EnhancedMatchStats from "./EnhancedMatchStats";
+import FullMatchTimeline from "./FullMatchTimeline";
 import { extractTeamData, processTeamEvents } from "../utils/teamDataProcessor";
 
 interface AccordionMatchSummaryLayoutProps {
@@ -48,7 +49,9 @@ const AccordionMatchSummaryLayout = ({
   const processedEvents = processTeamEvents(goals, cards, teamData, getCardTeamId);
 
   // Manage persistent accordion state
-  const [accordionValue, setAccordionValue] = useState<string[]>(['match-stats']);
+  const [accordionValue, setAccordionValue] = useState<string[]>([]);
+
+  const totalEvents = goals.length + cards.length;
 
   return (
     <div className="space-y-6">
@@ -61,7 +64,7 @@ const AccordionMatchSummaryLayout = ({
         <p className="text-muted-foreground">Comprehensive match overview and statistics</p>
       </div>
 
-      {/* Collapsible Score Banner - Replaces the Header Section */}
+      {/* Score Banner - Always Visible */}
       <CollapsibleScoreBanner
         fixture={fixture}
         goals={goals}
@@ -89,6 +92,37 @@ const AccordionMatchSummaryLayout = ({
             onValueChange={setAccordionValue}
             className="w-full"
           >
+            {/* Match Timeline */}
+            {totalEvents > 0 && (
+              <AccordionItem value="match-timeline" className="border-b last:border-b-0">
+                <AccordionTrigger className="px-6 py-4 hover:no-underline">
+                  <div className="flex items-center gap-3">
+                    <Clock className="h-5 w-5 text-primary" />
+                    <span className="font-semibold">Match Timeline</span>
+                    <span className="text-sm text-muted-foreground ml-2">
+                      ({totalEvents} events detailed view)
+                    </span>
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent className="px-6 pb-6 pt-0">
+                  <FullMatchTimeline
+                    goals={goals}
+                    cards={cards}
+                    processedEvents={processedEvents}
+                    homeTeamColor={teamData.homeTeamColor}
+                    awayTeamColor={teamData.awayTeamColor}
+                    getGoalPlayerName={getGoalPlayerName}
+                    getGoalTime={getGoalTime}
+                    getCardPlayerName={getCardPlayerName}
+                    getCardTime={getCardTime}
+                    getCardType={getCardType}
+                    isCardRed={isCardRed}
+                    fixture={fixture}
+                  />
+                </AccordionContent>
+              </AccordionItem>
+            )}
+
             {/* Match Statistics */}
             <AccordionItem value="match-stats" className="border-b last:border-b-0">
               <AccordionTrigger className="px-6 py-4 hover:no-underline">
