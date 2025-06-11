@@ -1,3 +1,4 @@
+
 import * as React from "react"
 import * as DialogPrimitive from "@radix-ui/react-dialog"
 import { X } from "lucide-react"
@@ -43,7 +44,6 @@ const EnhancedDialogContent = React.forwardRef<
       className={cn(
         "fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-lg",
         "border-0 sm:border p-6",
-        // FIXED: Mobile responsive with safe areas
         "h-[90vh] w-[95vw] sm:h-auto sm:w-auto",
         "mb-[5vh] mt-[5vh] sm:mb-0 sm:mt-0",
         className
@@ -51,9 +51,9 @@ const EnhancedDialogContent = React.forwardRef<
       style={{
         background: 'var(--modal-background)',
         border: '1px solid var(--header-border)',
-        // FIXED: Add safe area support for mobile
         marginTop: 'max(5vh, var(--safe-area-inset-top))',
-        marginBottom: 'max(5vh, var(--safe-area-inset-bottom))'
+        marginBottom: 'max(5vh, var(--safe-area-inset-bottom))',
+        backdropFilter: 'none'
       }}
       {...props}
     >

@@ -1,11 +1,12 @@
 
-/* FIXED: Enhanced navigation utilities with solid backgrounds */
+/* Enhanced navigation utilities with solid backgrounds */
 
 .mobile-nav-enhanced {
   background: var(--navigation-background) !important;
-  border-top: 1px solid var(--header-border);
+  border-top: 1px solid var(--header-border) !important;
   transition: all 0.2s ease-out;
-  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1) !important;
+  backdrop-filter: var(--header-backdrop-blur) !important;
 }
 
 .nav-container {
@@ -25,14 +26,16 @@
   @apply text-primary;
 }
 
-/* FIXED: Prevent horizontal overflow on navigation */
+/* Prevent horizontal overflow on navigation */
 @media (max-width: 768px) {
   .mobile-nav-enhanced .flex {
     overflow-x: hidden;
     scrollbar-width: none;
     -ms-overflow-style: none;
     gap: 0.25rem;
-    padding: 0 0.5rem;
+    padding: 0 0.75rem;
+    justify-content: space-between;
+    width: 100%;
   }
   
   .mobile-nav-enhanced .flex::-webkit-scrollbar {
@@ -40,15 +43,16 @@
   }
 }
 
-/* FIXED: Enhanced sticky backgrounds with solid colors */
+/* Enhanced sticky backgrounds with solid colors */
 .sticky-background-enhanced {
   background: var(--header-background) !important;
-  border-bottom: 1px solid var(--header-border);
+  border-bottom: 1px solid var(--header-border) !important;
   transition: all 0.2s ease-out;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+  backdrop-filter: var(--header-backdrop-blur) !important;
 }
 
-/* FIXED: Container responsive system with proper mobile padding */
+/* Container responsive system with proper mobile padding */
 .container-responsive {
   @apply max-w-7xl mx-auto;
   width: 100%;

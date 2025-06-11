@@ -22,7 +22,7 @@
   --ring: 221.2 83.2% 53.3%;
   --radius: 0.75rem;
 
-  /* FIXED: Enhanced app gradient system with VISIBLE gradients */
+  /* SOLID app gradient system */
   --app-gradient: linear-gradient(135deg, 
     #667eea 0%,
     #764ba2 25%,
@@ -31,7 +31,7 @@
     #4facfe 100%
   );
 
-  /* FIXED: SOLID modal and navigation backgrounds */
+  /* SOLID modal and navigation backgrounds */
   --modal-background: rgb(255, 255, 255);
   --modal-backdrop: rgba(0, 0, 0, 0.75);
   --navigation-background: rgb(255, 255, 255);
@@ -71,7 +71,7 @@
   --input: 217.2 32.6% 17.5%;
   --ring: 224.3 76.3% 94.1%;
 
-  /* FIXED: Enhanced dark mode gradient with VISIBLE colors */
+  /* SOLID dark mode gradient */
   --app-gradient: linear-gradient(135deg,
     #2d1b69 0%,
     #11998e 25%,
@@ -80,7 +80,7 @@
     #764ba2 100%
   );
 
-  /* FIXED: SOLID dark mode modal and navigation backgrounds */
+  /* SOLID dark mode modal and navigation backgrounds */
   --modal-background: rgb(17, 24, 39);
   --modal-backdrop: rgba(0, 0, 0, 0.85);
   --navigation-background: rgb(17, 24, 39);

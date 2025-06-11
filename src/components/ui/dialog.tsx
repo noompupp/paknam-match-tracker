@@ -1,3 +1,4 @@
+
 import * as React from "react"
 import * as DialogPrimitive from "@radix-ui/react-dialog"
 import { X } from "lucide-react"
@@ -45,7 +46,8 @@ const DialogContent = React.forwardRef<
       )}
       style={{
         background: 'var(--modal-background)',
-        border: '1px solid var(--header-border)'
+        border: '1px solid var(--header-border)',
+        backdropFilter: 'none'
       }}
       {...props}
     >

@@ -4,73 +4,73 @@
 }
 
 body {
-  background: var(--app-gradient);
-  background-attachment: fixed;
+  background: var(--app-gradient) !important;
+  background-attachment: fixed !important;
   color: hsl(var(--foreground));
   font-feature-settings: "rlig" 1, "calt" 1;
   min-height: 100vh;
   min-height: 100dvh;
   margin: 0;
   padding: 0;
-  /* FIXED: Add safe area padding for mobile */
   padding-left: var(--safe-area-inset-left);
   padding-right: var(--safe-area-inset-right);
 }
 
-/* FIXED: Enhanced gradient background application */
+/* Force gradient background application */
 .gradient-bg {
   background: var(--app-gradient) !important;
-  background-attachment: fixed;
+  background-attachment: fixed !important;
   min-height: 100vh;
   min-height: 100dvh;
 }
 
-/* FIXED: Ensure proper background for all main containers */
+/* Force background for all main containers */
 #root {
   background: var(--app-gradient) !important;
-  background-attachment: fixed;
+  background-attachment: fixed !important;
   min-height: 100vh;
   min-height: 100dvh;
 }
 
-/* FIXED: Enhanced modal and dialog backgrounds with SOLID colors */
+/* SOLID modal and dialog backgrounds */
 [data-radix-dialog-overlay] {
   background: var(--modal-backdrop) !important;
-  backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px) !important;
 }
 
 [data-radix-dialog-content] {
   background: var(--modal-background) !important;
-  backdrop-filter: var(--header-backdrop-blur);
-  border: 1px solid var(--header-border);
+  border: 1px solid var(--header-border) !important;
 }
 
-/* FIXED: Navigation and header enhancements with SOLID backgrounds */
+/* SOLID navigation and header backgrounds */
 .mobile-nav-enhanced {
   background: var(--navigation-background) !important;
-  backdrop-filter: var(--header-backdrop-blur);
-  border-top: 1px solid var(--header-border);
+  border-top: 1px solid var(--header-border) !important;
 }
 
 .sticky-background-enhanced {
   background: var(--header-background) !important;
-  backdrop-filter: var(--header-backdrop-blur);
-  border-bottom: 1px solid var(--header-border);
+  border-bottom: 1px solid var(--header-border) !important;
 }
 
-/* FIXED: Mobile safe area implementation */
+/* Mobile safe area implementation */
 @supports (-webkit-touch-callout: none) {
   body {
     min-height: -webkit-fill-available;
     padding-top: var(--safe-area-inset-top);
     padding-bottom: var(--safe-area-inset-bottom);
+    background: var(--app-gradient) !important;
+    background-attachment: fixed !important;
   }
 }
 
-/* FIXED: PWA mode safe area handling */
+/* PWA mode safe area handling */
 @media (display-mode: standalone) {
   body {
     padding-top: var(--safe-area-inset-top);
     padding-bottom: var(--safe-area-inset-bottom);
+    background: var(--app-gradient) !important;
+    background-attachment: fixed !important;
   }
 }
