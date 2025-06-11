@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -76,9 +75,9 @@ const MultiRefereeCoordination = ({
       if (data && data.length > 0) {
         const coordinationInfo = data[0];
         
-        // Parse assignments from JSON to Assignment array
+        // Parse assignments from JSON to Assignment array with proper type casting
         const assignments = Array.isArray(coordinationInfo.assignments) 
-          ? coordinationInfo.assignments as Assignment[]
+          ? (coordinationInfo.assignments as unknown) as Assignment[]
           : [];
 
         const parsedData: CoordinationData = {
