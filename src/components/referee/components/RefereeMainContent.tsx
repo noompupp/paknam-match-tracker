@@ -100,12 +100,12 @@ const RefereeMainContent = (props: RefereeMainContentProps) => {
                     goals={props.goals}
                     selectedPlayer={props.selectedGoalPlayer}
                     selectedGoalType={props.selectedGoalType}
-                    selectedTeam={props.selectedGoalTeam}
+                    selectedGoalTeam={props.selectedGoalTeam}
                     matchTime={props.matchTime}
                     selectedFixtureData={props.selectedFixtureData}
                     onPlayerSelect={props.setSelectedGoalPlayer}
                     onGoalTypeChange={props.setSelectedGoalType}
-                    onTeamChange={props.setSelectedGoalTeam}
+                    onGoalTeamChange={props.setSelectedGoalTeam}
                     formatTime={props.formatTime}
                     assignGoal={props.assignGoal}
                   />
