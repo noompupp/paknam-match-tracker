@@ -1,7 +1,7 @@
-
 import { Badge } from "@/components/ui/badge";
 import { Clock } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface TimelineEvent {
   id: string | number;
@@ -45,6 +45,8 @@ const MirroredMatchTimeline = ({
   isCardRed,
   fixture
 }: MirroredMatchTimelineProps) => {
+  const isMobile = useIsMobile();
+  
   // Use processed events instead of re-processing raw data
   const homeGoals = processedEvents.homeGoals || [];
   const awayGoals = processedEvents.awayGoals || [];
@@ -137,9 +139,12 @@ const MirroredMatchTimeline = ({
   const TimelineEventCard = ({ event, isHome }: { event: TimelineEvent; isHome: boolean }) => (
     <div className="animate-fade-in">
       <div 
-        className={`p-3 rounded-lg border-2 bg-muted/20 ${
-          isHome ? 'border-l-4 border-r-0' : 'border-r-4 border-l-0'
-        }`}
+        className={`
+          ${isMobile ? 'p-2' : 'p-3'} 
+          rounded-lg border-2 bg-muted/20 
+          ${isHome ? 'border-l-4 border-r-0' : 'border-r-4 border-l-0'}
+          transition-all duration-200 hover:bg-muted/30
+        `}
         style={{ 
           borderLeftColor: isHome ? event.teamColor : 'transparent',
           borderRightColor: isHome ? 'transparent' : event.teamColor
@@ -147,30 +152,30 @@ const MirroredMatchTimeline = ({
       >
         <div className={`flex items-center gap-2 ${isHome ? 'justify-start' : 'justify-end'}`}>
           {isHome && (
-            <span className="text-lg" role="img" aria-label={getEventLabel(event)}>
+            <span className={`${isMobile ? 'text-sm' : 'text-lg'}`} role="img" aria-label={getEventLabel(event)}>
               {getEventIcon(event)}
             </span>
           )}
           {isHome && (
-            <Badge variant={getEventBadgeVariant(event)} className="text-xs">
+            <Badge variant={getEventBadgeVariant(event)} className={`${isMobile ? 'text-xs px-1.5 py-0.5' : 'text-xs'}`}>
               {getEventLabel(event)}
             </Badge>
           )}
-          <span className="font-medium text-foreground">
+          <span className={`font-medium text-foreground ${isMobile ? 'text-sm' : ''}`}>
             {event.playerName}
           </span>
           {event.assistPlayerName && (
-            <span className="text-xs text-muted-foreground">
+            <span className={`text-muted-foreground ${isMobile ? 'text-xs' : 'text-xs'}`}>
               (Assist: {event.assistPlayerName})
             </span>
           )}
           {!isHome && (
-            <Badge variant={getEventBadgeVariant(event)} className="text-xs">
+            <Badge variant={getEventBadgeVariant(event)} className={`${isMobile ? 'text-xs px-1.5 py-0.5' : 'text-xs'}`}>
               {getEventLabel(event)}
             </Badge>
           )}
           {!isHome && (
-            <span className="text-lg" role="img" aria-label={getEventLabel(event)}>
+            <span className={`${isMobile ? 'text-sm' : 'text-lg'}`} role="img" aria-label={getEventLabel(event)}>
               {getEventIcon(event)}
             </span>
           )}
@@ -201,35 +206,35 @@ const MirroredMatchTimeline = ({
 
   return (
     <Card>
-      <CardContent className="pt-6">
+      <CardContent className={`${isMobile ? 'pt-4' : 'pt-6'}`}>
         <div className="space-y-4">
-          <h4 className="font-semibold flex items-center gap-2 justify-center">
-            <Clock className="h-4 w-4" />
+          <h4 className={`font-semibold flex items-center gap-2 justify-center ${isMobile ? 'text-base' : ''}`}>
+            <Clock className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
             Match Timeline ({allEvents.length} events)
           </h4>
           
-          {/* Enhanced 3-Column Mirrored Layout */}
-          <div className="space-y-3 max-h-96 overflow-y-auto">
+          {/* Enhanced 3-Column Mirrored Layout with Mobile Optimizations */}
+          <div className={`space-y-3 overflow-y-auto ${isMobile ? 'max-h-80' : 'max-h-96'}`}>
             {/* Column Headers */}
-            <div className="grid grid-cols-5 gap-4 pb-2 border-b">
-              <div className="col-span-2 text-center font-medium text-sm" style={{ color: homeTeamColor }}>
-                {fixture.home_team?.name}
+            <div className={`grid grid-cols-5 gap-4 pb-2 border-b ${isMobile ? 'gap-2' : ''}`}>
+              <div className={`col-span-2 text-center font-medium ${isMobile ? 'text-xs' : 'text-sm'}`} style={{ color: homeTeamColor }}>
+                {isMobile ? (fixture.home_team?.name?.substring(0, 8) || 'Home') : fixture.home_team?.name}
               </div>
-              <div className="col-span-1 text-center font-medium text-sm text-muted-foreground">
+              <div className={`col-span-1 text-center font-medium text-muted-foreground ${isMobile ? 'text-xs' : 'text-sm'}`}>
                 Time
               </div>
-              <div className="col-span-2 text-center font-medium text-sm" style={{ color: awayTeamColor }}>
-                {fixture.away_team?.name}
+              <div className={`col-span-2 text-center font-medium ${isMobile ? 'text-xs' : 'text-sm'}`} style={{ color: awayTeamColor }}>
+                {isMobile ? (fixture.away_team?.name?.substring(0, 8) || 'Away') : fixture.away_team?.name}
               </div>
             </div>
 
-            {/* Timeline Events - Row by Row */}
+            {/* Timeline Events - Row by Row with Mobile Spacing */}
             {allEvents.map((event) => {
               const isHomeEvent = event.teamId === fixture.home_team_id;
               const isAwayEvent = event.teamId === fixture.away_team_id;
 
               return (
-                <div key={`timeline-${event.type}-${event.id}`} className="grid grid-cols-5 gap-4 items-center">
+                <div key={`timeline-${event.type}-${event.id}`} className={`grid grid-cols-5 items-center ${isMobile ? 'gap-2' : 'gap-4'}`}>
                   {/* Home Team Event */}
                   <div className="col-span-2">
                     {isHomeEvent && (
@@ -241,10 +246,13 @@ const MirroredMatchTimeline = ({
                     )}
                   </div>
 
-                  {/* Center Time */}
+                  {/* Center Time - Mobile Optimized */}
                   <div className="col-span-1 flex justify-center">
-                    <div className="flex items-center justify-center h-12 w-12 bg-primary/10 rounded-lg">
-                      <span className="text-sm font-mono text-primary font-bold">
+                    <div className={`
+                      flex items-center justify-center bg-primary/10 rounded-lg
+                      ${isMobile ? 'h-8 w-8' : 'h-12 w-12'}
+                    `}>
+                      <span className={`font-mono text-primary font-bold ${isMobile ? 'text-xs' : 'text-sm'}`}>
                         {Math.floor(event.time / 60)}'
                       </span>
                     </div>
