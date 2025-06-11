@@ -1,88 +1,72 @@
-import { Card, CardContent } from "@/components/ui/card";
+
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar } from "lucide-react";
 import CompactFixtureCard from "../shared/CompactFixtureCard";
 import LoadingCard from "./LoadingCard";
-import DateGroupHeader from "../shared/DateGroupHeader";
-import { useDeviceOrientation } from "@/hooks/useDeviceOrientation";
-import { groupFixturesByDate, initializeGameweekMappings } from "@/utils/dateGroupingUtils";
-import { useEffect } from "react";
+import { getGameweek } from "@/utils/fixtureUtils";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface AllFixturesSectionProps {
   sortedAllFixtures: any[];
   isLoading: boolean;
   onFixtureClick: (fixture: any) => void;
-  onPreviewClick?: (fixture: any) => void;
+  onPreviewClick: (fixture: any) => void;
 }
 
-const AllFixturesSection = ({ 
-  sortedAllFixtures, 
-  isLoading, 
+const AllFixturesSection = ({
+  sortedAllFixtures,
+  isLoading,
   onFixtureClick,
   onPreviewClick
 }: AllFixturesSectionProps) => {
-  const { isMobile, isPortrait } = useDeviceOrientation();
-  const isMobilePortrait = isMobile && isPortrait;
-
-  // Initialize gameweek mappings when fixtures are available
-  useEffect(() => {
-    if (sortedAllFixtures.length > 0) {
-      initializeGameweekMappings(sortedAllFixtures);
-    }
-  }, [sortedAllFixtures]);
-
-  // Group fixtures by date, but keep chronological order for mixed status
-  const groupedFixtures = groupFixturesByDate(sortedAllFixtures || []);
+  const { t } = useTranslation();
 
   return (
-    <div id="all-fixtures" className="scroll-mt-20">
-      <div className="flex items-center gap-2 mb-6">
-        <Calendar className="h-6 w-6 text-white" />
-        <h2 className="text-2xl font-bold text-white">All Fixtures</h2>
-      </div>
-      
-      <div className="space-y-4">
+    <Card className="card-shadow">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-foreground">
+          <Calendar className="h-5 w-5 text-primary" />
+          {t('fixtures.all')} ({sortedAllFixtures?.length || 0})
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
         {isLoading ? (
-          <div className="grid gap-3">
-            {Array.from({ length: 6 }).map((_, index) => (
-              <LoadingCard key={index} />
+          <div className="grid gap-4">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <LoadingCard key={i} />
             ))}
           </div>
-        ) : groupedFixtures && groupedFixtures.length > 0 ? (
-          groupedFixtures.map((group) => (
-            <div key={group.date} className="space-y-3">
-              <DateGroupHeader
-                date={group.date}
-                displayDate={group.displayDate}
-                fixtureCount={group.fixtures.length}
-                gameweek={group.gameweek}
-                gameweekLabel={group.gameweekLabel}
-                isFinalGameweek={group.isFinalGameweek}
-              />
-              <div className="grid gap-3">
-                {group.fixtures.map((fixture) => (
-                  <CompactFixtureCard 
-                    key={fixture.id} 
-                    fixture={fixture} 
-                    onFixtureClick={onFixtureClick}
-                    onPreviewClick={onPreviewClick}
-                    showDate={false}
+        ) : sortedAllFixtures && sortedAllFixtures.length > 0 ? (
+          <div className="space-y-4">
+            {sortedAllFixtures.map((fixture) => {
+              const gameweek = getGameweek(fixture, sortedAllFixtures);
+              const isCompleted = fixture.status === 'completed';
+              
+              return (
+                <div key={fixture.id} className="space-y-2">
+                  {gameweek && (
+                    <div className="text-sm font-medium text-muted-foreground">
+                      {t('fixtures.gameweek')} {gameweek}
+                    </div>
+                  )}
+                  <CompactFixtureCard
+                    fixture={fixture}
+                    onClick={isCompleted ? () => onFixtureClick(fixture) : () => onPreviewClick(fixture)}
+                    variant={isCompleted ? "result" : "upcoming"}
                     showVenue={true}
                   />
-                ))}
-              </div>
-            </div>
-          ))
+                </div>
+              );
+            })}
+          </div>
         ) : (
-          <Card className="card-shadow-lg">
-            <CardContent className="p-8 text-center text-muted-foreground">
-              <Calendar className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p>No fixtures found</p>
-              <p className="text-sm">Fixtures will appear here once they are added to the database.</p>
-            </CardContent>
-          </Card>
+          <div className="text-center py-8">
+            <Calendar className="h-8 w-8 mx-auto mb-2 opacity-50" />
+            <p className="text-muted-foreground">{t('common.noData')}</p>
+          </div>
         )}
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 };
 
