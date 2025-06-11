@@ -238,10 +238,8 @@ const RefereeToolsMain = (props: RefereeToolsMainProps) => {
               onPlayerSelect={props.setSelectedGoalPlayer}
               onGoalTypeChange={props.setSelectedGoalType}
               onGoalTeamChange={props.setSelectedGoalTeam}
-              onAssignGoal={handleAssignGoal}
+              assignGoal={props.assignGoal}
               formatTime={props.formatTime}
-              homeScore={props.homeScore}
-              awayScore={props.awayScore}
               selectedFixtureData={props.selectedFixtureData}
             />
           </TabsContent>
