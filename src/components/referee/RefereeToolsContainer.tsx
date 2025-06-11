@@ -1,3 +1,4 @@
+
 import RefereeToolsHeader from "./components/RefereeToolsHeader";
 import RefereeMainContent from "./components/RefereeMainContent";
 import RefereePageContainer from "./shared/RefereePageContainer";
@@ -91,8 +92,8 @@ const RefereeToolsContainer = () => {
       fixtureId: config.fixtureId,
       userAssignments: config.userAssignments || [],
       allAssignments: config.allAssignments || [],
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
+      createdAt: config.createdAt || new Date().toISOString(),
+      updatedAt: config.updatedAt || new Date().toISOString()
     };
     
     setWorkflowConfig(workflowModeConfig);

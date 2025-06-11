@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
@@ -39,6 +38,8 @@ const WorkflowModeManager = ({
       const workflowConfig: WorkflowModeConfig = {
         mode: WORKFLOW_MODES.TWO_REFEREES,
         fixtureId: selectedFixtureData.id,
+        userAssignments: [],
+        allAssignments: [],
         twoRefereesConfig: config,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
@@ -70,6 +71,8 @@ const WorkflowModeManager = ({
       const workflowConfig: WorkflowModeConfig = {
         mode: WORKFLOW_MODES.MULTI_REFEREE,
         fixtureId: selectedFixtureData.id,
+        userAssignments: [],
+        allAssignments: [],
         multiRefereeConfig: config,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()

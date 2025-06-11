@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Tabs } from "@/components/ui/tabs";
 import RefereeTabsNavigation from "./RefereeTabsNavigation";
@@ -51,6 +50,8 @@ interface RefereeMainContentProps {
     fixtureId: number;
     userAssignments: any[];
     allAssignments: any[];
+    createdAt: string;
+    updatedAt: string;
   };
 }
 
@@ -118,7 +119,7 @@ const RefereeMainContent = (props: RefereeMainContentProps) => {
           events={props.events}
           onAddGoal={handleAddGoal}
           onRemoveGoal={handleRemoveGoal}
-          onToggleTimer={props.toggleTimer}
+          onToggleTimer={props.onToggleTimer}
           onResetMatch={props.onResetMatch}
           onSaveMatch={props.onSaveMatch}
           onQuickGoal={handleQuickGoal}
