@@ -1,4 +1,3 @@
-
 import { TabsContent } from "@/components/ui/tabs";
 import ScoreTab from "./tabs/ScoreTab";
 import GoalsTab from "./tabs/GoalsTab";
@@ -105,13 +104,7 @@ const RefereeTabsContent = (props: RefereeTabsContentProps) => {
           selectedPlayer={props.selectedPlayer}
           selectedTeam={props.selectedTeam}
           selectedCardType={props.selectedCardType}
-          setSelectedPlayer={props.setSelectedPlayer}
-          setSelectedTeam={props.setSelectedTeam}
-          setSelectedCardType={props.setSelectedCardType}
           matchTime={props.matchTime}
-          onPlayerSelect={props.setSelectedPlayer}
-          onTeamChange={props.setSelectedTeam}
-          onCardTypeChange={props.setSelectedCardType}
           formatTime={props.formatTime}
           onToggleTimer={props.onToggleTimer}
           onResetMatch={props.onResetMatch}
