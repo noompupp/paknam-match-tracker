@@ -51,10 +51,10 @@ export const coordinationService = {
     
     return {
       fixture_id: coordinationInfo.fixture_id,
-      workflow_mode: coordinationInfo.workflow_mode,
-      assignments: coordinationInfo.assignments || [],
-      user_assignments: coordinationInfo.user_assignments || [],
-      completion_status: coordinationInfo.completion_status || {
+      workflow_mode: coordinationInfo.workflow_mode as 'two_referees' | 'multi_referee',
+      assignments: (coordinationInfo.assignments as any[]) || [],
+      user_assignments: (coordinationInfo.user_assignments as any[]) || [],
+      completion_status: (coordinationInfo.completion_status as CompletionStatus) || {
         total_assignments: 0,
         completed_assignments: 0,
         in_progress_assignments: 0,
