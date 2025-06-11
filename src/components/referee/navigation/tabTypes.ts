@@ -4,7 +4,7 @@ import { LucideIcon } from "lucide-react";
 export interface TabItem {
   value: string;
   label: string;
-  icon?: React.ReactNode;
+  icon?: LucideIcon;
   badge?: string | number;
 }
 

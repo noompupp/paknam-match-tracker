@@ -5,6 +5,8 @@ import { cn } from "@/lib/utils";
 import { TabTriggerProps } from './tabTypes';
 
 const TabTrigger = ({ tab, isMobile, className }: TabTriggerProps) => {
+  const IconComponent = tab.icon;
+
   return (
     <TabsTrigger
       key={tab.value}
@@ -23,12 +25,12 @@ const TabTrigger = ({ tab, isMobile, className }: TabTriggerProps) => {
         "flex items-center gap-1",
         isMobile ? "flex-col" : "flex-row"
       )}>
-        {tab.icon && (
+        {IconComponent && (
           <span className={cn(
             "shrink-0",
             isMobile ? "text-xs" : "text-sm"
           )}>
-            {tab.icon}
+            <IconComponent className="h-4 w-4" />
           </span>
         )}
         <span className="truncate font-medium">
