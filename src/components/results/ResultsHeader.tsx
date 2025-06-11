@@ -1,16 +1,13 @@
 
-import TournamentLogo from "../TournamentLogo";
 import UnifiedPageHeader from "@/components/shared/UnifiedPageHeader";
 
 const ResultsHeader = () => {
   return (
-    <UnifiedPageHeader>
-      <div className="text-center">
-        <div className="flex items-center justify-center">
-          <TournamentLogo />
-        </div>
-      </div>
-    </UnifiedPageHeader>
+    <UnifiedPageHeader 
+      title="Results"
+      logoSize="small"
+      showLanguageToggle={true}
+    />
   );
 };
 

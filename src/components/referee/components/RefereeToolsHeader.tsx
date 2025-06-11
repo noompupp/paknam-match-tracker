@@ -1,6 +1,5 @@
 
 import ImprovedMatchSelection from "./ImprovedMatchSelection";
-import TournamentLogo from "@/components/TournamentLogo";
 import UnifiedPageHeader from "@/components/shared/UnifiedPageHeader";
 
 interface RefereeToolsHeaderProps {
@@ -20,14 +19,14 @@ const RefereeToolsHeader = ({
   enhancedPlayersData
 }: RefereeToolsHeaderProps) => {
   return (
-    <UnifiedPageHeader>
-      <div className="space-y-4">
-        <div className="text-center">
-          <div className="flex items-center justify-center">
-            <TournamentLogo />
-          </div>
-        </div>
-        
+    <div className="space-y-4">
+      <UnifiedPageHeader 
+        title="Referee Tools"
+        logoSize="small"
+        showLanguageToggle={true}
+      />
+      
+      <div className="max-w-7xl mx-auto px-4">
         <ImprovedMatchSelection
           fixtures={fixtures}
           selectedFixture={selectedFixture}
@@ -35,7 +34,7 @@ const RefereeToolsHeader = ({
           enhancedPlayersData={enhancedPlayersData}
         />
       </div>
-    </UnifiedPageHeader>
+    </div>
   );
 };
 

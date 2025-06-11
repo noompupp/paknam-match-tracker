@@ -4,7 +4,6 @@ import { useTeams } from "@/hooks/useTeams";
 import { useTeamMembers } from "@/hooks/useMembers";
 import TeamsGrid from "./teams/TeamsGrid";
 import EnhancedTeamSquad from "./teams/EnhancedTeamSquad";
-import TournamentLogo from "./TournamentLogo";
 import UnifiedPageHeader from "./shared/UnifiedPageHeader";
 
 const Teams = () => {
@@ -50,13 +49,11 @@ const Teams = () => {
   return (
     <div className="gradient-bg">
       {/* Header */}
-      <UnifiedPageHeader>
-        <div className="text-center">
-          <div className="flex items-center justify-center">
-            <TournamentLogo />
-          </div>
-        </div>
-      </UnifiedPageHeader>
+      <UnifiedPageHeader 
+        title="Teams"
+        logoSize="small"
+        showLanguageToggle={true}
+      />
 
       <div className="max-w-7xl mx-auto container-responsive py-8 space-y-8 mobile-content-spacing">
         {/* Teams Grid */}

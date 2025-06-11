@@ -1,15 +1,12 @@
 
-import TournamentLogo from "../TournamentLogo";
 import UnifiedPageHeader from "@/components/shared/UnifiedPageHeader";
 
 const FixturesHeader = () => (
-  <UnifiedPageHeader>
-    <div className="text-center">
-      <div className="flex items-center justify-center">
-        <TournamentLogo />
-      </div>
-    </div>
-  </UnifiedPageHeader>
+  <UnifiedPageHeader 
+    title="Fixtures"
+    logoSize="small"
+    showLanguageToggle={true}
+  />
 );
 
 export default FixturesHeader;
