@@ -1,15 +1,26 @@
 
-@import './styles/base.css';
-@import './styles/safe-areas.css';
-@import './styles/gradients.css';
-@import './styles/utilities.css';
-@import './styles/animations.css';
-@import './styles/referee.css';
-@import './styles/pwa.css';
-@import './styles/pwa/index.css';
-@import './styles/pull-to-refresh.css';
-@import './styles/avatar/index.css';
+/* Main CSS Entry Point - Fixed Import Order */
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Core base styles first */
+@import './styles/base.css';
+
+/* Safe areas before other layout styles */
+@import './styles/safe-areas.css';
+
+/* PWA styles that depend on base and safe areas */
+@import './styles/pwa.css';
+@import './styles/pwa/index.css';
+
+/* Visual enhancements */
+@import './styles/gradients.css';
+@import './styles/utilities.css';
+@import './styles/animations.css';
+
+/* Component-specific styles */
+@import './styles/referee.css';
+@import './styles/pull-to-refresh.css';
+@import './styles/avatar/index.css';

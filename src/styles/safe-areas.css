@@ -1,5 +1,14 @@
 
 /* Comprehensive Safe Area Classes */
+
+/* Enhanced safe area variable definitions */
+:root {
+  --safe-area-inset-top: env(safe-area-inset-top, 0px);
+  --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-area-inset-left: env(safe-area-inset-left, 0px);
+  --safe-area-inset-right: env(safe-area-inset-right, 0px);
+}
+
 .safe-top {
   padding-top: var(--safe-area-inset-top);
 }
@@ -90,6 +99,14 @@
   .modal-close-safe {
     top: max(var(--safe-area-inset-top, 0px) + 1rem, 1rem);
     right: max(var(--safe-area-inset-right, 0px) + 1rem, 1rem);
+  }
+  
+  /* FIXED: Mobile browser safe area handling */
+  @media not (display-mode: standalone) {
+    .safe-x {
+      padding-left: max(var(--safe-area-inset-left), 1rem);
+      padding-right: max(var(--safe-area-inset-right), 1rem);
+    }
   }
 }
 
