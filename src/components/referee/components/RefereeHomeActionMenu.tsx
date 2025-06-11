@@ -205,13 +205,13 @@ const RefereeHomeActionMenu = ({
             )}
             {unsavedChanges.cards > 0 && (
               <div className="flex items-center gap-2 text-sm">
-                <AlertTriangle className="h-3 w-3" />
+                <span className="text-yellow-600">🟨</span>
                 <span>{unsavedChanges.cards} card{unsavedChanges.cards > 1 ? 's' : ''}</span>
               </div>
             )}
             {unsavedChanges.playerTimes > 0 && (
               <div className="flex items-center gap-2 text-sm">
-                <Users className="h-3 w-3" />
+                <Timer className="h-3 w-3" />
                 <span>{unsavedChanges.playerTimes} player time{unsavedChanges.playerTimes > 1 ? 's' : ''}</span>
               </div>
             )}
