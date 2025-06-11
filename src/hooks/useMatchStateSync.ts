@@ -1,5 +1,5 @@
 
-import { useEffect, useCallback } from "react";
+import { useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -13,10 +13,10 @@ interface MatchStateSyncProps {
 export const useMatchStateSync = (props: MatchStateSyncProps) => {
   const { toast } = useToast();
 
-  // Calculate and sync scores from events
+  // Manual score calculation and sync (no real-time subscriptions)
   const syncScoreFromEvents = useCallback(async (fixtureId: number) => {
     try {
-      console.log('🔄 useMatchStateSync: Syncing scores from events for fixture:', fixtureId);
+      console.log('🔄 useMatchStateSync: Manual score sync for fixture:', fixtureId);
       
       const { data: fixture, error: fixtureError } = await supabase
         .from('fixtures')
@@ -43,7 +43,7 @@ export const useMatchStateSync = (props: MatchStateSyncProps) => {
       const homeGoals = events?.filter(event => event.team_id === fixture.home_team_id).length || 0;
       const awayGoals = events?.filter(event => event.team_id === fixture.away_team_id).length || 0;
 
-      console.log('📊 useMatchStateSync: Calculated scores:', { homeGoals, awayGoals });
+      console.log('📊 useMatchStateSync: Calculated scores manually:', { homeGoals, awayGoals });
 
       // Update fixture with calculated scores
       const { error: updateError } = await supabase
@@ -57,7 +57,7 @@ export const useMatchStateSync = (props: MatchStateSyncProps) => {
       if (updateError) {
         console.error('❌ useMatchStateSync: Error updating fixture scores:', updateError);
       } else {
-        console.log('✅ useMatchStateSync: Fixture scores synchronized');
+        console.log('✅ useMatchStateSync: Fixture scores synchronized manually');
         
         // Notify score update
         if (props.onScoreUpdate) {
@@ -66,87 +66,25 @@ export const useMatchStateSync = (props: MatchStateSyncProps) => {
       }
 
     } catch (error) {
-      console.error('❌ useMatchStateSync: Error in syncScoreFromEvents:', error);
+      console.error('❌ useMatchStateSync: Error in manual sync:', error);
     }
   }, [props.onScoreUpdate]);
 
-  // Set up real-time subscriptions
-  useEffect(() => {
-    if (!props.fixtureId) {
-      console.log('⚠️ useMatchStateSync: No fixture ID provided, skipping subscription');
-      return;
+  // Manual refresh function with user feedback
+  const forceRefresh = useCallback(async () => {
+    if (props.fixtureId) {
+      console.log('🔄 useMatchStateSync: Manual force refresh initiated');
+      await syncScoreFromEvents(props.fixtureId);
+      
+      toast({
+        title: "Match Data Refreshed",
+        description: "All match data has been synchronized manually",
+      });
     }
-
-    console.log('🔗 useMatchStateSync: Setting up real-time subscriptions for fixture:', props.fixtureId);
-
-    // Subscribe to fixture changes
-    const fixtureChannel = supabase
-      .channel(`fixture-sync-${props.fixtureId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'fixtures',
-          filter: `id=eq.${props.fixtureId}`
-        },
-        (payload) => {
-          console.log('🔄 useMatchStateSync: Fixture updated:', payload);
-          const newData = payload.new as any;
-          
-          if (props.onScoreUpdate && newData.home_score !== null && newData.away_score !== null) {
-            props.onScoreUpdate(newData.home_score, newData.away_score);
-          }
-          
-          if (props.onFixtureStatusUpdate && newData.status) {
-            props.onFixtureStatusUpdate(newData.status);
-          }
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'match_events',
-          filter: `fixture_id=eq.${props.fixtureId}`
-        },
-        async (payload) => {
-          console.log('🎯 useMatchStateSync: Match event changed:', payload);
-          
-          if (props.onMatchEventUpdate) {
-            props.onMatchEventUpdate(payload);
-          }
-
-          // If it's a goal event, sync scores automatically
-          const event = payload.new as any;
-          if (event?.event_type === 'goal') {
-            console.log('⚽ useMatchStateSync: Goal event detected, syncing scores');
-            await syncScoreFromEvents(props.fixtureId!);
-          }
-        }
-      )
-      .subscribe();
-
-    // Cleanup subscription
-    return () => {
-      console.log('🔌 useMatchStateSync: Cleaning up subscriptions');
-      supabase.removeChannel(fixtureChannel);
-    };
-  }, [props.fixtureId, props.onScoreUpdate, props.onMatchEventUpdate, props.onFixtureStatusUpdate, syncScoreFromEvents]);
+  }, [props.fixtureId, syncScoreFromEvents, toast]);
 
   return {
     syncScoreFromEvents: () => props.fixtureId ? syncScoreFromEvents(props.fixtureId) : Promise.resolve(),
-    forceRefresh: async () => {
-      if (props.fixtureId) {
-        console.log('🔄 useMatchStateSync: Force refreshing match state');
-        await syncScoreFromEvents(props.fixtureId);
-        
-        toast({
-          title: "Match State Refreshed",
-          description: "All match data has been synchronized",
-        });
-      }
-    }
+    forceRefresh
   };
 };

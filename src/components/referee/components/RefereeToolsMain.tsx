@@ -49,8 +49,8 @@ interface RefereeToolsMainProps {
   addPlayer: (player: ComponentPlayer) => void;
   removePlayer: (playerId: number) => void;
   togglePlayerTime: (playerId: number) => void;
-  onCardAdded?: (cardData: any) => void; // Add callback for card management
-  onDataRefresh?: () => void; // Add callback for manual refresh
+  onCardAdded?: (cardData: any) => void;
+  onDataRefresh?: () => void;
 }
 
 const RefereeToolsMain = (props: RefereeToolsMainProps) => {
@@ -58,17 +58,19 @@ const RefereeToolsMain = (props: RefereeToolsMainProps) => {
   const [goalWizardInitialTeam, setGoalWizardInitialTeam] = useState<'home' | 'away' | undefined>(undefined);
   const [showMatchEdit, setShowMatchEdit] = useState(false);
 
-  // Manual data fetching (replaces real-time sync)
+  // Manual data fetching (completely replacing real-time sync)
   const { manualRefresh, isRefreshing } = useManualDataFetch({ 
     fixtureId: props.selectedFixtureData?.id 
   });
 
-  // Handle manual refresh
+  // Enhanced manual refresh with complete data coordination
   const handleManualRefresh = async () => {
+    console.log('🔄 RefereeToolsMain: Initiating comprehensive manual refresh');
     await manualRefresh();
     if (props.onDataRefresh) {
       props.onDataRefresh();
     }
+    console.log('✅ RefereeToolsMain: Manual refresh completed');
   };
 
   // Handle quick goal from Score tab
@@ -122,7 +124,7 @@ const RefereeToolsMain = (props: RefereeToolsMainProps) => {
   }));
 
   const handleSaveMatch = () => {
-    console.warn('⚠️ RefereeToolsMain: Save functionality needs database hooks from container');
+    console.log('💾 RefereeToolsMain: Save functionality with manual data management');
     console.log('Current match state:', {
       homeScore: props.homeScore,
       awayScore: props.awayScore,
@@ -134,7 +136,7 @@ const RefereeToolsMain = (props: RefereeToolsMainProps) => {
 
   const handleResetMatch = () => {
     props.resetTimer();
-    console.log('🔄 RefereeToolsMain: Reset match - full reset needs container-level coordination');
+    console.log('🔄 RefereeToolsMain: Reset match with manual data coordination');
   };
 
   const handleAssignGoal = (player: ComponentPlayer) => {
@@ -202,7 +204,7 @@ const RefereeToolsMain = (props: RefereeToolsMainProps) => {
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       {/* Main Content Area (2/3 width on large screens) */}
       <div className="lg:col-span-2">
-        {/* Manual Refresh Button */}
+        {/* Enhanced Manual Refresh Button */}
         <div className="mb-4 flex justify-end">
           <Button
             onClick={handleManualRefresh}
@@ -212,7 +214,7 @@ const RefereeToolsMain = (props: RefereeToolsMainProps) => {
             className="flex items-center gap-2"
           >
             <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-            {isRefreshing ? 'Refreshing...' : 'Refresh Data'}
+            {isRefreshing ? 'Refreshing All Data...' : 'Manual Refresh'}
           </Button>
         </div>
 

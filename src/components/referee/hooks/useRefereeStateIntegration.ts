@@ -9,7 +9,7 @@ export const useRefereeStateIntegration = () => {
   // Base state (fixtures, timer, etc.)
   const baseState = useRefereeBaseState();
 
-  // Score state with real-time sync
+  // Score state with manual sync (no real-time)
   const scoreState = useRefereeScoreState({
     selectedFixtureData: baseState.selectedFixtureData
   });
@@ -21,13 +21,13 @@ export const useRefereeStateIntegration = () => {
     matchTime: baseState.matchTime
   });
 
-  // Player data with enhanced processing - pass trackedPlayers directly, conversion happens inside the hook
+  // Player data with enhanced processing
   const playerData = useRefereePlayerData({
     selectedFixture: baseState.selectedFixture,
     selectedFixtureData: baseState.selectedFixtureData,
     fixtures: baseState.fixtures,
     members: baseState.members,
-    trackedPlayers: matchState.trackedPlayers // Pass PlayerTime[] directly - conversion happens in the hook
+    trackedPlayers: matchState.trackedPlayers
   });
 
   // Team selection management
@@ -37,10 +37,23 @@ export const useRefereeStateIntegration = () => {
     awayTeamPlayers: playerData.awayTeamPlayers
   });
 
-  // Check for players needing attention - fix the method call to use single argument
+  // Check for players needing attention
   const playersNeedingAttention = matchState.getPlayersNeedingAttentionForMatch
     ? matchState.getPlayersNeedingAttentionForMatch(playerData.playersForTimeTracker)
     : [];
+
+  // Manual data refresh coordination
+  const handleManualRefresh = async () => {
+    console.log('🔄 useRefereeStateIntegration: Coordinating manual refresh across all systems');
+    
+    // Refresh scores
+    if (scoreState.forceRefresh) {
+      await scoreState.forceRefresh();
+    }
+    
+    // Additional manual refresh logic can be added here
+    console.log('✅ useRefereeStateIntegration: Manual refresh completed');
+  };
 
   return {
     baseState,
@@ -48,6 +61,7 @@ export const useRefereeStateIntegration = () => {
     matchState,
     playerData,
     teamSelection,
-    playersNeedingAttention
+    playersNeedingAttention,
+    handleManualRefresh
   };
 };

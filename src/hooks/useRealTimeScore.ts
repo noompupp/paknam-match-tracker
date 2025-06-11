@@ -1,118 +1,74 @@
 
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { useMatchStateSync } from "./useMatchStateSync";
+import { useManualScore } from "./useManualScore";
 
 interface RealTimeScoreProps {
   fixtureId?: number;
 }
 
 export const useRealTimeScore = (props?: RealTimeScoreProps) => {
-  const [homeScore, setHomeScore] = useState(0);
-  const [awayScore, setAwayScore] = useState(0);
-  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  // Enhanced score update handler
-  const handleScoreUpdate = (newHomeScore: number, newAwayScore: number) => {
-    console.log('📊 useRealTimeScore: Score updated via sync:', { newHomeScore, newAwayScore });
-    setHomeScore(newHomeScore);
-    setAwayScore(newAwayScore);
-  };
-
-  // Enhanced match event handler
-  const handleMatchEventUpdate = (event: any) => {
-    console.log('🎯 useRealTimeScore: Match event updated:', event);
-    
-    // Show toast for goal events
-    if (event.new?.event_type === 'goal') {
-      toast({
-        title: "⚽ Goal Scored!",
-        description: `${event.new.player_name || 'Quick Goal'} scored!`,
-      });
-    }
-  };
-
-  // Use the match state sync hook
-  const { syncScoreFromEvents, forceRefresh } = useMatchStateSync({
+  // Use manual score management instead of real-time sync
+  const { homeScore, awayScore, isLoading, refreshScores, fetchInitialScores } = useManualScore({
     fixtureId: props?.fixtureId,
-    onScoreUpdate: handleScoreUpdate,
-    onMatchEventUpdate: handleMatchEventUpdate
+    onScoreUpdate: (newHomeScore: number, newAwayScore: number) => {
+      console.log('📊 useRealTimeScore: Manual score updated:', { newHomeScore, newAwayScore });
+    }
   });
 
-  // Fetch initial score from database
-  const fetchInitialScore = async (fixtureId: number) => {
-    setIsLoading(true);
-    try {
-      console.log('🔄 useRealTimeScore: Fetching initial score for fixture:', fixtureId);
-      
-      // Trigger sync to ensure scores are up to date
-      await syncScoreFromEvents();
-      
-    } catch (error) {
-      console.error('❌ useRealTimeScore: Error in fetchInitialScore:', error);
-      toast({
-        title: "Score Sync Error",
-        description: "Failed to sync score data",
-        variant: "destructive"
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Initialize score when fixture changes
-  useEffect(() => {
-    if (props?.fixtureId) {
-      fetchInitialScore(props.fixtureId);
-    } else {
-      console.log('⚠️ useRealTimeScore: No fixture ID provided, resetting scores');
-      setHomeScore(0);
-      setAwayScore(0);
-    }
-  }, [props?.fixtureId]);
-
   // Manual refresh function
-  const refreshScore = () => {
+  const refreshScore = async () => {
     if (props?.fixtureId) {
       console.log('🔄 useRealTimeScore: Manual score refresh requested');
-      fetchInitialScore(props.fixtureId);
+      try {
+        await refreshScores();
+        toast({
+          title: "Scores Refreshed",
+          description: "Match scores have been updated",
+        });
+      } catch (error) {
+        console.error('❌ useRealTimeScore: Error refreshing scores:', error);
+        toast({
+          title: "Refresh Failed",
+          description: "Failed to refresh scores",
+          variant: "destructive"
+        });
+      }
     }
   };
 
-  // Legacy compatibility functions (deprecated but maintained for backward compatibility)
-  const addGoal = (team: 'home' | 'away') => {
-    console.log('⚠️ useRealTimeScore: Legacy addGoal called - scores are now managed by database');
-    if (team === 'home') {
-      setHomeScore(prev => prev + 1);
-    } else {
-      setAwayScore(prev => prev + 1);
-    }
+  // Enhanced force refresh with user feedback
+  const forceRefresh = async () => {
+    console.log('🔄 useRealTimeScore: Enhanced force refresh requested');
+    await refreshScore();
   };
 
-  const removeGoal = (team: 'home' | 'away') => {
-    console.log('⚠️ useRealTimeScore: Legacy removeGoal called - scores are now managed by database');
-    if (team === 'home' && homeScore > 0) {
-      setHomeScore(prev => prev - 1);
-    } else if (team === 'away' && awayScore > 0) {
-      setAwayScore(prev => prev - 1);
-    }
+  // Legacy compatibility functions (maintained for backward compatibility)
+  const addGoal = async (team: 'home' | 'away') => {
+    console.log('📊 useRealTimeScore: Legacy addGoal called - triggering manual refresh');
+    await refreshScores();
   };
 
-  const resetScore = () => {
-    console.log('🔄 useRealTimeScore: Resetting scores to 0');
-    setHomeScore(0);
-    setAwayScore(0);
+  const removeGoal = async (team: 'home' | 'away') => {
+    console.log('📊 useRealTimeScore: Legacy removeGoal called - triggering manual refresh');
+    await refreshScores();
+  };
+
+  const resetScore = async () => {
+    console.log('🔄 useRealTimeScore: Resetting scores and fetching fresh data');
+    await fetchInitialScores();
   };
 
   return {
     homeScore,
     awayScore,
     isLoading,
-    addGoal, // Legacy compatibility
-    removeGoal, // Legacy compatibility
+    addGoal,
+    removeGoal, 
     resetScore,
     refreshScore,
-    forceRefresh // New enhanced refresh
+    forceRefresh
   };
 };

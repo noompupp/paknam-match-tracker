@@ -14,15 +14,13 @@ export const useStableScoreSync = ({ fixtureId, onScoreUpdate }: StableScoreSync
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   
-  // Prevent race conditions with debouncing
-  const syncTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  // Manual sync management (no debouncing for manual actions)
   const lastSyncRef = useRef<number>(0);
-  const isInitializedRef = useRef(false);
 
-  // Stable score calculation from events
+  // Manual score calculation from events
   const calculateScoreFromEvents = useCallback(async (targetFixtureId: number) => {
     try {
-      console.log('🔄 useStableScoreSync: Calculating score from events for fixture:', targetFixtureId);
+      console.log('🔄 useStableScoreSync: Manual score calculation for fixture:', targetFixtureId);
       
       // Get fixture data first to know team IDs
       const { data: fixture, error: fixtureError } = await supabase
@@ -51,7 +49,7 @@ export const useStableScoreSync = ({ fixtureId, onScoreUpdate }: StableScoreSync
       const homeGoals = events?.filter(event => event.team_id === fixture.home_team_id).length || 0;
       const awayGoals = events?.filter(event => event.team_id === fixture.away_team_id).length || 0;
 
-      console.log('📊 useStableScoreSync: Calculated scores from events:', { 
+      console.log('📊 useStableScoreSync: Manual scores calculated:', { 
         homeGoals, 
         awayGoals,
         fixtureScores: { home: fixture.home_score, away: fixture.away_score }
@@ -60,60 +58,34 @@ export const useStableScoreSync = ({ fixtureId, onScoreUpdate }: StableScoreSync
       return { homeScore: homeGoals, awayScore: awayGoals };
 
     } catch (error) {
-      console.error('❌ useStableScoreSync: Error in calculateScoreFromEvents:', error);
+      console.error('❌ useStableScoreSync: Error in manual score calculation:', error);
       return { homeScore: 0, awayScore: 0 };
     }
   }, []);
 
-  // Debounced score sync to prevent race conditions
-  const debouncedScoreSync = useCallback(async (targetFixtureId: number, delay = 300) => {
-    // Clear any existing timeout
-    if (syncTimeoutRef.current) {
-      clearTimeout(syncTimeoutRef.current);
-    }
+  // Manual score sync function
+  const manualScoreSync = useCallback(async (targetFixtureId: number) => {
+    setIsLoading(true);
+    try {
+      const { homeScore: newHome, awayScore: newAway } = await calculateScoreFromEvents(targetFixtureId);
+      
+      // Update scores
+      setHomeScore(newHome);
+      setAwayScore(newAway);
 
-    // Prevent too frequent syncs
-    const now = Date.now();
-    if (now - lastSyncRef.current < 100) {
-      console.log('⏰ useStableScoreSync: Skipping sync - too frequent');
-      return;
-    }
-
-    syncTimeoutRef.current = setTimeout(async () => {
-      setIsLoading(true);
-      try {
-        const { homeScore: newHome, awayScore: newAway } = await calculateScoreFromEvents(targetFixtureId);
-        
-        // Only update if scores actually changed
-        setHomeScore(current => {
-          if (current !== newHome) {
-            console.log('📊 useStableScoreSync: Home score updated:', current, '->', newHome);
-            return newHome;
-          }
-          return current;
-        });
-        
-        setAwayScore(current => {
-          if (current !== newAway) {
-            console.log('📊 useStableScoreSync: Away score updated:', current, '->', newAway);
-            return newAway;
-          }
-          return current;
-        });
-
-        // Notify parent component
-        if (onScoreUpdate) {
-          onScoreUpdate(newHome, newAway);
-        }
-
-        lastSyncRef.current = Date.now();
-        
-      } catch (error) {
-        console.error('❌ useStableScoreSync: Error in debounced sync:', error);
-      } finally {
-        setIsLoading(false);
+      // Notify parent component
+      if (onScoreUpdate) {
+        onScoreUpdate(newHome, newAway);
       }
-    }, delay);
+
+      lastSyncRef.current = Date.now();
+      console.log('✅ useStableScoreSync: Manual sync completed:', { homeScore: newHome, awayScore: newAway });
+      
+    } catch (error) {
+      console.error('❌ useStableScoreSync: Error in manual sync:', error);
+    } finally {
+      setIsLoading(false);
+    }
   }, [calculateScoreFromEvents, onScoreUpdate]);
 
   // Initialize scores when fixture changes
@@ -122,59 +94,20 @@ export const useStableScoreSync = ({ fixtureId, onScoreUpdate }: StableScoreSync
       console.log('⚠️ useStableScoreSync: No fixture ID, resetting scores');
       setHomeScore(0);
       setAwayScore(0);
-      isInitializedRef.current = false;
       return;
     }
 
-    console.log('🔄 useStableScoreSync: Initializing for fixture:', fixtureId);
-    isInitializedRef.current = true;
-    debouncedScoreSync(fixtureId, 100); // Faster initial sync
-  }, [fixtureId, debouncedScoreSync]);
-
-  // Set up real-time subscriptions with stable handling
-  useEffect(() => {
-    if (!fixtureId || !isInitializedRef.current) return;
-
-    console.log('🔗 useStableScoreSync: Setting up real-time subscription for fixture:', fixtureId);
-
-    const channel = supabase
-      .channel(`stable-score-sync-${fixtureId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'match_events',
-          filter: `fixture_id=eq.${fixtureId}`
-        },
-        (payload) => {
-          console.log('🎯 useStableScoreSync: Match event changed:', payload);
-          
-          const event = payload.new as any;
-          if (event?.event_type === 'goal') {
-            console.log('⚽ useStableScoreSync: Goal event detected, triggering stable sync');
-            debouncedScoreSync(fixtureId, 500); // Slightly longer delay for goal events
-          }
-        }
-      )
-      .subscribe();
-
-    return () => {
-      console.log('🔌 useStableScoreSync: Cleaning up subscription');
-      if (syncTimeoutRef.current) {
-        clearTimeout(syncTimeoutRef.current);
-      }
-      supabase.removeChannel(channel);
-    };
-  }, [fixtureId, debouncedScoreSync]);
+    console.log('🔄 useStableScoreSync: Manual initialization for fixture:', fixtureId);
+    manualScoreSync(fixtureId);
+  }, [fixtureId, manualScoreSync]);
 
   // Manual refresh function
   const forceRefresh = useCallback(() => {
     if (fixtureId) {
-      console.log('🔄 useStableScoreSync: Force refresh requested');
-      debouncedScoreSync(fixtureId, 100);
+      console.log('🔄 useStableScoreSync: Manual force refresh requested');
+      manualScoreSync(fixtureId);
     }
-  }, [fixtureId, debouncedScoreSync]);
+  }, [fixtureId, manualScoreSync]);
 
   return {
     homeScore,

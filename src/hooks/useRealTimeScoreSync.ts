@@ -1,10 +1,10 @@
 
 import { useEffect } from "react";
 
-// Hook to indicate real-time score sync is ready
+// Placeholder hook for real-time score sync (now replaced with manual data fetching)
 export const useRealTimeScoreSync = () => {
   useEffect(() => {
-    console.log('✅ useRealTimeScoreSync: Real-time score synchronization is ready');
-    console.log('📡 useRealTimeScoreSync: Listening for fixtures and match_events changes');
+    console.log('✅ useRealTimeScoreSync: Real-time synchronization disabled - using manual data fetching');
+    console.log('📡 useRealTimeScoreSync: Manual refresh buttons and local state management active');
   }, []);
 };
