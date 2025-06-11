@@ -6,7 +6,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import TabTrigger from "../navigation/TabTrigger";
 import { ResponsiveTabsListProps } from "../navigation/tabTypes";
 
-const ResponsiveTabsList = ({ tabs, className }: ResponsiveTabsListProps) => {
+const TabsRenderer = ({ tabs, className }: ResponsiveTabsListProps) => {
   const isMobile = useIsMobile();
 
   return (
@@ -28,4 +28,4 @@ const ResponsiveTabsList = ({ tabs, className }: ResponsiveTabsListProps) => {
   );
 };
 
-export default ResponsiveTabsList;
+export default TabsRenderer;

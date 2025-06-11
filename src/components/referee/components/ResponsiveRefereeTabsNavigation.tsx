@@ -1,8 +1,8 @@
 
-import RefereeTabsNavigationContainer from "../navigation/RefereeTabsNavigationContainer";
+import TabsContainer from "../shared/TabsContainer";
 
 const ResponsiveRefereeTabsNavigation = () => {
-  return <RefereeTabsNavigationContainer />;
+  return <TabsContainer />;
 };
 
 export default ResponsiveRefereeTabsNavigation;
