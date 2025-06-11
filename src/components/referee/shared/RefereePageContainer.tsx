@@ -24,20 +24,16 @@ const RefereePageContainer = ({
 
   return (
     <div className={cn(
-      "bg-gradient-to-br from-primary/10 via-background to-secondary/10",
-      "w-full",
-      "overflow-x-hidden",
-      "min-h-screen",
+      "gradient-bg w-full overflow-x-hidden min-h-screen",
       isMobile && isIOS && "referee-ios-safe",
       isMobile && !isIOS && "referee-mobile-container",
       !isMobile && "min-h-screen",
       className
     )}>
       <div className={cn(
-        "referee-content",
+        "referee-content container-responsive",
         spacingClasses[spacing],
-        "w-full",
-        "max-w-none sm:max-w-7xl"
+        "w-full max-w-none sm:max-w-7xl py-4 sm:py-8"
       )}>
         {children}
       </div>

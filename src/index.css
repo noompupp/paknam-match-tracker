@@ -31,6 +31,17 @@
     --chart-3: 197 37% 24%;
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
+    
+    /* Enhanced gradient background variables */
+    --app-gradient: linear-gradient(135deg, 
+      hsl(var(--primary) / 0.1) 0%, 
+      hsl(var(--background)) 25%, 
+      hsl(var(--secondary) / 0.05) 50%, 
+      hsl(var(--background)) 75%, 
+      hsl(var(--primary) / 0.1) 100%);
+    --header-background: rgba(255, 255, 255, 0.95);
+    --header-backdrop-blur: blur(20px) saturate(180%);
+    --header-border: rgba(0, 0, 0, 0.05);
   }
 
   .dark {
@@ -58,6 +69,17 @@
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
+    
+    /* Dark mode gradient variables */
+    --app-gradient: linear-gradient(135deg, 
+      hsl(var(--primary) / 0.15) 0%, 
+      hsl(var(--background)) 25%, 
+      hsl(var(--secondary) / 0.08) 50%, 
+      hsl(var(--background)) 75%, 
+      hsl(var(--primary) / 0.15) 100%);
+    --header-background: rgba(17, 24, 39, 0.95);
+    --header-backdrop-blur: blur(20px) saturate(180%);
+    --header-border: rgba(255, 255, 255, 0.05);
   }
 }
 
@@ -86,6 +108,61 @@
 
   .status-success {
     @apply bg-green-500 text-white;
+  }
+
+  /* Enhanced gradient background utility */
+  .gradient-bg {
+    background: var(--app-gradient);
+    background-attachment: fixed;
+  }
+
+  /* Mobile-first padding fixes */
+  .mobile-content-spacing {
+    @apply space-y-4 sm:space-y-6;
+  }
+
+  .container-responsive {
+    @apply max-w-7xl mx-auto px-4 sm:px-6;
+  }
+
+  /* Enhanced mobile safe areas */
+  .safe-x {
+    padding-left: max(1rem, env(safe-area-inset-left));
+    padding-right: max(1rem, env(safe-area-inset-right));
+  }
+
+  .safe-y {
+    padding-top: max(0.5rem, env(safe-area-inset-top));
+    padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+  }
+
+  .safe-bottom {
+    padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+  }
+
+  .safe-top {
+    padding-top: max(0.5rem, env(safe-area-inset-top));
+  }
+
+  /* Navigation bar overflow fixes */
+  .nav-container {
+    @apply overflow-x-auto scrollbar-none;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .nav-container::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Touch target improvements */
+  .touch-target {
+    @apply min-h-[44px] min-w-[44px];
+  }
+
+  /* Header spacing fixes */
+  .header-spacing {
+    @apply py-4 sm:py-6;
   }
 
   .mobile-fixture-select-trigger {
@@ -187,7 +264,7 @@
   transition: transform 0.3s ease;
 }
 
-/* Match preview modal mobile optimizations */
+/* Match preview modal mobile optimizations - Enhanced */
 @media (max-width: 768px) {
   .enhanced-dialog-content {
     margin: 0;
@@ -196,6 +273,24 @@
     height: 100vh;
     max-height: 100vh;
     border-radius: 0;
+    padding: 0;
+  }
+
+  .enhanced-dialog-content .mobile-modal-content {
+    height: 100vh;
+    overflow-y: auto;
+    padding: 1rem;
+  }
+
+  .enhanced-dialog-content .mobile-modal-header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: var(--header-background);
+    backdrop-filter: var(--header-backdrop-blur);
+    border-bottom: 1px solid var(--header-border);
+    padding: 1rem;
+    margin: -1rem -1rem 1rem -1rem;
   }
 }
 
@@ -209,6 +304,20 @@
   
   .referee-tabs-list::-webkit-scrollbar {
     display: none;
+  }
+
+  .referee-ios-safe {
+    padding-top: max(1rem, env(safe-area-inset-top));
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+
+  .referee-mobile-container {
+    padding-left: max(1rem, env(safe-area-inset-left));
+    padding-right: max(1rem, env(safe-area-inset-right));
+  }
+
+  .referee-content {
+    padding: 1rem;
   }
 }
 
@@ -228,5 +337,18 @@
     width: 4px;
     background: linear-gradient(to bottom, hsl(var(--primary)), hsl(var(--secondary)));
     z-index: 1;
+  }
+}
+
+/* Enhanced mobile navigation */
+@media (max-width: 768px) {
+  .mobile-nav-enhanced {
+    background: var(--header-background);
+    backdrop-filter: var(--header-backdrop-blur);
+    border-top: 1px solid var(--header-border);
+  }
+
+  .mobile-nav-item {
+    @apply flex flex-col items-center gap-1 min-h-[44px] min-w-[44px] p-2;
   }
 }

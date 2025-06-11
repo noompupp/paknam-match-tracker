@@ -34,7 +34,6 @@ const RoleBasedNavigation = ({ activeTab, onTabChange }: RoleBasedNavigationProp
   };
 
   const handleSignIn = () => {
-    // Navigate to sign in by setting activeTab - the AppContent will handle showing SecureLogin
     onTabChange('auth');
   };
 
@@ -57,7 +56,6 @@ const RoleBasedNavigation = ({ activeTab, onTabChange }: RoleBasedNavigationProp
       textRefs.current.forEach((textElement) => {
         if (textElement) {
           const text = textElement.textContent || '';
-          // Mark long text for special styling
           if (text.length > 7) {
             textElement.setAttribute('data-long-text', 'true');
           } else {
@@ -68,7 +66,7 @@ const RoleBasedNavigation = ({ activeTab, onTabChange }: RoleBasedNavigationProp
     }
   }, [isStandalone]);
 
-  // Base navigation items available to all users (including non-authenticated)
+  // Base navigation items available to all users
   const baseNavItems = [
     { id: "dashboard", label: "Latest", icon: Home },
     { id: "teams", label: "Teams", icon: Users },
@@ -89,113 +87,116 @@ const RoleBasedNavigation = ({ activeTab, onTabChange }: RoleBasedNavigationProp
 
   return (
     <nav 
-      className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-lg border-t border-border z-50 safe-bottom"
+      className="fixed bottom-0 left-0 right-0 mobile-nav-enhanced z-50 safe-bottom"
       style={{
         paddingBottom: `max(env(safe-area-inset-bottom), 0.5rem)`,
         height: `calc(70px + env(safe-area-inset-bottom))`
       }}
     >
-      <div className="flex justify-between items-center px-4 py-2 h-[70px]">
-        {/* Base navigation items - always visible */}
-        {baseNavItems.map((item, index) => {
-          const Icon = item.icon;
-          const isActive = activeTab === item.id;
-          
-          return (
-            <Button
-              key={item.id}
-              variant="ghost"
-              size="sm"
-              onClick={() => onTabChange(item.id)}
-              className={`flex flex-col items-center gap-1 h-auto py-2 px-3 transition-all duration-200 relative touch-target ${
-                isActive 
-                  ? "text-primary bg-primary/10 rounded-xl border border-primary/20" 
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-              }`}
-            >
-              <Icon className="h-5 w-5" />
-              <span 
-                ref={(el) => textRefs.current[index] = el}
-                className="text-xs font-medium"
+      {/* Enhanced navigation container with overflow handling */}
+      <div className="nav-container">
+        <div className="flex justify-between items-center px-2 sm:px-4 py-2 h-[70px] min-w-fit">
+          {/* Base navigation items - always visible */}
+          {baseNavItems.map((item, index) => {
+            const Icon = item.icon;
+            const isActive = activeTab === item.id;
+            
+            return (
+              <Button
+                key={item.id}
+                variant="ghost"
+                size="sm"
+                onClick={() => onTabChange(item.id)}
+                className={`mobile-nav-item transition-all duration-200 relative ${
+                  isActive 
+                    ? "text-primary bg-primary/10 rounded-xl border border-primary/20" 
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                } flex-shrink-0`}
               >
-                {item.label}
-              </span>
-            </Button>
-          );
-        })}
-
-        {/* Protected navigation items with visual indicators */}
-        {protectedNavItems.map((item, index) => {
-          const Icon = item.icon;
-          const isActive = activeTab === item.id;
-          const isAccessible = user; // For now, any authenticated user can access
-          const refIndex = baseNavItems.length + index;
-          
-          return (
-            <Button
-              key={item.id}
-              variant="ghost"
-              size="sm"
-              onClick={() => handleProtectedTabClick(item.id)}
-              className={`flex flex-col items-center gap-1 h-auto py-2 px-3 transition-all duration-200 relative touch-target ${
-                isActive 
-                  ? "text-primary bg-primary/10 rounded-xl border border-primary/20" 
-                  : isAccessible
-                    ? "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-                    : "text-muted-foreground/60 hover:text-muted-foreground/80 hover:bg-muted/20"
-              }`}
-              title={isAccessible ? item.description : "Sign in to access this feature"}
-            >
-              <div className="relative">
                 <Icon className="h-5 w-5" />
-                {!isAccessible && (
-                  <Lock className="h-3 w-3 absolute -top-1 -right-1 text-muted-foreground/60" />
-                )}
-              </div>
-              <span 
-                ref={(el) => textRefs.current[refIndex] = el}
-                className="text-xs font-medium"
+                <span 
+                  ref={(el) => textRefs.current[index] = el}
+                  className="text-xs font-medium whitespace-nowrap"
+                >
+                  {item.label}
+                </span>
+              </Button>
+            );
+          })}
+
+          {/* Protected navigation items with visual indicators */}
+          {protectedNavItems.map((item, index) => {
+            const Icon = item.icon;
+            const isActive = activeTab === item.id;
+            const isAccessible = user;
+            const refIndex = baseNavItems.length + index;
+            
+            return (
+              <Button
+                key={item.id}
+                variant="ghost"
+                size="sm"
+                onClick={() => handleProtectedTabClick(item.id)}
+                className={`mobile-nav-item transition-all duration-200 relative ${
+                  isActive 
+                    ? "text-primary bg-primary/10 rounded-xl border border-primary/20" 
+                    : isAccessible
+                      ? "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                      : "text-muted-foreground/60 hover:text-muted-foreground/80 hover:bg-muted/20"
+                } flex-shrink-0`}
+                title={isAccessible ? item.description : "Sign in to access this feature"}
               >
-                {item.label}
+                <div className="relative">
+                  <Icon className="h-5 w-5" />
+                  {!isAccessible && (
+                    <Lock className="h-3 w-3 absolute -top-1 -right-1 text-muted-foreground/60" />
+                  )}
+                </div>
+                <span 
+                  ref={(el) => textRefs.current[refIndex] = el}
+                  className="text-xs font-medium whitespace-nowrap"
+                >
+                  {item.label}
+                </span>
+              </Button>
+            );
+          })}
+          
+          {/* Authentication button with enhanced UX */}
+          {user ? (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleSignOut}
+              className="mobile-nav-item transition-all duration-200 text-muted-foreground hover:text-destructive hover:bg-destructive/10 flex-shrink-0"
+              title={`Sign out (${user.email})`}
+            >
+              <LogOut className="h-5 w-5" />
+              <span 
+                ref={(el) => textRefs.current[baseNavItems.length + protectedNavItems.length] = el}
+                className="text-xs font-medium whitespace-nowrap"
+              >
+                Sign out
               </span>
             </Button>
-          );
-        })}
-        
-        {/* Authentication button with enhanced UX */}
-        {user ? (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleSignOut}
-            className="flex flex-col items-center gap-1 h-auto py-2 px-3 transition-all duration-200 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-            title={`Sign out (${user.email})`}
-          >
-            <LogOut className="h-5 w-5" />
-            <span 
-              ref={(el) => textRefs.current[baseNavItems.length + protectedNavItems.length] = el}
-              className="text-xs font-medium"
+          ) : (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleSignIn}
+              className="mobile-nav-item transition-all duration-200 text-muted-foreground hover:text-primary hover:bg-primary/10 flex-shrink-0"
+              title="Sign in to access referee tools"
             >
-              Sign out
-            </span>
-          </Button>
-        ) : (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleSignIn}
-            className="flex flex-col items-center gap-1 h-auto py-2 px-3 transition-all duration-200 text-muted-foreground hover:text-primary hover:bg-primary/10"
-            title="Sign in to access referee tools"
-          >
-            <User className="h-5 w-5" />
-            <span 
-              ref={(el) => textRefs.current[baseNavItems.length + protectedNavItems.length] = el}
-              className="text-xs font-medium"
-            >
-              Login
-            </span>
-          </Button>
-        )}
+              <User className="h-5 w-5" />
+              <span 
+                ref={(el) => textRefs.current[baseNavItems.length + protectedNavItems.length] = el}
+                className="text-xs font-medium whitespace-nowrap"
+              >
+                Login
+              </span>
+            </Button>
+          )}
+        </div>
       </div>
     </nav>
   );
