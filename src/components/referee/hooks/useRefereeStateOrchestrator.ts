@@ -10,7 +10,8 @@ export const useRefereeStateOrchestrator = () => {
     matchState,
     playerData,
     teamSelection,
-    playersNeedingAttention
+    playersNeedingAttention,
+    handleManualRefresh
   } = useRefereeStateIntegration();
 
   // Get enhanced handlers
@@ -112,6 +113,7 @@ export const useRefereeStateOrchestrator = () => {
     removePlayer: matchState.removePlayer,
     addPlayer: matchState.addPlayer,
     forceRefresh: scoreState.forceRefresh, // Expose immediate refresh for components
-    resetState: enhancedHandlers.resetState // Expose reset state for components
+    resetState: enhancedHandlers.resetState, // Expose reset state for components
+    handleManualRefresh // Add the manual refresh handler
   };
 };
