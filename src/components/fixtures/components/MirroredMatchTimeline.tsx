@@ -44,7 +44,7 @@ const MirroredMatchTimeline = ({
   isCardRed,
   fixture
 }: MirroredMatchTimelineProps) => {
-  // Create timeline events for both teams
+  // Create unified timeline events
   const allEvents: TimelineEvent[] = [
     ...goals.map(goal => ({
       id: goal.id,
@@ -67,10 +67,6 @@ const MirroredMatchTimeline = ({
       cardType: getCardType(card)
     }))
   ].sort((a, b) => a.time - b.time);
-
-  // Separate events by team
-  const homeEvents = allEvents.filter(event => event.teamId === fixture.home_team_id);
-  const awayEvents = allEvents.filter(event => event.teamId === fixture.away_team_id);
 
   const getEventIcon = (event: TimelineEvent) => {
     switch (event.type) {
@@ -122,27 +118,30 @@ const MirroredMatchTimeline = ({
   const TimelineEventCard = ({ event, isHome }: { event: TimelineEvent; isHome: boolean }) => (
     <div className="animate-fade-in">
       <div 
-        className={`p-3 rounded-lg border-l-4 bg-muted/20 ${
-          isHome ? 'text-left' : 'text-right'
+        className={`p-3 rounded-lg border-2 bg-muted/20 ${
+          isHome ? 'border-l-4 border-r-0' : 'border-r-4 border-l-0'
         }`}
-        style={{ borderLeftColor: isHome ? undefined : 'transparent', borderRightColor: isHome ? 'transparent' : event.teamColor }}
+        style={{ 
+          borderLeftColor: isHome ? event.teamColor : 'transparent',
+          borderRightColor: isHome ? 'transparent' : event.teamColor
+        }}
       >
         <div className={`flex items-center gap-2 ${isHome ? 'justify-start' : 'justify-end'}`}>
-          {!isHome && (
-            <Badge variant={getEventBadgeVariant(event)} className="text-xs">
-              {getEventLabel(event)}
-            </Badge>
-          )}
-          {!isHome && getEventIcon(event)}
-          <span className="font-medium text-foreground">
-            {event.playerName}
-          </span>
           {isHome && getEventIcon(event)}
           {isHome && (
             <Badge variant={getEventBadgeVariant(event)} className="text-xs">
               {getEventLabel(event)}
             </Badge>
           )}
+          <span className="font-medium text-foreground">
+            {event.playerName}
+          </span>
+          {!isHome && (
+            <Badge variant={getEventBadgeVariant(event)} className="text-xs">
+              {getEventLabel(event)}
+            </Badge>
+          )}
+          {!isHome && getEventIcon(event)}
         </div>
         {event.isOwnGoal && (
           <div className={`text-xs text-red-600 font-medium mt-1 ${
@@ -177,52 +176,61 @@ const MirroredMatchTimeline = ({
             Match Timeline ({allEvents.length} events)
           </h4>
           
-          {/* 3-Column Mirrored Layout */}
-          <div className="grid grid-cols-5 gap-4 max-h-96 overflow-y-auto">
-            {/* Home Team Events (Left Column) */}
-            <div className="col-span-2 space-y-3">
-              <div className="text-center font-medium text-sm pb-2 border-b" style={{ color: homeTeamColor }}>
+          {/* Enhanced 3-Column Mirrored Layout */}
+          <div className="space-y-3 max-h-96 overflow-y-auto">
+            {/* Column Headers */}
+            <div className="grid grid-cols-5 gap-4 pb-2 border-b">
+              <div className="col-span-2 text-center font-medium text-sm" style={{ color: homeTeamColor }}>
                 {fixture.home_team?.name}
               </div>
-              {homeEvents.map((event) => (
-                <div key={`home-${event.type}-${event.id}`} className="flex justify-end">
-                  <div className="w-full">
-                    <TimelineEventCard event={event} isHome={true} />
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Center Timeline (Time Column) */}
-            <div className="col-span-1 flex flex-col items-center space-y-3">
-              <div className="text-center font-medium text-sm pb-2 border-b text-muted-foreground">
+              <div className="col-span-1 text-center font-medium text-sm text-muted-foreground">
                 Time
               </div>
-              {allEvents.map((event) => (
-                <div 
-                  key={`time-${event.type}-${event.id}`} 
-                  className="flex items-center justify-center h-16 w-12 bg-primary/10 rounded-lg"
-                >
-                  <span className="text-sm font-mono text-primary font-bold">
-                    {Math.floor(event.time / 60)}'
-                  </span>
-                </div>
-              ))}
-            </div>
-
-            {/* Away Team Events (Right Column) */}
-            <div className="col-span-2 space-y-3">
-              <div className="text-center font-medium text-sm pb-2 border-b" style={{ color: awayTeamColor }}>
+              <div className="col-span-2 text-center font-medium text-sm" style={{ color: awayTeamColor }}>
                 {fixture.away_team?.name}
               </div>
-              {awayEvents.map((event) => (
-                <div key={`away-${event.type}-${event.id}`} className="flex justify-start">
-                  <div className="w-full">
-                    <TimelineEventCard event={event} isHome={false} />
+            </div>
+
+            {/* Timeline Events - Row by Row */}
+            {allEvents.map((event) => {
+              const isHomeEvent = event.teamId === fixture.home_team_id;
+              const isAwayEvent = event.teamId === fixture.away_team_id;
+
+              return (
+                <div key={`timeline-${event.type}-${event.id}`} className="grid grid-cols-5 gap-4 items-center">
+                  {/* Home Team Event */}
+                  <div className="col-span-2">
+                    {isHomeEvent && (
+                      <div className="flex justify-end">
+                        <div className="w-full">
+                          <TimelineEventCard event={event} isHome={true} />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Center Time */}
+                  <div className="col-span-1 flex justify-center">
+                    <div className="flex items-center justify-center h-12 w-12 bg-primary/10 rounded-lg">
+                      <span className="text-sm font-mono text-primary font-bold">
+                        {Math.floor(event.time / 60)}'
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Away Team Event */}
+                  <div className="col-span-2">
+                    {isAwayEvent && (
+                      <div className="flex justify-start">
+                        <div className="w-full">
+                          <TimelineEventCard event={event} isHome={false} />
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
-              ))}
-            </div>
+              );
+            })}
           </div>
         </div>
       </CardContent>
