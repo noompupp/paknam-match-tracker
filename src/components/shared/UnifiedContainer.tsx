@@ -43,7 +43,7 @@ const UnifiedContainer = ({
         return cn(
           "gradient-bg min-h-screen min-h-dvh",
           "w-full overflow-x-hidden",
-          enableTopSafePadding && "safe-top-enhanced",
+          enableTopSafePadding && "mobile-safe-page",
           isMobile && isIOS && "safe-x safe-y",
           isMobile && !isIOS && "safe-x"
         );
@@ -51,7 +51,7 @@ const UnifiedContainer = ({
         return cn(
           maxWidthClasses[maxWidth],
           "mx-auto px-4 py-8",
-          enableTopSafePadding && "safe-top-content",
+          enableTopSafePadding && "mobile-safe-header",
           isMobile && "px-4 py-6",
           "mobile-content-spacing"
         );

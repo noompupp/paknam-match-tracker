@@ -8,7 +8,7 @@ interface SafeAreaContainerProps {
   className?: string
   enableTopPadding?: boolean
   enableBottomPadding?: boolean
-  variant?: 'page' | 'content' | 'navigation'
+  variant?: 'page' | 'content' | 'navigation' | 'modal'
 }
 
 const SafeAreaContainer = ({ 
@@ -25,15 +25,21 @@ const SafeAreaContainer = ({
       case 'page':
         return cn(
           "min-h-screen w-full",
-          enableTopPadding && "safe-top-enhanced",
+          enableTopPadding && "mobile-safe-page",
           enableBottomPadding && "safe-bottom",
           isMobile && isIOS && "safe-x"
         );
       case 'content':
         return cn(
           "w-full",
-          enableTopPadding && "safe-top-content",
+          enableTopPadding && "mobile-safe-header",
           enableBottomPadding && "pb-20 safe-bottom"
+        );
+      case 'modal':
+        return cn(
+          "w-full",
+          enableTopPadding && "mobile-safe-modal",
+          enableBottomPadding && "safe-bottom"
         );
       case 'navigation':
         return cn(
@@ -46,17 +52,7 @@ const SafeAreaContainer = ({
   };
 
   return (
-    <div 
-      className={cn(getVariantClasses(), className)}
-      style={{
-        paddingTop: enableTopPadding && variant === 'page' 
-          ? `max(1.5rem, env(safe-area-inset-top) + 1rem)` 
-          : undefined,
-        paddingBottom: enableBottomPadding && variant === 'navigation'
-          ? `max(0.5rem, env(safe-area-inset-bottom))`
-          : undefined
-      }}
-    >
+    <div className={cn(getVariantClasses(), className)}>
       {children}
     </div>
   )

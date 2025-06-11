@@ -1,3 +1,4 @@
+
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap');
 @tailwind base;
 @tailwind components;
@@ -45,6 +46,11 @@
     --header-border: rgba(0, 0, 0, 0.05);
     --nav-background-desktop: rgba(255, 255, 255, 1.0);
     --nav-background-mobile: rgba(255, 255, 255, 0.95);
+    
+    /* Mobile notch and safe area variables */
+    --mobile-safe-top: max(15vh, env(safe-area-inset-top, 0px) + 2rem);
+    --mobile-modal-top: max(10vh, env(safe-area-inset-top, 0px) + 1.5rem);
+    --mobile-header-top: max(8vh, env(safe-area-inset-top, 0px) + 1rem);
   }
 
   .dark {
@@ -123,6 +129,43 @@
     background-attachment: fixed;
   }
 
+  /* Global Mobile Safe Area Utilities - Enhanced */
+  .mobile-safe-page {
+    @apply sm:pt-0;
+    padding-top: var(--mobile-safe-top);
+  }
+
+  .mobile-safe-modal {
+    @apply sm:pt-0;
+    padding-top: var(--mobile-modal-top);
+  }
+
+  .mobile-safe-header {
+    @apply sm:pt-0;
+    padding-top: var(--mobile-header-top);
+  }
+
+  /* Apply mobile safe area only on mobile devices */
+  @media (max-width: 768px) {
+    .mobile-safe-page {
+      padding-top: var(--mobile-safe-top);
+    }
+    
+    .mobile-safe-modal {
+      padding-top: var(--mobile-modal-top);
+    }
+    
+    .mobile-safe-header {
+      padding-top: var(--mobile-header-top);
+    }
+    
+    /* Enhanced modal close button positioning */
+    .mobile-modal-close {
+      top: var(--mobile-modal-top);
+      right: 1rem;
+    }
+  }
+
   /* Mobile-first padding fixes */
   .mobile-content-spacing {
     @apply space-y-4 sm:space-y-6;
@@ -160,7 +203,16 @@
     padding-top: max(2rem, env(safe-area-inset-top) + 1.5rem);
   }
 
-  /* Scrollbar utilities */
+  /* Legacy safe area utilities - kept for backward compatibility */
+  .safe-top-enhanced {
+    @apply mobile-safe-page;
+  }
+
+  .safe-top-content {
+    @apply mobile-safe-header;
+  }
+
+  /* ... keep existing code (scrollbar utilities, navigation fixes, touch targets, etc.) */
   .scrollbar-none {
     scrollbar-width: none;
     -ms-overflow-style: none;
@@ -232,6 +284,7 @@
   }
 }
 
+/* ... keep existing code (keyframes, PWA styles, pull to refresh, etc.) */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -294,10 +347,12 @@
     max-height: 100vh;
     border-radius: 0;
     padding: 0;
+    /* Apply mobile safe area to modal content */
+    padding-top: var(--mobile-modal-top);
   }
 
   .enhanced-dialog-content .mobile-modal-content {
-    height: 100vh;
+    height: calc(100vh - var(--mobile-modal-top));
     overflow-y: auto;
     padding: 1rem;
   }
@@ -327,7 +382,7 @@
   }
 
   .referee-ios-safe {
-    padding-top: max(1rem, env(safe-area-inset-top));
+    padding-top: var(--mobile-safe-top);
     padding-bottom: max(1rem, env(safe-area-inset-bottom));
   }
 

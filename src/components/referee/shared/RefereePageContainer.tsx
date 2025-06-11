@@ -26,7 +26,7 @@ const RefereePageContainer = ({
     <div className={cn(
       "gradient-bg w-full overflow-x-hidden min-h-screen",
       isMobile && isIOS && "referee-ios-safe",
-      isMobile && !isIOS && "referee-mobile-container",
+      isMobile && !isIOS && "referee-mobile-container mobile-safe-page",
       !isMobile && "min-h-screen",
       className
     )}>
