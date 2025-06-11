@@ -1,9 +1,8 @@
-
 import React from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Database, Smartphone, AlertTriangle, RefreshCw, Sync } from "lucide-react";
+import { Loader2, Database, Smartphone, AlertTriangle, RefreshCw, RotateCcw } from "lucide-react";
 
 interface MatchDataOverviewProps {
   localData: {
@@ -58,7 +57,7 @@ const MatchDataOverview = ({
               {isLoading ? (
                 <Loader2 className="h-4 w-4 animate-spin mr-1" />
               ) : (
-                <Sync className="h-4 w-4 mr-1" />
+                <RotateCcw className="h-4 w-4 mr-1" />
               )}
               Sync ({totalUnsyncedItems})
             </Button>
