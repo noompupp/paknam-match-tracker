@@ -5,7 +5,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Core base styles first */
+/* Core base styles first - this includes variables, reset, and constraints */
 @import './styles/base.css';
 
 /* Safe areas before other layout styles */
@@ -13,7 +13,6 @@
 
 /* PWA styles that depend on base and safe areas */
 @import './styles/pwa.css';
-@import './styles/pwa/index.css';
 
 /* Visual enhancements */
 @import './styles/gradients.css';

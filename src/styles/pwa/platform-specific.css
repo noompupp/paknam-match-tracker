@@ -47,13 +47,5 @@
       /* iOS touch target optimization */
       min-height: 44px !important;
     }
-
-    /* iOS text optimization */
-    nav[class*="fixed bottom-0"] button span {
-      font-size: 0.75rem !important;
-      /* Prevent iOS text scaling issues */
-      -webkit-text-size-adjust: 100% !important;
-      text-size-adjust: 100% !important;
-    }
   }
 }
