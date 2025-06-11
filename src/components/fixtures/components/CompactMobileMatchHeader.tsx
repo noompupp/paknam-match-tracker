@@ -24,7 +24,7 @@ const CompactMobileMatchHeader = ({
           teamName={fixture.home_team?.name || 'Home'}
           teamLogo={fixture.home_team?.logoURL}
           teamColor={homeTeamColor}
-          size="xs"
+          size="sm"
           showName={false}
         />
         <div className="mt-1 text-center">
@@ -60,7 +60,7 @@ const CompactMobileMatchHeader = ({
           teamName={fixture.away_team?.name || 'Away'}
           teamLogo={fixture.away_team?.logoURL}
           teamColor={awayTeamColor}
-          size="xs"
+          size="sm"
           showName={false}
         />
         <div className="mt-1 text-center">
