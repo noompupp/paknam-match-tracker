@@ -8,6 +8,7 @@ export interface MatchActions {
   addAssist: (assist: Omit<MatchGoal, 'id' | 'timestamp' | 'synced'>) => void;
   updateGoal: (goalId: string, updates: Partial<MatchGoal>) => void;
   removeGoal: (goalId: string) => void;
+  undoGoal: (goalId: string) => void;
   addCard: (card: Omit<MatchCard, 'id' | 'timestamp' | 'synced'>) => void;
   addPlayerTime: (playerTime: Omit<MatchPlayerTime, 'id' | 'synced'>) => void;
   updatePlayerTime: (playerId: number, updates: Partial<MatchPlayerTime>) => void;

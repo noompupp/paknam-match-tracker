@@ -73,7 +73,9 @@ const EnhancedScoreTabContainer = ({
   // Enhanced auto-save functionality (5 minutes)
   useEnhancedAutoSave({
     enabled: true,
-    onAutoSave: batchSave,
+    onAutoSave: async () => {
+      await batchSave();
+    },
     interval: 5 * 60 * 1000, // 5 minutes
     hasUnsavedChanges,
     tabName: 'Score'

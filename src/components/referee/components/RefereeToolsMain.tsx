@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import RefereeTabsNavigation from "./RefereeTabsNavigation";
@@ -186,6 +185,8 @@ const RefereeToolsMain = (props: RefereeToolsMainProps) => {
           onResetMatch={handleResetMatch}
           onSaveMatch={handleSaveMatch}
           onAssignGoal={handleAssignGoal}
+          homeScore={props.homeScore}
+          awayScore={props.awayScore}
         />
       </TabsContent>
 

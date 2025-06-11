@@ -1,4 +1,3 @@
-
 import { TabsContent } from "@/components/ui/tabs";
 import ScoreTab from "./tabs/ScoreTab";
 import UnifiedTimerTab from "./tabs/UnifiedTimerTab";
@@ -109,6 +108,8 @@ const RefereeTabsContent = ({
           onResetMatch={onResetMatch}
           onSaveMatch={onSaveMatch}
           onAssignGoal={onAssignGoal}
+          homeScore={homeScore}
+          awayScore={awayScore}
         />
       </TabsContent>
 
