@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Edit, Eye, Clock, Trophy, Users, AlertCircle, Save, RefreshCw, History } from "lucide-react";
+import { Edit, Eye, Clock, Trophy, Users, AlertCircle, RefreshCw, History } from "lucide-react";
 import { useEnhancedMatchSummary } from '@/hooks/useEnhancedMatchSummary';
 import { useMatchStore } from '@/stores/useMatchStore';
 import MatchDataOverview from './tabs/components/MatchDataOverview';
@@ -18,6 +18,7 @@ interface MatchEditReviewPanelProps {
   formatTime: (seconds: number) => string;
   fixtures?: any[];
   onResumeMatch?: (fixtureId: number) => void;
+  onDataRefresh?: () => void;
 }
 
 const MatchEditReviewPanel = ({
@@ -26,7 +27,8 @@ const MatchEditReviewPanel = ({
   onViewSummary,
   formatTime,
   fixtures = [],
-  onResumeMatch = () => {}
+  onResumeMatch = () => {},
+  onDataRefresh
 }: MatchEditReviewPanelProps) => {
   const [activeTab, setActiveTab] = useState<'overview' | 'tracking' | 'review' | 'recovery'>('overview');
   const [isInitialized, setIsInitialized] = useState(false);
@@ -78,7 +80,7 @@ const MatchEditReviewPanel = ({
           <div className="text-center">
             <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
             <h3 className="text-lg font-semibold mb-2">No Match Selected</h3>
-            <p className="text-muted-foreground">Select a fixture to edit and review match data</p>
+            <p className="text-muted-foreground">Select a fixture to review and manage match data</p>
           </div>
         </CardContent>
       </Card>
@@ -100,10 +102,22 @@ const MatchEditReviewPanel = ({
   const databasePlayerTimesCount = enhancedData?.playerTimes.length || 0;
 
   const handleRefreshData = async () => {
+    console.log('🔄 MatchEditReviewPanel: Refreshing all match data');
+    
+    // Refresh enhanced data
     await refetch();
+    
+    // Refresh player times
     if (selectedFixtureData?.id) {
       await loadPlayerTimesFromDatabase(selectedFixtureData.id);
     }
+    
+    // Call parent refresh if available
+    if (onDataRefresh) {
+      onDataRefresh();
+    }
+    
+    console.log('✅ MatchEditReviewPanel: All data refreshed');
   };
 
   const handleSyncData = async () => {
@@ -127,8 +141,8 @@ const MatchEditReviewPanel = ({
     <Card className="h-full">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Edit className="h-5 w-5" />
-          Match Edit & Review Panel
+          <Eye className="h-5 w-5" />
+          Match Review & Management
           {hasUnsavedChanges && (
             <Badge variant="destructive" className="animate-pulse">
               Unsaved Changes
@@ -170,7 +184,7 @@ const MatchEditReviewPanel = ({
               onClick={() => setActiveTab('review')}
             >
               <Eye className="h-4 w-4 mr-1" />
-              Review
+              Actions
             </Button>
           </div>
         </div>
@@ -190,6 +204,22 @@ const MatchEditReviewPanel = ({
               <div className="text-2xl font-bold">{awayScore}</div>
             </div>
           </div>
+        </div>
+
+        <Separator />
+
+        {/* Central Refresh Button */}
+        <div className="flex justify-center">
+          <Button
+            onClick={handleRefreshData}
+            variant="outline"
+            size="sm"
+            className="flex items-center gap-2"
+            disabled={!selectedFixtureData}
+          >
+            <RefreshCw className="h-4 w-4" />
+            Refresh All Data
+          </Button>
         </div>
 
         <Separator />
@@ -247,7 +277,7 @@ const MatchEditReviewPanel = ({
               <div className="space-y-4">
                 <h4 className="font-semibold flex items-center gap-2">
                   <Eye className="h-4 w-4" />
-                  Match Review Actions
+                  Quick Actions
                 </h4>
                 
                 <div className="grid grid-cols-1 gap-3">
@@ -259,11 +289,6 @@ const MatchEditReviewPanel = ({
                   <Button onClick={onViewSummary} variant="outline" className="w-full justify-start">
                     <Eye className="h-4 w-4 mr-2" />
                     View Complete Summary
-                  </Button>
-                  
-                  <Button onClick={handleRefreshData} variant="outline" className="w-full justify-start">
-                    <RefreshCw className="h-4 w-4 mr-2" />
-                    Refresh Database Data
                   </Button>
                 </div>
 
