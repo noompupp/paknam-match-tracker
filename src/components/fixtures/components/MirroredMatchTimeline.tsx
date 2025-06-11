@@ -1,3 +1,4 @@
+
 import { Badge } from "@/components/ui/badge";
 import { Clock } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -161,14 +162,16 @@ const MirroredMatchTimeline = ({
               {getEventLabel(event)}
             </Badge>
           )}
-          <span className={`font-medium text-foreground ${isMobile ? 'text-sm' : ''}`}>
-            {event.playerName}
-          </span>
-          {event.assistPlayerName && (
-            <span className={`text-muted-foreground ${isMobile ? 'text-xs' : 'text-xs'}`}>
-              (Assist: {event.assistPlayerName})
-            </span>
-          )}
+          <div className="min-w-0 flex-1">
+            <div className={`font-medium text-foreground break-words ${isMobile ? 'text-sm' : ''}`}>
+              {event.playerName}
+            </div>
+            {event.assistPlayerName && (
+              <div className={`text-muted-foreground break-words ${isMobile ? 'text-xs' : 'text-xs'}`}>
+                Assist: {event.assistPlayerName}
+              </div>
+            )}
+          </div>
           {!isHome && (
             <Badge variant={getEventBadgeVariant(event)} className={`${isMobile ? 'text-xs px-1.5 py-0.5' : 'text-xs'}`}>
               {getEventLabel(event)}
@@ -213,43 +216,45 @@ const MirroredMatchTimeline = ({
             Match Timeline ({allEvents.length} events)
           </h4>
           
-          {/* Enhanced 3-Column Mirrored Layout with Mobile Optimizations */}
+          {/* Responsive 3-Column Grid Layout with Overflow Protection */}
           <div className={`space-y-3 overflow-y-auto ${isMobile ? 'max-h-80' : 'max-h-96'}`}>
-            {/* Column Headers */}
-            <div className={`grid grid-cols-5 gap-4 pb-2 border-b ${isMobile ? 'gap-2' : ''}`}>
-              <div className={`col-span-2 text-center font-medium ${isMobile ? 'text-xs' : 'text-sm'}`} style={{ color: homeTeamColor }}>
-                {isMobile ? (fixture.home_team?.name?.substring(0, 8) || 'Home') : fixture.home_team?.name}
+            {/* Column Headers with Consistent Grid */}
+            <div className={`grid grid-cols-3 gap-3 pb-2 border-b ${isMobile ? 'gap-2' : ''}`}>
+              <div className={`text-center font-medium min-w-0 ${isMobile ? 'text-xs' : 'text-sm'}`} style={{ color: homeTeamColor }}>
+                <div className="truncate">
+                  {isMobile ? (fixture.home_team?.name?.substring(0, 8) || 'Home') : fixture.home_team?.name}
+                </div>
               </div>
-              <div className={`col-span-1 text-center font-medium text-muted-foreground ${isMobile ? 'text-xs' : 'text-sm'}`}>
+              <div className={`text-center font-medium text-muted-foreground whitespace-nowrap ${isMobile ? 'text-xs' : 'text-sm'}`}>
                 Time
               </div>
-              <div className={`col-span-2 text-center font-medium ${isMobile ? 'text-xs' : 'text-sm'}`} style={{ color: awayTeamColor }}>
-                {isMobile ? (fixture.away_team?.name?.substring(0, 8) || 'Away') : fixture.away_team?.name}
+              <div className={`text-center font-medium min-w-0 ${isMobile ? 'text-xs' : 'text-sm'}`} style={{ color: awayTeamColor }}>
+                <div className="truncate">
+                  {isMobile ? (fixture.away_team?.name?.substring(0, 8) || 'Away') : fixture.away_team?.name}
+                </div>
               </div>
             </div>
 
-            {/* Timeline Events - Row by Row with Mobile Spacing */}
+            {/* Timeline Events - Consistent 3-Column Grid */}
             {allEvents.map((event) => {
               const isHomeEvent = event.teamId === fixture.home_team_id;
               const isAwayEvent = event.teamId === fixture.away_team_id;
 
               return (
-                <div key={`timeline-${event.type}-${event.id}`} className={`grid grid-cols-5 items-center ${isMobile ? 'gap-2' : 'gap-4'}`}>
-                  {/* Home Team Event */}
-                  <div className="col-span-2">
+                <div key={`timeline-${event.type}-${event.id}`} className={`grid grid-cols-3 items-center ${isMobile ? 'gap-2' : 'gap-3'}`}>
+                  {/* Home Team Event Column - Prevent Overflow */}
+                  <div className="min-w-0">
                     {isHomeEvent && (
-                      <div className="flex justify-end">
-                        <div className="w-full">
-                          <TimelineEventCard event={event} isHome={true} />
-                        </div>
+                      <div className="w-full">
+                        <TimelineEventCard event={event} isHome={true} />
                       </div>
                     )}
                   </div>
 
-                  {/* Center Time - Mobile Optimized */}
-                  <div className="col-span-1 flex justify-center">
+                  {/* Center Time Column - Fixed Width */}
+                  <div className="flex justify-center">
                     <div className={`
-                      flex items-center justify-center bg-primary/10 rounded-lg
+                      flex items-center justify-center bg-primary/10 rounded-lg whitespace-nowrap
                       ${isMobile ? 'h-8 w-8' : 'h-12 w-12'}
                     `}>
                       <span className={`font-mono text-primary font-bold ${isMobile ? 'text-xs' : 'text-sm'}`}>
@@ -258,13 +263,11 @@ const MirroredMatchTimeline = ({
                     </div>
                   </div>
 
-                  {/* Away Team Event */}
-                  <div className="col-span-2">
+                  {/* Away Team Event Column - Prevent Overflow */}
+                  <div className="min-w-0">
                     {isAwayEvent && (
-                      <div className="flex justify-start">
-                        <div className="w-full">
-                          <TimelineEventCard event={event} isHome={false} />
-                        </div>
+                      <div className="w-full">
+                        <TimelineEventCard event={event} isHome={false} />
                       </div>
                     )}
                   </div>
