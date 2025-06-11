@@ -15,9 +15,10 @@ import { useTranslation } from "@/hooks/useTranslation";
 
 interface DashboardProps {
   onNavigateToResults: () => void;
+  onNavigateToFixtures: () => void;
 }
 
-const Dashboard = ({ onNavigateToResults }: DashboardProps) => {
+const Dashboard = ({ onNavigateToResults, onNavigateToFixtures }: DashboardProps) => {
   const { t } = useTranslation();
   const { data: recentFixtures, isLoading: recentLoading, error: recentError } = useRecentFixtures();
   const { data: upcomingFixtures, isLoading: upcomingLoading, error: upcomingError } = useUpcomingFixtures();
@@ -102,6 +103,7 @@ const Dashboard = ({ onNavigateToResults }: DashboardProps) => {
               <Button 
                 variant="ghost" 
                 size="sm"
+                onClick={onNavigateToFixtures}
                 className="text-primary hover:text-primary/80"
               >
                 {t('dashboard.seeAllFixtures')}

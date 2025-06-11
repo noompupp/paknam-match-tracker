@@ -42,3 +42,47 @@ export const useTopAssists = (limit: number = 10) => {
     refetchInterval: 60 * 1000, // Refetch every minute
   });
 };
+
+export const useEnhancedTopScorers = (limit: number = 10) => {
+  return useQuery({
+    queryKey: ['enhancedPlayerStats', 'topScorers', limit],
+    queryFn: () => {
+      console.log('🎣 useEnhancedTopScorers: Starting enhanced query with limit:', limit);
+      return playerStatsApi.getTopScorers(limit);
+    },
+    staleTime: 30 * 1000, // 30 seconds
+    refetchOnWindowFocus: true,
+    refetchInterval: 60 * 1000, // Refetch every minute
+    select: (data) => {
+      console.log('✅ useEnhancedTopScorers: Query successful, scorers:', data);
+      return data?.map(player => ({
+        id: player.id,
+        name: player.name,
+        team_name: player.team_name,
+        goals: player.goals
+      })) || [];
+    }
+  });
+};
+
+export const useEnhancedTopAssists = (limit: number = 10) => {
+  return useQuery({
+    queryKey: ['enhancedPlayerStats', 'topAssists', limit],
+    queryFn: () => {
+      console.log('🎣 useEnhancedTopAssists: Starting enhanced query with limit:', limit);
+      return playerStatsApi.getTopAssists(limit);
+    },
+    staleTime: 30 * 1000, // 30 seconds
+    refetchOnWindowFocus: true,
+    refetchInterval: 60 * 1000, // Refetch every minute
+    select: (data) => {
+      console.log('✅ useEnhancedTopAssists: Query successful, assists:', data);
+      return data?.map(player => ({
+        id: player.id,
+        name: player.name,
+        team_name: player.team_name,
+        assists: player.assists
+      })) || [];
+    }
+  });
+};
