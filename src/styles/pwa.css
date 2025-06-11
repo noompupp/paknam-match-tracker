@@ -5,7 +5,7 @@
     --is-pwa: 1;
   }
   
-  /* Base PWA body styles - will be overridden by pwa/core.css */
+  /* Base PWA body styles - will be overridden by pwa-overrides.css */
   body {
     background: var(--app-gradient);
     background-attachment: fixed;

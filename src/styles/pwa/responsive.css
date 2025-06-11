@@ -1,6 +1,30 @@
 
 /* PWA Responsive Text Sizing and Breakpoints */
 
+/* Responsive text sizing for different screen sizes in PWA */
+@media (display-mode: standalone) and (max-width: 320px) {
+  nav[class*="fixed bottom-0"] button span {
+    font-size: 0.6875rem !important;
+    letter-spacing: -0.025em !important;
+  }
+}
+
+@media (display-mode: standalone) and (min-width: 321px) and (max-width: 375px) {
+  nav[class*="fixed bottom-0"] button span {
+    font-size: 0.75rem !important;
+  }
+}
+
+@media (display-mode: standalone) and (min-width: 376px) {
+  nav[class*="fixed bottom-0"] button span {
+    font-size: 0.75rem !important;
+  }
+  
+  nav[class*="fixed bottom-0"] > div {
+    gap: 0.5rem !important;
+  }
+}
+
 /* Android PWA specific responsive fixes */
 @media (display-mode: standalone) and (max-width: 768px) {
   /* Android Chrome PWA enhancements */

@@ -38,18 +38,4 @@
     /* Remove double safe area padding */
     padding-bottom: calc(70px + env(safe-area-inset-bottom)) !important;
   }
-  
-  /* FIXED: Header background consistency in PWA */
-  .border-b {
-    background: var(--header-background) !important;
-    backdrop-filter: var(--header-backdrop-blur) !important;
-    -webkit-backdrop-filter: var(--header-backdrop-blur) !important;
-    border-bottom: 1px solid var(--header-border) !important;
-  }
-  
-  /* FIXED: Ensure proper padding for PWA headers */
-  .max-w-7xl {
-    padding-left: max(1rem, env(safe-area-inset-left)) !important;
-    padding-right: max(1rem, env(safe-area-inset-right)) !important;
-  }
 }

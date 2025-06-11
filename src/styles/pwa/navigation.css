@@ -43,25 +43,22 @@
     gap: 0.25rem !important;
   }
 
-  /* FIXED: PWA Navigation buttons - prevent text truncation */
+  /* PWA Navigation buttons - flexible sizing without forced ellipsis */
   nav[class*="fixed bottom-0"] button {
     flex: 1 1 0% !important;
     min-width: 0 !important;
-    padding-left: 0.25rem !important;
-    padding-right: 0.25rem !important;
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
     
     /* Allow natural text flow without forced truncation */
     overflow: visible !important;
-    
-    /* Ensure touch targets are adequate */
-    min-height: 44px !important;
   }
 
-  /* FIXED: PWA Navigation button text - stable font sizing */
+  /* PWA Navigation button text - intelligent wrapping */
   nav[class*="fixed bottom-0"] button span {
     white-space: nowrap !important;
     font-size: 0.75rem !important;
-    line-height: 1.2 !important;
+    line-height: 1 !important;
     
     /* Remove forced ellipsis */
     overflow: visible !important;
@@ -70,23 +67,12 @@
     /* Allow natural text display */
     display: block !important;
     text-align: center !important;
-    
-    /* Prevent iOS text scaling issues */
-    -webkit-text-size-adjust: 100% !important;
-    text-size-adjust: 100% !important;
   }
 
-  /* Enhanced responsive scaling for very small screens only */
-  @media (max-width: 320px) {
-    nav[class*="fixed bottom-0"] button span {
-      font-size: 0.6875rem !important;
-    }
-    
-    nav[class*="fixed bottom-0"] > div {
-      gap: 0.125rem !important;
-      padding-left: 0.5rem !important;
-      padding-right: 0.5rem !important;
-    }
+  /* Dynamic text scaling for very long labels */
+  nav[class*="fixed bottom-0"] button span[data-long-text] {
+    font-size: 0.6875rem !important;
+    letter-spacing: -0.025em !important;
   }
 
   /* Dark mode navigation adjustments */
