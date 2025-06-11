@@ -77,18 +77,3 @@ export const sortFixtures = (fixtures: any[]) => {
     }
   });
 };
-
-export const getGameweek = (fixture: any, allFixtures: any[]) => {
-  if (!fixture || !allFixtures) return null;
-  
-  // Simple gameweek calculation based on fixture order
-  const sortedFixtures = allFixtures
-    .slice()
-    .sort((a, b) => new Date(a.match_date).getTime() - new Date(b.match_date).getTime());
-  
-  const fixtureIndex = sortedFixtures.findIndex(f => f.id === fixture.id);
-  if (fixtureIndex === -1) return null;
-  
-  // Calculate gameweek (assuming roughly 8 matches per gameweek)
-  return Math.floor(fixtureIndex / 8) + 1;
-};

@@ -57,10 +57,6 @@ const AppContent = () => {
     setActiveTab("results");
   };
 
-  const handleNavigateToFixtures = () => {
-    setActiveTab("fixtures");
-  };
-
   // Main application interface - enhanced for viewer experience
   const renderContent = () => {
     switch (activeTab) {
@@ -77,7 +73,7 @@ const AppContent = () => {
           </RoleGuard>
         );
       default:
-        return <Dashboard onNavigateToResults={handleNavigateToResults} onNavigateToFixtures={handleNavigateToFixtures} />;
+        return <Dashboard onNavigateToResults={handleNavigateToResults} />;
     }
   };
 

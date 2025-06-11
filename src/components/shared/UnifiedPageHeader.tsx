@@ -1,65 +1,76 @@
 
-import { Badge } from "@/components/ui/badge";
+import { ReactNode } from "react";
 import { cn } from "@/lib/utils";
-import TeamLogo from "../teams/TeamLogo";
-import LanguageToggle from "./LanguageToggle";
+import StickyBackground from "@/components/shared/StickyBackground";
+import TournamentLogo from "@/components/TournamentLogo";
+import LanguageToggle from "@/components/shared/LanguageToggle";
 
 interface UnifiedPageHeaderProps {
-  title: string;
-  subtitle?: string;
-  logoSize?: 'small' | 'medium' | 'large';
-  showLanguageToggle?: boolean;
+  children?: ReactNode;
   className?: string;
-  badge?: string;
+  showBorder?: boolean;
+  variant?: 'default' | 'transparent';
+  title?: string;
+  showLanguageToggle?: boolean;
+  logoSize?: 'small' | 'medium' | 'large';
 }
 
-const UnifiedPageHeader = ({ 
-  title, 
-  subtitle, 
-  logoSize = 'medium',
-  showLanguageToggle = false,
+const UnifiedPageHeader = ({
+  children,
   className,
-  badge
+  showBorder = true,
+  variant = 'default',
+  title,
+  showLanguageToggle = true,
+  logoSize = 'small'
 }: UnifiedPageHeaderProps) => {
-  // Mock team object for logo - you might want to make this configurable
-  const defaultTeam = { id: 1, name: "League", logo_url: null };
-
-  return (
-    <div className={cn(
-      "bg-gradient-to-r from-primary/10 via-primary/5 to-secondary/10 border-b border-border/20",
-      className
-    )}>
-      <div className="max-w-7xl mx-auto px-4 py-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <TeamLogo team={defaultTeam} size={logoSize} />
-            <div className="space-y-1">
-              <div className="flex items-center gap-3">
-                <h1 className="text-2xl md:text-3xl font-bold text-foreground tracking-tight">
-                  {title}
-                </h1>
-                {badge && (
-                  <Badge variant="secondary" className="hidden sm:inline-flex">
-                    {badge}
-                  </Badge>
-                )}
+  // If title is provided, use the new flex layout
+  if (title) {
+    return (
+      <StickyBackground 
+        variant="header" 
+        className={cn(
+          "mobile-safe-header",
+          showBorder && "border-b",
+          className
+        )}
+        opacity={variant === 'transparent' ? 'light' : 'medium'}
+      >
+        <div className="max-w-7xl mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            {/* Left side: Logo and Title */}
+            <div className="flex items-center gap-3">
+              <TournamentLogo size={logoSize} />
+              <h1 className="text-xl sm:text-2xl font-bold text-foreground">{title}</h1>
+            </div>
+            
+            {/* Right side: Language Toggle */}
+            {showLanguageToggle && (
+              <div className="flex items-center">
+                <LanguageToggle />
               </div>
-              {subtitle && (
-                <p className="text-muted-foreground text-sm md:text-base">
-                  {subtitle}
-                </p>
-              )}
-            </div>
+            )}
           </div>
-          
-          {showLanguageToggle && (
-            <div className="flex items-center">
-              <LanguageToggle />
-            </div>
-          )}
         </div>
+      </StickyBackground>
+    );
+  }
+
+  // Fallback to legacy layout for components that haven't been updated yet
+  return (
+    <StickyBackground 
+      variant="header" 
+      className={cn(
+        "mobile-safe-header",
+        showBorder && "border-b",
+        className
+      )}
+      opacity={variant === 'transparent' ? 'light' : 'medium'}
+    >
+      <div className="max-w-7xl mx-auto px-4 py-6">
+        {children}
       </div>
-    </div>
+    </StickyBackground>
   );
 };
 

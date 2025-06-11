@@ -75,8 +75,8 @@ const EnhancedRecentResultsCard = ({ recentFixtures, isLoading, onViewAll }: Enh
                 <CompactFixtureCard
                   key={fixture.id}
                   fixture={fixture}
-                  onClick={() => handleFixtureClick(fixture)}
-                  variant="result"
+                  onFixtureClick={handleFixtureClick}
+                  showDate={true}
                   showVenue={true}
                 />
               ))}
