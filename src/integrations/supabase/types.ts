@@ -268,6 +268,97 @@ export type Database = {
           },
         ]
       }
+      match_referee_assignments: {
+        Row: {
+          assigned_at: string
+          assigned_by: string | null
+          assigned_role: string
+          created_at: string
+          fixture_id: number
+          id: string
+          referee_id: string
+          responsibilities: string[] | null
+          status: string
+          team_assignment: string | null
+          updated_at: string
+          workflow_mode: string
+        }
+        Insert: {
+          assigned_at?: string
+          assigned_by?: string | null
+          assigned_role: string
+          created_at?: string
+          fixture_id: number
+          id?: string
+          referee_id: string
+          responsibilities?: string[] | null
+          status?: string
+          team_assignment?: string | null
+          updated_at?: string
+          workflow_mode: string
+        }
+        Update: {
+          assigned_at?: string
+          assigned_by?: string | null
+          assigned_role?: string
+          created_at?: string
+          fixture_id?: number
+          id?: string
+          referee_id?: string
+          responsibilities?: string[] | null
+          status?: string
+          team_assignment?: string | null
+          updated_at?: string
+          workflow_mode?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "match_referee_assignments_fixture_id_fkey"
+            columns: ["fixture_id"]
+            isOneToOne: false
+            referencedRelation: "fixtures"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      match_workflow_config: {
+        Row: {
+          config_data: Json | null
+          configured_by: string
+          created_at: string
+          fixture_id: number
+          id: string
+          updated_at: string
+          workflow_mode: string
+        }
+        Insert: {
+          config_data?: Json | null
+          configured_by: string
+          created_at?: string
+          fixture_id: number
+          id?: string
+          updated_at?: string
+          workflow_mode: string
+        }
+        Update: {
+          config_data?: Json | null
+          configured_by?: string
+          created_at?: string
+          fixture_id?: number
+          id?: string
+          updated_at?: string
+          workflow_mode?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "match_workflow_config_fixture_id_fkey"
+            columns: ["fixture_id"]
+            isOneToOne: true
+            referencedRelation: "fixtures"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       members: {
         Row: {
           __id__: string
@@ -545,6 +636,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      assign_referee_to_role: {
+        Args: {
+          p_fixture_id: number
+          p_assigned_role: string
+          p_workflow_mode: string
+          p_team_assignment?: string
+          p_responsibilities?: string[]
+        }
+        Returns: Json
+      }
       finalize_match_coordination: {
         Args: { p_coordination_id: string; p_final_review_data?: Json }
         Returns: Json
@@ -564,6 +665,19 @@ export type Database = {
           timeline_events: Json
         }[]
       }
+      get_fixture_all_assignments: {
+        Args: { p_fixture_id: number }
+        Returns: {
+          assignment_id: string
+          referee_id: string
+          assigned_role: string
+          team_assignment: string
+          responsibilities: string[]
+          status: string
+          workflow_mode: string
+          assigned_at: string
+        }[]
+      }
       get_match_coordination_status: {
         Args: { p_fixture_id: number }
         Returns: {
@@ -573,6 +687,17 @@ export type Database = {
           assignments: Json
           completion_summary: Json
           ready_for_review: boolean
+        }[]
+      }
+      get_user_fixture_assignments: {
+        Args: { p_fixture_id: number }
+        Returns: {
+          assignment_id: string
+          assigned_role: string
+          team_assignment: string
+          responsibilities: string[]
+          status: string
+          workflow_mode: string
         }[]
       }
       get_user_role: {

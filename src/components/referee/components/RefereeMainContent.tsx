@@ -1,8 +1,10 @@
 
-import React from 'react';
-import RefereeMatchControlsContainer from './RefereeMatchControlsContainer';
-import { ComponentPlayer } from '../hooks/useRefereeState';
-import { WorkflowModeConfig } from '../workflows/types';
+import React from "react";
+import { Tabs } from "@/components/ui/tabs";
+import RefereeTabsNavigation from "./RefereeTabsNavigation";
+import RefereeTabsContent from "./RefereeTabsContent";
+import RefereeMatchHeader from "./RefereeMatchHeader";
+import { ComponentPlayer } from "../hooks/useRefereeState";
 
 interface RefereeMainContentProps {
   selectedFixtureData: any;
@@ -44,81 +46,93 @@ interface RefereeMainContentProps {
   onSaveMatch: () => void;
   onResetMatch: () => void;
   onDataRefresh: () => void;
-  workflowConfig: WorkflowModeConfig;
+  workflowConfig: {
+    mode: 'two_referees' | 'multi_referee';
+    fixtureId: number;
+    userAssignments: any[];
+    allAssignments: any[];
+  };
 }
 
 const RefereeMainContent = (props: RefereeMainContentProps) => {
-  // Helper functions for match controls
   const handleAddGoal = (team: 'home' | 'away') => {
-    console.log(`Adding goal for ${team} team`);
+    console.log('🎯 Adding goal for team:', team);
   };
 
   const handleRemoveGoal = (team: 'home' | 'away') => {
-    console.log(`Removing goal for ${team} team`);
+    console.log('🎯 Removing goal for team:', team);
   };
 
   const handleQuickGoal = (team: 'home' | 'away') => {
-    console.log(`Quick goal for ${team} team`);
+    console.log('🎯 Quick goal for team:', team);
   };
 
   const handleOpenGoalWizard = () => {
-    console.log('Opening goal wizard');
+    console.log('🎯 Opening goal wizard');
   };
 
   const handleAddCard = (playerName: string, team: string, cardType: 'yellow' | 'red', time: number) => {
-    console.log(`Adding ${cardType} card to ${playerName} from ${team} at ${time} minutes`);
+    console.log('🎯 Adding card:', { playerName, team, cardType, time });
   };
 
   const handleExportSummary = () => {
-    console.log('Exporting match summary');
+    console.log('🎯 Exporting summary');
   };
 
   return (
-    <RefereeMatchControlsContainer
-      selectedFixtureData={props.selectedFixtureData}
-      homeScore={props.homeScore}
-      awayScore={props.awayScore}
-      matchTime={props.matchTime}
-      isRunning={props.isRunning}
-      formatTime={props.formatTime}
-      allPlayers={props.allPlayers}
-      homeTeamPlayers={props.homeTeamPlayers}
-      awayTeamPlayers={props.awayTeamPlayers}
-      goals={props.goals}
-      selectedGoalPlayer={props.selectedGoalPlayer}
-      selectedGoalType={props.selectedGoalType}
-      selectedGoalTeam={props.selectedGoalTeam}
-      setSelectedGoalPlayer={props.setSelectedGoalPlayer}
-      setSelectedGoalType={props.setSelectedGoalType}
-      setSelectedGoalTeam={props.setSelectedGoalTeam}
-      selectedPlayer={props.selectedPlayer}
-      selectedTeam={props.selectedTeam}
-      selectedCardType={props.selectedCardType}
-      setSelectedPlayer={props.setSelectedPlayer}
-      setSelectedTeam={props.setSelectedTeam}
-      setSelectedCardType={props.setSelectedCardType}
-      cards={props.cards}
-      trackedPlayers={props.trackedPlayers}
-      selectedTimePlayer={props.selectedTimePlayer}
-      selectedTimeTeam={props.selectedTimeTeam}
-      setSelectedTimePlayer={props.setSelectedTimePlayer}
-      setSelectedTimeTeam={props.setSelectedTimeTeam}
-      events={props.events}
-      onAddGoal={handleAddGoal}
-      onRemoveGoal={handleRemoveGoal}
-      onToggleTimer={props.toggleTimer}
-      onResetMatch={props.onResetMatch}
-      onSaveMatch={props.onSaveMatch}
-      onQuickGoal={handleQuickGoal}
-      onOpenGoalWizard={handleOpenGoalWizard}
-      onAssignGoal={props.assignGoal}
-      onAddCard={handleAddCard}
-      onAddPlayer={props.addPlayer}
-      onRemovePlayer={props.removePlayer}
-      onTogglePlayerTime={props.togglePlayerTime}
-      onExportSummary={handleExportSummary}
-      workflowConfig={props.workflowConfig}
-    />
+    <div className="space-y-6">
+      <RefereeMatchHeader selectedFixtureData={props.selectedFixtureData} />
+      
+      <Tabs defaultValue="score" className="w-full">
+        <RefereeTabsNavigation />
+        
+        <RefereeTabsContent
+          selectedFixtureData={props.selectedFixtureData}
+          homeScore={props.homeScore}
+          awayScore={props.awayScore}
+          matchTime={props.matchTime}
+          isRunning={props.isRunning}
+          formatTime={props.formatTime}
+          allPlayers={props.allPlayers}
+          homeTeamPlayers={props.homeTeamPlayers}
+          awayTeamPlayers={props.awayTeamPlayers}
+          goals={props.goals}
+          selectedGoalPlayer={props.selectedGoalPlayer}
+          selectedGoalType={props.selectedGoalType}
+          selectedGoalTeam={props.selectedGoalTeam}
+          setSelectedGoalPlayer={props.setSelectedGoalPlayer}
+          setSelectedGoalType={props.setSelectedGoalType}
+          setSelectedGoalTeam={props.setSelectedGoalTeam}
+          selectedPlayer={props.selectedPlayer}
+          selectedTeam={props.selectedTeam}
+          selectedCardType={props.selectedCardType}
+          setSelectedPlayer={props.setSelectedPlayer}
+          setSelectedTeam={props.setSelectedTeam}
+          setSelectedCardType={props.setSelectedCardType}
+          cards={props.cards}
+          trackedPlayers={props.trackedPlayers}
+          selectedTimePlayer={props.selectedTimePlayer}
+          selectedTimeTeam={props.selectedTimeTeam}
+          setSelectedTimePlayer={props.setSelectedTimePlayer}
+          setSelectedTimeTeam={props.setSelectedTimeTeam}
+          events={props.events}
+          onAddGoal={handleAddGoal}
+          onRemoveGoal={handleRemoveGoal}
+          onToggleTimer={props.toggleTimer}
+          onResetMatch={props.onResetMatch}
+          onSaveMatch={props.onSaveMatch}
+          onQuickGoal={handleQuickGoal}
+          onOpenGoalWizard={handleOpenGoalWizard}
+          onAssignGoal={props.assignGoal}
+          onAddCard={handleAddCard}
+          onAddPlayer={props.addPlayer}
+          onRemovePlayer={props.removePlayer}
+          onTogglePlayerTime={props.togglePlayerTime}
+          onExportSummary={handleExportSummary}
+          workflowConfig={props.workflowConfig}
+        />
+      </Tabs>
+    </div>
   );
 };
 

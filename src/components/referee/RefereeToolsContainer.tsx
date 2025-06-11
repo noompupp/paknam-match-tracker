@@ -2,13 +2,19 @@
 import RefereeToolsHeader from "./components/RefereeToolsHeader";
 import RefereeMainContent from "./components/RefereeMainContent";
 import RefereePageContainer from "./shared/RefereePageContainer";
-import WorkflowModeManager from "./workflows/WorkflowModeManager";
+import EnhancedWorkflowModeManager from "./workflows/EnhancedWorkflowModeManager";
 import { useRefereeStateOrchestrator } from "./hooks/useRefereeStateOrchestrator";
 import { useState } from "react";
-import { WorkflowModeConfig } from "./workflows/types";
+
+interface EnhancedWorkflowConfig {
+  mode: 'two_referees' | 'multi_referee';
+  fixtureId: number;
+  userAssignments: any[];
+  allAssignments: any[];
+}
 
 const RefereeToolsContainer = () => {
-  const [workflowConfig, setWorkflowConfig] = useState<WorkflowModeConfig | null>(null);
+  const [workflowConfig, setWorkflowConfig] = useState<EnhancedWorkflowConfig | null>(null);
 
   const {
     // Base state
@@ -83,19 +89,21 @@ const RefereeToolsContainer = () => {
     handleManualRefresh
   } = useRefereeStateOrchestrator();
 
-  const handleWorkflowConfigured = (config: WorkflowModeConfig) => {
-    console.log('🎯 Workflow configured in container:', config);
+  const handleWorkflowConfigured = (config: EnhancedWorkflowConfig) => {
+    console.log('🎯 Enhanced workflow configured in container:', config);
     setWorkflowConfig(config);
   };
 
-  console.log('🎮 RefereeToolsContainer: Manual data management active:', {
+  console.log('🎮 RefereeToolsContainer: Enhanced workflow system active:', {
     selectedGoalTeam,
     selectedTimeTeam,
     homePlayersCount: homeTeamPlayers?.length || 0,
     awayPlayersCount: awayTeamPlayers?.length || 0,
     hasValidData: enhancedPlayersData.hasValidData,
     manualScore: { homeScore, awayScore },
-    workflowConfigured: !!workflowConfig
+    workflowConfigured: !!workflowConfig,
+    userAssignments: workflowConfig?.userAssignments?.length || 0,
+    allAssignments: workflowConfig?.allAssignments?.length || 0
   });
 
   if (fixturesLoading) {
@@ -119,7 +127,7 @@ const RefereeToolsContainer = () => {
 
       {selectedFixture && !workflowConfig && (
         <div className="container mx-auto p-4">
-          <WorkflowModeManager
+          <EnhancedWorkflowModeManager
             selectedFixtureData={selectedFixtureData}
             onWorkflowConfigured={handleWorkflowConfigured}
           />
