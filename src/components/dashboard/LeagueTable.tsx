@@ -1,12 +1,16 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 import { Team } from "@/types/database";
 import { getThreeLetterAbbreviation } from "@/utils/teamAbbreviations";
 import { useDeviceOrientation } from "@/hooks/useDeviceOrientation";
+import { leagueTableService } from "@/services/leagueTableService";
+import { useToast } from "@/hooks/use-toast";
 import TeamLogo from "../teams/TeamLogo";
 import RealTimeRankIndicator from "./RealTimeRankIndicator";
 import { cn } from "@/lib/utils";
+import { RefreshCw } from "lucide-react";
+import { useState } from "react";
 
 interface LeagueTableProps {
   teams: Team[] | undefined;
@@ -15,15 +19,57 @@ interface LeagueTableProps {
 
 const LeagueTable = ({ teams, isLoading }: LeagueTableProps) => {
   const { isMobile, isPortrait, isLandscape } = useDeviceOrientation();
+  const { toast } = useToast();
+  const [isSyncing, setIsSyncing] = useState(false);
 
   // Determine display mode
   const isMobilePortrait = isMobile && isPortrait;
   const isMobileLandscape = isMobile && isLandscape;
 
+  const handleSyncStats = async () => {
+    setIsSyncing(true);
+    try {
+      const result = await leagueTableService.syncTeamStatsWithFixtures();
+      
+      if (result.errors.length > 0) {
+        toast({
+          title: "Sync Completed with Issues",
+          description: `Updated ${result.updated} teams. ${result.errors.length} errors occurred.`,
+          variant: "destructive"
+        });
+      } else {
+        toast({
+          title: "✅ League Table Synced",
+          description: `Successfully updated ${result.updated} teams from fixture results.`,
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Sync Failed",
+        description: "Failed to sync league table with fixture results.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
   return (
     <Card className="card-shadow-lg animate-fade-in">
       <CardHeader>
-        <CardTitle className="text-2xl font-bold">League Table</CardTitle>
+        <div className="flex justify-between items-center">
+          <CardTitle className="text-2xl font-bold">League Table</CardTitle>
+          <Button 
+            onClick={handleSyncStats}
+            disabled={isSyncing}
+            variant="outline"
+            size="sm"
+            className="flex items-center gap-2"
+          >
+            <RefreshCw className={cn("h-4 w-4", isSyncing && "animate-spin")} />
+            {isSyncing ? 'Syncing...' : 'Sync Stats'}
+          </Button>
+        </div>
       </CardHeader>
       <CardContent className="p-0">
         <div className="overflow-x-auto">

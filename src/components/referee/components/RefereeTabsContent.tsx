@@ -6,6 +6,7 @@ import GoalsTab from "./tabs/GoalsTab";
 import CardsTab from "./tabs/CardsTab";
 import CoordinationTab from "./tabs/CoordinationTab";
 import SummaryTab from "./tabs/SummaryTab";
+import SaveNowButton from "./shared/SaveNowButton";
 import { ProcessedPlayer } from "@/utils/refereeDataProcessor";
 import { WorkflowModeConfig } from "../workflows/types";
 
@@ -59,6 +60,10 @@ const RefereeTabsContent = (props: RefereeTabsContentProps) => {
   return (
     <>
       <TabsContent value="score" className="space-y-6">
+        <div className="flex justify-between items-center">
+          <h3 className="text-lg font-semibold">Score Management</h3>
+          <SaveNowButton onSave={props.onSaveMatch} />
+        </div>
         <ScoreTab
           selectedFixtureData={props.selectedFixtureData}
           homeScore={props.homeScore}
@@ -76,6 +81,10 @@ const RefereeTabsContent = (props: RefereeTabsContentProps) => {
       </TabsContent>
 
       <TabsContent value="timer-tracking" className="space-y-6">
+        <div className="flex justify-between items-center">
+          <h3 className="text-lg font-semibold">Time Tracking</h3>
+          <SaveNowButton onSave={props.onSaveMatch} />
+        </div>
         <RoleBasedUnifiedTimerTab
           selectedFixtureData={props.selectedFixtureData}
           homeScore={props.homeScore}
@@ -96,6 +105,10 @@ const RefereeTabsContent = (props: RefereeTabsContentProps) => {
       </TabsContent>
 
       <TabsContent value="goals" className="space-y-6">
+        <div className="flex justify-between items-center">
+          <h3 className="text-lg font-semibold">Goals Management</h3>
+          <SaveNowButton onSave={props.onSaveMatch} />
+        </div>
         <GoalsTab
           selectedFixtureData={props.selectedFixtureData}
           homeTeamPlayers={props.homeTeamPlayers}
@@ -111,6 +124,10 @@ const RefereeTabsContent = (props: RefereeTabsContentProps) => {
       </TabsContent>
 
       <TabsContent value="cards" className="space-y-6">
+        <div className="flex justify-between items-center">
+          <h3 className="text-lg font-semibold">Cards Management</h3>
+          <SaveNowButton onSave={props.onSaveMatch} />
+        </div>
         <CardsTab
           selectedFixtureData={props.selectedFixtureData}
           allPlayers={props.allPlayers}
@@ -129,6 +146,10 @@ const RefereeTabsContent = (props: RefereeTabsContentProps) => {
       </TabsContent>
 
       <TabsContent value="coordination" className="space-y-6">
+        <div className="flex justify-between items-center">
+          <h3 className="text-lg font-semibold">Match Coordination</h3>
+          <SaveNowButton onSave={props.onSaveMatch} />
+        </div>
         <CoordinationTab
           selectedFixtureData={props.selectedFixtureData}
           workflowConfig={props.workflowConfig}
@@ -136,6 +157,18 @@ const RefereeTabsContent = (props: RefereeTabsContentProps) => {
       </TabsContent>
 
       <TabsContent value="summary" className="space-y-6">
+        <div className="flex justify-between items-center">
+          <h3 className="text-lg font-semibold">Match Summary</h3>
+          <div className="flex gap-2">
+            <SaveNowButton onSave={props.onSaveMatch} />
+            <SaveNowButton 
+              onSave={props.onExportSummary} 
+              variant="outline"
+            >
+              Export
+            </SaveNowButton>
+          </div>
+        </div>
         <SummaryTab
           selectedFixtureData={props.selectedFixtureData}
           homeScore={props.homeScore}
