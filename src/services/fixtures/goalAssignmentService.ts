@@ -6,82 +6,82 @@ interface GoalAssignment {
   fixtureId: number;
   playerId: number;
   playerName: string;
-  teamId: string; // Changed from number to string
+  teamId: string;
   eventTime: number;
   type: 'goal' | 'assist';
+  isOwnGoal?: boolean; // Add own goal flag
 }
 
-export const assignGoalToPlayer = async (assignment: GoalAssignment): Promise<void> => {
-  console.log('⚽ GoalAssignmentService: Starting goal assignment with enhanced members table integration:', assignment);
+export const assignGoalToPlayer = async (data: GoalAssignment) => {
+  console.log('⚽ GoalAssignmentService: Starting enhanced goal/assist assignment with own goal support:', data);
   
   try {
-    const { fixtureId, playerId, playerName, teamId, eventTime, type } = assignment;
-
-    // Enhanced validation with detailed error messages
-    if (!fixtureId || fixtureId <= 0) {
-      throw new Error('Invalid fixture ID: Must be a positive number');
-    }
-    if (!playerId || playerId <= 0) {
-      throw new Error('Invalid player ID: Must be a positive number');
-    }
-    if (!playerName?.trim()) {
-      throw new Error('Player name is required and cannot be empty');
-    }
-    if (!teamId?.trim()) { // Changed validation for string team ID
-      throw new Error('Team ID is required and cannot be empty');
-    }
-    if (eventTime < 0) {
-      throw new Error('Event time must be non-negative');
-    }
-    if (!['goal', 'assist'].includes(type)) {
-      throw new Error(`Invalid event type: ${type}. Must be 'goal' or 'assist'`);
+    // Enhanced input validation
+    if (!data.playerId || !data.playerName?.trim() || !data.teamId?.trim() || !data.fixtureId) {
+      throw new Error('Missing required data for goal assignment');
     }
 
-    console.log('✅ GoalAssignmentService: Input validation passed');
-
-    // Verify fixture exists and is valid
-    const { data: fixture, error: fixtureError } = await supabase
-      .from('fixtures')
-      .select('id, home_team_id, away_team_id')
-      .eq('id', fixtureId)
-      .single();
-
-    if (fixtureError || !fixture) {
-      console.error('❌ GoalAssignmentService: Fixture validation failed:', fixtureError);
-      throw new Error(`Fixture with ID ${fixtureId} not found or invalid: ${fixtureError?.message}`);
+    if (data.eventTime < 0) {
+      throw new Error('Invalid event time provided');
     }
 
-    console.log('✅ GoalAssignmentService: Fixture validation passed:', fixture);
-
-    // Verify player exists in enhanced members table and get current stats
-    const { data: member, error: memberError } = await supabase
-      .from('members')
-      .select('id, name, team_id, goals, assists')
-      .eq('id', playerId)
-      .single();
-
-    if (memberError || !member) {
-      console.error('❌ GoalAssignmentService: Member validation failed:', memberError);
-      throw new Error(`Member with ID ${playerId} not found: ${memberError?.message}`);
+    if (!['goal', 'assist'].includes(data.type)) {
+      throw new Error('Invalid event type provided');
     }
 
-    console.log('✅ GoalAssignmentService: Member validation passed:', {
-      member: member.name,
-      currentGoals: member.goals,
-      currentAssists: member.assists,
-      teamId: member.team_id
+    // Ensure teamId is a string and handle any formatting issues
+    const teamIdString = String(data.teamId).trim();
+    const isOwnGoal = data.isOwnGoal || false;
+
+    console.log('✅ GoalAssignmentService: Input validation passed:', {
+      playerId: data.playerId,
+      playerName: data.playerName,
+      teamId: teamIdString,
+      eventTime: data.eventTime,
+      type: data.type,
+      isOwnGoal
     });
 
-    // Enhanced duplicate check with comprehensive criteria
+    // Verify team exists in database before proceeding
+    const { data: teamExists, error: teamCheckError } = await supabase
+      .from('teams')
+      .select('__id__, name')
+      .eq('__id__', teamIdString)
+      .single();
+
+    if (teamCheckError || !teamExists) {
+      console.error('❌ GoalAssignmentService: Team ID not found in database:', {
+        teamId: teamIdString,
+        error: teamCheckError
+      });
+      
+      // Try to find team by name if __id__ lookup fails
+      const { data: teamByName, error: teamNameError } = await supabase
+        .from('teams')
+        .select('__id__, name')
+        .ilike('name', `%${data.playerName.split(' ')[0]}%`) // Basic team name guess
+        .limit(1);
+
+      if (teamNameError || !teamByName || teamByName.length === 0) {
+        throw new Error(`Team with ID "${teamIdString}" not found in database. Please verify team data.`);
+      }
+
+      console.log('🔧 GoalAssignmentService: Using team found by name lookup:', teamByName[0]);
+      data.teamId = teamByName[0].__id__;
+    } else {
+      console.log('✅ GoalAssignmentService: Team verified in database:', teamExists);
+    }
+
+    // Enhanced duplicate check
     const { data: existingEvents, error: duplicateCheckError } = await supabase
       .from('match_events')
-      .select('*')
-      .eq('fixture_id', fixtureId)
-      .eq('event_type', type)
-      .eq('player_name', playerName)
-      .eq('team_id', teamId)
-      .gte('event_time', Math.max(0, eventTime - 30)) // Within 30 seconds
-      .lte('event_time', eventTime + 30);
+      .select('id')
+      .eq('fixture_id', data.fixtureId)
+      .eq('event_type', data.type)
+      .eq('player_name', data.playerName)
+      .eq('team_id', teamIdString)
+      .gte('event_time', Math.max(0, data.eventTime - 10)) // Within 10 seconds
+      .lte('event_time', data.eventTime + 10);
 
     if (duplicateCheckError) {
       console.error('❌ GoalAssignmentService: Duplicate check failed:', duplicateCheckError);
@@ -89,42 +89,50 @@ export const assignGoalToPlayer = async (assignment: GoalAssignment): Promise<vo
     }
 
     if (existingEvents && existingEvents.length > 0) {
-      console.warn('🚫 GoalAssignmentService: Duplicate event detected:', existingEvents[0]);
-      throw new Error(`This ${type} has already been assigned to ${playerName} at this time (±30 seconds)`);
+      console.warn('🚫 GoalAssignmentService: Duplicate event prevented');
+      throw new Error(`This ${data.type} has already been assigned to ${data.playerName} at this time`);
     }
 
-    console.log('✅ GoalAssignmentService: No duplicates found, proceeding with assignment');
-
-    // Create the match event with comprehensive data
-    const { data: newEvent, error: insertError } = await supabase
+    // Create match event with enhanced error handling and own goal support
+    const { data: matchEvent, error: eventError } = await supabase
       .from('match_events')
-      .insert([{
-        fixture_id: fixtureId,
-        event_type: type,
-        player_name: playerName,
-        team_id: teamId, // Now using string team ID
-        event_time: eventTime,
-        description: `${type === 'goal' ? 'Goal' : 'Assist'} by ${playerName} at ${Math.floor(eventTime / 60)}'${String(eventTime % 60).padStart(2, '0')}`
-      }])
+      .insert({
+        fixture_id: data.fixtureId,
+        event_type: data.type,
+        player_name: data.playerName,
+        team_id: data.teamId, // Use the validated team ID
+        event_time: data.eventTime,
+        own_goal: data.type === 'goal' ? isOwnGoal : null, // Only set own_goal for goals
+        description: `${isOwnGoal ? 'Own Goal' : (data.type === 'goal' ? 'Goal' : 'Assist')} by ${data.playerName} at ${Math.floor(data.eventTime / 60)}'${String(data.eventTime % 60).padStart(2, '0')}`
+      })
       .select()
       .single();
 
-    if (insertError) {
-      console.error('❌ GoalAssignmentService: Error creating match event:', insertError);
-      throw new Error(`Failed to create match event: ${insertError.message}`);
+    if (eventError) {
+      console.error('❌ GoalAssignmentService: Error creating match event:', eventError);
+      
+      // Provide more specific error messages
+      if (eventError.code === '23503') {
+        throw new Error(`Team ID "${data.teamId}" not found in database. Please verify team data.`);
+      } else if (eventError.code === '23505') {
+        throw new Error('Duplicate event detected. This goal/assist may already be assigned.');
+      } else {
+        throw new Error(`Failed to create match event: ${eventError.message}`);
+      }
     }
 
-    console.log('✅ GoalAssignmentService: Match event created successfully:', newEvent);
+    console.log('✅ GoalAssignmentService: Match event created successfully:', matchEvent);
 
-    // Update member statistics using the new member stats update service
-    console.log(`📊 GoalAssignmentService: Updating member stats for ${playerName}...`);
+    // Update member stats with error handling (only for regular goals, not own goals)
     try {
-      if (type === 'goal') {
-        await incrementMemberGoals(playerId, 1);
-        console.log('✅ GoalAssignmentService: Member goals incremented successfully');
-      } else if (type === 'assist') {
-        await incrementMemberAssists(playerId, 1);
-        console.log('✅ GoalAssignmentService: Member assists incremented successfully');
+      if (data.type === 'goal' && !isOwnGoal) {
+        await incrementMemberGoals(data.playerId, 1);
+        console.log('✅ GoalAssignmentService: Member goals incremented (regular goal)');
+      } else if (data.type === 'goal' && isOwnGoal) {
+        console.log('ℹ️ GoalAssignmentService: Own goal recorded, member stats not incremented');
+      } else if (data.type === 'assist') {
+        await incrementMemberAssists(data.playerId, 1);
+        console.log('✅ GoalAssignmentService: Member assists incremented');
       }
     } catch (statsError) {
       console.error('❌ GoalAssignmentService: Failed to update member stats:', statsError);
@@ -133,25 +141,21 @@ export const assignGoalToPlayer = async (assignment: GoalAssignment): Promise<vo
       await supabase
         .from('match_events')
         .delete()
-        .eq('id', newEvent.id);
+        .eq('id', matchEvent.id);
       
-      throw new Error(`Failed to update member stats: ${statsError instanceof Error ? statsError.message : 'Unknown error'}`);
+      throw new Error(`Failed to update player statistics: ${statsError instanceof Error ? statsError.message : 'Unknown error'}`);
     }
 
-    console.log(`✅ GoalAssignmentService: Successfully completed ${type} assignment to ${playerName} with enhanced members table integration`);
+    console.log('✅ GoalAssignmentService: Goal/assist assignment completed successfully with own goal support');
+    return matchEvent;
 
   } catch (error) {
-    console.error('❌ GoalAssignmentService: Critical error in assignGoalToPlayer:', error);
-    
-    if (error instanceof Error) {
-      throw new Error(`Goal assignment failed: ${error.message}`);
-    } else {
-      throw new Error('Goal assignment failed due to an unknown error');
-    }
+    console.error('❌ GoalAssignmentService: Critical error:', error);
+    throw error;
   }
 };
 
-export const getUnassignedGoals = async (fixtureId: number): Promise<any[]> => {
+export const getUnassignedGoals = async (fixtureId: number) => {
   console.log('🔍 GoalAssignmentService: Getting unassigned goals for fixture:', fixtureId);
   
   try {
@@ -159,24 +163,24 @@ export const getUnassignedGoals = async (fixtureId: number): Promise<any[]> => {
       throw new Error('Invalid fixture ID provided');
     }
 
-    const { data: unassignedEvents, error } = await supabase
+    const { data: events, error } = await supabase
       .from('match_events')
       .select('*')
       .eq('fixture_id', fixtureId)
       .eq('event_type', 'goal')
-      .eq('player_name', 'Unknown Player')
+      .in('player_name', ['Unknown Player', 'Quick Goal'])
       .order('event_time', { ascending: true });
 
     if (error) {
       console.error('❌ GoalAssignmentService: Error fetching unassigned goals:', error);
-      throw new Error(`Failed to fetch unassigned goals: ${error.message}`);
+      throw error;
     }
 
-    console.log(`📊 GoalAssignmentService: Found ${unassignedEvents?.length || 0} unassigned goals`);
-    return unassignedEvents || [];
+    console.log(`📊 GoalAssignmentService: Found ${events?.length || 0} unassigned/quick goals`);
+    return events || [];
 
   } catch (error) {
-    console.error('❌ GoalAssignmentService: Error in getUnassignedGoals:', error);
+    console.error('❌ GoalAssignmentService: Critical error fetching unassigned goals:', error);
     throw error;
   }
 };

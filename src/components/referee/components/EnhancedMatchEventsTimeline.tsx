@@ -1,23 +1,24 @@
 
-import { Clock, Goal, UserX, Trophy } from "lucide-react";
-import EnhancedTimeBadge from "../../fixtures/components/EnhancedTimeBadge";
+import { Badge } from "@/components/ui/badge";
+import { Target, AlertTriangle, Users } from "lucide-react";
 
-interface TimelineEvent {
-  id: number;
+interface LocalTimelineEvent {
+  id: string | number;
   type: string;
   time: number;
   playerName: string;
   teamId: string;
   teamName: string;
   cardType?: string;
-  assistPlayerName?: string;
-  assistTeamId?: string;
+  assistPlayerName?: string | null;
+  assistTeamId?: string | null;
   description: string;
-  timestamp: string;
+  timestamp: number;
+  isOwnGoal?: boolean;
 }
 
 interface EnhancedMatchEventsTimelineProps {
-  timelineEvents: TimelineEvent[];
+  timelineEvents: any[];
   formatTime: (seconds: number) => string;
 }
 
@@ -25,134 +26,100 @@ const EnhancedMatchEventsTimeline = ({
   timelineEvents,
   formatTime
 }: EnhancedMatchEventsTimelineProps) => {
-  
-  const getEventIcon = (eventType: string) => {
-    switch (eventType) {
-      case 'goal':
-        return <Goal className="h-4 w-4 text-green-600" />;
-      case 'yellow_card':
-        return <UserX className="h-4 w-4 text-yellow-600" />;
-      case 'red_card':
-        return <UserX className="h-4 w-4 text-red-600" />;
-      default:
-        return <Clock className="h-4 w-4 text-gray-600" />;
+  // Convert timeline events to local type to handle type conflicts
+  const localEvents: LocalTimelineEvent[] = timelineEvents.map(event => ({
+    id: String(event.id), // Convert to string to handle both string and number ids
+    type: event.type,
+    time: event.time,
+    playerName: event.playerName,
+    teamId: event.teamId,
+    teamName: event.teamName,
+    cardType: event.cardType,
+    assistPlayerName: event.assistPlayerName,
+    assistTeamId: event.assistTeamId,
+    description: event.description,
+    timestamp: event.timestamp,
+    isOwnGoal: event.isOwnGoal
+  }));
+
+  const getEventIcon = (event: LocalTimelineEvent) => {
+    if (event.type === 'goal') {
+      return event.isOwnGoal ? 
+        <Target className="h-4 w-4 text-red-500" /> : 
+        <Target className="h-4 w-4 text-green-500" />;
     }
+    if (event.type === 'assist') {
+      return <Users className="h-4 w-4 text-blue-500" />;
+    }
+    if (event.type === 'yellow_card' || event.type === 'red_card') {
+      return <AlertTriangle className="h-4 w-4 text-yellow-500" />;
+    }
+    return <Target className="h-4 w-4 text-gray-500" />;
   };
 
-  const getEventEmoji = (eventType: string) => {
-    switch (eventType) {
-      case 'goal':
-        return '⚽';
-      case 'yellow_card':
-        return '🟨';
-      case 'red_card':
-        return '🟥';
-      default:
-        return '⏰';
+  const getEventBadgeVariant = (event: LocalTimelineEvent) => {
+    if (event.type === 'goal') {
+      return event.isOwnGoal ? 'destructive' : 'default';
     }
+    if (event.type === 'assist') return 'secondary';
+    if (event.type === 'yellow_card') return 'outline';
+    if (event.type === 'red_card') return 'destructive';
+    return 'outline';
   };
 
-  const formatEventDescription = (event: TimelineEvent) => {
-    const emoji = getEventEmoji(event.type);
-    const time = formatTime(event.time);
-    
-    const displayTeamName = event.teamName && event.teamName !== event.teamId 
-      ? event.teamName 
-      : event.teamId;
-    
-    switch (event.type) {
-      case 'goal':
-        if (event.assistPlayerName) {
-          return `${emoji} ${time} - ${event.playerName} scores for ${displayTeamName}! Assist by ${event.assistPlayerName}.`;
-        }
-        return `${emoji} ${time} - ${event.playerName} scores for ${displayTeamName}!`;
-      
-      case 'yellow_card':
-        return `${emoji} ${time} - Yellow for ${event.playerName} (${displayTeamName})`;
-      
-      case 'red_card':
-        return `${emoji} ${time} - Red for ${event.playerName} (${displayTeamName})`;
-      
-      default:
-        return `${emoji} ${time} - ${event.description}`;
+  const getEventLabel = (event: LocalTimelineEvent) => {
+    if (event.type === 'goal') {
+      return event.isOwnGoal ? 'Own Goal' : 'Goal';
     }
+    if (event.type === 'assist') return 'Assist';
+    if (event.type === 'yellow_card') return 'Yellow Card';
+    if (event.type === 'red_card') return 'Red Card';
+    return event.type;
   };
-
-  const getEventTypeLabel = (eventType: string) => {
-    switch (eventType) {
-      case 'goal':
-        return 'Goal';
-      case 'yellow_card':
-        return 'Yellow';
-      case 'red_card':
-        return 'Red';
-      default:
-        return eventType;
-    }
-  };
-
-  const getTimeBadgeVariant = (eventType: string): 'goal' | 'yellow' | 'red' | 'default' => {
-    switch (eventType) {
-      case 'goal':
-        return 'goal';
-      case 'yellow_card':
-        return 'yellow';
-      case 'red_card':
-        return 'red';
-      default:
-        return 'default';
-    }
-  };
-
-  // Filter out standalone assist events and sort by time (chronological order)
-  const filteredAndSortedEvents = timelineEvents
-    .filter(event => event.type !== 'assist')
-    .sort((a, b) => a.time - b.time);
 
   return (
-    <>
-      {filteredAndSortedEvents.length === 0 ? (
-        <div className="text-center py-8 timeline-gradient rounded-lg border border-muted/20 premier-card-shadow">
-          <p className="text-sm text-muted-foreground">
-            No timeline events recorded for this match
-          </p>
-        </div>
+    <div className="space-y-3">
+      <h4 className="font-semibold">Enhanced Match Timeline ({localEvents.length} events)</h4>
+      {localEvents.length === 0 ? (
+        <p className="text-sm text-muted-foreground text-center py-2">No timeline events recorded</p>
       ) : (
-        <div className="space-y-3">
-          {filteredAndSortedEvents.map((event, index) => (
-            <div 
-              key={`${event.id}-${index}`}
-              className="relative flex items-start gap-3 p-3 event-item-gradient rounded-lg border-l-4 border-l-primary/30 hover:bg-muted/20 transition-colors premier-card-shadow"
-            >
-              <div className="flex-shrink-0 mt-0.5 p-1 rounded-full bg-background shadow-sm">
-                {getEventIcon(event.type)}
-              </div>
-              
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between mb-1">
-                  <p className="text-sm font-medium text-foreground">
-                    {formatEventDescription(event)}
-                  </p>
-                  
-                  <div className="flex items-center gap-2 flex-shrink-0">
-                    <EnhancedTimeBadge 
-                      time={`${formatTime(event.time)}'`}
-                      variant={getTimeBadgeVariant(event.type)}
-                    />
+        <div className="space-y-2 max-h-48 overflow-y-auto">
+          {localEvents
+            .sort((a, b) => b.time - a.time) // Most recent first
+            .map((event) => (
+              <div key={event.id} className="text-sm p-3 bg-muted/10 rounded border-l-4 border-primary/30">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    {getEventIcon(event)}
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium">{event.playerName}</span>
+                        <Badge variant={getEventBadgeVariant(event)} className="text-xs">
+                          {getEventLabel(event)}
+                        </Badge>
+                      </div>
+                      <div className="text-xs text-muted-foreground mt-1">
+                        {event.teamName}
+                        {event.isOwnGoal && (
+                          <span className="ml-2 text-red-600 font-medium">(Own Goal)</span>
+                        )}
+                      </div>
+                    </div>
                   </div>
+                  <span className="text-xs text-muted-foreground font-mono">
+                    {formatTime(event.time)}
+                  </span>
                 </div>
               </div>
-            </div>
-          ))}
-          
-          {filteredAndSortedEvents.length > 10 && (
-            <div className="text-xs text-muted-foreground text-center pt-2 match-gradient-primary rounded p-2 border border-muted/20">
-              Showing all {filteredAndSortedEvents.length} timeline events
-            </div>
+            ))}
+          {localEvents.length > 10 && (
+            <p className="text-xs text-muted-foreground text-center">
+              Showing all {localEvents.length} timeline events
+            </p>
           )}
         </div>
       )}
-    </>
+    </div>
   );
 };
 

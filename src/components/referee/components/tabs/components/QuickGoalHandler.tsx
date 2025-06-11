@@ -41,6 +41,7 @@ export const useQuickGoalHandler = ({
       // Optimistic update to local store first for immediate UI feedback
       console.log('🚀 QuickGoalHandler: Adding optimistic update to store');
       const localGoal = addGoal({
+        playerId: 0, // Add missing playerId for Quick Goal
         playerName: 'Quick Goal',
         team,
         teamId,

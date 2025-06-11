@@ -8,6 +8,12 @@ interface GoalsListProps {
 }
 
 const GoalsList = ({ goals, teamType, teamColor }: GoalsListProps) => {
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
   return (
     <div className="space-y-4">
       {goals.length > 0 ? (
@@ -15,8 +21,7 @@ const GoalsList = ({ goals, teamType, teamColor }: GoalsListProps) => {
           <GoalDisplay
             key={goal.id || `${teamType}-goal-${index}`}
             goal={goal}
-            index={index}
-            teamType={teamType}
+            formatTime={formatTime}
             teamColor={teamColor}
           />
         ))
