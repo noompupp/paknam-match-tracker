@@ -1,7 +1,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Whistles, AlertTriangle, CheckCircle2 } from "lucide-react";
+import { Timer, AlertTriangle, CheckCircle2 } from "lucide-react";
 import ImprovedMatchSelection from "./ImprovedMatchSelection";
 
 interface RefereeToolsHeaderProps {
@@ -28,7 +28,7 @@ const RefereeToolsHeader = ({
           <div className="flex items-center justify-between flex-wrap gap-3">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-primary/10 rounded-lg">
-                <Whistles className="h-6 w-6 text-primary" />
+                <Timer className="h-6 w-6 text-primary" />
               </div>
               <div>
                 <CardTitle className="text-xl md:text-2xl font-bold">

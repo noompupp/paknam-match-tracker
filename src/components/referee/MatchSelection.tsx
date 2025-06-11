@@ -49,7 +49,9 @@ const MatchSelection = ({ fixtures, selectedFixture, onFixtureChange }: MatchSel
     }
   };
 
-  const formatMatchTime = (timeStr: string) => {
+  const formatMatchTime = (timeStr?: string) => {
+    if (!timeStr) return '18:00'; // Default time if not provided
+    
     try {
       const [hours, minutes] = timeStr.split(':');
       const date = new Date();
@@ -132,7 +134,7 @@ const MatchSelection = ({ fixtures, selectedFixture, onFixtureChange }: MatchSel
                         </div>
                         <div className="flex items-center gap-1">
                           <Clock className="h-3 w-3" />
-                          <span>{formatMatchTime(fixture.time || '18:00')}</span>
+                          <span>{formatMatchTime(fixture.match_time)}</span>
                         </div>
                         {fixture.venue && (
                           <div className="flex items-center gap-1">
