@@ -1,3 +1,4 @@
+
 import { TabsContent } from "@/components/ui/tabs";
 import ScoreTab from "./tabs/ScoreTab";
 import GoalsTab from "./tabs/GoalsTab";
@@ -111,6 +112,9 @@ const RefereeTabsContent = (props: RefereeTabsContentProps) => {
           isRunning={props.isRunning}
           homeScore={props.homeScore}
           awayScore={props.awayScore}
+          onPlayerSelect={props.setSelectedPlayer}
+          onTeamChange={props.setSelectedTeam}
+          onCardTypeChange={props.setSelectedCardType}
         />
       </TabsContent>
 
