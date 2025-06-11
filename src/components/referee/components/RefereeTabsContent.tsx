@@ -125,10 +125,9 @@ const RefereeTabsContent = (props: RefereeTabsContentProps) => {
           selectedPlayer={props.selectedPlayer}
           selectedTeam={props.selectedTeam}
           selectedCardType={props.selectedCardType}
-          setSelectedPlayer={props.setSelectedPlayer}
-          setSelectedTeam={props.setSelectedTeam}
-          setSelectedCardType={props.setSelectedCardType}
-          onAddCard={props.onAddCard}
+          onPlayerSelect={props.setSelectedPlayer}
+          onTeamChange={props.setSelectedTeam}
+          onCardTypeChange={props.setSelectedCardType}
           formatTime={props.formatTime}
           matchTime={props.matchTime}
         />
