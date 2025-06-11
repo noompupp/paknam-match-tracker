@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Tabs } from "@/components/ui/tabs";
-import RefereeTabsNavigation from "./RefereeTabsNavigation";
+import RoleBasedRefereeTabsNavigation from "./RoleBasedRefereeTabsNavigation";
 import RefereeTabsContent from "./RefereeTabsContent";
 import RefereeMatchHeader from "./RefereeMatchHeader";
 import { ComponentPlayer } from "../hooks/useRefereeState";
@@ -86,7 +86,7 @@ const RefereeMainContent = (props: RefereeMainContentProps) => {
       <RefereeMatchHeader selectedFixtureData={props.selectedFixtureData} />
       
       <Tabs defaultValue="score" className="w-full">
-        <RefereeTabsNavigation />
+        <RoleBasedRefereeTabsNavigation selectedFixtureData={props.selectedFixtureData} />
         
         <RefereeTabsContent
           selectedFixtureData={props.selectedFixtureData}
