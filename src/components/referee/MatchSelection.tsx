@@ -2,7 +2,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 import { Fixture } from "@/types/database";
+import { Calendar, Clock, MapPin, Users } from "lucide-react";
 import TeamLogo from "../teams/TeamLogo";
 
 interface MatchSelectionProps {
@@ -35,50 +37,114 @@ const MatchSelection = ({ fixtures, selectedFixture, onFixtureChange }: MatchSel
     return name.substring(0, maxLength - 3) + '...';
   };
 
+  const formatMatchDate = (dateStr: string) => {
+    try {
+      const date = new Date(dateStr);
+      return date.toLocaleDateString('en-US', { 
+        month: 'short', 
+        day: 'numeric' 
+      });
+    } catch {
+      return dateStr;
+    }
+  };
+
+  const formatMatchTime = (timeStr: string) => {
+    try {
+      const [hours, minutes] = timeStr.split(':');
+      const date = new Date();
+      date.setHours(parseInt(hours), parseInt(minutes));
+      return date.toLocaleTimeString('en-US', { 
+        hour: 'numeric', 
+        minute: '2-digit',
+        hour12: true 
+      });
+    } catch {
+      return timeStr;
+    }
+  };
+
+  const getStatusBadge = (fixture: Fixture) => {
+    if (fixture.status === 'completed') return { label: 'Completed', variant: 'secondary' as const };
+    if (fixture.status === 'live') return { label: 'Live', variant: 'destructive' as const };
+    return { label: 'Scheduled', variant: 'outline' as const };
+  };
+
   return (
-    <Card className="card-shadow-lg mobile-referee-portrait">
-      <CardHeader>
-        <CardTitle>Select Match</CardTitle>
+    <Card className="referee-card">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-lg">Match Selection</CardTitle>
       </CardHeader>
-      <CardContent>
-        <div className="space-y-3">
-          <Label htmlFor="fixtureSelect">Choose a fixture to referee</Label>
+      <CardContent className="space-y-4">
+        <div className="referee-form-field">
+          <Label htmlFor="fixture" className="text-sm font-medium">
+            Select Fixture
+          </Label>
           <Select value={selectedFixture} onValueChange={onFixtureChange}>
-            <SelectTrigger className="bg-background border-input referee-select-dropdown select-trigger">
-              <SelectValue placeholder="Select a match" />
+            <SelectTrigger id="fixture" className="referee-select referee-focus h-auto min-h-[44px]">
+              <SelectValue placeholder="Choose a match to manage..." />
             </SelectTrigger>
-            <SelectContent className="bg-popover border border-border shadow-lg max-h-60 z-[100] mobile-select-content">
-              {sortedFixtures.map((fixture) => (
-                <SelectItem 
-                  key={fixture.id} 
-                  value={fixture.id.toString()}
-                  className="hover:bg-accent focus:bg-accent cursor-pointer mobile-select-item"
-                >
-                  <div className="flex items-center gap-2 py-1 w-full min-w-0 team-info">
-                    <TeamLogo team={fixture.home_team} size="small" className="flex-shrink-0" />
-                    <span className="font-medium truncate max-w-[4rem] sm:max-w-none team-name">
-                      {truncateTeamName(fixture.home_team?.name || 'TBD', 8)}
-                    </span>
-                    <span className="text-muted-foreground flex-shrink-0">vs</span>
-                    <span className="font-medium truncate max-w-[4rem] sm:max-w-none team-name">
-                      {truncateTeamName(fixture.away_team?.name || 'TBD', 8)}
-                    </span>
-                    <TeamLogo team={fixture.away_team} size="small" className="flex-shrink-0" />
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 ml-auto flex-shrink-0">
-                      <span className="text-xs text-muted-foreground">
-                        {new Date(fixture.match_date).toLocaleDateString()}
-                      </span>
-                      <span className={`text-xs px-2 py-1 rounded whitespace-nowrap ${
-                        fixture.status === 'completed' ? 'bg-green-100 text-green-800' : 
-                        fixture.status === 'live' ? 'bg-red-100 text-red-800' :
-                        'bg-blue-100 text-blue-800'
-                      }`}>
-                        {fixture.status}
-                      </span>
+            <SelectContent className="max-h-80 overflow-y-auto bg-background border border-border shadow-lg z-50">
+              {sortedFixtures.map((fixture) => {
+                const status = getStatusBadge(fixture);
+                const homeTeam = fixture.home_team?.name || 'Home Team';
+                const awayTeam = fixture.away_team?.name || 'Away Team';
+                const hasScore = fixture.home_score !== null && fixture.away_score !== null;
+
+                return (
+                  <SelectItem 
+                    key={fixture.id} 
+                    value={fixture.id.toString()}
+                    className="p-4 cursor-pointer referee-interactive border-b border-border/50 last:border-b-0"
+                  >
+                    <div className="w-full space-y-3">
+                      {/* Teams and Score */}
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2 min-w-0 flex-1">
+                          <Users className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                          <div className="flex items-center gap-1 min-w-0">
+                            <span className="font-medium text-foreground truncate">
+                              {truncateTeamName(homeTeam, 10)}
+                            </span>
+                            <span className="text-muted-foreground">vs</span>
+                            <span className="font-medium text-foreground truncate">
+                              {truncateTeamName(awayTeam, 10)}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          {hasScore && (
+                            <Badge variant="outline" className="text-xs font-bold">
+                              {fixture.home_score}-{fixture.away_score}
+                            </Badge>
+                          )}
+                          <Badge variant={status.variant} className="text-xs">
+                            {status.label}
+                          </Badge>
+                        </div>
+                      </div>
+
+                      {/* Match Info */}
+                      <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                        <div className="flex items-center gap-1">
+                          <Calendar className="h-3 w-3" />
+                          <span>{formatMatchDate(fixture.match_date)}</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Clock className="h-3 w-3" />
+                          <span>{formatMatchTime(fixture.time || '18:00')}</span>
+                        </div>
+                        {fixture.venue && (
+                          <div className="flex items-center gap-1">
+                            <MapPin className="h-3 w-3" />
+                            <span className="truncate max-w-20">{fixture.venue}</span>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                </SelectItem>
-              ))}
+                  </SelectItem>
+                );
+              })}
             </SelectContent>
           </Select>
         </div>

@@ -1,18 +1,26 @@
 
 /* Referee Component Dark Mode Enhancements */
 
+/* Referee Page Container */
+.referee-page-container {
+  @apply min-h-screen bg-background;
+  @apply transition-colors duration-200;
+}
+
 /* Referee Button Variants */
 .referee-button-primary {
   @apply bg-primary text-primary-foreground hover:bg-primary/90;
   @apply dark:bg-primary dark:text-primary-foreground dark:hover:bg-primary/80;
   @apply shadow-sm dark:shadow-lg;
   @apply border border-primary/20 dark:border-primary/30;
+  @apply transition-all duration-200;
 }
 
 .referee-button-secondary {
   @apply bg-secondary text-secondary-foreground hover:bg-secondary/80;
   @apply dark:bg-secondary dark:text-secondary-foreground dark:hover:bg-secondary/70;
   @apply border border-secondary/30 dark:border-secondary/40;
+  @apply transition-all duration-200;
 }
 
 /* Referee Card Variants */
@@ -22,6 +30,7 @@
   @apply shadow-sm dark:shadow-md;
   @apply hover:shadow-md dark:hover:shadow-lg;
   @apply transition-all duration-200;
+  @apply rounded-lg;
 }
 
 .referee-card-highlighted {
@@ -39,6 +48,8 @@
   @apply dark:bg-background dark:border-border dark:text-foreground;
   @apply focus:border-primary focus:ring-primary/20;
   @apply dark:focus:border-primary dark:focus:ring-primary/30;
+  @apply transition-all duration-200;
+  @apply min-h-[44px];
 }
 
 /* Referee Interactive States */
@@ -47,12 +58,14 @@
   @apply dark:hover:bg-accent dark:hover:text-accent-foreground;
   @apply active:bg-accent/80 dark:active:bg-accent/70;
   @apply transition-colors duration-200;
+  @apply cursor-pointer;
 }
 
 /* Referee Status Indicators */
 .referee-status-active {
   @apply bg-green-100 text-green-800 border-green-200;
   @apply dark:bg-green-900/30 dark:text-green-300 dark:border-green-700;
+  @apply font-medium;
 }
 
 .referee-status-inactive {
@@ -79,6 +92,7 @@
 .referee-modal-content {
   @apply bg-background border-border shadow-lg;
   @apply dark:bg-background dark:border-border dark:shadow-xl;
+  @apply rounded-lg;
 }
 
 /* Referee Time Display */
@@ -86,6 +100,8 @@
   @apply bg-muted/50 text-foreground border-border;
   @apply dark:bg-muted/30 dark:text-foreground dark:border-border;
   @apply font-mono text-lg font-semibold;
+  @apply rounded-lg px-4 py-2;
+  @apply transition-colors duration-200;
 }
 
 /* Referee Team Colors */
@@ -103,4 +119,113 @@
 .referee-focus {
   @apply focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary;
   @apply dark:focus:ring-primary/30 dark:focus:border-primary;
+  @apply transition-all duration-200;
+}
+
+/* Mobile Optimizations */
+@media (max-width: 768px) {
+  .referee-card {
+    @apply p-4;
+  }
+  
+  .referee-form-field {
+    @apply space-y-1.5;
+  }
+  
+  .referee-select {
+    @apply min-h-[48px] text-base;
+  }
+  
+  .referee-button-primary,
+  .referee-button-secondary {
+    @apply min-h-[48px] px-4 text-base;
+  }
+}
+
+/* Responsive Grid Layouts */
+.referee-grid-responsive {
+  @apply grid gap-4;
+  @apply grid-cols-1 md:grid-cols-2 lg:grid-cols-3;
+}
+
+.referee-grid-sidebar {
+  @apply grid gap-4;
+  @apply grid-cols-1 xl:grid-cols-3;
+}
+
+/* Enhanced Animations */
+.referee-fade-in {
+  @apply animate-fade-in;
+}
+
+.referee-slide-up {
+  @apply animate-accordion-down;
+}
+
+/* Compact Mode for Mobile */
+.referee-compact-mobile {
+  @apply md:hidden;
+}
+
+.referee-expanded-desktop {
+  @apply hidden md:block;
+}
+
+/* Tab Enhancements */
+.referee-tabs {
+  @apply w-full;
+}
+
+.referee-tab-list {
+  @apply grid w-full;
+  @apply grid-cols-2 sm:grid-cols-4;
+  @apply gap-1 bg-muted/20 p-1 rounded-lg;
+}
+
+.referee-tab-trigger {
+  @apply flex items-center justify-center gap-2;
+  @apply px-3 py-2 text-sm font-medium;
+  @apply transition-all duration-200;
+  @apply data-[state=active]:bg-background;
+  @apply data-[state=active]:shadow-sm;
+  @apply data-[state=active]:text-foreground;
+  @apply text-muted-foreground hover:text-foreground;
+  @apply rounded-md;
+}
+
+/* Score Display Enhancements */
+.referee-score-display {
+  @apply text-2xl md:text-3xl lg:text-4xl;
+  @apply font-bold font-mono;
+  @apply text-foreground;
+  @apply transition-all duration-200;
+}
+
+.referee-score-separator {
+  @apply text-xl md:text-2xl lg:text-3xl;
+  @apply font-bold text-muted-foreground;
+  @apply mx-2 md:mx-4;
+}
+
+/* Enhanced Card Hover States */
+.referee-card:hover {
+  @apply transform scale-[1.01];
+  @apply shadow-lg dark:shadow-xl;
+}
+
+/* Loading States */
+.referee-loading {
+  @apply animate-pulse bg-muted/50 rounded;
+}
+
+/* Error States */
+.referee-error {
+  @apply border-destructive/50 bg-destructive/5;
+  @apply dark:border-destructive/30 dark:bg-destructive/10;
+}
+
+/* Success States */
+.referee-success {
+  @apply border-green-500/50 bg-green-500/5;
+  @apply dark:border-green-400/30 dark:bg-green-400/10;
 }
