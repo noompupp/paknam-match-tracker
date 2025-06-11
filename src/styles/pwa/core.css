@@ -1,0 +1,41 @@
+
+/* Core PWA Detection and Base Styles */
+
+/* PWA-specific CSS overrides to fix UI inconsistencies */
+/* Only apply these overrides in PWA standalone mode */
+@media (display-mode: standalone) {
+  /* Reset body background and padding conflicts */
+  body {
+    background: var(--app-gradient) !important;
+    background-attachment: fixed !important;
+    /* Remove conflicting padding from base.css */
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    padding-top: var(--safe-area-inset-top) !important;
+    padding-bottom: var(--safe-area-inset-bottom) !important;
+    /* Ensure full viewport coverage */
+    min-height: 100vh !important;
+    min-height: 100dvh !important;
+    margin: 0 !important;
+    /* Prevent white gaps */
+    overflow-x: hidden !important;
+  }
+
+  /* Main content areas should not have background conflicts */
+  main {
+    background: transparent !important;
+  }
+
+  /* Prevent white flashes on page transitions */
+  .min-h-screen,
+  .min-h-dvh {
+    background: transparent !important;
+  }
+
+  /* Content container adjustments for PWA */
+  .content-container,
+  .mobile-safe-bottom {
+    /* Remove double safe area padding */
+    padding-bottom: calc(70px + env(safe-area-inset-bottom)) !important;
+  }
+}

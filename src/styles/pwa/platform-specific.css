@@ -1,0 +1,59 @@
+
+/* Platform-Specific PWA Fixes */
+
+/* iOS-specific PWA enhancements */
+@supports (-webkit-touch-callout: none) {
+  @media (display-mode: standalone) {
+    /* iOS Safari PWA specific fixes */
+    body {
+      /* Enhanced iOS background handling */
+      background: var(--app-gradient) !important;
+      background-attachment: fixed !important;
+      /* iOS viewport fix */
+      min-height: -webkit-fill-available !important;
+    }
+
+    /* iOS PWA navigation - full width with better distribution */
+    nav[class*="fixed bottom-0"] {
+      /* Enhanced iOS safe area integration */
+      padding-left: max(env(safe-area-inset-left), 0.5rem) !important;
+      padding-right: max(env(safe-area-inset-right), 0.5rem) !important;
+      
+      /* iOS-specific width constraints */
+      width: 100vw !important;
+      
+      /* Prevent iOS Safari zoom issues */
+      -webkit-text-size-adjust: 100% !important;
+      text-size-adjust: 100% !important;
+    }
+
+    /* iOS navigation inner container - optimized spacing */
+    nav[class*="fixed bottom-0"] > div {
+      /* iOS-optimized padding for better text display */
+      padding-left: max(0.5rem, env(safe-area-inset-left)) !important;
+      padding-right: max(0.5rem, env(safe-area-inset-right)) !important;
+      
+      /* Better gap for iOS */
+      gap: 0.375rem !important;
+      justify-content: space-evenly !important;
+    }
+
+    /* iOS button optimizations - better text handling */
+    nav[class*="fixed bottom-0"] button {
+      /* Optimized padding for iOS */
+      padding-left: 0.375rem !important;
+      padding-right: 0.375rem !important;
+      
+      /* iOS touch target optimization */
+      min-height: 44px !important;
+    }
+
+    /* iOS text optimization */
+    nav[class*="fixed bottom-0"] button span {
+      font-size: 0.75rem !important;
+      /* Prevent iOS text scaling issues */
+      -webkit-text-size-adjust: 100% !important;
+      text-size-adjust: 100% !important;
+    }
+  }
+}

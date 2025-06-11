@@ -1,0 +1,32 @@
+
+/* PWA Safe Area Handling */
+
+@media (display-mode: standalone) {
+  /* Enhance safe area handling for top notch */
+  .safe-top,
+  .modal-safe-top {
+    padding-top: max(var(--safe-area-inset-top), 1rem) !important;
+  }
+}
+
+/* iOS-specific safe area enhancements */
+@supports (-webkit-touch-callout: none) {
+  @media (display-mode: standalone) {
+    /* iOS safe area enhancements */
+    .modal-close-safe {
+      top: max(var(--safe-area-inset-top, 0px) + 1.25rem, 1.25rem) !important;
+      right: max(var(--safe-area-inset-right, 0px) + 1rem, 1rem) !important;
+    }
+
+    /* iOS Dynamic Island handling for newer devices */
+    @media (max-height: 926px) and (min-height: 844px) {
+      .modal-close-safe {
+        top: max(var(--safe-area-inset-top, 0px) + 1.5rem, 1.5rem) !important;
+      }
+      
+      .modal-safe-top {
+        padding-top: max(var(--safe-area-inset-top, 0px) + 2rem, 2rem) !important;
+      }
+    }
+  }
+}

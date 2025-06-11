@@ -1,0 +1,45 @@
+
+/* PWA Layout and Background Handling */
+
+@media (display-mode: standalone) {
+  /* Fix gradient background container */
+  .gradient-bg {
+    background: var(--app-gradient) !important;
+    background-attachment: fixed !important;
+    min-height: 100vh !important;
+    min-height: 100dvh !important;
+    /* Ensure it covers the full viewport including safe areas */
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Enhanced header transparency with better backdrop */
+  .border-b {
+    background: rgba(255, 255, 255, 0.95) !important;
+    backdrop-filter: blur(20px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2) !important;
+  }
+
+  /* Dark mode header adjustments */
+  .dark .border-b {
+    background: rgba(17, 24, 39, 0.95) !important;
+    border-bottom: 1px solid rgba(55, 65, 81, 0.3) !important;
+  }
+
+  /* Fix any cards or components that might show white backgrounds */
+  .bg-gray-50 {
+    background: rgba(249, 250, 251, 0.95) !important;
+  }
+
+  .dark .bg-gray-900 {
+    background: rgba(17, 24, 39, 0.95) !important;
+  }
+
+  /* Top notch background enhancement */
+  .fixed.top-0[class*="z-40"] {
+    background: var(--header-background) !important;
+    backdrop-filter: blur(20px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+  }
+}

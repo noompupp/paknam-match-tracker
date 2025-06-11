@@ -1,0 +1,83 @@
+
+/* PWA Navigation Styles */
+
+@media (display-mode: standalone) {
+  /* CRITICAL: PWA Navigation container - no max-width constraint */
+  nav[class*="fixed bottom-0"] {
+    background: rgba(255, 255, 255, 0.98) !important;
+    backdrop-filter: blur(20px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+    border-top: 1px solid rgba(229, 231, 235, 0.6) !important;
+    
+    /* Full width with proper safe area handling */
+    width: 100vw !important;
+    left: 0 !important;
+    right: 0 !important;
+    margin: 0 !important;
+    
+    /* Proper safe area handling */
+    padding-left: max(env(safe-area-inset-left), 0px) !important;
+    padding-right: max(env(safe-area-inset-right), 0px) !important;
+    padding-bottom: max(env(safe-area-inset-bottom), 0.5rem) !important;
+    height: calc(70px + env(safe-area-inset-bottom)) !important;
+    
+    /* Prevent content overflow */
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+  }
+
+  /* PWA Navigation inner container - no max-width constraint */
+  nav[class*="fixed bottom-0"] > div {
+    width: 100% !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+    
+    /* Enhanced padding for PWA */
+    padding-left: max(0.75rem, env(safe-area-inset-left)) !important;
+    padding-right: max(0.75rem, env(safe-area-inset-right)) !important;
+    
+    /* Optimized flex distribution */
+    display: flex !important;
+    justify-content: space-evenly !important;
+    align-items: center !important;
+    gap: 0.25rem !important;
+  }
+
+  /* PWA Navigation buttons - flexible sizing without forced ellipsis */
+  nav[class*="fixed bottom-0"] button {
+    flex: 1 1 0% !important;
+    min-width: 0 !important;
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
+    
+    /* Allow natural text flow without forced truncation */
+    overflow: visible !important;
+  }
+
+  /* PWA Navigation button text - intelligent wrapping */
+  nav[class*="fixed bottom-0"] button span {
+    white-space: nowrap !important;
+    font-size: 0.75rem !important;
+    line-height: 1 !important;
+    
+    /* Remove forced ellipsis */
+    overflow: visible !important;
+    text-overflow: unset !important;
+    
+    /* Allow natural text display */
+    display: block !important;
+    text-align: center !important;
+  }
+
+  /* Dynamic text scaling for very long labels */
+  nav[class*="fixed bottom-0"] button span[data-long-text] {
+    font-size: 0.6875rem !important;
+    letter-spacing: -0.025em !important;
+  }
+
+  /* Dark mode navigation adjustments */
+  .dark nav[class*="fixed bottom-0"] {
+    background: rgba(17, 24, 39, 0.98) !important;
+    border-top: 1px solid rgba(55, 65, 81, 0.6) !important;
+  }
+}
