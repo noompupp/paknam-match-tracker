@@ -1,19 +1,18 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { incrementMemberGoals, incrementMemberAssists } from './memberStatsUpdateService';
 
-interface GoalAssignment {
+interface GoalAssignmentData {
   fixtureId: number;
   playerId: number;
   playerName: string;
   teamId: string;
   eventTime: number;
   type: 'goal' | 'assist';
-  isOwnGoal?: boolean;
+  isOwnGoal?: boolean; // Add own goal flag
 }
 
-export const assignGoalToPlayer = async (data: GoalAssignment) => {
-  console.log('⚽ SimplifiedGoalAssignmentService: Starting goal/assist assignment with own goal support:', data);
+export const assignGoalToPlayer = async (data: GoalAssignmentData) => {
+  console.log('⚽ SimplifiedGoalAssignmentService: Starting enhanced goal/assist assignment with own goal support:', data);
   
   try {
     // Enhanced input validation
@@ -29,13 +28,9 @@ export const assignGoalToPlayer = async (data: GoalAssignment) => {
       throw new Error('Invalid event type provided');
     }
 
+    // Ensure teamId is a string and handle any formatting issues
     const teamIdString = String(data.teamId).trim();
     const isOwnGoal = data.isOwnGoal || false;
-
-    // For own goals, don't allow assists
-    if (isOwnGoal && data.type === 'assist') {
-      throw new Error('Own goals cannot have assists');
-    }
 
     console.log('✅ SimplifiedGoalAssignmentService: Input validation passed:', {
       playerId: data.playerId,
@@ -46,7 +41,37 @@ export const assignGoalToPlayer = async (data: GoalAssignment) => {
       isOwnGoal
     });
 
-    // Enhanced duplicate check with own goal consideration
+    // Verify team exists in database before proceeding
+    const { data: teamExists, error: teamCheckError } = await supabase
+      .from('teams')
+      .select('__id__, name')
+      .eq('__id__', teamIdString)
+      .single();
+
+    if (teamCheckError || !teamExists) {
+      console.error('❌ SimplifiedGoalAssignmentService: Team ID not found in database:', {
+        teamId: teamIdString,
+        error: teamCheckError
+      });
+      
+      // Try to find team by name if __id__ lookup fails
+      const { data: teamByName, error: teamNameError } = await supabase
+        .from('teams')
+        .select('__id__, name')
+        .ilike('name', `%${data.playerName.split(' ')[0]}%`) // Basic team name guess
+        .limit(1);
+
+      if (teamNameError || !teamByName || teamByName.length === 0) {
+        throw new Error(`Team with ID "${teamIdString}" not found in database. Please verify team data.`);
+      }
+
+      console.log('🔧 SimplifiedGoalAssignmentService: Using team found by name lookup:', teamByName[0]);
+      data.teamId = teamByName[0].__id__;
+    } else {
+      console.log('✅ SimplifiedGoalAssignmentService: Team verified in database:', teamExists);
+    }
+
+    // Enhanced duplicate check
     const { data: existingEvents, error: duplicateCheckError } = await supabase
       .from('match_events')
       .select('id')
@@ -54,8 +79,7 @@ export const assignGoalToPlayer = async (data: GoalAssignment) => {
       .eq('event_type', data.type)
       .eq('player_name', data.playerName)
       .eq('team_id', teamIdString)
-      .eq('own_goal', isOwnGoal)
-      .gte('event_time', Math.max(0, data.eventTime - 10))
+      .gte('event_time', Math.max(0, data.eventTime - 10)) // Within 10 seconds
       .lte('event_time', data.eventTime + 10);
 
     if (duplicateCheckError) {
@@ -65,19 +89,19 @@ export const assignGoalToPlayer = async (data: GoalAssignment) => {
 
     if (existingEvents && existingEvents.length > 0) {
       console.warn('🚫 SimplifiedGoalAssignmentService: Duplicate event prevented');
-      throw new Error(`This ${isOwnGoal ? 'own goal' : data.type} has already been assigned to ${data.playerName} at this time`);
+      throw new Error(`This ${data.type} has already been assigned to ${data.playerName} at this time`);
     }
 
-    // Create match event with enhanced own goal support
+    // Create match event with enhanced error handling and own goal support
     const { data: matchEvent, error: eventError } = await supabase
       .from('match_events')
       .insert({
         fixture_id: data.fixtureId,
         event_type: data.type,
         player_name: data.playerName,
-        team_id: teamIdString,
+        team_id: data.teamId, // Use the validated team ID
         event_time: data.eventTime,
-        own_goal: data.type === 'goal' ? isOwnGoal : null,
+        own_goal: data.type === 'goal' ? isOwnGoal : null, // Only set own_goal for goals
         description: `${isOwnGoal ? 'Own Goal' : (data.type === 'goal' ? 'Goal' : 'Assist')} by ${data.playerName} at ${Math.floor(data.eventTime / 60)}'${String(data.eventTime % 60).padStart(2, '0')}`
       })
       .select()
@@ -85,15 +109,22 @@ export const assignGoalToPlayer = async (data: GoalAssignment) => {
 
     if (eventError) {
       console.error('❌ SimplifiedGoalAssignmentService: Error creating match event:', eventError);
-      throw new Error(`Failed to create match event: ${eventError.message}`);
+      
+      // Provide more specific error messages
+      if (eventError.code === '23503') {
+        throw new Error(`Team ID "${data.teamId}" not found in database. Please verify team data.`);
+      } else if (eventError.code === '23505') {
+        throw new Error('Duplicate event detected. This goal/assist may already be assigned.');
+      } else {
+        throw new Error(`Failed to create match event: ${eventError.message}`);
+      }
     }
 
     console.log('✅ SimplifiedGoalAssignmentService: Match event created successfully:', matchEvent);
 
-    // Update member stats with own goal consideration
+    // Update member stats with error handling (only for regular goals, not own goals)
     try {
       if (data.type === 'goal' && !isOwnGoal) {
-        // Only increment stats for regular goals, not own goals
         await incrementMemberGoals(data.playerId, 1);
         console.log('✅ SimplifiedGoalAssignmentService: Member goals incremented (regular goal)');
       } else if (data.type === 'goal' && isOwnGoal) {
@@ -105,15 +136,13 @@ export const assignGoalToPlayer = async (data: GoalAssignment) => {
     } catch (statsError) {
       console.error('❌ SimplifiedGoalAssignmentService: Failed to update member stats:', statsError);
       
-      // Rollback the match event if stats update fails (except for own goals)
-      if (!isOwnGoal) {
-        await supabase
-          .from('match_events')
-          .delete()
-          .eq('id', matchEvent.id);
-        
-        throw new Error(`Failed to update player statistics: ${statsError instanceof Error ? statsError.message : 'Unknown error'}`);
-      }
+      // Rollback the match event if stats update fails
+      await supabase
+        .from('match_events')
+        .delete()
+        .eq('id', matchEvent.id);
+      
+      throw new Error(`Failed to update player statistics: ${statsError instanceof Error ? statsError.message : 'Unknown error'}`);
     }
 
     console.log('✅ SimplifiedGoalAssignmentService: Goal/assist assignment completed successfully with own goal support');

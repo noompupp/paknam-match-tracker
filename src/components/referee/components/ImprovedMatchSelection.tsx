@@ -2,7 +2,6 @@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, MapPin, Users } from "lucide-react";
-import { sortFixturesChronologically, getMatchStatus, formatMatchDate, formatMatchTime } from "@/utils/fixtureDataProcessor";
 
 interface ImprovedMatchSelectionProps {
   fixtures: any[];
@@ -20,8 +19,42 @@ const ImprovedMatchSelection = ({
   onFixtureChange,
   enhancedPlayersData 
 }: ImprovedMatchSelectionProps) => {
-  // Use the improved sorting utility
-  const sortedFixtures = sortFixturesChronologically(fixtures);
+  const formatMatchDate = (dateStr: string) => {
+    try {
+      const date = new Date(dateStr);
+      return date.toLocaleDateString('en-US', { 
+        month: 'short', 
+        day: 'numeric',
+        year: 'numeric'
+      });
+    } catch {
+      return dateStr;
+    }
+  };
+
+  const formatMatchTime = (timeStr: string) => {
+    try {
+      const [hours, minutes] = timeStr.split(':');
+      const date = new Date();
+      date.setHours(parseInt(hours), parseInt(minutes));
+      return date.toLocaleTimeString('en-US', { 
+        hour: 'numeric', 
+        minute: '2-digit',
+        hour12: true 
+      });
+    } catch {
+      return timeStr;
+    }
+  };
+
+  const getMatchStatus = (fixture: any) => {
+    if (fixture.status === 'completed') return { label: 'Completed', variant: 'secondary' as const };
+    if (fixture.status === 'in_progress') return { label: 'Live', variant: 'destructive' as const };
+    if (fixture.home_score !== null || fixture.away_score !== null) {
+      return { label: 'Scored', variant: 'default' as const };
+    }
+    return { label: 'Scheduled', variant: 'outline' as const };
+  };
 
   return (
     <div className="space-y-4">
@@ -39,7 +72,7 @@ const ImprovedMatchSelection = ({
           <SelectValue placeholder="Choose a match to referee..." />
         </SelectTrigger>
         <SelectContent className="max-h-80 overflow-y-auto bg-background border border-border shadow-lg">
-          {sortedFixtures.map((fixture) => {
+          {fixtures.map((fixture) => {
             const status = getMatchStatus(fixture);
             const homeTeam = fixture.home_team?.name || fixture.team1 || 'Home Team';
             const awayTeam = fixture.away_team?.name || fixture.team2 || 'Away Team';

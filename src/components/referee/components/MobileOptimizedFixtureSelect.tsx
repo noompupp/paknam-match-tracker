@@ -4,7 +4,6 @@ import { ChevronDown, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import TeamLogo from "../../teams/TeamLogo";
 import { Fixture } from "@/types/database";
-import { sortFixturesChronologically } from "@/utils/fixtureDataProcessor";
 
 interface MobileOptimizedFixtureSelectProps {
   fixtures: Fixture[];
@@ -26,8 +25,23 @@ const MobileOptimizedFixtureSelect = ({
   const [open, setOpen] = useState(false);
   const selectRef = useRef<HTMLDivElement>(null);
 
-  // Use the improved sorting utility
-  const sortedFixtures = sortFixturesChronologically(fixtures);
+  // Sort fixtures chronologically (earliest scheduled first, then most recent completed)
+  const sortedFixtures = fixtures?.slice().sort((a, b) => {
+    const dateA = new Date(a.match_date || '');
+    const dateB = new Date(b.match_date || '');
+    
+    // Scheduled fixtures first, then completed
+    if (a.status !== 'completed' && b.status === 'completed') return -1;
+    if (a.status === 'completed' && b.status !== 'completed') return 1;
+    
+    // For scheduled fixtures, show earliest first
+    if (a.status !== 'completed' && b.status !== 'completed') {
+      return dateA.getTime() - dateB.getTime();
+    }
+    
+    // For completed fixtures, show most recent first
+    return dateB.getTime() - dateA.getTime();
+  }) || [];
 
   const selectedFixtureData = sortedFixtures.find(f => f.id.toString() === selectedFixture);
 

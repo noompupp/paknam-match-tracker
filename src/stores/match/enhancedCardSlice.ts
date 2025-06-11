@@ -11,7 +11,6 @@ export interface EnhancedCardSlice {
   updateCard: (cardId: string, updates: Partial<any>) => void;
   getUnsavedCardsCount: MatchActions['getUnsavedCardsCount'];
   syncCardsToDatabase: (fixtureId: number) => Promise<void>;
-  batchSyncCards: (fixtureId: number) => Promise<void>;
 }
 
 export const createEnhancedCardSlice: StateCreator<
@@ -34,7 +33,7 @@ export const createEnhancedCardSlice: StateCreator<
       lastUpdated: Date.now()
     }));
 
-    console.log('🟨 Enhanced Card Store: Card added with improved save capability:', newCard);
+    console.log('🟨 Enhanced Card Store: Card added with save capability:', newCard);
     return newCard;
   },
 
@@ -73,7 +72,7 @@ export const createEnhancedCardSlice: StateCreator<
     }
 
     try {
-      console.log('💾 Enhanced Card Sync: Processing', unsyncedCards.length, 'card records');
+      console.log('💾 Syncing', unsyncedCards.length, 'card records to database');
       
       for (const card of unsyncedCards) {
         await assignCardToPlayer({
@@ -93,20 +92,9 @@ export const createEnhancedCardSlice: StateCreator<
         lastUpdated: Date.now()
       }));
 
-      console.log('✅ Enhanced Card Sync: Completed successfully');
+      console.log('✅ Card sync completed successfully');
     } catch (error) {
-      console.error('❌ Enhanced Card Sync: Error syncing cards to database:', error);
-      throw error;
-    }
-  },
-
-  batchSyncCards: async (fixtureId: number) => {
-    console.log('🔄 Enhanced Card Sync: Starting batch sync for fixture:', fixtureId);
-    try {
-      await get().syncCardsToDatabase(fixtureId);
-      console.log('✅ Enhanced Card Sync: Batch sync completed successfully');
-    } catch (error) {
-      console.error('❌ Enhanced Card Sync: Batch sync failed:', error);
+      console.error('❌ Error syncing cards to database:', error);
       throw error;
     }
   }
