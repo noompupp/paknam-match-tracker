@@ -26,10 +26,12 @@ export interface MultiRefereeConfig {
 export interface WorkflowModeConfig {
   mode: RefereeWorkflowMode;
   fixtureId: number;
-  twoRefereesConfig?: TwoRefereesConfig;
-  multiRefereeConfig?: MultiRefereeConfig;
+  userAssignments: any[];
+  allAssignments: any[];
   createdAt: string;
   updatedAt: string;
+  twoRefereesConfig?: TwoRefereesConfig;
+  multiRefereeConfig?: MultiRefereeConfig;
 }
 
 export interface WorkflowModeSelection {

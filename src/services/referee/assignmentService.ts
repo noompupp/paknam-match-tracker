@@ -25,6 +25,16 @@ export interface WorkflowConfig {
   updated_at: string;
 }
 
+// Enhanced workflow config that includes assignment data
+export interface EnhancedWorkflowConfig {
+  mode: 'two_referees' | 'multi_referee';
+  fixtureId: number;
+  userAssignments: RefereeAssignment[];
+  allAssignments: FixtureAssignment[];
+  createdAt: string;
+  updatedAt: string;
+}
+
 export const refereeAssignmentService = {
   async getUserAssignments(fixtureId: number): Promise<RefereeAssignment[]> {
     console.log('🎯 Getting user assignments for fixture:', fixtureId);
@@ -39,7 +49,12 @@ export const refereeAssignmentService = {
     }
 
     console.log('✅ User assignments retrieved:', data);
-    return data || [];
+    // Type cast the database response to ensure proper TypeScript types
+    return (data || []).map((assignment: any) => ({
+      ...assignment,
+      status: assignment.status as 'assigned' | 'active' | 'completed',
+      workflow_mode: assignment.workflow_mode as 'two_referees' | 'multi_referee'
+    }));
   },
 
   async getAllFixtureAssignments(fixtureId: number): Promise<FixtureAssignment[]> {
@@ -55,7 +70,12 @@ export const refereeAssignmentService = {
     }
 
     console.log('✅ Fixture assignments retrieved:', data);
-    return data || [];
+    // Type cast the database response to ensure proper TypeScript types
+    return (data || []).map((assignment: any) => ({
+      ...assignment,
+      status: assignment.status as 'assigned' | 'active' | 'completed',
+      workflow_mode: assignment.workflow_mode as 'two_referees' | 'multi_referee'
+    }));
   },
 
   async assignUserToRole(
@@ -105,7 +125,14 @@ export const refereeAssignmentService = {
     }
 
     console.log('✅ Workflow config retrieved:', data);
-    return data;
+    
+    if (!data) return null;
+    
+    // Type cast the database response to ensure proper TypeScript types
+    return {
+      ...data,
+      workflow_mode: data.workflow_mode as 'two_referees' | 'multi_referee'
+    };
   },
 
   async setWorkflowConfig(
@@ -141,7 +168,12 @@ export const refereeAssignmentService = {
     }
 
     console.log('✅ Workflow config set successfully:', data);
-    return data;
+    
+    // Type cast the database response to ensure proper TypeScript types
+    return {
+      ...data,
+      workflow_mode: data.workflow_mode as 'two_referees' | 'multi_referee'
+    };
   },
 
   async updateAssignmentStatus(

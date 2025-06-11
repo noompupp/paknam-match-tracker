@@ -1,20 +1,13 @@
-
 import RefereeToolsHeader from "./components/RefereeToolsHeader";
 import RefereeMainContent from "./components/RefereeMainContent";
 import RefereePageContainer from "./shared/RefereePageContainer";
 import EnhancedWorkflowModeManager from "./workflows/EnhancedWorkflowModeManager";
 import { useRefereeStateOrchestrator } from "./hooks/useRefereeStateOrchestrator";
 import { useState } from "react";
-
-interface EnhancedWorkflowConfig {
-  mode: 'two_referees' | 'multi_referee';
-  fixtureId: number;
-  userAssignments: any[];
-  allAssignments: any[];
-}
+import { WorkflowModeConfig } from "./workflows/types";
 
 const RefereeToolsContainer = () => {
-  const [workflowConfig, setWorkflowConfig] = useState<EnhancedWorkflowConfig | null>(null);
+  const [workflowConfig, setWorkflowConfig] = useState<WorkflowModeConfig | null>(null);
 
   const {
     // Base state
@@ -89,9 +82,20 @@ const RefereeToolsContainer = () => {
     handleManualRefresh
   } = useRefereeStateOrchestrator();
 
-  const handleWorkflowConfigured = (config: EnhancedWorkflowConfig) => {
+  const handleWorkflowConfigured = (config: any) => {
     console.log('🎯 Enhanced workflow configured in container:', config);
-    setWorkflowConfig(config);
+    
+    // Convert the enhanced config to the expected WorkflowModeConfig format
+    const workflowModeConfig: WorkflowModeConfig = {
+      mode: config.mode,
+      fixtureId: config.fixtureId,
+      userAssignments: config.userAssignments || [],
+      allAssignments: config.allAssignments || [],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+    
+    setWorkflowConfig(workflowModeConfig);
   };
 
   console.log('🎮 RefereeToolsContainer: Enhanced workflow system active:', {
