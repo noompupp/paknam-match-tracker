@@ -51,11 +51,12 @@ export const coordinationService = {
       const workflowMode = typeof result.workflow_mode === 'string' ? 
         (result.workflow_mode as 'two_referees' | 'multi_referee') : 'two_referees';
       
+      // Use unknown as intermediate type for proper type conversion
       const assignments = Array.isArray(result.assignments) ? 
-        result.assignments as AssignmentData[] : [];
+        (result.assignments as unknown) as AssignmentData[] : [];
       
       const userAssignments = Array.isArray(result.user_assignments) ? 
-        result.user_assignments as AssignmentData[] : [];
+        (result.user_assignments as unknown) as AssignmentData[] : [];
       
       const completionStatus = result.completion_status && typeof result.completion_status === 'object' ? 
         result.completion_status as {
