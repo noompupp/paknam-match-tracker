@@ -67,10 +67,12 @@ const RefereeTabsContent = (props: RefereeTabsContentProps) => {
           matchTime={props.matchTime}
           isRunning={props.isRunning}
           formatTime={props.formatTime}
-          onAddGoal={props.onAddGoal}
-          onRemoveGoal={props.onRemoveGoal}
-          onQuickGoal={props.onQuickGoal}
-          onOpenGoalWizard={props.onOpenGoalWizard}
+          homeTeamPlayers={props.homeTeamPlayers}
+          awayTeamPlayers={props.awayTeamPlayers}
+          onToggleTimer={props.onToggleTimer}
+          onResetMatch={props.onResetMatch}
+          onSaveMatch={props.onSaveMatch}
+          onAssignGoal={props.onAssignGoal}
         />
       </TabsContent>
 
@@ -81,13 +83,15 @@ const RefereeTabsContent = (props: RefereeTabsContentProps) => {
           allPlayers={props.allPlayers}
           homeTeamPlayers={props.homeTeamPlayers}
           awayTeamPlayers={props.awayTeamPlayers}
-          selectedGoalPlayer={props.selectedGoalPlayer}
+          selectedPlayer={props.selectedGoalPlayer}
           selectedGoalType={props.selectedGoalType}
           selectedGoalTeam={props.selectedGoalTeam}
-          setSelectedGoalPlayer={props.setSelectedGoalPlayer}
-          setSelectedGoalType={props.setSelectedGoalType}
-          setSelectedGoalTeam={props.setSelectedGoalTeam}
-          onAssignGoal={props.onAssignGoal}
+          onPlayerSelect={props.setSelectedGoalPlayer}
+          onGoalTypeChange={props.setSelectedGoalType}
+          onGoalTeamChange={props.setSelectedGoalTeam}
+          matchTime={props.matchTime}
+          formatTime={props.formatTime}
+          assignGoal={props.onAssignGoal}
         />
       </TabsContent>
 
@@ -111,7 +115,6 @@ const RefereeTabsContent = (props: RefereeTabsContentProps) => {
 
       <TabsContent value="time" className="mt-4">
         <PlayerTimeTab
-          selectedFixtureData={props.selectedFixtureData}
           trackedPlayers={props.trackedPlayers}
           allPlayers={props.allPlayers}
           homeTeamPlayers={props.homeTeamPlayers}
@@ -128,10 +131,21 @@ const RefereeTabsContent = (props: RefereeTabsContentProps) => {
 
       <TabsContent value="timer" className="mt-4">
         <UnifiedTimerTab
+          selectedFixtureData={props.selectedFixtureData}
+          homeScore={props.homeScore}
+          awayScore={props.awayScore}
           matchTime={props.matchTime}
           isRunning={props.isRunning}
           formatTime={props.formatTime}
+          allPlayers={props.allPlayers}
+          homeTeamPlayers={props.homeTeamPlayers}
+          awayTeamPlayers={props.awayTeamPlayers}
+          trackedPlayers={props.trackedPlayers}
           onToggleTimer={props.onToggleTimer}
+          onResetMatch={props.onResetMatch}
+          onAddPlayer={props.onAddPlayer}
+          onRemovePlayer={props.onRemovePlayer}
+          onTogglePlayerTime={props.onTogglePlayerTime}
         />
       </TabsContent>
 
@@ -152,9 +166,9 @@ const RefereeTabsContent = (props: RefereeTabsContentProps) => {
           cards={props.cards}
           trackedPlayers={props.trackedPlayers}
           events={props.events}
-          onSaveMatch={props.onSaveMatch}
-          onResetMatch={props.onResetMatch}
+          allPlayers={props.allPlayers}
           onExportSummary={props.onExportSummary}
+          formatTime={props.formatTime}
         />
       </TabsContent>
     </>

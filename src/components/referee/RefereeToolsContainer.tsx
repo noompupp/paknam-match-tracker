@@ -158,10 +158,10 @@ const RefereeToolsContainer = () => {
             setSelectedTimePlayer={setSelectedTimePlayer}
             setSelectedTimeTeam={setSelectedTimeTeam}
             events={events}
-            saveAttempts={saveAttempts}
+            saveAttempts={saveAttempts || []}
             toggleTimer={toggleTimer}
             resetTimer={resetTimer}
-            assignGoal={assignGoal}
+            assignGoal={handleAssignGoal}
             addPlayer={handleAddPlayer}
             removePlayer={removePlayer}
             togglePlayerTime={handleTogglePlayerTime}

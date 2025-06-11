@@ -1,6 +1,7 @@
 
 import RefereeMatchControlsContainer from "./RefereeMatchControlsContainer";
 import { ComponentPlayer } from "../hooks/useRefereeState";
+import { WorkflowModeConfig } from "../workflows/types";
 
 interface RefereeMatchControlsProps {
   selectedFixtureData: any;
@@ -47,6 +48,7 @@ interface RefereeMatchControlsProps {
   onRemovePlayer: (playerId: number) => void;
   onTogglePlayerTime: (playerId: number) => void;
   onExportSummary: () => void;
+  workflowConfig: WorkflowModeConfig;
 }
 
 const RefereeMatchControls = (props: RefereeMatchControlsProps) => {
@@ -94,6 +96,7 @@ const RefereeMatchControls = (props: RefereeMatchControlsProps) => {
       onRemovePlayer={props.onRemovePlayer}
       onTogglePlayerTime={props.onTogglePlayerTime}
       onExportSummary={props.onExportSummary}
+      workflowConfig={props.workflowConfig}
     />
   );
 };
