@@ -1,8 +1,9 @@
 
 import React, { useState } from "react";
 import { ComponentPlayer } from "../../hooks/useRefereeState";
-import ScoreTabContainer from "./components/ScoreTabContainer";
+import EnhancedScoreTabContainer from "./components/EnhancedScoreTabContainer";
 import ScoreTabWizard from "./components/ScoreTabWizard";
+import UnifiedMatchTimer from "../UnifiedMatchTimer";
 
 interface ScoreTabProps {
   selectedFixtureData: any;
@@ -16,6 +17,8 @@ interface ScoreTabProps {
   onSaveMatch: () => void;
   onAssignGoal: (player: ComponentPlayer) => void;
   forceRefresh?: () => Promise<void>;
+  homeScore: number;
+  awayScore: number;
 }
 
 const ScoreTab = ({
@@ -29,9 +32,16 @@ const ScoreTab = ({
   onResetMatch,
   onSaveMatch,
   onAssignGoal,
-  forceRefresh
+  forceRefresh,
+  homeScore,
+  awayScore
 }: ScoreTabProps) => {
   const [showWizard, setShowWizard] = useState(false);
+
+  // Calculate current phase for 7-a-side timer
+  const HALF_DURATION = 25 * 60; // 25 minutes in seconds
+  const currentPhase = matchTime <= HALF_DURATION ? 'first' : 
+                       matchTime <= HALF_DURATION * 2 ? 'second' : 'overtime';
 
   const handleWizardGoalAssigned = (goalData: {
     player: ComponentPlayer;
@@ -61,20 +71,36 @@ const ScoreTab = ({
   }
 
   return (
-    <ScoreTabContainer
-      selectedFixtureData={selectedFixtureData}
-      isRunning={isRunning}
-      matchTime={matchTime}
-      homeTeamPlayers={homeTeamPlayers}
-      awayTeamPlayers={awayTeamPlayers}
-      formatTime={formatTime}
-      onToggleTimer={onToggleTimer}
-      onResetMatch={onResetMatch}
-      onSaveMatch={onSaveMatch}
-      onAssignGoal={onAssignGoal}
-      forceRefresh={forceRefresh}
-      onShowWizard={() => setShowWizard(true)}
-    />
+    <div className="space-y-6">
+      {/* Unified Match Timer - appears at top of all tabs */}
+      <UnifiedMatchTimer
+        selectedFixtureData={selectedFixtureData}
+        homeScore={homeScore}
+        awayScore={awayScore}
+        matchTime={matchTime}
+        isRunning={isRunning}
+        formatTime={formatTime}
+        onToggleTimer={onToggleTimer}
+        onResetMatch={onResetMatch}
+        phase={currentPhase}
+      />
+
+      {/* Enhanced Score Tab Content */}
+      <EnhancedScoreTabContainer
+        selectedFixtureData={selectedFixtureData}
+        isRunning={isRunning}
+        matchTime={matchTime}
+        homeTeamPlayers={homeTeamPlayers}
+        awayTeamPlayers={awayTeamPlayers}
+        formatTime={formatTime}
+        onToggleTimer={onToggleTimer}
+        onResetMatch={onResetMatch}
+        onSaveMatch={onSaveMatch}
+        onAssignGoal={onAssignGoal}
+        forceRefresh={forceRefresh}
+        onShowWizard={() => setShowWizard(true)}
+      />
+    </div>
   );
 };
 

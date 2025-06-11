@@ -4,8 +4,8 @@ import { subscribeWithSelector } from 'zustand/middleware';
 import { MatchState } from './types';
 import { MatchActions } from './actions';
 import { createInitialState } from './utils';
-import { createGoalSlice, GoalSlice } from './goalSlice';
-import { createCardSlice, CardSlice } from './cardSlice';
+import { createEnhancedGoalSlice, EnhancedGoalSlice } from './enhancedGoalSlice';
+import { createEnhancedCardSlice, EnhancedCardSlice } from './enhancedCardSlice';
 import { createPlayerTimeSlice, PlayerTimeSlice } from './playerTimeSlice';
 import { createCoreSlice, CoreSlice } from './coreSlice';
 
@@ -16,9 +16,9 @@ export const useMatchStore = create<MatchStore>()(
     // Initial state
     ...createInitialState(),
     
-    // Combine all slices
-    ...createGoalSlice(set, get, api),
-    ...createCardSlice(set, get, api),
+    // Combine all enhanced slices
+    ...createEnhancedGoalSlice(set, get, api),
+    ...createEnhancedCardSlice(set, get, api),
     ...createPlayerTimeSlice(set, get, api),
     ...createCoreSlice(set, get, api)
   }))

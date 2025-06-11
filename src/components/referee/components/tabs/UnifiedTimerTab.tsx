@@ -1,11 +1,9 @@
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Play, Pause, RotateCcw, Timer, Users } from "lucide-react";
+import { Users } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import EnhancedPlayerTimeTracker from "../playerTimeTracker/EnhancedPlayerTimeTracker";
+import UnifiedMatchTimer from "../UnifiedMatchTimer";
 import { ComponentPlayer } from "../../hooks/useRefereeState";
 import { PlayerTime } from "@/types/database";
 import { ProcessedPlayer } from "@/utils/refereeDataProcessor";
@@ -47,89 +45,25 @@ const UnifiedTimerTab = ({
 }: UnifiedTimerTabProps) => {
   const isMobile = useIsMobile();
 
+  // Calculate current phase for 7-a-side timer
+  const HALF_DURATION = 25 * 60; // 25 minutes in seconds
+  const currentPhase = matchTime <= HALF_DURATION ? 'first' : 
+                       matchTime <= HALF_DURATION * 2 ? 'second' : 'overtime';
+
   return (
     <div className="space-y-6">
-      {/* Match Timer Section */}
-      <Card className="card-shadow-lg">
-        <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-lg">
-            <Timer className="h-5 w-5" />
-            Match Timer
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {/* Match Info */}
-          {selectedFixtureData && (
-            <div className="text-center space-y-2">
-              <p className="text-sm text-muted-foreground">
-                {new Date(selectedFixtureData.match_date).toLocaleDateString()} • {selectedFixtureData.match_time}
-              </p>
-              <div className="text-xs text-muted-foreground">
-                {selectedFixtureData.home_team?.name} vs {selectedFixtureData.away_team?.name}
-              </div>
-            </div>
-          )}
-
-          {/* Timer Display */}
-          <div className="text-center space-y-3">
-            <div className="flex items-center justify-center gap-4">
-              {selectedFixtureData && (
-                <>
-                  <div className="text-center">
-                    <div className="text-sm font-medium text-muted-foreground">
-                      {selectedFixtureData.home_team?.name || 'Home'}
-                    </div>
-                    <div className="text-2xl font-bold text-primary">{homeScore}</div>
-                  </div>
-                  <div className="text-center px-4">
-                    <div className="text-3xl font-bold mb-1">{formatTime(matchTime)}</div>
-                    <Badge variant={isRunning ? "default" : "secondary"} className="text-xs">
-                      {isRunning ? "LIVE" : "PAUSED"}
-                    </Badge>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-sm font-medium text-muted-foreground">
-                      {selectedFixtureData.away_team?.name || 'Away'}
-                    </div>
-                    <div className="text-2xl font-bold text-primary">{awayScore}</div>
-                  </div>
-                </>
-              )}
-              
-              {!selectedFixtureData && (
-                <div className="text-center">
-                  <div className="text-3xl font-bold mb-1">{formatTime(matchTime)}</div>
-                  <Badge variant={isRunning ? "default" : "secondary"}>
-                    {isRunning ? "LIVE" : "PAUSED"}
-                  </Badge>
-                </div>
-              )}
-            </div>
-
-            {/* Timer Controls */}
-            <div className={`flex gap-3 ${isMobile ? 'flex-col' : 'justify-center'}`}>
-              <Button
-                onClick={onToggleTimer}
-                className={`${isMobile ? 'w-full' : ''} flex items-center gap-2`}
-                size={isMobile ? "lg" : "default"}
-              >
-                {isRunning ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-                {isRunning ? "Pause Timer" : "Start Timer"}
-              </Button>
-              
-              <Button
-                onClick={onResetMatch}
-                variant="outline"
-                className={`${isMobile ? 'w-full' : ''} flex items-center gap-2`}
-                size={isMobile ? "lg" : "default"}
-              >
-                <RotateCcw className="h-4 w-4" />
-                Reset Match
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Unified Match Timer Section */}
+      <UnifiedMatchTimer
+        selectedFixtureData={selectedFixtureData}
+        homeScore={homeScore}
+        awayScore={awayScore}
+        matchTime={matchTime}
+        isRunning={isRunning}
+        formatTime={formatTime}
+        onToggleTimer={onToggleTimer}
+        onResetMatch={onResetMatch}
+        phase={currentPhase}
+      />
 
       {/* Separator */}
       <div className="relative">
