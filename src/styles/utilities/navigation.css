@@ -1,0 +1,17 @@
+
+@layer utilities {
+  /* Navigation bar overflow fixes */
+  .nav-container {
+    @apply overflow-x-auto scrollbar-none;
+  }
+
+  /* Touch target improvements */
+  .touch-target {
+    @apply min-h-[44px] min-w-[44px];
+  }
+
+  /* Header spacing fixes */
+  .header-spacing {
+    @apply py-4 sm:py-6;
+  }
+}
