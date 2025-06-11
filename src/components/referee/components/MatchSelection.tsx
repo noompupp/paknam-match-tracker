@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Fixture } from "@/types/database";
-import TeamLogo from "../teams/TeamLogo";
+import TeamLogo from "../../teams/TeamLogo";
 import { sortFixturesChronologically, getMatchStatus } from "@/utils/fixtureDataProcessor";
 
 interface MatchSelectionProps {
