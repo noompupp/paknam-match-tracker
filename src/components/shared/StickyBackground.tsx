@@ -17,34 +17,27 @@ const StickyBackground = ({
   blur = true,
   opacity = 'medium'
 }: StickyBackgroundProps) => {
-  const opacityClasses = {
-    light: "bg-background/80",
-    medium: "bg-background/95", 
-    heavy: "bg-background/98"
-  };
-
   const getVariantClasses = () => {
     switch (variant) {
       case 'header':
         return cn(
           "sticky top-0 z-40",
           "border-b border-border/50",
-          opacityClasses[opacity],
-          blur && "backdrop-blur-md saturate-150",
+          "sticky-background-enhanced",
           "transition-all duration-200"
         );
       case 'navigation':
         return cn(
           "sticky top-0 z-30",
           "border-b border-border/30",
-          opacityClasses[opacity],
-          blur && "backdrop-blur-sm",
-          "transition-all duration-200"
+          "sticky-background-enhanced", 
+          "transition-all duration-200",
+          "px-4 py-2" // Add consistent padding
         );
       case 'section':
         return cn(
           "relative",
-          opacityClasses[opacity],
+          "bg-background/95",
           blur && "backdrop-blur-sm"
         );
       default:
@@ -53,7 +46,14 @@ const StickyBackground = ({
   };
 
   return (
-    <div className={cn(getVariantClasses(), className)}>
+    <div 
+      className={cn(getVariantClasses(), className)}
+      style={{
+        background: variant !== 'section' ? 'var(--header-background)' : undefined,
+        backdropFilter: variant !== 'section' && blur ? 'var(--header-backdrop-blur)' : undefined,
+        borderColor: variant !== 'section' ? 'var(--header-border)' : undefined
+      }}
+    >
       {children}
     </div>
   );

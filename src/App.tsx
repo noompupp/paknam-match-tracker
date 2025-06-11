@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { SecureAuthProvider, useSecureAuth } from "@/contexts/SecureAuthContext";
-import { AuthProvider } from "@/contexts/AuthContext"; // Keep for backward compatibility
+import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
 import SecureLogin from "@/components/auth/SecureLogin";
 import RoleBasedNavigation from "@/components/auth/RoleBasedNavigation";
@@ -14,11 +14,10 @@ import Fixtures from "@/components/Fixtures";
 import Results from "@/components/Results";
 import RefereeToolsContainer from "@/components/referee/RefereeToolsContainer";
 
-// Create a client
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 5 * 60 * 1000, // 5 minutes
+      staleTime: 5 * 60 * 1000,
       retry: 1,
     },
   },
@@ -28,10 +27,9 @@ const AppContent = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
   const { user, loading } = useSecureAuth();
 
-  // Show loading screen while checking authentication
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen gradient-bg flex items-center justify-center">
         <div className="text-center text-foreground">
           <h2 className="text-2xl font-bold mb-4">Loading...</h2>
           <p>Initializing secure session...</p>
@@ -40,7 +38,6 @@ const AppContent = () => {
     );
   }
 
-  // Handle authentication tab - show login screen with close functionality
   if (activeTab === 'auth') {
     return (
       <SecureLogin 
@@ -51,12 +48,10 @@ const AppContent = () => {
     );
   }
 
-  // Navigation handlers
   const handleNavigateToResults = () => {
     setActiveTab("results");
   };
 
-  // Main application interface - enhanced for viewer experience
   const renderContent = () => {
     switch (activeTab) {
       case "teams":
@@ -77,9 +72,11 @@ const AppContent = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <main className="pb-20">
-        {renderContent()}
+    <div className="min-h-screen gradient-bg">
+      <main className="pt-4 px-4 pb-24 min-h-screen">
+        <div className="container-responsive">
+          {renderContent()}
+        </div>
       </main>
       <RoleBasedNavigation activeTab={activeTab} onTabChange={setActiveTab} />
     </div>

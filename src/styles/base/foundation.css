@@ -1,10 +1,54 @@
 
-@layer base {
-  * {
-    @apply border-border;
-  }
-  body {
-    @apply bg-background text-foreground;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
-  }
+* {
+  border-color: hsl(var(--border));
+}
+
+body {
+  background: var(--app-gradient);
+  background-attachment: fixed;
+  color: hsl(var(--foreground));
+  font-feature-settings: "rlig" 1, "calt" 1;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+/* Enhanced gradient background application */
+.gradient-bg {
+  background: var(--app-gradient);
+  background-attachment: fixed;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+/* Ensure proper background for all main containers */
+#root {
+  background: var(--app-gradient);
+  background-attachment: fixed;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+/* Enhanced modal and dialog backgrounds */
+[data-radix-dialog-overlay] {
+  background: var(--modal-backdrop) !important;
+  backdrop-filter: blur(4px);
+}
+
+[data-radix-dialog-content] {
+  background: var(--modal-background) !important;
+  backdrop-filter: var(--header-backdrop-blur);
+  border: 1px solid var(--header-border);
+}
+
+/* Navigation and header enhancements */
+.mobile-nav-enhanced {
+  background: var(--navigation-background) !important;
+  backdrop-filter: var(--header-backdrop-blur);
+  border-top: 1px solid var(--header-border);
+}
+
+.sticky-background-enhanced {
+  background: var(--header-background) !important;
+  backdrop-filter: var(--header-backdrop-blur);
+  border-bottom: 1px solid var(--header-border);
 }

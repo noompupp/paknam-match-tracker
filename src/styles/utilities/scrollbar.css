@@ -1,42 +1,55 @@
 
-@layer utilities {
-  /* Scrollbar utilities */
-  .scrollbar-none {
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-  }
+/* Scrollbar utilities for cross-browser compatibility */
 
-  .scrollbar-none::-webkit-scrollbar {
-    display: none;
-  }
+.scrollbar-hide {
+  /* Firefox */
+  scrollbar-width: none;
+  /* IE and Edge */
+  -ms-overflow-style: none;
+}
 
-  .scrollbar-thin {
-    scrollbar-width: thin;
-  }
+.scrollbar-hide::-webkit-scrollbar {
+  /* Chrome, Safari and Opera */
+  display: none;
+}
 
-  .scrollbar-track-transparent {
-    scrollbar-color: transparent transparent;
-  }
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--muted-foreground)) hsl(var(--muted));
+}
 
-  .scrollbar-thumb-border\/50 {
-    scrollbar-color: hsl(var(--border) / 0.5) transparent;
-  }
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
 
-  /* Webkit scrollbar styles for browsers that support it */
-  .scrollbar-thin::-webkit-scrollbar {
-    width: 6px;
-  }
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: hsl(var(--muted));
+  border-radius: 3px;
+}
 
-  .scrollbar-track-transparent::-webkit-scrollbar-track {
-    background: transparent;
-  }
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground));
+  border-radius: 3px;
+}
 
-  .scrollbar-thumb-border\/50::-webkit-scrollbar-thumb {
-    background-color: hsl(var(--border) / 0.5);
-    border-radius: 3px;
-  }
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--accent-foreground));
+}
 
-  .scrollbar-thumb-border\/50::-webkit-scrollbar-thumb:hover {
-    background-color: hsl(var(--border) / 0.7);
-  }
+/* Navigation specific scrollbar hiding */
+.nav-container {
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100vw;
+}
+
+.nav-container > div {
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.nav-container > div::-webkit-scrollbar {
+  display: none;
 }

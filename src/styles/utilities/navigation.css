@@ -1,17 +1,63 @@
 
-@layer utilities {
-  /* Navigation bar overflow fixes */
-  .nav-container {
-    @apply overflow-x-auto scrollbar-none;
-  }
+/* Enhanced navigation utilities */
 
-  /* Touch target improvements */
-  .touch-target {
-    @apply min-h-[44px] min-w-[44px];
-  }
+.mobile-nav-enhanced {
+  background: var(--navigation-background);
+  backdrop-filter: var(--header-backdrop-blur);
+  border-top: 1px solid var(--header-border);
+  transition: all 0.2s ease-out;
+}
 
-  /* Header spacing fixes */
-  .header-spacing {
-    @apply py-4 sm:py-6;
+.nav-container {
+  width: 100%;
+  max-width: 100vw;
+  overflow: hidden;
+}
+
+.mobile-nav-item {
+  @apply flex flex-col items-center gap-1 min-h-[44px] min-w-[44px] p-2;
+  @apply text-muted-foreground hover:text-foreground;
+  @apply transition-colors duration-200;
+  flex-shrink: 0;
+}
+
+.mobile-nav-item.active {
+  @apply text-primary;
+}
+
+/* Prevent horizontal overflow on navigation */
+@media (max-width: 768px) {
+  .mobile-nav-enhanced .flex {
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    gap: 0.5rem;
+    padding: 0 0.5rem;
+  }
+  
+  .mobile-nav-enhanced .flex::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Enhanced sticky backgrounds */
+.sticky-background-enhanced {
+  background: var(--header-background);
+  backdrop-filter: var(--header-backdrop-blur);
+  border-bottom: 1px solid var(--header-border);
+  transition: all 0.2s ease-out;
+}
+
+/* Container responsive system */
+.container-responsive {
+  @apply max-w-7xl mx-auto px-4;
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+@media (max-width: 768px) {
+  .container-responsive {
+    @apply px-4;
   }
 }
