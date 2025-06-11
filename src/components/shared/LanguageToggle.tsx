@@ -7,12 +7,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useTranslation } from "@/hooks/useTranslation";
 
 const LanguageToggle = () => {
-  // For now, this is a placeholder - in a real app you'd connect this to a translation system
-  const handleLanguageChange = (language: string) => {
-    console.log(`Language changed to: ${language}`);
-    // Here you would implement actual language switching logic
+  const { language, setLanguage, t } = useTranslation();
+
+  const handleLanguageChange = (newLanguage: 'en' | 'th') => {
+    setLanguage(newLanguage);
+    console.log(`Language changed to: ${newLanguage}`);
   };
 
   return (
@@ -20,15 +22,21 @@ const LanguageToggle = () => {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="sm" className="text-foreground hover:bg-accent/20">
           <Globe className="h-4 w-4" />
-          <span className="sr-only">Change language</span>
+          <span className="sr-only">{t('language.changeLanguage')}</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => handleLanguageChange("en")}>
-          English
+        <DropdownMenuItem 
+          onClick={() => handleLanguageChange("en")}
+          className={language === 'en' ? 'bg-accent' : ''}
+        >
+          {t('language.english')}
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => handleLanguageChange("th")}>
-          ไทย
+        <DropdownMenuItem 
+          onClick={() => handleLanguageChange("th")}
+          className={language === 'th' ? 'bg-accent' : ''}
+        >
+          {t('language.thai')}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

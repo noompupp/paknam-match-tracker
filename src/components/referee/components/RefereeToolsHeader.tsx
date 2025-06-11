@@ -1,6 +1,7 @@
 
 import ImprovedMatchSelection from "./ImprovedMatchSelection";
 import UnifiedPageHeader from "@/components/shared/UnifiedPageHeader";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface RefereeToolsHeaderProps {
   fixtures: any[];
@@ -18,10 +19,12 @@ const RefereeToolsHeader = ({
   onFixtureChange,
   enhancedPlayersData
 }: RefereeToolsHeaderProps) => {
+  const { t } = useTranslation();
+  
   return (
     <div className="space-y-4">
       <UnifiedPageHeader 
-        title="Referee Tools"
+        title={t('page.referee')}
         logoSize="small"
         showLanguageToggle={true}
       />

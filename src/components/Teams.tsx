@@ -5,8 +5,10 @@ import { useTeamMembers } from "@/hooks/useMembers";
 import TeamsGrid from "./teams/TeamsGrid";
 import EnhancedTeamSquad from "./teams/EnhancedTeamSquad";
 import UnifiedPageHeader from "./shared/UnifiedPageHeader";
+import { useTranslation } from "@/hooks/useTranslation";
 
 const Teams = () => {
+  const { t } = useTranslation();
   const { data: teams, isLoading: teamsLoading, error } = useTeams();
   const [selectedTeamId, setSelectedTeamId] = useState<number | null>(null);
   
@@ -38,7 +40,7 @@ const Teams = () => {
     return (
       <div className="gradient-bg flex items-center justify-center min-h-screen">
         <div className="text-center text-foreground container-responsive">
-          <h2 className="text-2xl font-bold mb-4">Error Loading Teams</h2>
+          <h2 className="text-2xl font-bold mb-4">{t('common.error')} Loading Teams</h2>
           <p className="text-muted-foreground">Please check your connection and try again.</p>
           <p className="text-muted-foreground text-sm mt-2">{error.message}</p>
         </div>
@@ -50,7 +52,7 @@ const Teams = () => {
     <div className="gradient-bg">
       {/* Header */}
       <UnifiedPageHeader 
-        title="Teams"
+        title={t('page.teams')}
         logoSize="small"
         showLanguageToggle={true}
       />

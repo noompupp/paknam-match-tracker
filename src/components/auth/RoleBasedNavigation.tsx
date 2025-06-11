@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Home, Calendar, Trophy, Flag, LogOut, User, Lock, Users } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { usePlatformDetection } from "@/hooks/usePlatformDetection";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface RoleBasedNavigationProps {
   activeTab: string;
@@ -15,6 +16,7 @@ const RoleBasedNavigation = ({ activeTab, onTabChange }: RoleBasedNavigationProp
   const { user, signOut } = useSecureAuth();
   const { toast } = useToast();
   const { isStandalone, isMobile } = usePlatformDetection();
+  const { t } = useTranslation();
   const textRefs = useRef<(HTMLSpanElement | null)[]>([]);
 
   const handleSignOut = async () => {
@@ -41,7 +43,7 @@ const RoleBasedNavigation = ({ activeTab, onTabChange }: RoleBasedNavigationProp
     if (!user) {
       toast({
         title: "Sign In Required",
-        description: "Please sign in to access referee tools and advanced features.",
+        description: t('message.signInRequired'),
         variant: "default"
       });
       onTabChange('auth');
@@ -68,17 +70,17 @@ const RoleBasedNavigation = ({ activeTab, onTabChange }: RoleBasedNavigationProp
 
   // Base navigation items available to all users
   const baseNavItems = [
-    { id: "dashboard", label: "Latest", icon: Home },
-    { id: "teams", label: "Teams", icon: Users },
-    { id: "results", label: "Results", icon: Trophy },
-    { id: "fixtures", label: "Fixtures", icon: Calendar },
+    { id: "dashboard", label: t('nav.latest'), icon: Home },
+    { id: "teams", label: t('nav.teams'), icon: Users },
+    { id: "results", label: t('nav.results'), icon: Trophy },
+    { id: "fixtures", label: t('nav.fixtures'), icon: Calendar },
   ];
 
   // Protected navigation items for authenticated users
   const protectedNavItems = [
     { 
       id: "referee", 
-      label: "Referee", 
+      label: t('nav.referee'), 
       icon: Flag, 
       requiredRole: "referee",
       description: "Access referee tools and match management"
@@ -178,7 +180,7 @@ const RoleBasedNavigation = ({ activeTab, onTabChange }: RoleBasedNavigationProp
                 ref={(el) => textRefs.current[baseNavItems.length + protectedNavItems.length] = el}
                 className="text-xs font-medium whitespace-nowrap"
               >
-                Sign out
+                {t('nav.signOut')}
               </span>
             </Button>
           ) : (
@@ -194,7 +196,7 @@ const RoleBasedNavigation = ({ activeTab, onTabChange }: RoleBasedNavigationProp
                 ref={(el) => textRefs.current[baseNavItems.length + protectedNavItems.length] = el}
                 className="text-xs font-medium whitespace-nowrap"
               >
-                Login
+                {t('nav.login')}
               </span>
             </Button>
           )}
