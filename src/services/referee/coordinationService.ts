@@ -47,17 +47,35 @@ export const coordinationService = {
       const result = data[0];
       console.log('✅ CoordinationService: Coordination data retrieved:', result);
       
-      return {
-        fixture_id: result.fixture_id,
-        workflow_mode: result.workflow_mode,
-        assignments: result.assignments || [],
-        user_assignments: result.user_assignments || [],
-        completion_status: result.completion_status || {
+      // Type-safe parsing of the database function result
+      const workflowMode = typeof result.workflow_mode === 'string' ? 
+        (result.workflow_mode as 'two_referees' | 'multi_referee') : 'two_referees';
+      
+      const assignments = Array.isArray(result.assignments) ? 
+        result.assignments as AssignmentData[] : [];
+      
+      const userAssignments = Array.isArray(result.user_assignments) ? 
+        result.user_assignments as AssignmentData[] : [];
+      
+      const completionStatus = result.completion_status && typeof result.completion_status === 'object' ? 
+        result.completion_status as {
+          total_assignments: number;
+          completed_assignments: number;
+          in_progress_assignments: number;
+          pending_assignments: number;
+        } : {
           total_assignments: 0,
           completed_assignments: 0,
           in_progress_assignments: 0,
           pending_assignments: 0
-        }
+        };
+      
+      return {
+        fixture_id: result.fixture_id,
+        workflow_mode: workflowMode,
+        assignments,
+        user_assignments: userAssignments,
+        completion_status: completionStatus
       };
     } catch (error) {
       console.error('❌ CoordinationService: Error in getCoordinationData:', error);
@@ -105,8 +123,11 @@ export const coordinationService = {
         throw error;
       }
 
-      if (!data?.success) {
-        throw new Error(data?.error || 'Failed to complete assignment');
+      // Type-safe handling of the database function result
+      const result = data as { success?: boolean; error?: string } | null;
+      
+      if (!result || !result.success) {
+        throw new Error(result?.error || 'Failed to complete assignment');
       }
 
       console.log('✅ CoordinationService: Assignment completed successfully');

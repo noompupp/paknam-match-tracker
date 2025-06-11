@@ -1,6 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { duplicatePreventionService } from './fixtures/duplicatePreventionService';
+import { enhancedDuplicatePreventionService } from './fixtures/enhancedDuplicatePreventionService';
 import { syncExistingMatchEvents, validatePlayerStats } from './fixtures/playerStatsSyncService';
 
 export interface SyncResult {
@@ -62,31 +62,10 @@ export const dataSynchronizationService = {
 
   async cleanupAllDuplicateEvents(result: SyncResult): Promise<void> {
     try {
-      // Get all fixtures
-      const { data: fixtures, error } = await supabase
-        .from('fixtures')
-        .select('id');
-
-      if (error) {
-        result.errors.push(`Error fetching fixtures: ${error.message}`);
-        return;
-      }
-
-      if (!fixtures || fixtures.length === 0) {
-        result.warnings.push('No fixtures found for duplicate cleanup');
-        return;
-      }
-
-      // Clean up duplicates for each fixture
-      for (const fixture of fixtures) {
-        try {
-          const cleanupResult = await duplicatePreventionService.cleanupDuplicateGoalEvents(fixture.id);
-          result.duplicatesRemoved += cleanupResult.removedCount;
-          result.errors.push(...cleanupResult.errors);
-        } catch (error) {
-          result.errors.push(`Error cleaning fixture ${fixture.id}: ${error instanceof Error ? error.message : 'Unknown error'}`);
-        }
-      }
+      // Use the enhanced duplicate prevention service for comprehensive cleanup
+      const cleanupResult = await enhancedDuplicatePreventionService.cleanupAllDuplicateEvents();
+      result.duplicatesRemoved += cleanupResult.removedCount;
+      result.errors.push(...cleanupResult.errors);
 
       console.log(`🧹 DataSynchronizationService: Cleaned up ${result.duplicatesRemoved} duplicate events`);
     } catch (error) {
