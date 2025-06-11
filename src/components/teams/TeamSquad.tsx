@@ -4,7 +4,7 @@ import { Separator } from "@/components/ui/separator";
 import { Team } from "@/types/database";
 import { useEnhancedTeamPlayerStats } from "@/hooks/useEnhancedTeamPlayerStats";
 import TeamSquadHeader from "./TeamSquadHeader";
-import TeamStatsOverview from "./TeamStatsOverview";
+import EnhancedTeamStatsOverview from "./components/EnhancedTeamStatsOverview";
 import PlayersList from "./PlayersList";
 
 interface TeamSquadProps {
@@ -24,8 +24,14 @@ const TeamSquad = ({ team, members, isLoading }: TeamSquadProps) => {
   const totalGoals = playersData?.reduce((sum, player) => sum + (player.goals || 0), 0) || 0;
   const totalAssists = playersData?.reduce((sum, player) => sum + (player.assists || 0), 0) || 0;
   const totalMinutesPlayed = playersData?.reduce((sum, player) => sum + (player.totalMinutesPlayed || 0), 0) || 0;
+  const totalMatches = playersData?.reduce((sum, player) => sum + (player.matches_played || 0), 0) || 0;
+  
   const topScorer = playersData?.reduce((prev, current) => 
     (current.goals || 0) > (prev?.goals || 0) ? current : prev, playersData[0]
+  );
+  
+  const topAssister = playersData?.reduce((prev, current) => 
+    (current.assists || 0) > (prev?.assists || 0) ? current : prev, playersData[0]
   );
 
   console.log('👥 TeamSquad: Using enhanced player data:', {
@@ -36,23 +42,25 @@ const TeamSquad = ({ team, members, isLoading }: TeamSquadProps) => {
   });
 
   return (
-    <Card id="team-squad" className="card-shadow-lg animate-fade-in">
+    <Card id="team-squad" className="card-shadow-lg animate-fade-in border-primary/20 bg-gradient-to-b from-background via-background to-muted/20">
       <TeamSquadHeader team={team} playerCount={playersData?.length || 0} />
-      <CardContent>
+      <CardContent className="p-4 sm:p-6">
         <div className="space-y-6">
-          {/* Team Statistics Overview with Minutes Played */}
+          {/* Enhanced Team Statistics Overview */}
           {!actualLoading && playersData && playersData.length > 0 && (
-            <TeamStatsOverview 
+            <EnhancedTeamStatsOverview 
               totalGoals={totalGoals}
               totalAssists={totalAssists}
-              topScorer={topScorer}
               totalMinutesPlayed={totalMinutesPlayed}
+              totalMatches={totalMatches}
+              topScorer={topScorer}
+              topAssister={topAssister}
             />
           )}
 
-          <Separator />
+          <Separator className="bg-border/50" />
 
-          {/* Players List with Enhanced Stats */}
+          {/* Enhanced Players List */}
           <PlayersList players={playersData} isLoading={actualLoading} />
         </div>
       </CardContent>
