@@ -1,4 +1,3 @@
-
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap');
 @tailwind base;
 @tailwind components;
@@ -144,15 +143,19 @@
     padding-top: max(0.5rem, env(safe-area-inset-top));
   }
 
-  /* Navigation bar overflow fixes */
-  .nav-container {
-    @apply overflow-x-auto scrollbar-none;
+  /* Scrollbar utilities */
+  .scrollbar-none {
     scrollbar-width: none;
     -ms-overflow-style: none;
   }
 
-  .nav-container::-webkit-scrollbar {
+  .scrollbar-none::-webkit-scrollbar {
     display: none;
+  }
+
+  /* Navigation bar overflow fixes */
+  .nav-container {
+    @apply overflow-x-auto scrollbar-none;
   }
 
   /* Touch target improvements */
