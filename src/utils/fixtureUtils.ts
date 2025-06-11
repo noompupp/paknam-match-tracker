@@ -77,3 +77,30 @@ export const sortFixtures = (fixtures: any[]) => {
     }
   });
 };
+
+// Format match time in seconds to user-friendly format (mm:ss)
+export const formatMatchTime = (seconds: number): string => {
+  if (typeof seconds !== 'number' || isNaN(seconds)) {
+    return '00:00';
+  }
+  
+  const mins = Math.floor(seconds / 60);
+  const secs = Math.floor(seconds % 60);
+  return `${mins}:${secs.toString().padStart(2, '0')}`;
+};
+
+// Format match time for display in timeline (showing minutes only)
+export const formatTimelineTime = (seconds: number): string => {
+  if (typeof seconds !== 'number' || isNaN(seconds)) {
+    return '0\'';
+  }
+  
+  const mins = Math.floor(seconds / 60);
+  return `${mins}'`;
+};
+
+// Get event count for a fixture
+export const getEventCount = (goals: any[], cards: any[]): number => {
+  return (goals?.length || 0) + (cards?.length || 0);
+};
+
