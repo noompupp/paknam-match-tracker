@@ -1,4 +1,6 @@
 
+import { Trophy, AlertCircle, Clock, Users } from "lucide-react";
+
 export const ROLE_LABELS = {
   home_team: 'Home Team Referee',
   away_team: 'Away Team Referee',
@@ -8,6 +10,17 @@ export const ROLE_LABELS = {
   coordination: 'Match Coordination',
   main_referee: 'Main Referee',
   assistant_referee: 'Assistant Referee'
+} as const;
+
+export const ROLE_ICONS = {
+  score_goals: Trophy,
+  cards_discipline: AlertCircle,
+  time_tracking: Clock,
+  coordination: Users,
+  home_team: Users,
+  away_team: Users,
+  main_referee: Users,
+  assistant_referee: Users
 } as const;
 
 export const STATUS_VARIANTS = {
