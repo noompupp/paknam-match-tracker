@@ -1,6 +1,6 @@
 
 import { Badge } from "@/components/ui/badge";
-import { Target, AlertTriangle, Users, Clock } from "lucide-react";
+import { Clock } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 
 interface TimelineEvent {
@@ -13,6 +13,7 @@ interface TimelineEvent {
   teamId: string;
   isOwnGoal?: boolean;
   cardType?: string;
+  assistPlayerName?: string;
 }
 
 interface MirroredMatchTimelineProps {
@@ -44,44 +45,62 @@ const MirroredMatchTimeline = ({
   isCardRed,
   fixture
 }: MirroredMatchTimelineProps) => {
-  // Create unified timeline events
+  // Use processed events instead of re-processing raw data
+  const homeGoals = processedEvents.homeGoals || [];
+  const awayGoals = processedEvents.awayGoals || [];
+  
+  // Create unified timeline events using processed data
   const allEvents: TimelineEvent[] = [
-    ...goals.map(goal => ({
+    ...homeGoals.map((goal: any) => ({
       id: goal.id,
       type: goal.type === 'assist' ? 'assist' as const : 'goal' as const,
       time: getGoalTime(goal),
       playerName: getGoalPlayerName(goal),
-      teamName: goal.team_id === fixture.home_team_id ? fixture.home_team?.name : fixture.away_team?.name,
-      teamColor: goal.team_id === fixture.home_team_id ? homeTeamColor : awayTeamColor,
-      teamId: goal.team_id,
-      isOwnGoal: goal.isOwnGoal || false
+      teamName: fixture.home_team?.name || 'Home Team',
+      teamColor: homeTeamColor,
+      teamId: fixture.home_team_id,
+      isOwnGoal: goal.own_goal || goal.isOwnGoal || false,
+      assistPlayerName: goal.assistPlayerName || goal.assist_player_name
     })),
-    ...cards.map(card => ({
-      id: card.id,
-      type: isCardRed(card) ? 'red_card' as const : 'yellow_card' as const,
-      time: getCardTime(card),
-      playerName: getCardPlayerName(card),
-      teamName: card.team_id === fixture.home_team_id ? fixture.home_team?.name : fixture.away_team?.name,
-      teamColor: card.team_id === fixture.home_team_id ? homeTeamColor : awayTeamColor,
-      teamId: card.team_id,
-      cardType: getCardType(card)
-    }))
+    ...awayGoals.map((goal: any) => ({
+      id: goal.id,
+      type: goal.type === 'assist' ? 'assist' as const : 'goal' as const,
+      time: getGoalTime(goal),
+      playerName: getGoalPlayerName(goal),
+      teamName: fixture.away_team?.name || 'Away Team',
+      teamColor: awayTeamColor,
+      teamId: fixture.away_team_id,
+      isOwnGoal: goal.own_goal || goal.isOwnGoal || false,
+      assistPlayerName: goal.assistPlayerName || goal.assist_player_name
+    })),
+    ...cards.map(card => {
+      // Determine which team this card belongs to
+      const isHomeTeamCard = card.team_id === fixture.home_team_id;
+      return {
+        id: card.id,
+        type: isCardRed(card) ? 'red_card' as const : 'yellow_card' as const,
+        time: getCardTime(card),
+        playerName: getCardPlayerName(card),
+        teamName: isHomeTeamCard ? fixture.home_team?.name : fixture.away_team?.name,
+        teamColor: isHomeTeamCard ? homeTeamColor : awayTeamColor,
+        teamId: card.team_id,
+        cardType: getCardType(card)
+      };
+    })
   ].sort((a, b) => a.time - b.time);
 
   const getEventIcon = (event: TimelineEvent) => {
     switch (event.type) {
       case 'goal':
-        return event.isOwnGoal ? 
-          <Target className="h-4 w-4 text-red-500" /> : 
-          <Target className="h-4 w-4 text-green-500" />;
+        return event.isOwnGoal ? '🔴' : '⚽';
       case 'assist':
-        return <Users className="h-4 w-4 text-blue-500" />;
+        return '🎯';
       case 'yellow_card':
-        return <AlertTriangle className="h-4 w-4 text-yellow-500" />;
+        return '🟨';
       case 'red_card':
-        return <AlertTriangle className="h-4 w-4 text-red-500" />;
+        return '🟥';
       default:
-        return <Clock className="h-4 w-4 text-gray-500" />;
+        return '⚽';
     }
   };
 
@@ -127,7 +146,11 @@ const MirroredMatchTimeline = ({
         }}
       >
         <div className={`flex items-center gap-2 ${isHome ? 'justify-start' : 'justify-end'}`}>
-          {isHome && getEventIcon(event)}
+          {isHome && (
+            <span className="text-lg" role="img" aria-label={getEventLabel(event)}>
+              {getEventIcon(event)}
+            </span>
+          )}
           {isHome && (
             <Badge variant={getEventBadgeVariant(event)} className="text-xs">
               {getEventLabel(event)}
@@ -136,12 +159,21 @@ const MirroredMatchTimeline = ({
           <span className="font-medium text-foreground">
             {event.playerName}
           </span>
+          {event.assistPlayerName && (
+            <span className="text-xs text-muted-foreground">
+              (Assist: {event.assistPlayerName})
+            </span>
+          )}
           {!isHome && (
             <Badge variant={getEventBadgeVariant(event)} className="text-xs">
               {getEventLabel(event)}
             </Badge>
           )}
-          {!isHome && getEventIcon(event)}
+          {!isHome && (
+            <span className="text-lg" role="img" aria-label={getEventLabel(event)}>
+              {getEventIcon(event)}
+            </span>
+          )}
         </div>
         {event.isOwnGoal && (
           <div className={`text-xs text-red-600 font-medium mt-1 ${
