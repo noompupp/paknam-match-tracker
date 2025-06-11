@@ -109,7 +109,15 @@ const RefereeTabsContent = (props: RefereeTabsContentProps) => {
           setSelectedTeam={props.setSelectedTeam}
           setSelectedCardType={props.setSelectedCardType}
           matchTime={props.matchTime}
-          onAddCard={props.onAddCard}
+          onPlayerSelect={props.setSelectedPlayer}
+          onTeamChange={props.setSelectedTeam}
+          onCardTypeChange={props.setSelectedCardType}
+          formatTime={props.formatTime}
+          onToggleTimer={props.onToggleTimer}
+          onResetMatch={props.onResetMatch}
+          isRunning={props.isRunning}
+          homeScore={props.homeScore}
+          awayScore={props.awayScore}
         />
       </TabsContent>
 
@@ -123,9 +131,11 @@ const RefereeTabsContent = (props: RefereeTabsContentProps) => {
           selectedTimeTeam={props.selectedTimeTeam}
           setSelectedTimePlayer={props.setSelectedTimePlayer}
           setSelectedTimeTeam={props.setSelectedTimeTeam}
-          onAddPlayer={props.onAddPlayer}
-          onRemovePlayer={props.onRemovePlayer}
-          onTogglePlayerTime={props.onTogglePlayerTime}
+          matchTime={props.matchTime}
+          addPlayer={props.onAddPlayer}
+          removePlayer={props.onRemovePlayer}
+          togglePlayerTime={props.onTogglePlayerTime}
+          formatTime={props.formatTime}
         />
       </TabsContent>
 

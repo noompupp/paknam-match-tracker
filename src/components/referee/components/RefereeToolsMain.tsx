@@ -49,6 +49,7 @@ interface RefereeToolsMainProps {
   togglePlayerTime: (playerId: number) => void;
   onCardAdded?: (cardData: any) => void;
   onDataRefresh?: () => void;
+  workflowConfig: WorkflowModeConfig;
 }
 
 const RefereeToolsMain = (props: RefereeToolsMainProps) => {
@@ -272,6 +273,7 @@ const RefereeToolsMain = (props: RefereeToolsMainProps) => {
           <TabsContent value="coordination" className="mt-6">
             <CoordinationTab
               selectedFixtureData={props.selectedFixtureData}
+              workflowConfig={props.workflowConfig}
               onRoleAssigned={handleRoleAssigned}
             />
           </TabsContent>
