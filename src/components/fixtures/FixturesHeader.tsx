@@ -1,15 +1,9 @@
 
 import TournamentLogo from "../TournamentLogo";
+import StickyBackground from "@/components/shared/StickyBackground";
 
 const FixturesHeader = () => (
-  <div 
-    className="border-b"
-    style={{
-      background: 'var(--header-background)',
-      backdropFilter: 'var(--header-backdrop-blur)',
-      borderColor: 'var(--header-border)'
-    }}
-  >
+  <StickyBackground variant="header" className="border-b">
     <div className="max-w-7xl mx-auto px-4 py-6">
       <div className="text-center">
         <div className="flex items-center justify-center gap-3 mb-3">
@@ -19,7 +13,7 @@ const FixturesHeader = () => (
         <p className="text-muted-foreground">Match schedule and results</p>
       </div>
     </div>
-  </div>
+  </StickyBackground>
 );
 
 export default FixturesHeader;

@@ -1,0 +1,117 @@
+
+/* Mobile Layout System */
+
+/* Unified container spacing */
+.mobile-content-spacing {
+  @apply space-y-6;
+}
+
+@media (max-width: 768px) {
+  .mobile-content-spacing {
+    @apply space-y-4;
+  }
+}
+
+/* Container responsive system */
+.container-responsive {
+  @apply max-w-7xl mx-auto px-4;
+}
+
+@media (max-width: 768px) {
+  .container-responsive {
+    @apply px-4;
+  }
+}
+
+/* Mobile bottom spacing system */
+.mobile-safe-bottom {
+  padding-bottom: calc(70px + env(safe-area-inset-bottom));
+}
+
+.mobile-bottom-spacer {
+  @apply block;
+  height: calc(1rem + env(safe-area-inset-bottom));
+}
+
+@media (min-width: 769px) {
+  .mobile-bottom-spacer {
+    @apply hidden;
+  }
+}
+
+/* Enhanced sticky backgrounds */
+.sticky-background-enhanced {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease-out;
+}
+
+.dark .sticky-background-enhanced {
+  background: rgba(17, 24, 39, 0.95);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* PWA standalone mode adjustments */
+@media (display-mode: standalone) {
+  .mobile-content-spacing {
+    @apply space-y-6;
+  }
+  
+  .container-responsive {
+    @apply px-4;
+  }
+  
+  .mobile-safe-bottom {
+    padding-bottom: calc(70px + env(safe-area-inset-bottom) + 1rem);
+  }
+}
+
+/* Fix for white space bleeding */
+.gradient-bg {
+  position: relative;
+  z-index: 0;
+}
+
+.gradient-bg::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--app-gradient);
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* Enhanced header transparency */
+.sticky-header-enhanced {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease-out;
+}
+
+.dark .sticky-header-enhanced {
+  background: rgba(17, 24, 39, 0.95);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Smooth content transitions */
+.content-transition {
+  transition: transform 0.3s ease-out, opacity 0.2s ease-out;
+}
+
+/* Enhanced mobile touch targets */
+@media (max-width: 768px) {
+  .touch-target-enhanced {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}

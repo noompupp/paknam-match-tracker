@@ -1,6 +1,7 @@
 
 import { Target, Timer, CreditCard, BarChart3 } from "lucide-react";
 import ResponsiveTabsList from "../shared/ResponsiveTabsList";
+import StickyBackground from "@/components/shared/StickyBackground";
 
 const ResponsiveRefereeTabsNavigation = () => {
   const tabs = [
@@ -27,10 +28,12 @@ const ResponsiveRefereeTabsNavigation = () => {
   ];
 
   return (
-    <ResponsiveTabsList 
-      tabs={tabs}
-      className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b border-border/50 mb-6"
-    />
+    <StickyBackground variant="navigation" className="mb-6">
+      <ResponsiveTabsList 
+        tabs={tabs}
+        className="bg-transparent"
+      />
+    </StickyBackground>
   );
 };
 

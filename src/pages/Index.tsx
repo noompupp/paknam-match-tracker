@@ -13,6 +13,8 @@ import PWAInstallButton from "@/components/PWAInstallButton";
 import PWAPromptToast from "@/components/PWAPromptToast";
 import PullToRefreshIndicator from "@/components/PullToRefreshIndicator";
 import { usePullToRefresh } from "@/hooks/usePullToRefresh";
+import UnifiedContainer from "@/components/shared/UnifiedContainer";
+import MobileBottomSpacer from "@/components/shared/MobileBottomSpacer";
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -60,39 +62,41 @@ const Index = () => {
   };
 
   const renderContent = () => {
-    const baseClasses = "content-container mobile-safe-bottom";
-    
     switch (activeTab) {
       case "dashboard":
         return (
-          <div className={baseClasses}>
+          <UnifiedContainer variant="page">
             <Dashboard 
               onNavigateToResults={handleNavigateToRecentResults}
               onNavigateToFixtures={handleNavigateToFixtures}
             />
-          </div>
+            <MobileBottomSpacer />
+          </UnifiedContainer>
         );
       case "teams":
         return (
-          <div className={baseClasses}>
+          <UnifiedContainer variant="page">
             <Teams />
-          </div>
+            <MobileBottomSpacer />
+          </UnifiedContainer>
         );
       case "results":
         return (
-          <div className={baseClasses}>
+          <UnifiedContainer variant="page">
             <Fixtures />
-          </div>
+            <MobileBottomSpacer />
+          </UnifiedContainer>
         );
       case "fixtures":
         return (
-          <div className={baseClasses}>
+          <UnifiedContainer variant="page">
             <Fixtures />
-          </div>
+            <MobileBottomSpacer />
+          </UnifiedContainer>
         );
       case "referee":
         return (
-          <div className={baseClasses}>
+          <UnifiedContainer variant="page">
             <ProtectedTabWrapper
               tabId="referee"
               title="Referee Tools Access"
@@ -100,11 +104,12 @@ const Index = () => {
             >
               <RefereeTools />
             </ProtectedTabWrapper>
-          </div>
+            <MobileBottomSpacer />
+          </UnifiedContainer>
         );
       case "notifications":
         return (
-          <div className={baseClasses}>
+          <UnifiedContainer variant="page">
             <ProtectedTabWrapper
               tabId="more"
               title="Administrative Access"
@@ -112,16 +117,18 @@ const Index = () => {
             >
               <MorePage />
             </ProtectedTabWrapper>
-          </div>
+            <MobileBottomSpacer />
+          </UnifiedContainer>
         );
       default:
         return (
-          <div className={baseClasses}>
+          <UnifiedContainer variant="page">
             <Dashboard 
               onNavigateToResults={handleNavigateToRecentResults}
               onNavigateToFixtures={handleNavigateToFixtures}
             />
-          </div>
+            <MobileBottomSpacer />
+          </UnifiedContainer>
         );
     }
   };

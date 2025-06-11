@@ -1,17 +1,11 @@
 
 import TournamentLogo from "../TournamentLogo";
 import { Trophy } from "lucide-react";
+import StickyBackground from "@/components/shared/StickyBackground";
 
 const ResultsHeader = () => {
   return (
-    <div 
-      className="border-b"
-      style={{
-        background: 'var(--header-background)',
-        backdropFilter: 'var(--header-backdrop-blur)',
-        borderColor: 'var(--header-border)'
-      }}
-    >
+    <StickyBackground variant="header" className="border-b">
       <div className="max-w-7xl mx-auto px-4 py-6">
         <div className="text-center">
           <div className="flex items-center justify-center gap-3 mb-3">
@@ -24,7 +18,7 @@ const ResultsHeader = () => {
           <p className="text-muted-foreground">View completed matches and detailed match summaries</p>
         </div>
       </div>
-    </div>
+    </StickyBackground>
   );
 };
 

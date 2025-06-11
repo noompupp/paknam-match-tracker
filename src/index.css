@@ -9,6 +9,7 @@
 @import './styles/pwa/index.css';
 @import './styles/pull-to-refresh.css';
 @import './styles/avatar/index.css';
+@import './styles/mobile-layout.css';
 
 @tailwind base;
 @tailwind components;
