@@ -54,11 +54,13 @@ export const createPlayerTimeSlice: StateCreator<
       id: generateId(),
       playerId,
       playerName,
-      teamId,
+      teamId: teamId.toString(),
+      teamName: '', // Will be updated when team info is available
+      team: 'home' as const, // Default, should be updated based on teamId
+      totalTime: 0,
       startTime: currentTime,
-      endTime: null,
-      totalMinutes: 0,
-      isActive: true,
+      isPlaying: true,
+      periods: [],
       synced: false
     };
 
@@ -76,7 +78,7 @@ export const createPlayerTimeSlice: StateCreator<
     
     set((state) => {
       const playerTime = state.playerTimes.find(pt => 
-        pt.playerId === playerId && pt.isActive
+        pt.playerId === playerId && pt.isPlaying
       );
       
       if (!playerTime) return state;
@@ -85,12 +87,19 @@ export const createPlayerTimeSlice: StateCreator<
       
       return {
         playerTimes: state.playerTimes.map(pt => 
-          pt.playerId === playerId && pt.isActive
+          pt.playerId === playerId && pt.isPlaying
             ? { 
                 ...pt, 
-                endTime: currentTime,
-                totalMinutes: pt.totalMinutes + sessionMinutes,
-                isActive: false,
+                totalTime: pt.totalTime + sessionMinutes,
+                isPlaying: false,
+                periods: [
+                  ...pt.periods,
+                  {
+                    start_time: playerTime.startTime || currentTime,
+                    end_time: currentTime,
+                    duration: sessionMinutes
+                  }
+                ],
                 synced: false
               }
             : pt
@@ -112,11 +121,11 @@ export const createPlayerTimeSlice: StateCreator<
     const state = get();
     return state.playerTimes
       .filter(pt => pt.playerId === playerId)
-      .reduce((total, pt) => total + pt.totalMinutes, 0);
+      .reduce((total, pt) => total + pt.totalTime, 0);
   },
 
   getActivePlayersCount: () => {
     const state = get();
-    return state.playerTimes.filter(pt => pt.isActive).length;
+    return state.playerTimes.filter(pt => pt.isPlaying).length;
   }
 });

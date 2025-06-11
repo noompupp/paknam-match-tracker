@@ -35,15 +35,15 @@ const PlayerTimeIntegrationPanel = ({
         playerName: pt.playerName,
         teamId: pt.teamId,
         sessions: [],
-        totalMinutes: 0,
-        isActive: false
+        totalTime: 0,
+        isPlaying: false
       };
     }
     
     acc[pt.playerId].sessions.push(pt);
-    acc[pt.playerId].totalMinutes += pt.totalMinutes;
-    if (pt.isActive) {
-      acc[pt.playerId].isActive = true;
+    acc[pt.playerId].totalTime += pt.totalTime;
+    if (pt.isPlaying) {
+      acc[pt.playerId].isPlaying = true;
     }
     
     return acc;
@@ -106,7 +106,7 @@ const PlayerTimeIntegrationPanel = ({
                       <Badge variant="outline" className="text-xs">
                         {player.sessions.length} sessions
                       </Badge>
-                      {player.isActive && (
+                      {player.isPlaying && (
                         <Badge variant="default" className="text-xs">
                           <Play className="h-3 w-3 mr-1" />
                           Active
@@ -116,7 +116,7 @@ const PlayerTimeIntegrationPanel = ({
                   </div>
                   <div className="text-right">
                     <div className="font-mono text-sm font-medium">
-                      {Math.floor(player.totalMinutes)}min
+                      {Math.floor(player.totalTime)}min
                     </div>
                     <div className="text-xs text-muted-foreground">
                       Total Time
@@ -163,7 +163,7 @@ const PlayerTimeIntegrationPanel = ({
                   </div>
                   <div className="text-right">
                     <div className="font-mono text-sm font-medium">
-                      {Math.floor(player.totalMinutes)}min
+                      {Math.floor(player.totalTime || 0)}min
                     </div>
                     <div className="text-xs text-muted-foreground">
                       Database Record
