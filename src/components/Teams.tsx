@@ -5,6 +5,7 @@ import { useTeamMembers } from "@/hooks/useMembers";
 import TeamsGrid from "./teams/TeamsGrid";
 import EnhancedTeamSquad from "./teams/EnhancedTeamSquad";
 import TournamentLogo from "./TournamentLogo";
+import UnifiedPageHeader from "./shared/UnifiedPageHeader";
 
 const Teams = () => {
   const { data: teams, isLoading: teamsLoading, error } = useTeams();
@@ -49,24 +50,15 @@ const Teams = () => {
   return (
     <div className="gradient-bg">
       {/* Header */}
-      <div 
-        className="border-b"
-        style={{
-          background: 'var(--header-background)',
-          backdropFilter: 'var(--header-backdrop-blur)',
-          borderColor: 'var(--header-border)'
-        }}
-      >
-        <div className="max-w-7xl mx-auto container-responsive py-6">
-          <div className="text-center">
-            <div className="flex items-center justify-center gap-3 mb-3">
-              <TournamentLogo />
-              <h1 className="text-3xl font-bold text-foreground">Teams & Players</h1>
-            </div>
-            <p className="text-muted-foreground">Meet our {teams?.length || 0} competing teams</p>
+      <UnifiedPageHeader>
+        <div className="text-center">
+          <div className="flex items-center justify-center gap-3 mb-3">
+            <TournamentLogo />
+            <h1 className="text-3xl font-bold text-foreground">Teams & Players</h1>
           </div>
+          <p className="text-muted-foreground">Meet our {teams?.length || 0} competing teams</p>
         </div>
-      </div>
+      </UnifiedPageHeader>
 
       <div className="max-w-7xl mx-auto container-responsive py-8 space-y-8 mobile-content-spacing">
         {/* Teams Grid */}
