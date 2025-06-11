@@ -273,9 +273,11 @@ export type Database = {
           assigned_at: string
           assigned_by: string | null
           assigned_role: string
+          completion_timestamp: string | null
           created_at: string
           fixture_id: number
           id: string
+          notes: string | null
           referee_id: string
           responsibilities: string[] | null
           status: string
@@ -287,9 +289,11 @@ export type Database = {
           assigned_at?: string
           assigned_by?: string | null
           assigned_role: string
+          completion_timestamp?: string | null
           created_at?: string
           fixture_id: number
           id?: string
+          notes?: string | null
           referee_id: string
           responsibilities?: string[] | null
           status?: string
@@ -301,9 +305,11 @@ export type Database = {
           assigned_at?: string
           assigned_by?: string | null
           assigned_role?: string
+          completion_timestamp?: string | null
           created_at?: string
           fixture_id?: number
           id?: string
+          notes?: string | null
           referee_id?: string
           responsibilities?: string[] | null
           status?: string
@@ -646,9 +652,23 @@ export type Database = {
         }
         Returns: Json
       }
+      complete_referee_assignment: {
+        Args: { p_assignment_id: string; p_completion_notes?: string }
+        Returns: Json
+      }
       finalize_match_coordination: {
         Args: { p_coordination_id: string; p_final_review_data?: Json }
         Returns: Json
+      }
+      get_coordination_with_assignments: {
+        Args: { p_fixture_id: number }
+        Returns: {
+          fixture_id: number
+          workflow_mode: string
+          assignments: Json
+          user_assignments: Json
+          completion_status: Json
+        }[]
       }
       get_enhanced_match_summary: {
         Args: { p_fixture_id: number }
