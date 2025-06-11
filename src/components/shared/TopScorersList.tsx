@@ -3,7 +3,7 @@ import { useEnhancedTopScorers } from "@/hooks/usePlayerStats";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Trophy } from "lucide-react";
-import PlayerAvatar from "./PlayerAvatar";
+import SimplePlayerAvatar from "./SimplePlayerAvatar";
 import { useTranslation } from "@/hooks/useTranslation";
 
 interface TopScorersListProps {
@@ -64,7 +64,7 @@ const TopScorersList = ({ limit = 10, showViewAll = false }: TopScorersListProps
               <span className="text-sm font-bold text-muted-foreground w-6 text-center">
                 #{index + 1}
               </span>
-              <PlayerAvatar player={player} size="small" />
+              <SimplePlayerAvatar player={player} size="small" />
             </div>
             <div className="min-w-0 flex-1">
               <p className="font-medium text-sm truncate">{player.name}</p>
