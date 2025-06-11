@@ -14,7 +14,7 @@ interface RoleBasedNavigationProps {
 const RoleBasedNavigation = ({ activeTab, onTabChange }: RoleBasedNavigationProps) => {
   const { user, signOut } = useSecureAuth();
   const { toast } = useToast();
-  const { isStandalone } = usePlatformDetection();
+  const { isStandalone, isMobile } = usePlatformDetection();
   const textRefs = useRef<(HTMLSpanElement | null)[]>([]);
 
   const handleSignOut = async () => {
@@ -87,7 +87,9 @@ const RoleBasedNavigation = ({ activeTab, onTabChange }: RoleBasedNavigationProp
 
   return (
     <nav 
-      className="fixed bottom-0 left-0 right-0 mobile-nav-enhanced z-50 safe-bottom"
+      className={`fixed bottom-0 left-0 right-0 z-50 safe-bottom ${
+        isMobile ? 'mobile-nav-enhanced' : 'mobile-nav-enhanced'
+      }`}
       style={{
         paddingBottom: `max(env(safe-area-inset-bottom), 0.5rem)`,
         height: `calc(70px + env(safe-area-inset-bottom))`

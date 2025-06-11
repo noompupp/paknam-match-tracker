@@ -9,6 +9,7 @@ interface UnifiedContainerProps {
   variant?: 'page' | 'content' | 'section';
   spacing?: 'tight' | 'normal' | 'loose';
   maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '7xl' | 'full';
+  enableTopSafePadding?: boolean;
 }
 
 const UnifiedContainer = ({
@@ -16,7 +17,8 @@ const UnifiedContainer = ({
   className,
   variant = 'content',
   spacing = 'normal',
-  maxWidth = '7xl'
+  maxWidth = '7xl',
+  enableTopSafePadding = true
 }: UnifiedContainerProps) => {
   const { isMobile, isIOS } = usePlatformDetection();
   
@@ -41,6 +43,7 @@ const UnifiedContainer = ({
         return cn(
           "gradient-bg min-h-screen min-h-dvh",
           "w-full overflow-x-hidden",
+          enableTopSafePadding && "safe-top-enhanced",
           isMobile && isIOS && "safe-x safe-y",
           isMobile && !isIOS && "safe-x"
         );
@@ -48,6 +51,7 @@ const UnifiedContainer = ({
         return cn(
           maxWidthClasses[maxWidth],
           "mx-auto px-4 py-8",
+          enableTopSafePadding && "safe-top-content",
           isMobile && "px-4 py-6",
           "mobile-content-spacing"
         );
