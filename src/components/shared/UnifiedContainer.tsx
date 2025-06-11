@@ -49,7 +49,7 @@ const UnifiedContainer = ({
           maxWidthClasses[maxWidth],
           "mx-auto px-4 py-8",
           isMobile && "px-4 py-6",
-          isMobile && "pb-safe-bottom mobile-safe-bottom"
+          "mobile-content-spacing"
         );
       case 'section':
         return cn(
@@ -62,16 +62,7 @@ const UnifiedContainer = ({
   };
 
   return (
-    <div 
-      className={cn(getVariantClasses(), className)}
-      style={{
-        background: variant === 'page' ? 'var(--app-gradient)' : undefined,
-        backgroundAttachment: variant === 'page' ? 'fixed' : undefined,
-        paddingLeft: isMobile ? `max(1rem, var(--safe-area-inset-left))` : undefined,
-        paddingRight: isMobile ? `max(1rem, var(--safe-area-inset-right))` : undefined,
-        paddingBottom: isMobile ? `max(2rem, calc(2rem + var(--mobile-nav-total-height)))` : undefined
-      }}
-    >
+    <div className={cn(getVariantClasses(), className)}>
       {children}
     </div>
   );
