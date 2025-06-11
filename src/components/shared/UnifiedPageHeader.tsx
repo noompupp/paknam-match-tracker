@@ -32,17 +32,16 @@ const UnifiedPageHeader = ({
         className={cn(
           "mobile-safe-header",
           showBorder && "border-b",
-          "bg-[#448ddf] dark:bg-[#448ddf]", // Blue background for both light and dark mode
           className
         )}
-        opacity="medium"
+        opacity={variant === 'transparent' ? 'light' : 'medium'}
       >
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             {/* Left side: Logo and Title */}
             <div className="flex items-center gap-3">
               <TournamentLogo size={logoSize} />
-              <h1 className="text-xl sm:text-2xl font-bold text-white">{title}</h1>
+              <h1 className="text-xl sm:text-2xl font-bold text-foreground">{title}</h1>
             </div>
             
             {/* Right side: Language Toggle */}
