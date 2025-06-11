@@ -66,13 +66,13 @@ const RefereeTabsContent = (props: RefereeTabsContentProps) => {
           awayScore={props.awayScore}
           matchTime={props.matchTime}
           isRunning={props.isRunning}
+          homeTeamPlayers={props.homeTeamPlayers}
+          awayTeamPlayers={props.awayTeamPlayers}
           formatTime={props.formatTime}
-          onAddGoal={props.onAddGoal}
-          onRemoveGoal={props.onRemoveGoal}
-          onQuickGoal={props.onQuickGoal}
-          onOpenGoalWizard={props.onOpenGoalWizard}
-          onSaveMatch={props.onSaveMatch}
+          onToggleTimer={props.onToggleTimer}
           onResetMatch={props.onResetMatch}
+          onSaveMatch={props.onSaveMatch}
+          onAssignGoal={props.onAssignGoal}
         />
       </TabsContent>
 
@@ -98,20 +98,20 @@ const RefereeTabsContent = (props: RefereeTabsContentProps) => {
 
       <TabsContent value="goals" className="space-y-6">
         <GoalsTab
-          selectedFixtureData={props.selectedFixtureData}
           allPlayers={props.allPlayers}
           homeTeamPlayers={props.homeTeamPlayers}
           awayTeamPlayers={props.awayTeamPlayers}
           goals={props.goals}
-          selectedGoalPlayer={props.selectedGoalPlayer}
+          selectedPlayer={props.selectedGoalPlayer}
           selectedGoalType={props.selectedGoalType}
           selectedGoalTeam={props.selectedGoalTeam}
-          setSelectedGoalPlayer={props.setSelectedGoalPlayer}
-          setSelectedGoalType={props.setSelectedGoalType}
-          setSelectedGoalTeam={props.setSelectedGoalTeam}
-          onAssignGoal={props.onAssignGoal}
-          formatTime={props.formatTime}
           matchTime={props.matchTime}
+          selectedFixtureData={props.selectedFixtureData}
+          onPlayerSelect={props.setSelectedGoalPlayer}
+          onGoalTypeChange={props.setSelectedGoalType}
+          onGoalTeamChange={props.setSelectedGoalTeam}
+          formatTime={props.formatTime}
+          assignGoal={props.onAssignGoal}
         />
       </TabsContent>
 
@@ -144,10 +144,14 @@ const RefereeTabsContent = (props: RefereeTabsContentProps) => {
       <TabsContent value="summary" className="space-y-6">
         <SummaryTab
           selectedFixtureData={props.selectedFixtureData}
+          homeScore={props.homeScore}
+          awayScore={props.awayScore}
+          matchTime={props.matchTime}
           goals={props.goals}
           cards={props.cards}
           trackedPlayers={props.trackedPlayers}
           events={props.events}
+          allPlayers={props.allPlayers}
           formatTime={props.formatTime}
           onExportSummary={props.onExportSummary}
         />
