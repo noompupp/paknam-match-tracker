@@ -11,7 +11,7 @@ import { createPlayerTimeSlice, PlayerTimeSlice } from './playerTimeSlice';
 import { createCoreSlice, CoreSlice } from './coreSlice';
 import { createGoalSlice, GoalSlice } from './goalSlice';
 
-type MatchStore = MatchState & MatchActions & EnhancedPlayerTimeSlice & {
+type MatchStore = MatchState & MatchActions & EnhancedPlayerTimeSlice & PlayerTimeSlice & {
   syncCardsToDatabase: (fixtureId: number) => Promise<void>;
   optimizedBatchSync: (fixtureId: number) => Promise<void>;
   syncAllToDatabase: (fixtureId: number) => Promise<void>;

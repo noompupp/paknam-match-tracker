@@ -72,7 +72,6 @@ const ScoreTabWizard = ({
         team: goalData.team,
         teamId,
         teamName,
-        type: 'assist',
         time: matchTime
       });
     }

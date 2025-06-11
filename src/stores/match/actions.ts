@@ -10,6 +10,7 @@ export interface MatchActions {
   undoGoal: (goalId: string) => void;
   getUnassignedGoalsCount: () => number;
   getUnassignedGoals: () => MatchGoal[];
+  getUnsavedGoalsCount: () => number;
 
   // Card management with enhanced sync
   addCard: (cardData: Omit<MatchCard, 'id' | 'timestamp' | 'synced'>) => MatchCard;
@@ -27,6 +28,10 @@ export interface MatchActions {
   getPlayerTimesByFixture: (fixtureId: number) => MatchPlayerTime[];
   calculateTotalMinutesPlayed: (playerId: number) => number;
   getActivePlayersCount: () => number;
+  loadPlayerTimesFromDatabase: (fixtureId: number) => Promise<void>;
+  syncPlayerTimesToDatabase: (fixtureId: number) => Promise<void>;
+  clearPlayerTimes: () => void;
+  optimizedBatchSync: (fixtureId: number) => Promise<void>;
 
   // Core state management
   setFixtureId: (id: number | null) => void;
