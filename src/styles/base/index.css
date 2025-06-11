@@ -1,0 +1,7 @@
+
+/* Base Styles Entry Point */
+/* Imports all base-related style modules in the correct order */
+
+@import './variables.css';
+@import './reset.css';
+@import './browser-constraints.css';

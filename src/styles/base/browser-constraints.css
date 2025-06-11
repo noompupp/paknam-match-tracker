@@ -1,0 +1,16 @@
+
+/* Browser-specific navigation constraints (non-PWA) */
+
+@media not all and (display-mode: standalone) {
+  /* Apply max-width constraint only in browser mode */
+  nav[class*="fixed bottom-0"] > div {
+    max-width: 480px !important;
+    margin: 0 auto !important;
+  }
+  
+  /* Ensure proper centering in browser mode */
+  nav[class*="fixed bottom-0"] {
+    display: flex !important;
+    justify-content: center !important;
+  }
+}
