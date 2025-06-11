@@ -48,10 +48,10 @@ const EnhancedCardsTab = ({
   homeScore,
   awayScore
 }: EnhancedCardsTabProps) => {
-  // Get unsaved changes state
-  const { hasUnsavedChanges } = useMatchStore();
+  // Get unsaved changes state and sync methods
+  const { hasUnsavedChanges, syncCardsToDatabase } = useMatchStore();
 
-  // Auto-save manager
+  // Optimized batch save manager for cards
   const { batchSave } = useGlobalBatchSaveManager({
     homeTeamData: { 
       id: selectedFixtureData?.home_team?.__id__ || selectedFixtureData?.home_team_id, 
@@ -63,15 +63,19 @@ const EnhancedCardsTab = ({
     }
   });
 
-  // Enhanced auto-save for cards (5 minutes)
+  // Enhanced auto-save with optimized card syncing
   useEnhancedAutoSave({
     enabled: true,
     onAutoSave: async () => {
-      await batchSave();
+      if (selectedFixtureData?.id) {
+        await syncCardsToDatabase(selectedFixtureData.id);
+        console.log('✅ Enhanced Cards: Auto-save completed with improved sync');
+      }
     },
-    interval: 5 * 60 * 1000, // 5 minutes
+    interval: 3 * 60 * 1000, // 3 minutes for cards
     hasUnsavedChanges,
-    tabName: 'Cards'
+    tabName: 'Cards',
+    optimizedMode: true
   });
 
   // Calculate current phase for 7-a-side timer
@@ -98,7 +102,7 @@ const EnhancedCardsTab = ({
     
     if (!player) return;
     
-    console.log('🟨 Enhanced Cards: Adding card with autosave:', { 
+    console.log('🟨 Enhanced Cards: Adding card with improved sync:', { 
       player: player.name, 
       team: selectedTeam, 
       cardType: selectedCardType, 
@@ -121,7 +125,7 @@ const EnhancedCardsTab = ({
         phase={currentPhase}
       />
 
-      {/* Cards Management */}
+      {/* Cards Management with improved saving */}
       <CardManagementDropdown
         selectedFixtureData={selectedFixtureData}
         allPlayers={allPlayers}
@@ -137,6 +141,18 @@ const EnhancedCardsTab = ({
         onAddCard={handleAddCard}
         formatTime={formatTime}
       />
+
+      {/* Improved sync status indicator */}
+      {hasUnsavedChanges && (
+        <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 dark:bg-orange-900/10 dark:border-orange-800">
+          <div className="text-sm font-medium text-orange-800 dark:text-orange-400 mb-1">
+            Cards Auto-Save Enhanced
+          </div>
+          <div className="text-xs text-orange-700 dark:text-orange-500">
+            Card changes are automatically saved every 3 minutes with improved database sync.
+          </div>
+        </div>
+      )}
     </div>
   );
 };

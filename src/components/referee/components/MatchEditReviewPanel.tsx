@@ -4,26 +4,31 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Edit, Eye, Clock, Trophy, Users, AlertCircle, Save, RefreshCw } from "lucide-react";
+import { Edit, Eye, Clock, Trophy, Users, AlertCircle, Save, RefreshCw, History } from "lucide-react";
 import { useEnhancedMatchSummary } from '@/hooks/useEnhancedMatchSummary';
 import { useMatchStore } from '@/stores/useMatchStore';
 import MatchDataOverview from './tabs/components/MatchDataOverview';
 import PlayerTimeIntegrationPanel from './PlayerTimeIntegrationPanel';
+import MatchRecoveryPanel from './MatchRecoveryPanel';
 
 interface MatchEditReviewPanelProps {
   selectedFixtureData: any;
   onEditMatch: () => void;
   onViewSummary: () => void;
   formatTime: (seconds: number) => string;
+  fixtures?: any[];
+  onResumeMatch?: (fixtureId: number) => void;
 }
 
 const MatchEditReviewPanel = ({
   selectedFixtureData,
   onEditMatch,
   onViewSummary,
-  formatTime
+  formatTime,
+  fixtures = [],
+  onResumeMatch = () => {}
 }: MatchEditReviewPanelProps) => {
-  const [activeTab, setActiveTab] = useState<'overview' | 'tracking' | 'review'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'tracking' | 'review' | 'recovery'>('overview');
   const [isInitialized, setIsInitialized] = useState(false);
   
   // Get enhanced match data
@@ -41,6 +46,8 @@ const MatchEditReviewPanel = ({
     getUnsavedItemsCount,
     loadPlayerTimesFromDatabase,
     syncPlayerTimesToDatabase,
+    syncCardsToDatabase,
+    syncAllToDatabase,
     setFixtureId
   } = useMatchStore();
 
@@ -50,7 +57,6 @@ const MatchEditReviewPanel = ({
       console.log('🔄 Initializing match store for fixture:', selectedFixtureData.id);
       setFixtureId(selectedFixtureData.id);
       
-      // Load existing player times from database
       loadPlayerTimesFromDatabase(selectedFixtureData.id)
         .then(() => {
           setIsInitialized(true);
@@ -58,7 +64,7 @@ const MatchEditReviewPanel = ({
         })
         .catch((error) => {
           console.error('❌ Error initializing match store:', error);
-          setIsInitialized(true); // Continue even if loading fails
+          setIsInitialized(true);
         });
     } else if (!selectedFixtureData?.id) {
       setIsInitialized(false);
@@ -104,11 +110,17 @@ const MatchEditReviewPanel = ({
     if (!selectedFixtureData?.id) return;
     
     try {
-      await syncPlayerTimesToDatabase(selectedFixtureData.id);
+      await syncAllToDatabase(selectedFixtureData.id);
       await refetch();
     } catch (error) {
       console.error('Error syncing data:', error);
     }
+  };
+
+  const handleResumeMatchLocal = (fixtureId: number) => {
+    console.log('🎯 Resuming match from recovery panel:', fixtureId);
+    onResumeMatch(fixtureId);
+    setActiveTab('overview');
   };
 
   return (
@@ -145,6 +157,14 @@ const MatchEditReviewPanel = ({
               Tracking
             </Button>
             <Button
+              variant={activeTab === 'recovery' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setActiveTab('recovery')}
+            >
+              <History className="h-4 w-4 mr-1" />
+              Recovery
+            </Button>
+            <Button
               variant={activeTab === 'review' ? 'default' : 'outline'}
               size="sm"
               onClick={() => setActiveTab('review')}
@@ -175,7 +195,7 @@ const MatchEditReviewPanel = ({
         <Separator />
 
         {/* Loading State */}
-        {!isInitialized && (
+        {!isInitialized && activeTab !== 'recovery' && (
           <div className="text-center py-4">
             <RefreshCw className="h-6 w-6 animate-spin mx-auto mb-2" />
             <p className="text-sm text-muted-foreground">Initializing match data...</p>
@@ -183,7 +203,7 @@ const MatchEditReviewPanel = ({
         )}
 
         {/* Tab Content */}
-        {isInitialized && (
+        {(isInitialized || activeTab === 'recovery') && (
           <>
             {activeTab === 'overview' && (
               <MatchDataOverview
@@ -212,6 +232,14 @@ const MatchEditReviewPanel = ({
               <PlayerTimeIntegrationPanel
                 selectedFixtureData={selectedFixtureData}
                 formatTime={formatTime}
+              />
+            )}
+
+            {activeTab === 'recovery' && (
+              <MatchRecoveryPanel
+                fixtures={fixtures}
+                onResumeMatch={handleResumeMatchLocal}
+                onViewMatch={onViewSummary}
               />
             )}
 
@@ -263,7 +291,7 @@ const MatchEditReviewPanel = ({
             onClick={onEditMatch} 
             size="sm" 
             className="flex-1"
-            disabled={!selectedFixtureData || !isInitialized}
+            disabled={!selectedFixtureData || (!isInitialized && activeTab !== 'recovery')}
           >
             <Edit className="h-4 w-4 mr-1" />
             Edit Match
@@ -274,7 +302,7 @@ const MatchEditReviewPanel = ({
             variant="outline" 
             size="sm" 
             className="flex-1"
-            disabled={!selectedFixtureData || !isInitialized}
+            disabled={!selectedFixtureData}
           >
             <Eye className="h-4 w-4 mr-1" />
             View Summary

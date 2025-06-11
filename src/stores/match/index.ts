@@ -9,7 +9,11 @@ import { createEnhancedCardSlice, EnhancedCardSlice } from './enhancedCardSlice'
 import { createPlayerTimeSlice, PlayerTimeSlice } from './playerTimeSlice';
 import { createCoreSlice, CoreSlice } from './coreSlice';
 
-type MatchStore = MatchState & MatchActions;
+type MatchStore = MatchState & MatchActions & {
+  syncCardsToDatabase: (fixtureId: number) => Promise<void>;
+  optimizedBatchSync: (fixtureId: number) => Promise<void>;
+  syncAllToDatabase: (fixtureId: number) => Promise<void>;
+};
 
 export const useMatchStore = create<MatchStore>()(
   subscribeWithSelector((set, get, api) => ({

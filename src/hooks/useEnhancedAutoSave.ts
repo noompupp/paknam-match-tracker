@@ -8,6 +8,8 @@ interface UseEnhancedAutoSaveProps {
   interval?: number;
   hasUnsavedChanges: boolean;
   tabName?: string;
+  optimizedMode?: boolean;
+  triggerOnActiveChanges?: boolean;
 }
 
 export const useEnhancedAutoSave = ({
@@ -15,26 +17,35 @@ export const useEnhancedAutoSave = ({
   onAutoSave,
   interval = 5 * 60 * 1000, // 5 minutes default
   hasUnsavedChanges,
-  tabName = 'Match'
+  tabName = 'Match',
+  optimizedMode = false,
+  triggerOnActiveChanges = false
 }: UseEnhancedAutoSaveProps) => {
   const { toast } = useToast();
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const lastSaveRef = useRef<number>(0);
+  const lastChangeRef = useRef<number>(0);
 
   const performAutoSave = useCallback(async () => {
-    if (!hasUnsavedChanges) {
+    if (!hasUnsavedChanges && !triggerOnActiveChanges) {
       console.log(`💾 Enhanced AutoSave (${tabName}): No changes to save`);
       return;
     }
 
+    // In optimized mode, only save if there have been recent changes
+    if (optimizedMode && Date.now() - lastChangeRef.current > 30000) {
+      console.log(`⚡ Enhanced AutoSave (${tabName}): Skipping - no recent activity`);
+      return;
+    }
+
     try {
-      console.log(`💾 Enhanced AutoSave (${tabName}): Starting autosave...`);
+      console.log(`💾 Enhanced AutoSave (${tabName}): Starting ${optimizedMode ? 'optimized ' : ''}autosave...`);
       await onAutoSave();
       lastSaveRef.current = Date.now();
       
       toast({
         title: "Auto-saved",
-        description: `${tabName} data automatically saved`,
+        description: `${tabName} data automatically saved${optimizedMode ? ' (optimized)' : ''}`,
         duration: 2000,
       });
       
@@ -49,7 +60,14 @@ export const useEnhancedAutoSave = ({
         duration: 4000,
       });
     }
-  }, [hasUnsavedChanges, onAutoSave, tabName, toast]);
+  }, [hasUnsavedChanges, onAutoSave, tabName, toast, optimizedMode, triggerOnActiveChanges]);
+
+  // Track when changes occur
+  useEffect(() => {
+    if (hasUnsavedChanges) {
+      lastChangeRef.current = Date.now();
+    }
+  }, [hasUnsavedChanges]);
 
   useEffect(() => {
     if (!enabled) {
@@ -60,10 +78,12 @@ export const useEnhancedAutoSave = ({
       return;
     }
 
-    // Set up autosave interval
-    intervalRef.current = setInterval(performAutoSave, interval);
+    // Use shorter interval for optimized mode
+    const actualInterval = optimizedMode ? Math.min(interval, 2 * 60 * 1000) : interval;
+    
+    intervalRef.current = setInterval(performAutoSave, actualInterval);
 
-    console.log(`⏰ Enhanced AutoSave (${tabName}): Autosave enabled with ${interval / 1000}s interval`);
+    console.log(`⏰ Enhanced AutoSave (${tabName}): ${optimizedMode ? 'Optimized a' : 'A'}utosave enabled with ${actualInterval / 1000}s interval`);
 
     return () => {
       if (intervalRef.current) {
@@ -71,17 +91,18 @@ export const useEnhancedAutoSave = ({
         intervalRef.current = null;
       }
     };
-  }, [enabled, interval, performAutoSave, tabName]);
+  }, [enabled, interval, performAutoSave, tabName, optimizedMode]);
 
   // Manual trigger function
   const triggerAutoSave = useCallback(() => {
-    if (enabled && hasUnsavedChanges) {
+    if (enabled && (hasUnsavedChanges || triggerOnActiveChanges)) {
       performAutoSave();
     }
-  }, [enabled, hasUnsavedChanges, performAutoSave]);
+  }, [enabled, hasUnsavedChanges, performAutoSave, triggerOnActiveChanges]);
 
   return {
     triggerAutoSave,
-    lastSaveTime: lastSaveRef.current
+    lastSaveTime: lastSaveRef.current,
+    isOptimized: optimizedMode
   };
 };

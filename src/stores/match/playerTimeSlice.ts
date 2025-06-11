@@ -16,6 +16,7 @@ export interface PlayerTimeSlice {
   loadPlayerTimesFromDatabase: (fixtureId: number) => Promise<void>;
   syncPlayerTimesToDatabase: (fixtureId: number) => Promise<void>;
   clearPlayerTimes: () => void;
+  optimizedBatchSync: (fixtureId: number) => Promise<void>;
 }
 
 export const createPlayerTimeSlice: StateCreator<
@@ -54,27 +55,40 @@ export const createPlayerTimeSlice: StateCreator<
 
   startPlayerTime: (playerId: number, playerName: string, teamId: number) => {
     const currentTime = Date.now();
+    
+    // Check if player is already being tracked
+    const state = get();
+    const existingPlayer = state.playerTimes.find(pt => pt.playerId === playerId);
+    
+    if (existingPlayer && existingPlayer.isPlaying) {
+      console.log('⚠️ Player already being tracked:', { playerId, playerName });
+      return;
+    }
+
     const newPlayerTime = {
       id: generateId(),
       playerId,
       playerName,
       teamId: teamId.toString(),
-      teamName: '', // Will be updated when team info is available
-      team: 'home' as const, // Default, should be updated based on teamId
-      totalTime: 0,
+      teamName: '',
+      team: 'home' as const,
+      totalTime: existingPlayer?.totalTime || 0,
       startTime: currentTime,
       isPlaying: true,
-      periods: [],
+      periods: existingPlayer?.periods || [],
       synced: false
     };
 
-    set((state) => ({
-      playerTimes: [...state.playerTimes, newPlayerTime],
-      hasUnsavedChanges: true,
-      lastUpdated: Date.now()
-    }));
+    set((state) => {
+      const filteredPlayerTimes = state.playerTimes.filter(pt => pt.playerId !== playerId);
+      return {
+        playerTimes: [...filteredPlayerTimes, newPlayerTime],
+        hasUnsavedChanges: true,
+        lastUpdated: Date.now()
+      };
+    });
 
-    console.log('⏱️ Player time tracking started:', { playerId, playerName });
+    console.log('⏱️ Player time tracking started (optimized):', { playerId, playerName });
   },
 
   stopPlayerTime: (playerId: number) => {
@@ -113,7 +127,7 @@ export const createPlayerTimeSlice: StateCreator<
       };
     });
 
-    console.log('⏹️ Player time tracking stopped:', { playerId });
+    console.log('⏹️ Player time tracking stopped (optimized):', { playerId });
   },
 
   getPlayerTimesByFixture: (fixtureId: number) => {
@@ -138,14 +152,13 @@ export const createPlayerTimeSlice: StateCreator<
       console.log('🔄 Loading player times from database for fixture:', fixtureId);
       const databasePlayerTimes = await playerTimeTrackingService.getPlayerTimesForFixture(fixtureId);
       
-      // Convert database format to match store format
       const convertedPlayerTimes = databasePlayerTimes.map(dbPt => ({
         id: generateId(),
         playerId: dbPt.player_id,
         playerName: dbPt.player_name,
         teamId: dbPt.team_id.toString(),
         teamName: '',
-        team: 'home' as const, // Will be determined based on teamId
+        team: 'home' as const,
         totalTime: dbPt.total_minutes,
         startTime: null,
         isPlaying: false,
@@ -187,10 +200,9 @@ export const createPlayerTimeSlice: StateCreator<
         });
       }
 
-      // Mark all player times as synced
       set((state) => ({
         playerTimes: state.playerTimes.map(pt => ({ ...pt, synced: true })),
-        hasUnsavedChanges: false,
+        hasUnsavedChanges: state.goals.some(g => !g.synced) || state.cards.some(c => !c.synced),
         lastUpdated: Date.now()
       }));
 
@@ -207,5 +219,53 @@ export const createPlayerTimeSlice: StateCreator<
       lastUpdated: Date.now()
     }));
     console.log('🧹 Player times cleared from store');
+  },
+
+  optimizedBatchSync: async (fixtureId: number) => {
+    const state = get();
+    const unsyncedPlayerTimes = state.playerTimes.filter(pt => !pt.synced);
+    const activePlayerChanges = unsyncedPlayerTimes.filter(pt => 
+      pt.isPlaying !== undefined || pt.periods.length > 0
+    );
+    
+    if (activePlayerChanges.length === 0) {
+      console.log('⚡ No significant player time changes to sync');
+      return;
+    }
+
+    try {
+      console.log('⚡ Optimized batch sync for', activePlayerChanges.length, 'significant changes');
+      
+      // Only sync players with meaningful changes
+      for (const pt of activePlayerChanges) {
+        await playerTimeTrackingService.savePlayerTime({
+          fixture_id: fixtureId,
+          player_id: pt.playerId,
+          player_name: pt.playerName,
+          team_id: parseInt(pt.teamId),
+          total_minutes: pt.totalTime,
+          periods: pt.periods
+        });
+      }
+
+      // Mark only the synced items as saved
+      set((state) => ({
+        playerTimes: state.playerTimes.map(pt => 
+          activePlayerChanges.some(apt => apt.id === pt.id) 
+            ? { ...pt, synced: true }
+            : pt
+        ),
+        hasUnsavedChanges: state.goals.some(g => !g.synced) || 
+                          state.cards.some(c => !c.synced) || 
+                          state.playerTimes.some(pt => !pt.synced && 
+                            !activePlayerChanges.some(apt => apt.id === pt.id)),
+        lastUpdated: Date.now()
+      }));
+
+      console.log('✅ Optimized player time sync completed');
+    } catch (error) {
+      console.error('❌ Error in optimized player time sync:', error);
+      throw error;
+    }
   }
 });

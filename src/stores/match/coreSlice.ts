@@ -10,6 +10,7 @@ export interface CoreSlice {
   resetState: MatchActions['resetState'];
   triggerUIUpdate: MatchActions['triggerUIUpdate'];
   getUnsavedItemsCount: MatchActions['getUnsavedItemsCount'];
+  syncAllToDatabase: (fixtureId: number) => Promise<void>;
 }
 
 export const createCoreSlice: StateCreator<
@@ -75,5 +76,28 @@ export const createCoreSlice: StateCreator<
       cards: state.cards.filter(c => !c.synced).length,
       playerTimes: state.playerTimes.filter(pt => !pt.synced).length
     };
+  },
+
+  syncAllToDatabase: async (fixtureId: number) => {
+    const state = get();
+    
+    try {
+      console.log('🔄 Starting comprehensive sync for fixture:', fixtureId);
+      
+      // Sync cards if we have the method available
+      if ('syncCardsToDatabase' in state) {
+        await (state as any).syncCardsToDatabase(fixtureId);
+      }
+      
+      // Sync player times if we have the method available
+      if ('syncPlayerTimesToDatabase' in state) {
+        await (state as any).syncPlayerTimesToDatabase(fixtureId);
+      }
+      
+      console.log('✅ Comprehensive sync completed');
+    } catch (error) {
+      console.error('❌ Error in comprehensive sync:', error);
+      throw error;
+    }
   }
 });
