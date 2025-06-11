@@ -15,52 +15,52 @@ const Notifications = () => {
         </div>
 
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          <Card className="bg-white/10 border-white/20 text-white">
+          <Card className="bg-white/10 border-white/20 text-white dark:bg-white/5 dark:border-white/10">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Bell className="h-5 w-5" />
                 Real-time Notifications
               </CardTitle>
-              <CardDescription className="text-white/70">
+              <CardDescription className="text-white/70 dark:text-white/60">
                 Get instant updates on match events and results
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-white/60">
+              <p className="text-sm text-white/60 dark:text-white/50">
                 Stay informed with live match notifications, goal alerts, and card updates.
               </p>
             </CardContent>
           </Card>
 
-          <Card className="bg-white/10 border-white/20 text-white">
+          <Card className="bg-white/10 border-white/20 text-white dark:bg-white/5 dark:border-white/10">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Users className="h-5 w-5" />
                 Team Management
               </CardTitle>
-              <CardDescription className="text-white/70">
+              <CardDescription className="text-white/70 dark:text-white/60">
                 Advanced team and player management tools
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-white/60">
+              <p className="text-sm text-white/60 dark:text-white/50">
                 Enhanced features for managing team rosters and player statistics.
               </p>
             </CardContent>
           </Card>
 
-          <Card className="bg-white/10 border-white/20 text-white">
+          <Card className="bg-white/10 border-white/20 text-white dark:bg-white/5 dark:border-white/10">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Activity className="h-5 w-5" />
                 Analytics Dashboard
               </CardTitle>
-              <CardDescription className="text-white/70">
+              <CardDescription className="text-white/70 dark:text-white/60">
                 Detailed match and performance analytics
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-white/60">
+              <p className="text-sm text-white/60 dark:text-white/50">
                 Access comprehensive statistics and performance insights.
               </p>
             </CardContent>

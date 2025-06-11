@@ -1,134 +1,106 @@
 
-/* Referee UI Standardized Styles */
+/* Referee Component Dark Mode Enhancements */
 
-/* Layout Components */
-.referee-content {
-  @apply w-full max-w-7xl mx-auto;
-}
-
-/* Status Indicators using standardized colors */
-.referee-status-indicator {
-  @apply inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium;
-}
-
-.referee-status-running {
-  @apply bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300;
-}
-
-.referee-status-paused {
-  @apply bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300;
-}
-
-.referee-status-stopped {
-  @apply bg-muted text-muted-foreground;
-}
-
-/* Match Timer using standardized typography */
-.referee-timer {
-  @apply font-mono text-2xl font-bold text-foreground;
-}
-
-/* Score Display using standardized colors - reduced brightness in dark mode */
-.referee-score-display {
-  @apply bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20;
-}
-
-.dark .referee-score-display {
-  @apply bg-gradient-to-br from-primary/5 to-primary/30 border-primary/15;
-}
-
-/* Responsive utilities */
-@media (max-width: 768px) {
-  .referee-timer {
-    @apply text-xl;
-  }
-}
-
-/* Animation utilities using standardized keyframes */
-.referee-fade-in {
-  @apply animate-fade-in;
-}
-
-.referee-scale-in {
-  @apply animate-scale-in;
-}
-
-/* Utility classes using standardized colors - improved dark mode */
-.referee-highlight {
-  @apply bg-primary/10 border-l-4 border-l-primary;
-}
-
-.dark .referee-highlight {
-  @apply bg-primary/5 border-l-primary/70;
-}
-
-.referee-glass {
-  @apply bg-background/80 backdrop-blur-sm border border-border/50;
-}
-
-.dark .referee-glass {
-  @apply bg-background/60 backdrop-blur-sm border border-border/30;
-}
-
-/* Button overrides for dark mode polish */
+/* Referee Button Variants */
 .referee-button-primary {
   @apply bg-primary text-primary-foreground hover:bg-primary/90;
-}
-
-.dark .referee-button-primary {
-  @apply bg-primary/80 text-primary-foreground hover:bg-primary/70;
+  @apply dark:bg-primary dark:text-primary-foreground dark:hover:bg-primary/80;
+  @apply shadow-sm dark:shadow-lg;
+  @apply border border-primary/20 dark:border-primary/30;
 }
 
 .referee-button-secondary {
   @apply bg-secondary text-secondary-foreground hover:bg-secondary/80;
+  @apply dark:bg-secondary dark:text-secondary-foreground dark:hover:bg-secondary/70;
+  @apply border border-secondary/30 dark:border-secondary/40;
 }
 
-.dark .referee-button-secondary {
-  @apply bg-secondary/60 text-secondary-foreground hover:bg-secondary/50;
-}
-
-/* Card improvements for dark mode */
+/* Referee Card Variants */
 .referee-card {
-  @apply bg-card border-border;
+  @apply bg-card text-card-foreground border-border;
+  @apply dark:bg-card dark:text-card-foreground dark:border-border;
+  @apply shadow-sm dark:shadow-md;
+  @apply hover:shadow-md dark:hover:shadow-lg;
+  @apply transition-all duration-200;
 }
 
-.dark .referee-card {
-  @apply bg-card/80 border-border/50;
+.referee-card-highlighted {
+  @apply border-primary/20 bg-primary/5 shadow-md;
+  @apply dark:bg-primary/10 dark:border-primary/30 dark:shadow-lg;
 }
 
-/* Enhanced mobile container with full coverage */
-.referee-mobile-container {
-  @apply min-h-screen bg-background w-full overflow-x-hidden;
-  padding-bottom: calc(var(--safe-area-inset-bottom) + var(--nav-height));
-  margin: 0;
-  position: relative;
+/* Referee Form Elements */
+.referee-form-field {
+  @apply space-y-2;
 }
 
-/* iOS safe area handling for referee tools */
-.referee-ios-safe {
-  padding-top: var(--safe-area-inset-top);
-  padding-bottom: calc(var(--safe-area-inset-bottom) + var(--nav-height));
-  min-height: 100vh;
-  min-height: 100dvh;
-  @apply bg-background w-full overflow-x-hidden;
-  margin: 0;
-  position: relative;
+.referee-select {
+  @apply bg-background border-border text-foreground;
+  @apply dark:bg-background dark:border-border dark:text-foreground;
+  @apply focus:border-primary focus:ring-primary/20;
+  @apply dark:focus:border-primary dark:focus:ring-primary/30;
 }
 
-/* Ensure background extends to edges on mobile */
-.referee-full-background {
-  @apply bg-background w-full overflow-x-hidden;
-  min-height: 100vh;
-  min-height: 100dvh;
-  margin: 0;
-  position: relative;
+/* Referee Interactive States */
+.referee-interactive {
+  @apply hover:bg-accent hover:text-accent-foreground;
+  @apply dark:hover:bg-accent dark:hover:text-accent-foreground;
+  @apply active:bg-accent/80 dark:active:bg-accent/70;
+  @apply transition-colors duration-200;
 }
 
-/* Dark mode specific mobile fixes */
-@media (prefers-color-scheme: dark) {
-  .referee-mobile-container,
-  .referee-ios-safe,
-  .referee-full-background {
-    background-color: hsl(222.2, 84%, 4.9%);
-  }
+/* Referee Status Indicators */
+.referee-status-active {
+  @apply bg-green-100 text-green-800 border-green-200;
+  @apply dark:bg-green-900/30 dark:text-green-300 dark:border-green-700;
+}
+
+.referee-status-inactive {
+  @apply bg-gray-100 text-gray-600 border-gray-200;
+  @apply dark:bg-gray-800/50 dark:text-gray-400 dark:border-gray-700;
+}
+
+.referee-status-warning {
+  @apply bg-yellow-100 text-yellow-800 border-yellow-200;
+  @apply dark:bg-yellow-900/30 dark:text-yellow-300 dark:border-yellow-700;
+}
+
+.referee-status-error {
+  @apply bg-red-100 text-red-800 border-red-200;
+  @apply dark:bg-red-900/30 dark:text-red-300 dark:border-red-700;
+}
+
+/* Referee Modal and Overlay Enhancements */
+.referee-modal-overlay {
+  @apply bg-black/50 backdrop-blur-sm;
+  @apply dark:bg-black/70;
+}
+
+.referee-modal-content {
+  @apply bg-background border-border shadow-lg;
+  @apply dark:bg-background dark:border-border dark:shadow-xl;
+}
+
+/* Referee Time Display */
+.referee-time-display {
+  @apply bg-muted/50 text-foreground border-border;
+  @apply dark:bg-muted/30 dark:text-foreground dark:border-border;
+  @apply font-mono text-lg font-semibold;
+}
+
+/* Referee Team Colors */
+.referee-team-home {
+  @apply bg-blue-100 text-blue-900 border-blue-200;
+  @apply dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-700;
+}
+
+.referee-team-away {
+  @apply bg-red-100 text-red-900 border-red-200;
+  @apply dark:bg-red-900/30 dark:text-red-300 dark:border-red-700;
+}
+
+/* Enhanced Focus States */
+.referee-focus {
+  @apply focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary;
+  @apply dark:focus:ring-primary/30 dark:focus:border-primary;
 }

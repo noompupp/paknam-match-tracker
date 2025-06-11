@@ -23,12 +23,12 @@ const RefereeFormField = ({
 }: RefereeFormFieldProps) => {
   return (
     <div className={cn("referee-form-field space-y-2", className)}>
-      <Label className="text-sm font-medium text-foreground">
+      <Label className="form-label-enhanced text-sm">
         {label}
         {required && <span className="text-destructive ml-1">*</span>}
       </Label>
       {description && (
-        <p className="text-xs text-muted-foreground">
+        <p className="text-xs text-contrast-muted">
           {description}
         </p>
       )}
@@ -60,9 +60,7 @@ export const RefereeSelect = ({
   return (
     <Select value={value} onValueChange={onValueChange}>
       <SelectTrigger className={cn(
-        "referee-select h-10 border-input bg-background",
-        "focus:border-primary focus:ring-1 focus:ring-primary/20",
-        "transition-all duration-200",
+        "form-input-enhanced referee-focus h-10",
         className
       )}>
         <SelectValue placeholder={placeholder} />
@@ -73,7 +71,7 @@ export const RefereeSelect = ({
             key={option.value}
             value={option.value}
             disabled={option.disabled}
-            className="hover:bg-accent hover:text-accent-foreground cursor-pointer"
+            className="interactive-hover cursor-pointer"
           >
             {option.label}
           </SelectItem>

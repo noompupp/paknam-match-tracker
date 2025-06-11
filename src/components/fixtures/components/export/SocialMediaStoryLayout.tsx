@@ -43,7 +43,7 @@ const SocialMediaStoryLayout = ({
       <SocialMediaStoryBackground />
       
       {/* Content Container */}
-      <div className="relative z-10 h-full flex flex-col">
+      <div className="relative z-10 h-full flex flex-col bg-gradient-to-br from-background/95 to-background/90 dark:from-background/98 dark:to-background/95">
         <SocialMediaStoryHeader fixture={fixture} />
         
         <SocialMediaStoryContent

@@ -40,7 +40,7 @@ const MatchSummary = ({
   return (
     <Card className="card-shadow-lg">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
+        <CardTitle className="flex items-center gap-2 text-contrast">
           <Trophy className="h-5 w-5" />
           Match Summary
         </CardTitle>
@@ -56,7 +56,7 @@ const MatchSummary = ({
           formatTime={formatTime}
         />
 
-        <Separator />
+        <Separator className="border-subtle" />
 
         {/* Goals Summary */}
         <GoalsSummarySection
@@ -66,7 +66,7 @@ const MatchSummary = ({
           formatTime={formatTime}
         />
 
-        <Separator />
+        <Separator className="border-subtle" />
 
         {/* Cards Summary */}
         <CardsSummarySection
@@ -75,7 +75,7 @@ const MatchSummary = ({
           formatTime={formatTime}
         />
 
-        <Separator />
+        <Separator className="border-subtle" />
 
         {/* Player Time Summary */}
         <PlayerTimeSummarySection
@@ -83,7 +83,7 @@ const MatchSummary = ({
           formatTime={formatTime}
         />
 
-        <Separator />
+        <Separator className="border-subtle" />
 
         {/* Match Events Summary */}
         <MatchEventsSummarySection
@@ -92,7 +92,7 @@ const MatchSummary = ({
         />
 
         {/* Export Button */}
-        <Button onClick={onExportSummary} className="w-full" variant="outline">
+        <Button onClick={onExportSummary} className="w-full button-primary-enhanced" variant="outline">
           <Download className="h-4 w-4 mr-2" />
           Export Match Summary
         </Button>

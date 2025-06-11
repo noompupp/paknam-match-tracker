@@ -24,13 +24,13 @@ const RefereeCard = ({
 }: RefereeCardProps) => {
   const variants = {
     default: "referee-card",
-    highlighted: "referee-card border-primary/20 bg-primary/5 shadow-md dark:bg-primary/3 dark:border-primary/15",
-    compact: "referee-card p-4"
+    highlighted: "referee-card referee-card-highlighted",
+    compact: "referee-card"
   };
 
   return (
     <Card className={cn(
-      "transition-all duration-200 hover:shadow-sm",
+      "transition-all duration-200 hover:shadow-sm hover-lift",
       variants[variant],
       className
     )}>
@@ -45,12 +45,12 @@ const RefereeCard = ({
               )}
               <div>
                 {title && (
-                  <CardTitle className="text-lg font-semibold">
+                  <CardTitle className="text-lg font-semibold text-contrast">
                     {title}
                   </CardTitle>
                 )}
                 {subtitle && (
-                  <p className="text-sm text-muted-foreground mt-1">
+                  <p className="text-sm text-contrast-muted mt-1">
                     {subtitle}
                   </p>
                 )}

@@ -46,7 +46,7 @@ const DebugPanel = () => {
             onClick={() => setShowDebug(true)}
             variant="outline"
             size="sm"
-            className="bg-yellow-100 hover:bg-yellow-200 border-yellow-400 shadow-lg transition-all duration-200 hover:scale-105"
+            className="bg-yellow-100 hover:bg-yellow-200 border-yellow-400 shadow-lg transition-all duration-200 hover:scale-105 dark:bg-yellow-900/30 dark:hover:bg-yellow-800/40 dark:border-yellow-600 dark:text-yellow-200"
             aria-label="Open Debug Panel (Ctrl+Shift+D)"
             title="Open Debug Panel (Ctrl+Shift+D)"
           >
@@ -62,21 +62,21 @@ const DebugPanel = () => {
     <>
       {/* Backdrop */}
       <div 
-        className="fixed inset-0 bg-black/50 z-[80]" 
+        className="fixed inset-0 modal-overlay-enhanced z-[80]" 
         onClick={() => setShowDebug(false)}
         aria-hidden="true"
       />
       
       {/* Debug Panel */}
       <div 
-        className="fixed inset-4 z-[90] bg-white rounded-lg shadow-2xl border-2 border-yellow-400 overflow-hidden flex flex-col max-h-[calc(100vh-2rem)]"
+        className="fixed inset-4 z-[90] modal-content-enhanced overflow-hidden flex flex-col max-h-[calc(100vh-2rem)] border-2 border-yellow-400 dark:border-yellow-600"
         role="dialog"
         aria-label="Debug Panel"
         aria-modal="true"
       >
         {/* Header */}
-        <div className="p-4 border-b flex justify-between items-center bg-yellow-50 flex-shrink-0">
-          <h2 className="text-xl font-bold text-yellow-800 flex items-center gap-2">
+        <div className="p-4 border-b border-border flex justify-between items-center bg-yellow-50 dark:bg-yellow-900/20 flex-shrink-0">
+          <h2 className="text-xl font-bold text-yellow-800 dark:text-yellow-200 flex items-center gap-2">
             <Bug className="h-5 w-5" />
             Debug Panel
           </h2>
@@ -108,7 +108,7 @@ const DebugPanel = () => {
           {/* API Status */}
           <Card>
             <CardHeader>
-              <CardTitle>API Status</CardTitle>
+              <CardTitle className="text-contrast">API Status</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -140,26 +140,26 @@ const DebugPanel = () => {
           {debugData && (
             <Card>
               <CardHeader>
-                <CardTitle>Raw Database Data</CardTitle>
+                <CardTitle className="text-contrast">Raw Database Data</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <h4 className="font-semibold">Teams ({debugData.teams.count})</h4>
-                  <pre className="text-xs bg-gray-100 p-2 rounded overflow-auto max-h-32">
+                  <h4 className="font-semibold text-contrast">Teams ({debugData.teams.count})</h4>
+                  <pre className="text-xs bg-subtle p-2 rounded overflow-auto max-h-32 text-contrast">
                     {JSON.stringify(debugData.teams.idTypes, null, 2)}
                   </pre>
                 </div>
                 
                 <div>
-                  <h4 className="font-semibold">Members Team Mappings ({debugData.members.count})</h4>
-                  <pre className="text-xs bg-gray-100 p-2 rounded overflow-auto max-h-32">
+                  <h4 className="font-semibold text-contrast">Members Team Mappings ({debugData.members.count})</h4>
+                  <pre className="text-xs bg-subtle p-2 rounded overflow-auto max-h-32 text-contrast">
                     {JSON.stringify(debugData.members.teamIdMappings, null, 2)}
                   </pre>
                 </div>
                 
                 <div>
-                  <h4 className="font-semibold">Fixtures Team Mappings ({debugData.fixtures.count})</h4>
-                  <pre className="text-xs bg-gray-100 p-2 rounded overflow-auto max-h-32">
+                  <h4 className="font-semibold text-contrast">Fixtures Team Mappings ({debugData.fixtures.count})</h4>
+                  <pre className="text-xs bg-subtle p-2 rounded overflow-auto max-h-32 text-contrast">
                     {JSON.stringify(debugData.fixtures.teamMappings, null, 2)}
                   </pre>
                 </div>
@@ -171,10 +171,10 @@ const DebugPanel = () => {
           {normalizationTest && (
             <Card>
               <CardHeader>
-                <CardTitle>ID Normalization Test</CardTitle>
+                <CardTitle className="text-contrast">ID Normalization Test</CardTitle>
               </CardHeader>
               <CardContent>
-                <pre className="text-xs bg-gray-100 p-2 rounded overflow-auto max-h-32">
+                <pre className="text-xs bg-subtle p-2 rounded overflow-auto max-h-32 text-contrast">
                   {JSON.stringify(normalizationTest, null, 2)}
                 </pre>
               </CardContent>
@@ -184,38 +184,38 @@ const DebugPanel = () => {
           {/* Transformed Data Summary */}
           <Card>
             <CardHeader>
-              <CardTitle>Transformed Data Summary</CardTitle>
+              <CardTitle className="text-contrast">Transformed Data Summary</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <h4 className="font-semibold">Teams</h4>
-                <p className="text-sm">Count: {teams?.length || 0}</p>
+                <h4 className="font-semibold text-contrast">Teams</h4>
+                <p className="text-sm text-contrast-muted">Count: {teams?.length || 0}</p>
                 {teams?.length && (
-                  <p className="text-xs text-gray-600">
+                  <p className="text-xs text-contrast-muted">
                     Sample: {teams[0]?.name} (ID: {teams[0]?.id})
                   </p>
                 )}
               </div>
               
               <div>
-                <h4 className="font-semibold">Members</h4>
-                <p className="text-sm">
+                <h4 className="font-semibold text-contrast">Members</h4>
+                <p className="text-sm text-contrast-muted">
                   Total: {members?.length || 0}, With Teams: {members?.filter(m => m.team).length || 0}
                 </p>
                 {members?.length && (
-                  <p className="text-xs text-gray-600">
+                  <p className="text-xs text-contrast-muted">
                     Sample: {members[0]?.name} (Team: {members[0]?.team?.name || 'None'})
                   </p>
                 )}
               </div>
               
               <div>
-                <h4 className="font-semibold">Fixtures</h4>
-                <p className="text-sm">
+                <h4 className="font-semibold text-contrast">Fixtures</h4>
+                <p className="text-sm text-contrast-muted">
                   Total: {fixtures?.length || 0}, With Both Teams: {fixtures?.filter(f => f.home_team && f.away_team).length || 0}
                 </p>
                 {fixtures?.length && (
-                  <p className="text-xs text-gray-600">
+                  <p className="text-xs text-contrast-muted">
                     Sample: {fixtures[0]?.home_team?.name || 'No Home'} vs {fixtures[0]?.away_team?.name || 'No Away'}
                   </p>
                 )}
@@ -226,10 +226,10 @@ const DebugPanel = () => {
           {/* Development Info */}
           <Card>
             <CardHeader>
-              <CardTitle>Development Info</CardTitle>
+              <CardTitle className="text-contrast">Development Info</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-sm space-y-2">
+              <div className="text-sm space-y-2 text-contrast-muted">
                 <p><strong>Environment:</strong> {import.meta.env.MODE}</p>
                 <p><strong>Keyboard Shortcut:</strong> Ctrl+Shift+D to toggle</p>
                 <p><strong>ESC:</strong> Close panel</p>

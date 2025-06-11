@@ -1,64 +1,139 @@
 
-/* Text truncation utilities */
-.line-clamp-1 {
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 1;
+/* Enhanced Utility Classes with Dark Mode Support */
+
+/* Card Shadow Utilities */
+.card-shadow-sm {
+  @apply shadow-sm dark:shadow-md;
 }
 
-.line-clamp-2 {
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
+.card-shadow-lg {
+  @apply shadow-lg dark:shadow-xl;
+  @apply dark:shadow-black/20;
 }
 
-.line-clamp-3 {
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 3;
+/* Interactive States */
+.interactive-hover {
+  @apply hover:bg-accent hover:text-accent-foreground;
+  @apply dark:hover:bg-accent dark:hover:text-accent-foreground;
+  @apply transition-colors duration-200;
 }
 
-/* Highlight section animation for navigation */
-.highlight-section {
-  animation: highlight-pulse 2s ease-in-out;
+.interactive-active {
+  @apply active:bg-accent/80 dark:active:bg-accent/70;
+  @apply active:scale-[0.98] transition-all duration-150;
 }
 
-@keyframes highlight-pulse {
-  0% { background-color: transparent; }
-  50% { background-color: hsl(var(--primary) / 0.1); }
-  100% { background-color: transparent; }
+/* Status Indicator Utilities */
+.status-success {
+  @apply bg-green-100 text-green-800 border-green-200;
+  @apply dark:bg-green-900/30 dark:text-green-300 dark:border-green-700;
 }
 
-/* Loading states */
-.loading-shimmer {
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
+.status-warning {
+  @apply bg-yellow-100 text-yellow-800 border-yellow-200;
+  @apply dark:bg-yellow-900/30 dark:text-yellow-300 dark:border-yellow-700;
 }
 
-@keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+.status-error {
+  @apply bg-red-100 text-red-800 border-red-200;
+  @apply dark:bg-red-900/30 dark:text-red-300 dark:border-red-700;
 }
 
-/* Card hover effects */
-.card-hover-lift {
-  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+.status-info {
+  @apply bg-blue-100 text-blue-800 border-blue-200;
+  @apply dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-700;
 }
 
-.card-hover-lift:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+/* Enhanced Modal Utilities */
+.modal-overlay-enhanced {
+  @apply bg-black/50 backdrop-blur-sm;
+  @apply dark:bg-black/70 dark:backdrop-blur-md;
 }
 
-/* News feed specific styles */
-.news-item-gradient {
-  background: linear-gradient(135deg, hsl(var(--muted) / 0.2), hsl(var(--muted) / 0.05));
+.modal-content-enhanced {
+  @apply bg-background border-border shadow-lg;
+  @apply dark:bg-background dark:border-border dark:shadow-xl;
+  @apply rounded-lg p-6;
 }
 
-.news-item-gradient:hover {
-  background: linear-gradient(135deg, hsl(var(--muted) / 0.4), hsl(var(--muted) / 0.1));
+/* Text Contrast Utilities */
+.text-contrast {
+  @apply text-foreground;
+  @apply dark:text-foreground;
+}
+
+.text-contrast-muted {
+  @apply text-muted-foreground;
+  @apply dark:text-muted-foreground;
+}
+
+/* Background Utilities */
+.bg-subtle {
+  @apply bg-muted/30;
+  @apply dark:bg-muted/20;
+}
+
+.bg-emphasis {
+  @apply bg-accent/50;
+  @apply dark:bg-accent/30;
+}
+
+/* Border Utilities */
+.border-subtle {
+  @apply border-border/50;
+  @apply dark:border-border/30;
+}
+
+.border-emphasis {
+  @apply border-primary/30;
+  @apply dark:border-primary/50;
+}
+
+/* Form Element Utilities */
+.form-input-enhanced {
+  @apply bg-background border-border text-foreground;
+  @apply dark:bg-background dark:border-border dark:text-foreground;
+  @apply focus:border-primary focus:ring-primary/20;
+  @apply dark:focus:border-primary dark:focus:ring-primary/30;
+  @apply transition-all duration-200;
+}
+
+.form-label-enhanced {
+  @apply text-foreground font-medium;
+  @apply dark:text-foreground;
+}
+
+/* Enhanced Button States */
+.button-primary-enhanced {
+  @apply bg-primary text-primary-foreground;
+  @apply dark:bg-primary dark:text-primary-foreground;
+  @apply hover:bg-primary/90 dark:hover:bg-primary/80;
+  @apply shadow-sm dark:shadow-md;
+  @apply border border-primary/20 dark:border-primary/30;
+}
+
+.button-secondary-enhanced {
+  @apply bg-secondary text-secondary-foreground;
+  @apply dark:bg-secondary dark:text-secondary-foreground;
+  @apply hover:bg-secondary/80 dark:hover:bg-secondary/70;
+  @apply border border-secondary/30 dark:border-secondary/40;
+}
+
+/* Time Display Utilities */
+.time-display {
+  @apply bg-muted/50 text-foreground border-border;
+  @apply dark:bg-muted/30 dark:text-foreground dark:border-border;
+  @apply font-mono text-lg font-semibold p-2 rounded;
+}
+
+/* Enhanced Hover Effects */
+.hover-lift {
+  @apply hover:shadow-md dark:hover:shadow-lg;
+  @apply hover:-translate-y-0.5 transition-all duration-200;
+}
+
+.hover-glow {
+  @apply hover:shadow-lg hover:shadow-primary/20;
+  @apply dark:hover:shadow-primary/30;
+  @apply transition-shadow duration-200;
 }

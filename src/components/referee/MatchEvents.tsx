@@ -21,31 +21,33 @@ const MatchEvents = ({ events, formatTime }: MatchEventsProps) => {
     return type.replace(/_/g, ' ').replace(/\s+card$/i, '').toUpperCase();
   };
 
+  const getEventBadgeVariant = (type: string) => {
+    if (type === 'goal') return 'default';
+    if (type === 'card' || type.includes('card')) return 'destructive';
+    if (type.includes('player')) return 'secondary';
+    return 'outline';
+  };
+
   return (
     <Card className="card-shadow-lg">
       <CardHeader>
-        <CardTitle>Match Events</CardTitle>
+        <CardTitle className="text-contrast">Match Events</CardTitle>
       </CardHeader>
       <CardContent>
         {events.length === 0 ? (
-          <p className="text-muted-foreground text-center py-4">No events recorded yet</p>
+          <p className="text-contrast-muted text-center py-4">No events recorded yet</p>
         ) : (
           <div className="space-y-3">
             {events.slice().reverse().map((event) => (
-              <div key={event.id} className="flex items-center justify-between p-3 bg-muted/20 rounded-lg">
+              <div key={event.id} className="flex items-center justify-between p-3 bg-subtle rounded-lg border border-subtle">
                 <div className="flex items-center gap-3">
-                  <Badge variant="outline" className="text-sm font-mono">
+                  <Badge variant="outline" className="text-sm font-mono time-display">
                     <Clock className="h-3 w-3 mr-1" />
                     {formatTime(event.time)}
                   </Badge>
-                  <span className="font-medium">{event.description}</span>
+                  <span className="font-medium text-contrast">{event.description}</span>
                 </div>
-                <Badge variant={
-                  event.type === 'goal' ? 'default' : 
-                  event.type === 'card' || event.type.includes('card') ? 'destructive' :
-                  event.type.includes('player') ? 'secondary' :
-                  'outline'
-                }>
+                <Badge variant={getEventBadgeVariant(event.type)}>
                   {formatEventType(event.type)}
                 </Badge>
               </div>
