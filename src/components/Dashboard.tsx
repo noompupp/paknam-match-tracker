@@ -9,6 +9,7 @@ import TopAssistsCard from "./dashboard/TopAssistsCard";
 import EnhancedRecentResultsCard from "./dashboard/EnhancedRecentResultsCard";
 import UpcomingFixturesCard from "./dashboard/UpcomingFixturesCard";
 import MatchPreviewModal from "./fixtures/MatchPreviewModal";
+import UnifiedContainer from "./shared/UnifiedContainer";
 import { useState } from "react";
 import { Fixture } from "@/types/database";
 
@@ -58,50 +59,48 @@ const Dashboard = ({ onNavigateToResults, onNavigateToFixtures }: DashboardProps
 
   if (teamsError) {
     return (
-      <div className="gradient-bg flex items-center justify-center min-h-screen">
-        <div className="text-center text-foreground container-responsive">
+      <UnifiedContainer variant="content" className="flex items-center justify-center min-h-[50vh]">
+        <div className="text-center text-foreground">
           <h2 className="text-2xl font-bold mb-4">Error Loading Data</h2>
           <p className="text-muted-foreground">Please check your connection and try again.</p>
         </div>
-      </div>
+      </UnifiedContainer>
     );
   }
 
   return (
     <>
-      <div className="gradient-bg">
-        <DashboardHeader />
+      <DashboardHeader />
 
-        <div className="max-w-7xl mx-auto container-responsive py-8 space-y-8 mobile-content-spacing">
-          <LeagueTable teams={teams} isLoading={teamsLoading} />
+      <UnifiedContainer variant="content" spacing="normal">
+        <LeagueTable teams={teams} isLoading={teamsLoading} />
 
-          <div className="grid md:grid-cols-2 gap-8">
-            <TopScorersCard 
-              topScorers={topScorers} 
-              isLoading={scorersLoading} 
-              error={scorersError}
-            />
-            <TopAssistsCard 
-              topAssists={topAssists} 
-              isLoading={assistsLoading} 
-              error={assistsError}
-            />
-          </div>
-
-          <EnhancedRecentResultsCard 
-            recentFixtures={recentFixtures} 
-            isLoading={recentLoading}
-            onViewAll={handleViewAllRecentResults}
+        <div className="grid md:grid-cols-2 gap-8">
+          <TopScorersCard 
+            topScorers={topScorers} 
+            isLoading={scorersLoading} 
+            error={scorersError}
           />
-
-          <UpcomingFixturesCard 
-            upcomingFixtures={upcomingFixtures} 
-            isLoading={upcomingLoading}
-            onViewAll={handleViewAllUpcomingFixtures}
-            onFixturePreview={handleFixturePreview}
+          <TopAssistsCard 
+            topAssists={topAssists} 
+            isLoading={assistsLoading} 
+            error={assistsError}
           />
         </div>
-      </div>
+
+        <EnhancedRecentResultsCard 
+          recentFixtures={recentFixtures} 
+          isLoading={recentLoading}
+          onViewAll={handleViewAllRecentResults}
+        />
+
+        <UpcomingFixturesCard 
+          upcomingFixtures={upcomingFixtures} 
+          isLoading={upcomingLoading}
+          onViewAll={handleViewAllUpcomingFixtures}
+          onFixturePreview={handleFixturePreview}
+        />
+      </UnifiedContainer>
 
       {/* Match Preview Modal */}
       <MatchPreviewModal

@@ -31,15 +31,16 @@
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
     
-    /* Enhanced gradient background variables with blue theme */
+    /* Enhanced Premier League-style gradient background variables */
     --app-gradient: linear-gradient(135deg, 
-      hsl(220 60% 95%) 0%, 
-      hsl(210 50% 98%) 15%,
-      hsl(215 70% 97%) 35%, 
-      hsl(220 60% 96%) 50%, 
-      hsl(210 50% 98%) 65%,
-      hsl(215 70% 97%) 85%, 
-      hsl(220 60% 95%) 100%);
+      hsl(214 100% 97%) 0%, 
+      hsl(210 100% 98%) 10%,
+      hsl(220 100% 96%) 25%, 
+      hsl(214 80% 94%) 40%, 
+      hsl(210 60% 97%) 55%,
+      hsl(220 100% 96%) 75%, 
+      hsl(214 100% 97%) 90%,
+      hsl(210 100% 98%) 100%);
     --header-background: rgba(255, 255, 255, 0.95);
     --header-backdrop-blur: blur(20px) saturate(180%);
     --header-border: rgba(0, 0, 0, 0.05);
@@ -73,15 +74,16 @@
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
     
-    /* Dark mode gradient variables with blue theme */
+    /* Dark mode Premier League gradient with deep blues */
     --app-gradient: linear-gradient(135deg, 
-      hsl(220 50% 8%) 0%, 
-      hsl(215 40% 6%) 15%,
-      hsl(210 45% 7%) 35%, 
-      hsl(220 50% 8%) 50%, 
-      hsl(215 40% 6%) 65%,
-      hsl(210 45% 7%) 85%, 
-      hsl(220 50% 8%) 100%);
+      hsl(220 60% 8%) 0%, 
+      hsl(215 50% 6%) 10%,
+      hsl(210 55% 7%) 25%, 
+      hsl(220 60% 8%) 40%, 
+      hsl(215 45% 6%) 55%,
+      hsl(210 55% 7%) 75%, 
+      hsl(220 60% 8%) 90%,
+      hsl(215 50% 6%) 100%);
     --header-background: rgba(17, 24, 39, 0.95);
     --header-backdrop-blur: blur(20px) saturate(180%);
     --header-border: rgba(255, 255, 255, 0.05);
@@ -117,10 +119,12 @@
     @apply bg-green-500 text-white;
   }
 
-  /* Enhanced gradient background utility */
+  /* Enhanced Premier League gradient background utility */
   .gradient-bg {
     background: var(--app-gradient);
     background-attachment: fixed;
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
   }
 
   /* Mobile-first padding fixes */

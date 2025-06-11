@@ -9,6 +9,7 @@ import MatchSummaryDialog from "./fixtures/MatchSummaryDialog";
 import ResultsHeader from "./results/ResultsHeader";
 import { useDeviceOrientation } from "@/hooks/useDeviceOrientation";
 import RecentResultsSection from "./fixtures/RecentResultsSection";
+import UnifiedContainer from "./shared/UnifiedContainer";
 
 const Results = () => {
   const { data: recentFixtures, isLoading, error } = useRecentFixtures();
@@ -20,13 +21,13 @@ const Results = () => {
 
   if (error) {
     return (
-      <div className="gradient-bg flex items-center justify-center min-h-screen">
-        <div className="text-center text-foreground container-responsive">
+      <UnifiedContainer variant="content" className="flex items-center justify-center min-h-[50vh]">
+        <div className="text-center text-foreground">
           <h2 className="text-2xl font-bold mb-4">Error Loading Results</h2>
           <p className="text-muted-foreground">Please check your connection and try again.</p>
           <p className="text-muted-foreground text-sm mt-2">{error.message}</p>
         </div>
-      </div>
+      </UnifiedContainer>
     );
   }
 
@@ -37,19 +38,16 @@ const Results = () => {
 
   return (
     <>
-      <div className="gradient-bg">
-        <ResultsHeader />
+      <ResultsHeader />
 
-        {/* Results Content */}
-        <div className="max-w-7xl mx-auto container-responsive py-8 space-y-8 mobile-content-spacing">
-          <RecentResultsSection 
-            recentFixtures={recentFixtures || []}
-            allFixtures={allFixtures || []}
-            isLoading={isLoading}
-            onFixtureClick={handleFixtureClick}
-          />
-        </div>
-      </div>
+      <UnifiedContainer variant="content" spacing="normal">
+        <RecentResultsSection 
+          recentFixtures={recentFixtures || []}
+          allFixtures={allFixtures || []}
+          isLoading={isLoading}
+          onFixtureClick={handleFixtureClick}
+        />
+      </UnifiedContainer>
 
       {/* Match Summary Dialog */}
       <MatchSummaryDialog 

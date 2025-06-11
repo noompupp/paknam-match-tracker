@@ -13,6 +13,7 @@ import Teams from "@/components/Teams";
 import Fixtures from "@/components/Fixtures";
 import Results from "@/components/Results";
 import RefereeToolsContainer from "@/components/referee/RefereeToolsContainer";
+import UnifiedContainer from "@/components/shared/UnifiedContainer";
 
 // Create a client
 const queryClient = new QueryClient({
@@ -31,23 +32,25 @@ const AppContent = () => {
   // Show loading screen while checking authentication
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <UnifiedContainer variant="page" className="flex items-center justify-center">
         <div className="text-center text-foreground">
           <h2 className="text-2xl font-bold mb-4">Loading...</h2>
           <p>Initializing secure session...</p>
         </div>
-      </div>
+      </UnifiedContainer>
     );
   }
 
   // Handle authentication tab - show login screen with close functionality
   if (activeTab === 'auth') {
     return (
-      <SecureLogin 
-        onSuccess={() => setActiveTab('dashboard')} 
-        onClose={() => setActiveTab('dashboard')}
-        showCloseButton={true}
-      />
+      <UnifiedContainer variant="page">
+        <SecureLogin 
+          onSuccess={() => setActiveTab('dashboard')} 
+          onClose={() => setActiveTab('dashboard')}
+          showCloseButton={true}
+        />
+      </UnifiedContainer>
     );
   }
 
@@ -60,29 +63,47 @@ const AppContent = () => {
   const renderContent = () => {
     switch (activeTab) {
       case "teams":
-        return <Teams />;
+        return (
+          <UnifiedContainer variant="page">
+            <Teams />
+          </UnifiedContainer>
+        );
       case "results":
-        return <Results />;
+        return (
+          <UnifiedContainer variant="page">
+            <Results />
+          </UnifiedContainer>
+        );
       case "fixtures":
-        return <Fixtures />;
+        return (
+          <UnifiedContainer variant="page">
+            <Fixtures />
+          </UnifiedContainer>
+        );
       case "referee":
         return (
-          <RoleGuard requiredRole="referee">
-            <RefereeToolsContainer />
-          </RoleGuard>
+          <UnifiedContainer variant="page">
+            <RoleGuard requiredRole="referee">
+              <RefereeToolsContainer />
+            </RoleGuard>
+          </UnifiedContainer>
         );
       default:
-        return <Dashboard onNavigateToResults={handleNavigateToResults} />;
+        return (
+          <UnifiedContainer variant="page">
+            <Dashboard onNavigateToResults={handleNavigateToResults} />
+          </UnifiedContainer>
+        );
     }
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <>
       <main className="pb-20">
         {renderContent()}
       </main>
       <RoleBasedNavigation activeTab={activeTab} onTabChange={setActiveTab} />
-    </div>
+    </>
   );
 };
 
