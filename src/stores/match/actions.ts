@@ -17,6 +17,13 @@ export interface MatchActions {
   resetState: () => void;
   triggerUIUpdate: () => void;
   
+  // Enhanced player time tracking actions
+  startPlayerTime: (playerId: number, playerName: string, teamId: number) => void;
+  stopPlayerTime: (playerId: number) => void;
+  getPlayerTimesByFixture: (fixtureId: number) => MatchPlayerTime[];
+  calculateTotalMinutesPlayed: (playerId: number) => number;
+  getActivePlayersCount: () => number;
+  
   // Computed getters
   getUnsavedGoalsCount: () => number;
   getUnsavedCardsCount: () => number;

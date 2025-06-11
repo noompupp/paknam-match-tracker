@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import RefereeTabsNavigation from "./RefereeTabsNavigation";
@@ -6,6 +7,7 @@ import UnifiedTimerTab from "./tabs/UnifiedTimerTab";
 import GoalsTab from "./tabs/GoalsTab";
 import CardsTab from "./tabs/CardsTab";
 import SummaryTab from "./tabs/SummaryTab";
+import MatchEditReviewPanel from "./MatchEditReviewPanel";
 import GoalEntryWizard from "./GoalEntryWizard";
 import { ComponentPlayer } from "../hooks/useRefereeState";
 
@@ -50,6 +52,7 @@ interface RefereeToolsMainProps {
 const RefereeToolsMain = (props: RefereeToolsMainProps) => {
   const [showGoalWizard, setShowGoalWizard] = useState(false);
   const [goalWizardInitialTeam, setGoalWizardInitialTeam] = useState<'home' | 'away' | undefined>(undefined);
+  const [showMatchEdit, setShowMatchEdit] = useState(false);
 
   // Handle quick goal from Score tab
   const handleQuickGoal = (team: 'home' | 'away') => {
@@ -136,6 +139,15 @@ const RefereeToolsMain = (props: RefereeToolsMainProps) => {
     console.log('📄 RefereeToolsMain: Export summary functionality');
   };
 
+  const handleEditMatch = () => {
+    setShowMatchEdit(true);
+    console.log('✏️ Edit match functionality - opening enhanced edit interface');
+  };
+
+  const handleViewSummary = () => {
+    console.log('👁️ View summary functionality - opening enhanced summary view');
+  };
+
   // Show goal wizard overlay if active
   if (showGoalWizard) {
     return (
@@ -170,101 +182,116 @@ const RefereeToolsMain = (props: RefereeToolsMainProps) => {
   }
 
   return (
-    <Tabs defaultValue="score" className="w-full">
-      <RefereeTabsNavigation />
-      
-      <TabsContent value="score" className="mt-6">
-        <ScoreTab
-          selectedFixtureData={props.selectedFixtureData}
-          isRunning={props.isRunning}
-          matchTime={props.matchTime}
-          homeTeamPlayers={props.homeTeamPlayers}
-          awayTeamPlayers={props.awayTeamPlayers}
-          formatTime={props.formatTime}
-          onToggleTimer={props.toggleTimer}
-          onResetMatch={handleResetMatch}
-          onSaveMatch={handleSaveMatch}
-          onAssignGoal={handleAssignGoal}
-          homeScore={props.homeScore}
-          awayScore={props.awayScore}
-        />
-      </TabsContent>
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* Main Content Area (2/3 width on large screens) */}
+      <div className="lg:col-span-2">
+        <Tabs defaultValue="score" className="w-full">
+          <RefereeTabsNavigation />
+          
+          <TabsContent value="score" className="mt-6">
+            <ScoreTab
+              selectedFixtureData={props.selectedFixtureData}
+              isRunning={props.isRunning}
+              matchTime={props.matchTime}
+              homeTeamPlayers={props.homeTeamPlayers}
+              awayTeamPlayers={props.awayTeamPlayers}
+              formatTime={props.formatTime}
+              onToggleTimer={props.toggleTimer}
+              onResetMatch={handleResetMatch}
+              onSaveMatch={handleSaveMatch}
+              onAssignGoal={handleAssignGoal}
+              homeScore={props.homeScore}
+              awayScore={props.awayScore}
+            />
+          </TabsContent>
 
-      <TabsContent value="timer-tracking" className="mt-6">
-        <UnifiedTimerTab
-          selectedFixtureData={props.selectedFixtureData}
-          homeScore={props.homeScore}
-          awayScore={props.awayScore}
-          matchTime={props.matchTime}
-          isRunning={props.isRunning}
-          formatTime={props.formatTime}
-          allPlayers={props.allPlayers}
-          homeTeamPlayers={props.homeTeamPlayers}
-          awayTeamPlayers={props.awayTeamPlayers}
-          trackedPlayers={props.trackedPlayers}
-          onToggleTimer={props.toggleTimer}
-          onResetMatch={handleResetMatch}
-          onAddPlayer={props.addPlayer}
-          onRemovePlayer={props.removePlayer}
-          onTogglePlayerTime={props.togglePlayerTime}
-        />
-      </TabsContent>
+          <TabsContent value="timer-tracking" className="mt-6">
+            <UnifiedTimerTab
+              selectedFixtureData={props.selectedFixtureData}
+              homeScore={props.homeScore}
+              awayScore={props.awayScore}
+              matchTime={props.matchTime}
+              isRunning={props.isRunning}
+              formatTime={props.formatTime}
+              allPlayers={props.allPlayers}
+              homeTeamPlayers={props.homeTeamPlayers}
+              awayTeamPlayers={props.awayTeamPlayers}
+              trackedPlayers={props.trackedPlayers}
+              onToggleTimer={props.toggleTimer}
+              onResetMatch={handleResetMatch}
+              onAddPlayer={props.addPlayer}
+              onRemovePlayer={props.removePlayer}
+              onTogglePlayerTime={props.togglePlayerTime}
+            />
+          </TabsContent>
 
-      <TabsContent value="goals" className="mt-6">
-        <GoalsTab
-          allPlayers={props.allPlayers}
-          homeTeamPlayers={props.homeTeamPlayers}
-          awayTeamPlayers={props.awayTeamPlayers}
-          goals={props.goals}
-          selectedPlayer={props.selectedGoalPlayer}
-          selectedGoalType={props.selectedGoalType}
-          selectedGoalTeam={props.selectedGoalTeam}
-          matchTime={props.matchTime}
-          onPlayerSelect={props.setSelectedGoalPlayer}
-          onGoalTypeChange={props.setSelectedGoalType}
-          onGoalTeamChange={props.setSelectedGoalTeam}
-          onAssignGoal={handleAssignGoal}
-          formatTime={props.formatTime}
-          homeScore={props.homeScore}
-          awayScore={props.awayScore}
-          selectedFixtureData={props.selectedFixtureData}
-        />
-      </TabsContent>
+          <TabsContent value="goals" className="mt-6">
+            <GoalsTab
+              allPlayers={props.allPlayers}
+              homeTeamPlayers={props.homeTeamPlayers}
+              awayTeamPlayers={props.awayTeamPlayers}
+              goals={props.goals}
+              selectedPlayer={props.selectedGoalPlayer}
+              selectedGoalType={props.selectedGoalType}
+              selectedGoalTeam={props.selectedGoalTeam}
+              matchTime={props.matchTime}
+              onPlayerSelect={props.setSelectedGoalPlayer}
+              onGoalTypeChange={props.setSelectedGoalType}
+              onGoalTeamChange={props.setSelectedGoalTeam}
+              onAssignGoal={handleAssignGoal}
+              formatTime={props.formatTime}
+              homeScore={props.homeScore}
+              awayScore={props.awayScore}
+              selectedFixtureData={props.selectedFixtureData}
+            />
+          </TabsContent>
 
-      <TabsContent value="cards" className="mt-6">
-        <CardsTab
-          allPlayers={props.allPlayers}
-          homeTeamPlayers={props.homeTeamPlayers}
-          awayTeamPlayers={props.awayTeamPlayers}
-          cards={props.cards}
-          selectedPlayer={props.selectedPlayer}
-          selectedTeam={props.selectedTeam}
-          selectedCardType={props.selectedCardType}
-          matchTime={props.matchTime}
-          selectedFixtureData={props.selectedFixtureData}
-          onPlayerSelect={props.setSelectedPlayer}
-          onTeamChange={props.setSelectedTeam}
-          onCardTypeChange={props.setSelectedCardType}
-          formatTime={props.formatTime}
-        />
-      </TabsContent>
+          <TabsContent value="cards" className="mt-6">
+            <CardsTab
+              allPlayers={props.allPlayers}
+              homeTeamPlayers={props.homeTeamPlayers}
+              awayTeamPlayers={props.awayTeamPlayers}
+              cards={props.cards}
+              selectedPlayer={props.selectedPlayer}
+              selectedTeam={props.selectedTeam}
+              selectedCardType={props.selectedCardType}
+              matchTime={props.matchTime}
+              selectedFixtureData={props.selectedFixtureData}
+              onPlayerSelect={props.setSelectedPlayer}
+              onTeamChange={props.setSelectedTeam}
+              onCardTypeChange={props.setSelectedCardType}
+              formatTime={props.formatTime}
+            />
+          </TabsContent>
 
-      <TabsContent value="summary" className="mt-6">
-        <SummaryTab
-          matchTime={props.matchTime}
-          homeScore={props.homeScore}
-          awayScore={props.awayScore}
-          goals={props.goals}
-          cards={props.cards}
-          trackedPlayers={props.trackedPlayers}
-          events={props.events}
-          allPlayers={props.allPlayers}
+          <TabsContent value="summary" className="mt-6">
+            <SummaryTab
+              matchTime={props.matchTime}
+              homeScore={props.homeScore}
+              awayScore={props.awayScore}
+              goals={props.goals}
+              cards={props.cards}
+              trackedPlayers={props.trackedPlayers}
+              events={props.events}
+              allPlayers={props.allPlayers}
+              selectedFixtureData={props.selectedFixtureData}
+              formatTime={props.formatTime}
+              onExportSummary={handleExportSummary}
+            />
+          </TabsContent>
+        </Tabs>
+      </div>
+
+      {/* Side Panel (1/3 width on large screens) */}
+      <div className="lg:col-span-1">
+        <MatchEditReviewPanel
           selectedFixtureData={props.selectedFixtureData}
+          onEditMatch={handleEditMatch}
+          onViewSummary={handleViewSummary}
           formatTime={props.formatTime}
-          onExportSummary={handleExportSummary}
         />
-      </TabsContent>
-    </Tabs>
+      </div>
+    </div>
   );
 };
 
