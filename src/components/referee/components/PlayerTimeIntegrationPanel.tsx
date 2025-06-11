@@ -163,7 +163,7 @@ const PlayerTimeIntegrationPanel = ({
                   </div>
                   <div className="text-right">
                     <div className="font-mono text-sm font-medium">
-                      {Math.floor(player.totalTime || 0)}min
+                      {Math.floor(player.totalMinutes || 0)}min
                     </div>
                     <div className="text-xs text-muted-foreground">
                       Database Record
