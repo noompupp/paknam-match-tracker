@@ -22,22 +22,32 @@
   --ring: 221.2 83.2% 53.3%;
   --radius: 0.75rem;
 
-  /* Enhanced app gradient system */
+  /* FIXED: Enhanced app gradient system with VISIBLE gradients */
   --app-gradient: linear-gradient(135deg, 
-    hsl(210, 40%, 98%) 0%,
-    hsl(220, 30%, 96%) 25%,
-    hsl(210, 25%, 94%) 50%,
-    hsl(220, 20%, 96%) 75%,
-    hsl(210, 30%, 98%) 100%
+    #667eea 0%,
+    #764ba2 25%,
+    #f093fb 50%,
+    #f5576c 75%,
+    #4facfe 100%
   );
 
-  /* Modal and navigation backgrounds */
-  --modal-background: rgba(255, 255, 255, 0.95);
-  --modal-backdrop: rgba(0, 0, 0, 0.8);
-  --navigation-background: rgba(255, 255, 255, 0.95);
-  --header-background: rgba(255, 255, 255, 0.95);
+  /* FIXED: SOLID modal and navigation backgrounds */
+  --modal-background: rgb(255, 255, 255);
+  --modal-backdrop: rgba(0, 0, 0, 0.75);
+  --navigation-background: rgb(255, 255, 255);
+  --header-background: rgb(255, 255, 255);
   --header-backdrop-blur: blur(20px) saturate(180%);
-  --header-border: rgba(0, 0, 0, 0.1);
+  --header-border: rgba(0, 0, 0, 0.15);
+  
+  /* Safe area variables */
+  --safe-area-inset-top: env(safe-area-inset-top, 0px);
+  --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-area-inset-left: env(safe-area-inset-left, 0px);
+  --safe-area-inset-right: env(safe-area-inset-right, 0px);
+  
+  /* Navigation height variables */
+  --nav-height: 70px;
+  --mobile-nav-total-height: calc(70px + env(safe-area-inset-bottom, 0px));
 }
 
 .dark {
@@ -61,20 +71,20 @@
   --input: 217.2 32.6% 17.5%;
   --ring: 224.3 76.3% 94.1%;
 
-  /* Enhanced dark mode gradient */
+  /* FIXED: Enhanced dark mode gradient with VISIBLE colors */
   --app-gradient: linear-gradient(135deg,
-    hsl(222, 47%, 8%) 0%,
-    hsl(217, 32%, 12%) 25%,
-    hsl(222, 28%, 9%) 50%,
-    hsl(217, 32%, 11%) 75%,
-    hsl(222, 35%, 8%) 100%
+    #2d1b69 0%,
+    #11998e 25%,
+    #38ef7d 50%,
+    #667eea 75%,
+    #764ba2 100%
   );
 
-  /* Dark mode modal and navigation backgrounds */
-  --modal-background: rgba(17, 24, 39, 0.95);
-  --modal-backdrop: rgba(0, 0, 0, 0.9);
-  --navigation-background: rgba(17, 24, 39, 0.95);
-  --header-background: rgba(17, 24, 39, 0.95);
+  /* FIXED: SOLID dark mode modal and navigation backgrounds */
+  --modal-background: rgb(17, 24, 39);
+  --modal-backdrop: rgba(0, 0, 0, 0.85);
+  --navigation-background: rgb(17, 24, 39);
+  --header-background: rgb(17, 24, 39);
   --header-backdrop-blur: blur(20px) saturate(180%);
-  --header-border: rgba(255, 255, 255, 0.1);
+  --header-border: rgba(255, 255, 255, 0.15);
 }

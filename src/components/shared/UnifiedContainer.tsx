@@ -41,6 +41,7 @@ const UnifiedContainer = ({
         return cn(
           "gradient-bg min-h-screen min-h-dvh",
           "w-full overflow-x-hidden",
+          // FIXED: Proper safe area implementation for iOS
           isMobile && isIOS && "safe-x safe-y",
           isMobile && !isIOS && "safe-x"
         );
@@ -48,8 +49,10 @@ const UnifiedContainer = ({
         return cn(
           maxWidthClasses[maxWidth],
           "mx-auto px-4 py-8",
+          // FIXED: Enhanced mobile padding with safe areas
           isMobile && "px-4 py-6",
-          "mobile-content-spacing"
+          // FIXED: Add bottom spacing for navigation
+          isMobile && "pb-safe-bottom mobile-safe-bottom"
         );
       case 'section':
         return cn(
@@ -62,7 +65,15 @@ const UnifiedContainer = ({
   };
 
   return (
-    <div className={cn(getVariantClasses(), className)}>
+    <div 
+      className={cn(getVariantClasses(), className)}
+      style={{
+        // FIXED: Add CSS variable fallbacks for safe areas
+        paddingLeft: isMobile ? `max(1rem, var(--safe-area-inset-left))` : undefined,
+        paddingRight: isMobile ? `max(1rem, var(--safe-area-inset-right))` : undefined,
+        paddingBottom: isMobile ? `max(2rem, calc(2rem + var(--mobile-nav-total-height)))` : undefined
+      }}
+    >
       {children}
     </div>
   );

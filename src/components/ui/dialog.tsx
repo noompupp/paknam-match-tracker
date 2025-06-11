@@ -24,7 +24,7 @@ const DialogOverlay = React.forwardRef<
     )}
     style={{
       background: 'var(--modal-backdrop)',
-      backdropFilter: 'blur(4px)'
+      backdropFilter: 'blur(8px)'
     }}
     {...props}
   />
@@ -45,7 +45,6 @@ const DialogContent = React.forwardRef<
       )}
       style={{
         background: 'var(--modal-background)',
-        backdropFilter: 'var(--header-backdrop-blur)',
         border: '1px solid var(--header-border)'
       }}
       {...props}
