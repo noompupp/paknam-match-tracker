@@ -1,48 +1,17 @@
+
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { Users, Clock, Trophy, FileText, CheckCircle, AlertCircle } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-
-interface Assignment {
-  id: string;
-  referee_id: string;
-  assigned_role: 'score_goals' | 'cards_discipline' | 'time_tracking' | 'coordination';
-  status: 'pending' | 'in_progress' | 'completed';
-  completion_timestamp: string | null;
-  notes: string | null;
-}
-
-interface CoordinationData {
-  coordination_id: string;
-  fixture_id: number;
-  status: string;
-  assignments: Assignment[];
-  completion_summary: any;
-  ready_for_review: boolean;
-}
-
-interface MultiRefereeCoordinationProps {
-  selectedFixtureData: any;
-  onRoleAssigned?: (role: string) => void;
-}
-
-const ROLE_LABELS = {
-  score_goals: 'Score & Goals',
-  cards_discipline: 'Cards & Discipline',
-  time_tracking: 'Time Tracking',
-  coordination: 'Match Coordination'
-};
-
-const ROLE_ICONS = {
-  score_goals: Trophy,
-  cards_discipline: AlertCircle,
-  time_tracking: Clock,
-  coordination: Users
-};
+import { CoordinationData, Assignment, MultiRefereeCoordinationProps } from './coordination/types';
+import { ROLE_LABELS } from './coordination/constants';
+import NoMatchSelected from './coordination/NoMatchSelected';
+import CoordinationHeader from './coordination/CoordinationHeader';
+import InitializationSection from './coordination/InitializationSection';
+import ProgressOverview from './coordination/ProgressOverview';
+import RoleAssignments from './coordination/RoleAssignments';
+import CurrentUserRole from './coordination/CurrentUserRole';
+import FinalizationSection from './coordination/FinalizationSection';
 
 const MultiRefereeCoordination = ({ 
   selectedFixtureData, 
@@ -319,169 +288,50 @@ const MultiRefereeCoordination = ({
     }
   };
 
-  const getStatusBadgeVariant = (status: string) => {
-    switch (status) {
-      case 'completed': return 'default';
-      case 'in_progress': return 'secondary';
-      case 'pending': return 'outline';
-      default: return 'outline';
-    }
-  };
-
   const completedTasks = coordinationData?.assignments.filter(a => a.status === 'completed').length || 0;
   const totalTasks = coordinationData?.assignments.length || 4;
   const progressPercentage = (completedTasks / totalTasks) * 100;
 
   if (!selectedFixtureData) {
-    return (
-      <Card>
-        <CardContent className="flex items-center justify-center py-12">
-          <div className="text-center">
-            <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">No Match Selected</h3>
-            <p className="text-muted-foreground">Select a fixture to manage multi-referee coordination</p>
-          </div>
-        </CardContent>
-      </Card>
-    );
+    return <NoMatchSelected />;
   }
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Users className="h-5 w-5" />
-          Multi-Referee Coordination
-          {coordinationData?.status === 'completed' && (
-            <Badge variant="default" className="bg-green-600">
-              <CheckCircle className="h-3 w-3 mr-1" />
-              Finalized
-            </Badge>
-          )}
-        </CardTitle>
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-muted-foreground">
-            {selectedFixtureData.home_team?.name} vs {selectedFixtureData.away_team?.name}
-          </p>
-          {coordinationData && (
-            <Badge variant="outline">
-              {completedTasks}/{totalTasks} Tasks Complete
-            </Badge>
-          )}
-        </div>
-      </CardHeader>
+      <CoordinationHeader 
+        selectedFixtureData={selectedFixtureData}
+        coordinationData={coordinationData}
+        completedTasks={completedTasks}
+        totalTasks={totalTasks}
+      />
 
       <CardContent className="space-y-6">
         {!coordinationData ? (
-          <div className="text-center py-8">
-            <p className="text-muted-foreground mb-4">Initialize multi-referee coordination for this match</p>
-            <Button 
-              onClick={initializeCoordination} 
-              disabled={isLoading}
-              className="w-full"
-            >
-              {isLoading ? 'Initializing...' : 'Initialize Coordination'}
-            </Button>
-          </div>
+          <InitializationSection 
+            onInitialize={initializeCoordination}
+            isLoading={isLoading}
+          />
         ) : (
           <>
-            {/* Progress Overview */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between text-sm">
-                <span>Overall Progress</span>
-                <span>{Math.round(progressPercentage)}%</span>
-              </div>
-              <Progress value={progressPercentage} className="w-full" />
-            </div>
+            <ProgressOverview progressPercentage={progressPercentage} />
 
-            {/* Role Assignments */}
-            <div className="space-y-3">
-              <h4 className="font-semibold text-sm">Referee Assignments</h4>
-              {Object.entries(ROLE_LABELS).map(([role, label]) => {
-                const assignment = coordinationData.assignments.find(a => a.assigned_role === role);
-                const Icon = ROLE_ICONS[role as keyof typeof ROLE_ICONS];
-                const isCurrentUserRole = currentUserRole === role;
-                const canAssign = !assignment?.referee_id || assignment.status === 'pending';
+            <RoleAssignments
+              coordinationData={coordinationData}
+              currentUserRole={currentUserRole}
+              onAssignRole={assignRole}
+              onCompleteTask={completeTask}
+              isLoading={isLoading}
+            />
 
-                return (
-                  <div key={role} className="flex items-center justify-between p-3 border rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <Icon className="h-4 w-4" />
-                      <div>
-                        <p className="font-medium text-sm">{label}</p>
-                        {assignment?.completion_timestamp && (
-                          <p className="text-xs text-muted-foreground">
-                            Completed: {new Date(assignment.completion_timestamp).toLocaleString()}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Badge variant={getStatusBadgeVariant(assignment?.status || 'pending')}>
-                        {assignment?.status || 'pending'}
-                      </Badge>
-                      {canAssign && !isCurrentUserRole && (
-                        <Button 
-                          size="sm" 
-                          variant="outline"
-                          onClick={() => assignRole(role)}
-                          disabled={isLoading}
-                        >
-                          Assign to Me
-                        </Button>
-                      )}
-                      {isCurrentUserRole && assignment?.status === 'in_progress' && (
-                        <Button 
-                          size="sm"
-                          onClick={completeTask}
-                          disabled={isLoading}
-                        >
-                          Mark Complete
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* Current User Role */}
             {currentUserRole && (
-              <Card className="bg-blue-50 border-blue-200 dark:bg-blue-900/10 dark:border-blue-800">
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Badge variant="secondary">Your Assignment</Badge>
-                  </div>
-                  <p className="text-sm font-medium">
-                    {ROLE_LABELS[currentUserRole as keyof typeof ROLE_LABELS]}
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    You are responsible for this aspect of the match
-                  </p>
-                </CardContent>
-              </Card>
+              <CurrentUserRole currentUserRole={currentUserRole} />
             )}
 
-            {/* Finalize Match Button */}
             {coordinationData.ready_for_review && coordinationData.status !== 'completed' && (
-              <div className="pt-4 border-t">
-                <div className="bg-green-50 border border-green-200 rounded-lg p-4 dark:bg-green-900/10 dark:border-green-800">
-                  <div className="flex items-center gap-2 mb-2">
-                    <CheckCircle className="h-4 w-4 text-green-600" />
-                    <span className="font-medium text-green-800 dark:text-green-400">Ready for Finalization</span>
-                  </div>
-                  <p className="text-sm text-green-700 dark:text-green-500 mb-3">
-                    All referee tasks have been completed. You can now finalize the match.
-                  </p>
-                  <Button 
-                    onClick={finalizeMatch}
-                    disabled={isLoading}
-                    className="w-full bg-green-600 hover:bg-green-700"
-                  >
-                    {isLoading ? 'Finalizing...' : 'Finalize Match'}
-                  </Button>
-                </div>
-              </div>
+              <FinalizationSection 
+                onFinalize={finalizeMatch}
+                isLoading={isLoading}
+              />
             )}
           </>
         )}
