@@ -1,120 +1,74 @@
 
-import { Badge } from "@/components/ui/badge";
-import { getGoalPlayerName, getGoalTime, getGoalAssistPlayerName } from "../utils/matchSummaryDataProcessor";
-import { useIsMobile } from "@/hooks/use-mobile";
+import React from 'react';
+import { Target, Users } from 'lucide-react';
 
 interface GoalDisplayProps {
-  goal: any;
-  index: number;
-  teamType: 'home' | 'away';
-  teamColor: string;
+  goal: {
+    playerName: string;
+    team: string;
+    time: number;
+    type: 'goal' | 'assist';
+    assistPlayerName?: string;
+    isOwnGoal?: boolean;
+  };
+  formatTime: (seconds: number) => string;
+  teamColor?: string;
 }
 
-const GoalDisplay = ({ goal, index, teamType, teamColor }: GoalDisplayProps) => {
-  const isMobile = useIsMobile();
-
-  const formatMatchTime = (seconds: number) => {
-    const minutes = Math.floor(seconds / 60);
-    return `${minutes}'`;
+const GoalDisplay = ({ goal, formatTime, teamColor }: GoalDisplayProps) => {
+  const getGoalIcon = () => {
+    if (goal.isOwnGoal) {
+      return <Target className="h-4 w-4 text-red-500" />; // Red icon for own goals
+    }
+    if (goal.type === 'assist') {
+      return <Users className="h-4 w-4 text-blue-500" />;
+    }
+    return <Target className="h-4 w-4 text-green-500" />;
   };
 
-  try {
-    const playerName = getGoalPlayerName(goal);
-    const assistPlayerName = getGoalAssistPlayerName(goal);
-    const goalTime = getGoalTime(goal);
-    const goalId = goal.id || `${teamType}-goal-${index}`;
-
-    console.log(`⚽ GoalDisplay: Enhanced rendering ${teamType} goal with comprehensive assist analysis:`, {
-      goalId,
-      player: playerName,
-      assist: assistPlayerName,
-      time: goalTime,
-      assistFound: !!assistPlayerName,
-      comprehensiveAssistCheck: {
-        assistPlayerName: goal.assistPlayerName,
-        assist_player_name: goal.assist_player_name,
-        assistTeamId: goal.assistTeamId,
-        assist_team_id: goal.assist_team_id,
-        extractorResult: getGoalAssistPlayerName(goal)
-      },
-      fullGoalStructure: goal
-    });
-
-    if (!playerName) {
-      console.warn(`⚠️ GoalDisplay: Missing player name for ${teamType} goal - attempting fallback:`, {
-        goal,
-        fallbackAttempts: {
-          playerName: goal.playerName,
-          player_name: goal.player_name,
-          player: goal.player,
-          scorer: goal.scorer,
-          name: goal.name
-        }
-      });
-      
-      const fallbackName = goal.scorer || goal.name || `Unknown Player (Goal ${goalId})`;
-      
-      if (!fallbackName || fallbackName.includes('Unknown')) {
-        console.error(`❌ GoalDisplay: Unable to extract player name for goal:`, goal);
-        return (
-          <div key={goalId} className={teamType === 'home' ? "text-left" : "text-right"}>
-            <div className={`${isMobile ? 'text-xs' : 'text-sm'} text-muted-foreground italic`}>
-              Goal recorded but player name unavailable (ID: {goalId})
-            </div>
-          </div>
-        );
-      }
+  const getGoalText = () => {
+    if (goal.isOwnGoal) {
+      return `${goal.playerName} (OG)`;
     }
+    if (goal.type === 'assist') {
+      return `${goal.playerName} (Assist)`;
+    }
+    return goal.playerName;
+  };
 
-    const displayName = playerName || goal.scorer || goal.name || `Goal ${goalId}`;
-    const displayTime = goalTime || goal.minute || 0;
+  const getGoalSubtext = () => {
+    if (goal.isOwnGoal) {
+      return 'Own Goal';
+    }
+    if (goal.assistPlayerName) {
+      return `Assist: ${goal.assistPlayerName}`;
+    }
+    return '';
+  };
 
-    return (
-      <div key={goalId} className={teamType === 'home' ? "text-left" : "text-right"}>
-        <div className={`flex items-center ${isMobile ? 'gap-2' : 'gap-3'} ${teamType === 'away' ? 'justify-end' : ''}`}>
-          {teamType === 'home' && (
-            <span className={`${isMobile ? 'text-base' : 'text-lg'}`}>⚽</span>
-          )}
-          
-          <span className={`font-semibold ${isMobile ? 'text-sm' : 'text-base'} ${isMobile && playerName.length > 15 ? 'truncate max-w-[120px]' : ''}`}>
-            {displayName}
+  return (
+    <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
+      {getGoalIcon()}
+      <div className="flex-1">
+        <div className="flex items-center justify-between">
+          <span className={`font-medium ${goal.isOwnGoal ? 'text-red-700 dark:text-red-400' : ''}`}>
+            {getGoalText()}
           </span>
-          
-          <Badge variant="outline" className={`${isMobile ? 'text-xs' : 'text-sm'} font-medium`}>
-            {formatMatchTime(displayTime)}
-          </Badge>
-
-          {teamType === 'away' && (
-            <span className={`${isMobile ? 'text-base' : 'text-lg'}`}>⚽</span>
-          )}
+          <span className="text-sm text-muted-foreground">
+            {formatTime(goal.time)}
+          </span>
         </div>
-        
-        {/* Enhanced Premier League Style Assist Display with Mobile Optimization */}
-        {assistPlayerName && (
-          <div className={`${isMobile ? 'text-xs' : 'text-sm'} text-muted-foreground mt-1 font-medium ${teamType === 'away' ? `text-right ${isMobile ? 'mr-4' : 'mr-6'}` : `${isMobile ? 'ml-4' : 'ml-6'}`}`}>
-            <span className="inline-flex items-center gap-1">
-              <span className={`${isMobile ? 'text-xs bg-muted px-1 py-0.5' : 'text-xs bg-muted px-1.5 py-0.5'} rounded font-bold`}>A</span>
-              <span className={`${isMobile && assistPlayerName.length > 12 ? 'truncate max-w-[100px]' : ''}`}>
-                {assistPlayerName}
-              </span>
-            </span>
+        {getGoalSubtext() && (
+          <div className="text-sm text-muted-foreground mt-1">
+            {getGoalSubtext()}
           </div>
         )}
+        <div className="text-xs text-muted-foreground">
+          {goal.team}
+        </div>
       </div>
-    );
-  } catch (error) {
-    console.error(`❌ GoalDisplay: Error rendering ${teamType} goal:`, { 
-      error: error.message,
-      stack: error.stack,
-      goal,
-      index 
-    });
-    return (
-      <div key={`error-${teamType}-${index}`} className={`${isMobile ? 'text-xs' : 'text-sm'} text-destructive`}>
-        Error displaying goal (ID: {goal?.id || index})
-      </div>
-    );
-  }
+    </div>
+  );
 };
 
 export default GoalDisplay;

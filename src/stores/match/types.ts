@@ -1,27 +1,27 @@
 
 export interface MatchGoal {
   id: string;
-  playerId?: number;
+  playerId: number;
   playerName: string;
-  team: 'home' | 'away';
   teamId: string;
   teamName: string;
+  team: 'home' | 'away';
   type: 'goal' | 'assist';
   time: number;
-  isOwnGoal?: boolean;
-  assistPlayerId?: number;
-  assistPlayerName?: string;
   timestamp: number;
   synced: boolean;
+  assistPlayerName?: string;
+  assistTeamId?: string;
+  isOwnGoal?: boolean; // Add own goal flag
 }
 
 export interface MatchCard {
   id: string;
   playerId: number;
   playerName: string;
-  team: 'home' | 'away';
   teamId: string;
   teamName: string;
+  team: 'home' | 'away';
   type: 'yellow' | 'red';
   time: number;
   timestamp: number;
@@ -32,9 +32,9 @@ export interface MatchPlayerTime {
   id: string;
   playerId: number;
   playerName: string;
-  team: 'home' | 'away';
   teamId: string;
   teamName: string;
+  team: 'home' | 'away';
   totalTime: number;
   startTime: number | null;
   isPlaying: boolean;
@@ -62,7 +62,6 @@ export interface MatchState {
   cards: MatchCard[];
   playerTimes: MatchPlayerTime[];
   events: MatchEvent[];
-  lastSaved: number | null;
   hasUnsavedChanges: boolean;
   lastUpdated: number;
 }

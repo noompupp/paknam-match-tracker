@@ -1,7 +1,5 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { incrementMemberGoals, incrementMemberAssists } from './memberStatsUpdateService';
-import { getValidatedTeamId } from '@/utils/teamIdMapping';
 
 interface GoalAssignmentData {
   fixtureId: number;
@@ -10,10 +8,11 @@ interface GoalAssignmentData {
   teamId: string;
   eventTime: number;
   type: 'goal' | 'assist';
+  isOwnGoal?: boolean; // Add own goal flag
 }
 
 export const assignGoalToPlayer = async (data: GoalAssignmentData) => {
-  console.log('⚽ SimplifiedGoalAssignmentService: Starting enhanced goal/assist assignment:', data);
+  console.log('⚽ SimplifiedGoalAssignmentService: Starting enhanced goal/assist assignment with own goal support:', data);
   
   try {
     // Enhanced input validation
@@ -31,13 +30,15 @@ export const assignGoalToPlayer = async (data: GoalAssignmentData) => {
 
     // Ensure teamId is a string and handle any formatting issues
     const teamIdString = String(data.teamId).trim();
+    const isOwnGoal = data.isOwnGoal || false;
 
     console.log('✅ SimplifiedGoalAssignmentService: Input validation passed:', {
       playerId: data.playerId,
       playerName: data.playerName,
       teamId: teamIdString,
       eventTime: data.eventTime,
-      type: data.type
+      type: data.type,
+      isOwnGoal
     });
 
     // Verify team exists in database before proceeding
@@ -91,7 +92,7 @@ export const assignGoalToPlayer = async (data: GoalAssignmentData) => {
       throw new Error(`This ${data.type} has already been assigned to ${data.playerName} at this time`);
     }
 
-    // Create match event with enhanced error handling
+    // Create match event with enhanced error handling and own goal support
     const { data: matchEvent, error: eventError } = await supabase
       .from('match_events')
       .insert({
@@ -100,7 +101,8 @@ export const assignGoalToPlayer = async (data: GoalAssignmentData) => {
         player_name: data.playerName,
         team_id: data.teamId, // Use the validated team ID
         event_time: data.eventTime,
-        description: `${data.type === 'goal' ? 'Goal' : 'Assist'} by ${data.playerName} at ${Math.floor(data.eventTime / 60)}'${String(data.eventTime % 60).padStart(2, '0')}`
+        own_goal: data.type === 'goal' ? isOwnGoal : null, // Only set own_goal for goals
+        description: `${isOwnGoal ? 'Own Goal' : (data.type === 'goal' ? 'Goal' : 'Assist')} by ${data.playerName} at ${Math.floor(data.eventTime / 60)}'${String(data.eventTime % 60).padStart(2, '0')}`
       })
       .select()
       .single();
@@ -120,11 +122,13 @@ export const assignGoalToPlayer = async (data: GoalAssignmentData) => {
 
     console.log('✅ SimplifiedGoalAssignmentService: Match event created successfully:', matchEvent);
 
-    // Update member stats with error handling
+    // Update member stats with error handling (only for regular goals, not own goals)
     try {
-      if (data.type === 'goal') {
+      if (data.type === 'goal' && !isOwnGoal) {
         await incrementMemberGoals(data.playerId, 1);
-        console.log('✅ SimplifiedGoalAssignmentService: Member goals incremented');
+        console.log('✅ SimplifiedGoalAssignmentService: Member goals incremented (regular goal)');
+      } else if (data.type === 'goal' && isOwnGoal) {
+        console.log('ℹ️ SimplifiedGoalAssignmentService: Own goal recorded, member stats not incremented');
       } else if (data.type === 'assist') {
         await incrementMemberAssists(data.playerId, 1);
         console.log('✅ SimplifiedGoalAssignmentService: Member assists incremented');
@@ -141,7 +145,7 @@ export const assignGoalToPlayer = async (data: GoalAssignmentData) => {
       throw new Error(`Failed to update player statistics: ${statsError instanceof Error ? statsError.message : 'Unknown error'}`);
     }
 
-    console.log('✅ SimplifiedGoalAssignmentService: Goal/assist assignment completed successfully');
+    console.log('✅ SimplifiedGoalAssignmentService: Goal/assist assignment completed successfully with own goal support');
     return matchEvent;
 
   } catch (error) {

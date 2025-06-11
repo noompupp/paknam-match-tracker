@@ -125,6 +125,7 @@ export type Database = {
           event_type: string
           fixture_id: number
           id: number
+          own_goal: boolean | null
           player_name: string
           team_id: string
         }
@@ -136,6 +137,7 @@ export type Database = {
           event_type: string
           fixture_id: number
           id?: number
+          own_goal?: boolean | null
           player_name: string
           team_id: string
         }
@@ -147,6 +149,7 @@ export type Database = {
           event_type?: string
           fixture_id?: number
           id?: number
+          own_goal?: boolean | null
           player_name?: string
           team_id?: string
         }

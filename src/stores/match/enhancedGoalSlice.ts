@@ -3,16 +3,14 @@ import { StateCreator } from 'zustand';
 import { MatchState } from './types';
 import { MatchActions } from './actions';
 import { generateId } from './utils';
+import { assignGoalToPlayer } from '@/services/fixtures/simplifiedGoalAssignmentService';
 
 export interface EnhancedGoalSlice {
   addGoal: MatchActions['addGoal'];
-  addAssist: MatchActions['addAssist'];
   removeGoal: (goalId: string) => void;
-  undoGoal: (goalId: string) => void;
   updateGoal: (goalId: string, updates: Partial<any>) => void;
   getUnsavedGoalsCount: MatchActions['getUnsavedGoalsCount'];
-  getUnassignedGoalsCount: MatchActions['getUnassignedGoalsCount'];
-  getUnassignedGoals: MatchActions['getUnassignedGoals'];
+  syncGoalsToDatabase: (fixtureId: number) => Promise<void>;
 }
 
 export const createEnhancedGoalSlice: StateCreator<
@@ -26,83 +24,27 @@ export const createEnhancedGoalSlice: StateCreator<
       ...goalData,
       id: generateId(),
       timestamp: Date.now(),
-      synced: false
-    };
-
-    set((state) => {
-      const newHomeScore = goalData.team === 'home' ? state.homeScore + 1 : state.homeScore;
-      const newAwayScore = goalData.team === 'away' ? state.awayScore + 1 : state.awayScore;
-      
-      return {
-        goals: [...state.goals, newGoal],
-        homeScore: newHomeScore,
-        awayScore: newAwayScore,
-        hasUnsavedChanges: true,
-        lastUpdated: Date.now()
-      };
-    });
-
-    console.log('⚽ Enhanced Goal Store: Goal added:', newGoal);
-    return newGoal;
-  },
-
-  addAssist: (assistData) => {
-    const newAssist = {
-      ...assistData,
-      type: 'assist' as const,
-      id: generateId(),
-      timestamp: Date.now(),
-      synced: false
+      synced: false,
+      isOwnGoal: goalData.isOwnGoal || false // Handle own goal flag
     };
 
     set((state) => ({
-      goals: [...state.goals, newAssist],
+      goals: [...state.goals, newGoal],
       hasUnsavedChanges: true,
       lastUpdated: Date.now()
-      // NOTE: No score increment for assists
     }));
 
-    console.log('🅰️ Enhanced Goal Store: Assist added:', newAssist);
-    return newAssist;
+    console.log('⚽ Enhanced Goal Store: Goal added with own goal support:', newGoal);
+    return newGoal;
   },
 
   removeGoal: (goalId: string) => {
-    set((state) => {
-      const goalToRemove = state.goals.find(g => g.id === goalId);
-      if (!goalToRemove) return state;
-
-      const newHomeScore = goalToRemove.team === 'home' && goalToRemove.type === 'goal' ? Math.max(0, state.homeScore - 1) : state.homeScore;
-      const newAwayScore = goalToRemove.team === 'away' && goalToRemove.type === 'goal' ? Math.max(0, state.awayScore - 1) : state.awayScore;
-
-      return {
-        goals: state.goals.filter(g => g.id !== goalId),
-        homeScore: newHomeScore,
-        awayScore: newAwayScore,
-        hasUnsavedChanges: true,
-        lastUpdated: Date.now()
-      };
-    });
+    set((state) => ({
+      goals: state.goals.filter(g => g.id !== goalId),
+      hasUnsavedChanges: true,
+      lastUpdated: Date.now()
+    }));
     console.log('🗑️ Enhanced Goal Store: Goal removed:', goalId);
-  },
-
-  undoGoal: (goalId: string) => {
-    // For undo, we mark the goal as "undone" rather than removing it entirely
-    set((state) => {
-      const goalToUndo = state.goals.find(g => g.id === goalId);
-      if (!goalToUndo || goalToUndo.synced) return state; // Can't undo synced goals
-
-      const newHomeScore = goalToUndo.team === 'home' && goalToUndo.type === 'goal' ? Math.max(0, state.homeScore - 1) : state.homeScore;
-      const newAwayScore = goalToUndo.team === 'away' && goalToUndo.type === 'goal' ? Math.max(0, state.awayScore - 1) : state.awayScore;
-
-      return {
-        goals: state.goals.filter(g => g.id !== goalId), // Remove unsaved goal
-        homeScore: newHomeScore,
-        awayScore: newAwayScore,
-        hasUnsavedChanges: true,
-        lastUpdated: Date.now()
-      };
-    });
-    console.log('↩️ Enhanced Goal Store: Goal undone:', goalId);
   },
 
   updateGoal: (goalId: string, updates: Partial<any>) => {
@@ -121,25 +63,41 @@ export const createEnhancedGoalSlice: StateCreator<
     return get().goals.filter(g => !g.synced).length;
   },
 
-  getUnassignedGoalsCount: () => {
-    const unassignedCount = get().goals.filter(g => 
-      g.playerName === 'Quick Goal' || 
-      g.playerName === 'Unknown Player' ||
-      (!g.playerId && g.type === 'goal')
-    ).length;
+  syncGoalsToDatabase: async (fixtureId: number) => {
+    const state = get();
+    const unsyncedGoals = state.goals.filter(g => !g.synced);
     
-    console.log('🏪 Enhanced Goal Store: Real-time unassigned goals count:', unassignedCount);
-    return unassignedCount;
-  },
+    if (unsyncedGoals.length === 0) {
+      console.log('✅ No unsynced goals to save');
+      return;
+    }
 
-  getUnassignedGoals: () => {
-    const unassignedGoals = get().goals.filter(g => 
-      g.playerName === 'Quick Goal' || 
-      g.playerName === 'Unknown Player' ||
-      (!g.playerId && g.type === 'goal')
-    );
-    
-    console.log('🏪 Enhanced Goal Store: Real-time unassigned goals:', unassignedGoals);
-    return unassignedGoals;
+    try {
+      console.log('💾 Syncing', unsyncedGoals.length, 'goal records to database with own goal support');
+      
+      for (const goal of unsyncedGoals) {
+        await assignGoalToPlayer({
+          fixtureId,
+          playerId: goal.playerId || 0,
+          playerName: goal.playerName,
+          teamId: goal.teamId.toString(),
+          eventTime: goal.time,
+          type: goal.type,
+          isOwnGoal: goal.isOwnGoal || false // Pass own goal flag
+        });
+      }
+
+      // Mark all goals as synced
+      set((state) => ({
+        goals: state.goals.map(g => ({ ...g, synced: true })),
+        hasUnsavedChanges: state.cards.some(c => !c.synced) || state.playerTimes.some(pt => !pt.synced),
+        lastUpdated: Date.now()
+      }));
+
+      console.log('✅ Goal sync completed successfully with own goal support');
+    } catch (error) {
+      console.error('❌ Error syncing goals to database:', error);
+      throw error;
+    }
   }
 });

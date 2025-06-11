@@ -1,19 +1,18 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { assignGoalToPlayer } from './fixtures/goalAssignmentService';
-import { resolveTeamIdForMatchEvent } from '@/utils/teamIdMapping';
 import { enhancedDuplicatePreventionService } from './fixtures/enhancedDuplicatePreventionService';
 
 interface UnifiedGoalData {
   fixtureId: number;
   playerId: number;
   playerName: string;
-  teamId: string; // Changed from number to string
+  teamId: string;
   teamName: string;
   goalType: 'goal' | 'assist';
   eventTime: number;
-  homeTeam: { id: string; name: string }; // Changed to string
-  awayTeam: { id: string; name: string }; // Changed to string
+  homeTeam: { id: string; name: string };
+  awayTeam: { id: string; name: string };
+  isOwnGoal?: boolean; // Add own goal flag
 }
 
 interface GoalResult {
@@ -27,7 +26,7 @@ interface GoalResult {
 
 export const unifiedGoalService = {
   async assignGoalWithScoreUpdate(data: UnifiedGoalData): Promise<GoalResult> {
-    console.log('⚽ UnifiedGoalService: Starting unified goal assignment with enhanced duplicate prevention:', data);
+    console.log('⚽ UnifiedGoalService: Starting unified goal assignment with own goal support:', data);
     
     try {
       // Validate input data
@@ -36,7 +35,7 @@ export const unifiedGoalService = {
       // Enhanced duplicate check
       const duplicateCheck = await enhancedDuplicatePreventionService.checkForDuplicateEvent({
         fixtureId: data.fixtureId,
-        teamId: data.teamId, // Now string
+        teamId: data.teamId,
         playerName: data.playerName,
         eventTime: data.eventTime,
         eventType: data.goalType
@@ -59,9 +58,10 @@ export const unifiedGoalService = {
         fixtureId: data.fixtureId,
         playerId: data.playerId,
         playerName: data.playerName,
-        teamId: data.teamId, // Now string
+        teamId: data.teamId,
         eventTime: data.eventTime,
-        type: data.goalType
+        type: data.goalType,
+        isOwnGoal: data.isOwnGoal || false // Pass own goal flag
       });
 
       // For goals (not assists), update the fixture score automatically
@@ -70,7 +70,10 @@ export const unifiedGoalService = {
         autoScoreUpdated = await this.updateFixtureScoreAfterGoal(data);
       }
 
-      console.log('✅ UnifiedGoalService: Goal assignment completed successfully with enhanced duplicate prevention');
+      console.log('✅ UnifiedGoalService: Goal assignment completed successfully with own goal support');
+      
+      const goalTypeLabel = data.isOwnGoal ? 'Own Goal' : 
+                           data.goalType === 'goal' ? 'Goal' : 'Assist';
       
       return {
         success: true,
@@ -79,11 +82,12 @@ export const unifiedGoalService = {
           playerName: data.playerName,
           team: data.teamName,
           time: data.eventTime,
-          type: data.goalType
+          type: data.goalType,
+          isOwnGoal: data.isOwnGoal || false
         },
         shouldUpdateScore: autoScoreUpdated,
         autoScoreUpdated,
-        message: `${data.goalType === 'goal' ? 'Goal' : 'Assist'} assigned successfully`,
+        message: `${goalTypeLabel} assigned successfully`,
         duplicatePrevented: false
       };
 
@@ -104,7 +108,7 @@ export const unifiedGoalService = {
         .from('match_events')
         .select('id')
         .eq('fixture_id', fixtureId)
-        .eq('team_id', teamId) // Now string
+        .eq('team_id', teamId)
         .eq('event_type', eventType)
         .eq('player_name', 'Unknown Player');
 
@@ -134,19 +138,19 @@ export const unifiedGoalService = {
     console.log('📊 UnifiedGoalService: Updating fixture score after goal assignment');
     
     try {
-      // Count total goals for each team from match_events
+      // Count total goals for each team from match_events (all goals count toward score)
       const { data: homeGoals } = await supabase
         .from('match_events')
         .select('id')
         .eq('fixture_id', data.fixtureId)
-        .eq('team_id', data.homeTeam.id) // Now string
+        .eq('team_id', data.homeTeam.id)
         .eq('event_type', 'goal');
 
       const { data: awayGoals } = await supabase
         .from('match_events')
         .select('id')
         .eq('fixture_id', data.fixtureId)
-        .eq('team_id', data.awayTeam.id) // Now string
+        .eq('team_id', data.awayTeam.id)
         .eq('event_type', 'goal');
 
       const homeScore = (homeGoals || []).length;
@@ -185,7 +189,7 @@ export const unifiedGoalService = {
       .eq('player_name', data.playerName)
       .eq('event_type', data.goalType)
       .eq('event_time', data.eventTime)
-      .eq('team_id', data.teamId); // Now string
+      .eq('team_id', data.teamId);
 
     if (error) {
       console.error('❌ UnifiedGoalService: Error checking for duplicates:', error);
@@ -205,7 +209,7 @@ export const unifiedGoalService = {
     if (!data.playerName?.trim()) {
       throw new Error('Player name is required');
     }
-    if (!data.teamId?.trim()) { // Changed validation for string
+    if (!data.teamId?.trim()) {
       throw new Error('Invalid team ID');
     }
     if (!['goal', 'assist'].includes(data.goalType)) {
