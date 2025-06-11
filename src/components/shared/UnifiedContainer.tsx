@@ -10,7 +10,6 @@ interface UnifiedContainerProps {
   spacing?: 'tight' | 'normal' | 'loose';
   maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '7xl' | 'full';
   enableTopSafePadding?: boolean;
-  enableBottomSafePadding?: boolean;
 }
 
 const UnifiedContainer = ({
@@ -19,8 +18,7 @@ const UnifiedContainer = ({
   variant = 'content',
   spacing = 'normal',
   maxWidth = '7xl',
-  enableTopSafePadding = true,
-  enableBottomSafePadding = true
+  enableTopSafePadding = true
 }: UnifiedContainerProps) => {
   const { isMobile, isIOS } = usePlatformDetection();
   
@@ -43,32 +41,24 @@ const UnifiedContainer = ({
     switch (variant) {
       case 'page':
         return cn(
-          // Premier League gradient background
           "gradient-bg min-h-screen min-h-dvh",
           "w-full overflow-x-hidden",
-          // Enhanced safe area support
-          enableTopSafePadding && "pt-6",
-          enableBottomSafePadding && "pb-6",
-          // iOS specific safe areas
+          enableTopSafePadding && "safe-top-enhanced",
           isMobile && isIOS && "safe-x safe-y",
-          isMobile && !isIOS && "safe-x",
-          // Additional mobile optimizations
-          "antialiased"
+          isMobile && !isIOS && "safe-x"
         );
       case 'content':
         return cn(
           maxWidthClasses[maxWidth],
-          "mx-auto px-4 py-4",
-          enableTopSafePadding && "pt-4",
-          enableBottomSafePadding && "pb-24",
-          isMobile && "px-4 py-4",
+          "mx-auto px-4 py-8",
+          enableTopSafePadding && "safe-top-content",
+          isMobile && "px-4 py-6",
           "mobile-content-spacing"
         );
       case 'section':
         return cn(
           "w-full",
-          spacingClasses[spacing],
-          "px-4"
+          spacingClasses[spacing]
         );
       default:
         return "";
@@ -76,17 +66,7 @@ const UnifiedContainer = ({
   };
 
   return (
-    <div 
-      className={cn(getVariantClasses(), className)}
-      style={{
-        paddingTop: enableTopSafePadding && variant === 'page' && isMobile
-          ? `max(1.5rem, env(safe-area-inset-top))`
-          : undefined,
-        paddingBottom: enableBottomSafePadding && variant === 'page' && isMobile
-          ? `max(1.5rem, env(safe-area-inset-bottom))`
-          : undefined
-      }}
-    >
+    <div className={cn(getVariantClasses(), className)}>
       {children}
     </div>
   );

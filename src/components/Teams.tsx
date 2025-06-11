@@ -5,8 +5,6 @@ import { useTeamMembers } from "@/hooks/useMembers";
 import TeamsGrid from "./teams/TeamsGrid";
 import EnhancedTeamSquad from "./teams/EnhancedTeamSquad";
 import TournamentLogo from "./TournamentLogo";
-import UnifiedContainer from "./shared/UnifiedContainer";
-import StickyBackground from "./shared/StickyBackground";
 
 const Teams = () => {
   const { data: teams, isLoading: teamsLoading, error } = useTeams();
@@ -38,32 +36,39 @@ const Teams = () => {
 
   if (error) {
     return (
-      <UnifiedContainer variant="content" className="flex items-center justify-center min-h-[50vh]">
-        <div className="text-center text-foreground">
+      <div className="gradient-bg flex items-center justify-center min-h-screen">
+        <div className="text-center text-foreground container-responsive">
           <h2 className="text-2xl font-bold mb-4">Error Loading Teams</h2>
           <p className="text-muted-foreground">Please check your connection and try again.</p>
           <p className="text-muted-foreground text-sm mt-2">{error.message}</p>
         </div>
-      </UnifiedContainer>
+      </div>
     );
   }
 
   return (
-    <>
+    <div className="gradient-bg">
       {/* Header */}
-      <StickyBackground variant="header">
-        <UnifiedContainer variant="content">
-          <div className="text-center py-6">
+      <div 
+        className="border-b"
+        style={{
+          background: 'var(--header-background)',
+          backdropFilter: 'var(--header-backdrop-blur)',
+          borderColor: 'var(--header-border)'
+        }}
+      >
+        <div className="max-w-7xl mx-auto container-responsive py-6">
+          <div className="text-center">
             <div className="flex items-center justify-center gap-3 mb-3">
               <TournamentLogo />
               <h1 className="text-3xl font-bold text-foreground">Teams & Players</h1>
             </div>
             <p className="text-muted-foreground">Meet our {teams?.length || 0} competing teams</p>
           </div>
-        </UnifiedContainer>
-      </StickyBackground>
+        </div>
+      </div>
 
-      <UnifiedContainer variant="content" spacing="normal">
+      <div className="max-w-7xl mx-auto container-responsive py-8 space-y-8 mobile-content-spacing">
         {/* Teams Grid */}
         <TeamsGrid 
           teams={teams}
@@ -80,8 +85,8 @@ const Teams = () => {
             />
           </div>
         )}
-      </UnifiedContainer>
-    </>
+      </div>
+    </div>
   );
 };
 

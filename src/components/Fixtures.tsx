@@ -7,7 +7,6 @@ import UpcomingFixturesSection from "./fixtures/UpcomingFixturesSection";
 import AllFixturesSection from "./fixtures/AllFixturesSection";
 import MatchSummaryDialog from "./fixtures/MatchSummaryDialog";
 import MatchPreviewModal from "./fixtures/MatchPreviewModal";
-import UnifiedContainer from "./shared/UnifiedContainer";
 
 const Fixtures = () => {
   const { data: allFixtures, isLoading: allLoading, error } = useFixtures();
@@ -20,13 +19,13 @@ const Fixtures = () => {
 
   if (error) {
     return (
-      <UnifiedContainer variant="content" className="flex items-center justify-center min-h-[50vh]">
-        <div className="text-center text-foreground">
+      <div className="gradient-bg flex items-center justify-center min-h-screen">
+        <div className="text-center text-foreground container-responsive">
           <h2 className="text-2xl font-bold mb-4">Error Loading Fixtures</h2>
           <p className="text-muted-foreground">Please check your connection and try again.</p>
           <p className="text-muted-foreground text-sm mt-2">{error.message}</p>
         </div>
-      </UnifiedContainer>
+      </div>
     );
   }
 
@@ -47,24 +46,26 @@ const Fixtures = () => {
 
   return (
     <>
-      <FixturesHeader />
+      <div className="gradient-bg">
+        <FixturesHeader />
 
-      <UnifiedContainer variant="content" spacing="normal">
-        <UpcomingFixturesSection 
-          upcomingFixtures={upcomingFixtures || []}
-          allFixtures={allFixtures || []}
-          isLoading={upcomingLoading}
-          onFixtureClick={handleFixtureClick}
-          onPreviewClick={handlePreviewClick}
-        />
+        <div className="max-w-7xl mx-auto container-responsive py-8 space-y-8 mobile-content-spacing">
+          <UpcomingFixturesSection 
+            upcomingFixtures={upcomingFixtures || []}
+            allFixtures={allFixtures || []}
+            isLoading={upcomingLoading}
+            onFixtureClick={handleFixtureClick}
+            onPreviewClick={handlePreviewClick}
+          />
 
-        <AllFixturesSection 
-          sortedAllFixtures={sortedAllFixtures}
-          isLoading={allLoading}
-          onFixtureClick={handleFixtureClick}
-          onPreviewClick={handlePreviewClick}
-        />
-      </UnifiedContainer>
+          <AllFixturesSection 
+            sortedAllFixtures={sortedAllFixtures}
+            isLoading={allLoading}
+            onFixtureClick={handleFixtureClick}
+            onPreviewClick={handlePreviewClick}
+          />
+        </div>
+      </div>
 
       {/* Match Summary Dialog */}
       <MatchSummaryDialog 
