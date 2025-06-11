@@ -30,6 +30,41 @@ export type Database = {
         }
         Relationships: []
       }
+      coordination_events: {
+        Row: {
+          event_data: Json | null
+          event_type: string
+          id: string
+          match_coordination_id: string
+          referee_id: string | null
+          timestamp: string
+        }
+        Insert: {
+          event_data?: Json | null
+          event_type: string
+          id?: string
+          match_coordination_id: string
+          referee_id?: string | null
+          timestamp?: string
+        }
+        Update: {
+          event_data?: Json | null
+          event_type?: string
+          id?: string
+          match_coordination_id?: string
+          referee_id?: string | null
+          timestamp?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coordination_events_match_coordination_id_fkey"
+            columns: ["match_coordination_id"]
+            isOneToOne: false
+            referencedRelation: "match_coordination"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       favicon: {
         Row: {
           created_at: string
@@ -128,6 +163,47 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "teams"
             referencedColumns: ["__id__"]
+          },
+        ]
+      }
+      match_coordination: {
+        Row: {
+          completion_summary: Json | null
+          coordinator_referee_id: string | null
+          created_at: string
+          final_review_data: Json | null
+          fixture_id: number
+          id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          completion_summary?: Json | null
+          coordinator_referee_id?: string | null
+          created_at?: string
+          final_review_data?: Json | null
+          fixture_id: number
+          id?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          completion_summary?: Json | null
+          coordinator_referee_id?: string | null
+          created_at?: string
+          final_review_data?: Json | null
+          fixture_id?: number
+          id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "match_coordination_fixture_id_fkey"
+            columns: ["fixture_id"]
+            isOneToOne: true
+            referencedRelation: "fixtures"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -354,6 +430,53 @@ export type Database = {
         }
         Relationships: []
       }
+      referee_assignments: {
+        Row: {
+          assigned_role: string
+          completion_timestamp: string | null
+          created_at: string
+          data: Json | null
+          id: string
+          match_coordination_id: string
+          notes: string | null
+          referee_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_role: string
+          completion_timestamp?: string | null
+          created_at?: string
+          data?: Json | null
+          id?: string
+          match_coordination_id: string
+          notes?: string | null
+          referee_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_role?: string
+          completion_timestamp?: string | null
+          created_at?: string
+          data?: Json | null
+          id?: string
+          match_coordination_id?: string
+          notes?: string | null
+          referee_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "referee_assignments_match_coordination_id_fkey"
+            columns: ["match_coordination_id"]
+            isOneToOne: false
+            referencedRelation: "match_coordination"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       teams: {
         Row: {
           __id__: string
@@ -422,6 +545,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      finalize_match_coordination: {
+        Args: { p_coordination_id: string; p_final_review_data?: Json }
+        Returns: Json
+      }
       get_enhanced_match_summary: {
         Args: { p_fixture_id: number }
         Returns: {
@@ -435,6 +562,17 @@ export type Database = {
           player_times: Json
           summary_stats: Json
           timeline_events: Json
+        }[]
+      }
+      get_match_coordination_status: {
+        Args: { p_fixture_id: number }
+        Returns: {
+          coordination_id: string
+          fixture_id: number
+          status: string
+          assignments: Json
+          completion_summary: Json
+          ready_for_review: boolean
         }[]
       }
       get_user_role: {

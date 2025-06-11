@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import RefereeTabsNavigation from "./RefereeTabsNavigation";
@@ -6,6 +5,7 @@ import ScoreTab from "./tabs/ScoreTab";
 import UnifiedTimerTab from "./tabs/UnifiedTimerTab";
 import GoalsTab from "./tabs/GoalsTab";
 import CardsTab from "./tabs/CardsTab";
+import CoordinationTab from "./tabs/CoordinationTab";
 import SummaryTab from "./tabs/SummaryTab";
 import MatchEditReviewPanel from "./MatchEditReviewPanel";
 import GoalEntryWizard from "./GoalEntryWizard";
@@ -54,6 +54,7 @@ interface RefereeToolsMainProps {
 const RefereeToolsMain = (props: RefereeToolsMainProps) => {
   const [showGoalWizard, setShowGoalWizard] = useState(false);
   const [goalWizardInitialTeam, setGoalWizardInitialTeam] = useState<'home' | 'away' | undefined>(undefined);
+  const [currentUserRole, setCurrentUserRole] = useState<string | null>(null);
 
   // Handle quick goal from Score tab
   const handleQuickGoal = (team: 'home' | 'away') => {
@@ -95,6 +96,11 @@ const RefereeToolsMain = (props: RefereeToolsMainProps) => {
     
     setShowGoalWizard(false);
     setGoalWizardInitialTeam(undefined);
+  };
+
+  const handleRoleAssigned = (role: string) => {
+    setCurrentUserRole(role);
+    console.log('🎯 RefereeToolsMain: User assigned to role:', role);
   };
 
   const playersForTimeTracker = props.trackedPlayers.map(player => ({
@@ -260,6 +266,13 @@ const RefereeToolsMain = (props: RefereeToolsMainProps) => {
               onCardTypeChange={props.setSelectedCardType}
               onCardAdded={props.onCardAdded}
               formatTime={props.formatTime}
+            />
+          </TabsContent>
+
+          <TabsContent value="coordination" className="mt-6">
+            <CoordinationTab
+              selectedFixtureData={props.selectedFixtureData}
+              onRoleAssigned={handleRoleAssigned}
             />
           </TabsContent>
 
