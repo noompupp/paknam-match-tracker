@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { SecureAuthProvider, useSecureAuth } from "@/contexts/SecureAuthContext";
 import { AuthProvider } from "@/contexts/AuthContext"; // Keep for backward compatibility
+import { ThemeProvider } from "@/components/theme/ThemeProvider";
 import SecureLogin from "@/components/auth/SecureLogin";
 import RoleBasedNavigation from "@/components/auth/RoleBasedNavigation";
 import RoleGuard from "@/components/auth/RoleGuard";
@@ -30,8 +31,8 @@ const AppContent = () => {
   // Show loading screen while checking authentication
   if (loading) {
     return (
-      <div className="min-h-screen gradient-bg flex items-center justify-center">
-        <div className="text-center text-white">
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center text-foreground">
           <h2 className="text-2xl font-bold mb-4">Loading...</h2>
           <p>Initializing secure session...</p>
         </div>
@@ -76,7 +77,7 @@ const AppContent = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-background">
       <main className="pb-20">
         {renderContent()}
       </main>
@@ -88,12 +89,19 @@ const AppContent = () => {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <SecureAuthProvider>
-        <AuthProvider>
-          <AppContent />
-          <Toaster />
-        </AuthProvider>
-      </SecureAuthProvider>
+      <ThemeProvider
+        attribute="class"
+        defaultTheme="system"
+        enableSystem
+        disableTransitionOnChange
+      >
+        <SecureAuthProvider>
+          <AuthProvider>
+            <AppContent />
+            <Toaster />
+          </AuthProvider>
+        </SecureAuthProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }

@@ -89,11 +89,8 @@ const RoleBasedNavigation = ({ activeTab, onTabChange }: RoleBasedNavigationProp
 
   return (
     <nav 
-      className="fixed bottom-0 left-0 right-0 border-t z-50 safe-bottom"
+      className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-lg border-t border-border z-50 safe-bottom"
       style={{
-        background: 'var(--header-background)',
-        backdropFilter: 'var(--header-backdrop-blur)',
-        borderColor: 'var(--header-border)',
         paddingBottom: `max(env(safe-area-inset-bottom), 0.5rem)`,
         height: `calc(70px + env(safe-area-inset-bottom))`
       }}
@@ -112,14 +109,9 @@ const RoleBasedNavigation = ({ activeTab, onTabChange }: RoleBasedNavigationProp
               onClick={() => onTabChange(item.id)}
               className={`flex flex-col items-center gap-1 h-auto py-2 px-3 transition-all duration-200 relative touch-target ${
                 isActive 
-                  ? "text-primary rounded-xl border border-transparent" 
+                  ? "text-primary bg-primary/10 rounded-xl border border-primary/20" 
                   : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
               }`}
-              style={isActive ? {
-                background: 'var(--nav-active-bg)',
-                borderColor: 'var(--nav-active-border)',
-                boxShadow: 'var(--nav-active-glow)'
-              } : {}}
             >
               <Icon className="h-5 w-5" />
               <span 
@@ -147,16 +139,11 @@ const RoleBasedNavigation = ({ activeTab, onTabChange }: RoleBasedNavigationProp
               onClick={() => handleProtectedTabClick(item.id)}
               className={`flex flex-col items-center gap-1 h-auto py-2 px-3 transition-all duration-200 relative touch-target ${
                 isActive 
-                  ? "text-primary rounded-xl border border-transparent" 
+                  ? "text-primary bg-primary/10 rounded-xl border border-primary/20" 
                   : isAccessible
                     ? "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                     : "text-muted-foreground/60 hover:text-muted-foreground/80 hover:bg-muted/20"
               }`}
-              style={isActive ? {
-                background: 'var(--nav-active-bg)',
-                borderColor: 'var(--nav-active-border)',
-                boxShadow: 'var(--nav-active-glow)'
-              } : {}}
               title={isAccessible ? item.description : "Sign in to access this feature"}
             >
               <div className="relative">

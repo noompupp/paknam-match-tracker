@@ -24,9 +24,10 @@ const RefereePageContainer = ({
 
   return (
     <div className={cn(
-      "gradient-bg",
+      "bg-gradient-to-br from-primary/10 via-background to-secondary/10",
       "w-full",
       "overflow-x-hidden",
+      "min-h-screen",
       isMobile && isIOS && "referee-ios-safe",
       isMobile && !isIOS && "referee-mobile-container",
       !isMobile && "min-h-screen",
