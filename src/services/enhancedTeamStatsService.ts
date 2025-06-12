@@ -54,19 +54,48 @@ export const enhancedTeamStatsService = {
     console.log('🎯 EnhancedTeamStatsService: Fetching enhanced stats for team:', teamId);
     
     try {
-      // Get team information first
-      const { data: team, error: teamError } = await supabase
+      // Enhanced team lookup with proper error handling and flexible ID matching
+      const { data: teams, error: teamError } = await supabase
         .from('teams')
         .select('id, __id__, name, color, logo')
         .or(`id.eq.${teamId},__id__.eq.${teamId}`)
-        .single();
+        .limit(1);
 
-      if (teamError || !team) {
-        console.error('❌ Team not found:', teamError);
-        throw new Error(`Team not found: ${teamId}`);
+      if (teamError) {
+        console.error('❌ Database error during team lookup:', teamError);
+        throw new Error(`Database error: ${teamError.message}`);
       }
 
-      // Get members with enhanced data
+      if (!teams || teams.length === 0) {
+        console.error('❌ Team not found with ID:', teamId);
+        console.log('🔍 Available teams debug info - attempting to fetch all teams for comparison');
+        
+        // Debug: Get all teams to help diagnose the issue
+        const { data: allTeams, error: debugError } = await supabase
+          .from('teams')
+          .select('id, __id__, name')
+          .limit(10);
+        
+        if (!debugError && allTeams) {
+          console.log('🔍 Available teams:', allTeams.map(t => ({ id: t.id, __id__: t.__id__, name: t.name })));
+        }
+        
+        throw new Error(`Team not found with ID: ${teamId}. Please check if the team exists in the database.`);
+      }
+
+      const team = teams[0];
+      console.log('✅ Team found:', { id: team.id, __id__: team.__id__, name: team.name });
+
+      // Use the team's __id__ for member lookup (as members.team_id references teams.__id__)
+      const teamIdentifier = team.__id__ || team.id?.toString();
+      
+      if (!teamIdentifier) {
+        throw new Error(`Invalid team identifier for team: ${team.name}`);
+      }
+
+      console.log('🔍 Looking up members with team_id:', teamIdentifier);
+
+      // Get members with enhanced data using the correct team identifier
       const { data: members, error: membersError } = await supabase
         .from('members')
         .select(`
@@ -84,13 +113,15 @@ export const enhancedTeamStatsService = {
           yellow_cards,
           red_cards
         `)
-        .eq('team_id', team.__id__)
+        .eq('team_id', teamIdentifier)
         .order('name', { ascending: true });
 
       if (membersError) {
         console.error('❌ Error fetching members:', membersError);
-        throw membersError;
+        throw new Error(`Error fetching team members: ${membersError.message}`);
       }
+
+      console.log('📊 Members found:', members?.length || 0);
 
       // Transform and enhance the data
       const enhancedStats: EnhancedPlayerStats[] = (members || []).map(member => {
@@ -122,8 +153,8 @@ export const enhancedTeamStatsService = {
           contributionScore: goals * 3 + assists * 2 + Math.floor(minutes / 90),
           
           team: {
-            id: team.__id__,
-            name: team.name,
+            id: team.__id__ || team.id?.toString() || '',
+            name: team.name || 'Unknown Team',
             color: team.color,
             logo: team.logo
           }
@@ -135,6 +166,7 @@ export const enhancedTeamStatsService = {
         table_name: 'members',
         result: { 
           team_id: teamId,
+          team_name: team.name,
           players_count: enhancedStats.length,
           total_goals: enhancedStats.reduce((sum, p) => sum + p.goals, 0)
         },
@@ -142,6 +174,7 @@ export const enhancedTeamStatsService = {
       });
 
       console.log('✅ Enhanced team stats fetched successfully:', {
+        teamId: teamId,
         teamName: team.name,
         playersCount: enhancedStats.length,
         totalGoals: enhancedStats.reduce((sum, p) => sum + p.goals, 0)
@@ -156,6 +189,7 @@ export const enhancedTeamStatsService = {
         operation_type: 'enhanced_team_stats_fetch_failed',
         table_name: 'members',
         error_message: error instanceof Error ? error.message : 'Unknown error',
+        result: { team_id: teamId },
         success: false
       });
 
@@ -166,34 +200,39 @@ export const enhancedTeamStatsService = {
   async getTeamOverview(teamId: string): Promise<TeamStatsOverview> {
     console.log('📊 Getting team overview for:', teamId);
     
-    const players = await this.getTeamPlayerStats(teamId);
-    
-    const totalGoals = players.reduce((sum, p) => sum + p.goals, 0);
-    const totalAssists = players.reduce((sum, p) => sum + p.assists, 0);
-    const totalMinutes = players.reduce((sum, p) => sum + p.total_minutes_played, 0);
-    const totalMatches = Math.max(...players.map(p => p.matches_played), 0);
-    
-    const topScorer = players.reduce((top, player) => 
-      player.goals > (top?.goals || 0) ? player : top, null as EnhancedPlayerStats | null);
-    
-    const topAssister = players.reduce((top, player) => 
-      player.assists > (top?.assists || 0) ? player : top, null as EnhancedPlayerStats | null);
-    
-    const mostExperienced = players.reduce((top, player) => 
-      player.total_minutes_played > (top?.total_minutes_played || 0) ? player : top, null as EnhancedPlayerStats | null);
+    try {
+      const players = await this.getTeamPlayerStats(teamId);
+      
+      const totalGoals = players.reduce((sum, p) => sum + p.goals, 0);
+      const totalAssists = players.reduce((sum, p) => sum + p.assists, 0);
+      const totalMinutes = players.reduce((sum, p) => sum + p.total_minutes_played, 0);
+      const totalMatches = Math.max(...players.map(p => p.matches_played), 0);
+      
+      const topScorer = players.reduce((top, player) => 
+        player.goals > (top?.goals || 0) ? player : top, null as EnhancedPlayerStats | null);
+      
+      const topAssister = players.reduce((top, player) => 
+        player.assists > (top?.assists || 0) ? player : top, null as EnhancedPlayerStats | null);
+      
+      const mostExperienced = players.reduce((top, player) => 
+        player.total_minutes_played > (top?.total_minutes_played || 0) ? player : top, null as EnhancedPlayerStats | null);
 
-    return {
-      totalPlayers: players.length,
-      totalGoals,
-      totalAssists,
-      totalMinutes,
-      totalMatches,
-      averageGoalsPerMatch: totalMatches > 0 ? Number((totalGoals / totalMatches).toFixed(2)) : 0,
-      averageMinutesPerPlayer: players.length > 0 ? Math.round(totalMinutes / players.length) : 0,
-      topScorer,
-      topAssister,
-      mostExperienced
-    };
+      return {
+        totalPlayers: players.length,
+        totalGoals,
+        totalAssists,
+        totalMinutes,
+        totalMatches,
+        averageGoalsPerMatch: totalMatches > 0 ? Number((totalGoals / totalMatches).toFixed(2)) : 0,
+        averageMinutesPerPlayer: players.length > 0 ? Math.round(totalMinutes / players.length) : 0,
+        topScorer,
+        topAssister,
+        mostExperienced
+      };
+    } catch (error) {
+      console.error('❌ Error getting team overview:', error);
+      throw error;
+    }
   },
 
   formatMinutes(minutes: number): string {
