@@ -1,10 +1,10 @@
 
-import { MatchGoal, MatchCard, MatchPlayerTime, MatchEvent } from './types';
+import { MatchGoal, MatchCard, MatchPlayerTime } from './types';
 
 export interface MatchActions {
-  // Goal management
+  // Goal actions
   addGoal: (goalData: Omit<MatchGoal, 'id' | 'timestamp' | 'synced'>) => MatchGoal;
-  addAssist: (assistData: Omit<MatchGoal, 'id' | 'timestamp' | 'synced' | 'type'>) => MatchGoal;
+  addAssist: (assistData: Omit<MatchGoal, 'id' | 'timestamp' | 'synced'>) => MatchGoal;
   updateGoal: (goalId: string, updates: Partial<MatchGoal>) => void;
   removeGoal: (goalId: string) => void;
   undoGoal: (goalId: string) => void;
@@ -12,32 +12,22 @@ export interface MatchActions {
   getUnassignedGoals: () => MatchGoal[];
   getUnsavedGoalsCount: () => number;
 
-  // Card management with enhanced sync
+  // Card actions
   addCard: (cardData: Omit<MatchCard, 'id' | 'timestamp' | 'synced'>) => MatchCard;
-  removeCard: (cardId: string) => void;
   updateCard: (cardId: string, updates: Partial<MatchCard>) => void;
+  removeCard: (cardId: string) => void;
   getUnsavedCardsCount: () => number;
-  syncCardsToDatabase: (fixtureId: number) => Promise<void>;
 
-  // Player time management with auto-save on sub-in
-  addPlayerTime: (playerData: Omit<MatchPlayerTime, 'id' | 'synced'>) => MatchPlayerTime;
-  updatePlayerTime: (playerId: number, updates: Partial<MatchPlayerTime>) => void;
-  startPlayerTime: (playerId: number, playerName: string, teamId: number) => void;
-  stopPlayerTime: (playerId: number) => void;
-  autoSaveOnSubIn: (playerId: number, playerName: string, teamId: number) => Promise<void>;
-  getPlayerTimesByFixture: (fixtureId: number) => MatchPlayerTime[];
-  calculateTotalMinutesPlayed: (playerId: number) => number;
-  getActivePlayersCount: () => number;
-  loadPlayerTimesFromDatabase: (fixtureId: number) => Promise<void>;
-  syncPlayerTimesToDatabase: (fixtureId: number) => Promise<void>;
-  clearPlayerTimes: () => void;
-  optimizedBatchSync: (fixtureId: number) => Promise<void>;
+  // Player time actions
+  addPlayerTime: (playerTimeData: Omit<MatchPlayerTime, 'id' | 'timestamp' | 'synced'>) => MatchPlayerTime;
+  updatePlayerTime: (playerTimeId: string, updates: Partial<MatchPlayerTime>) => void;
+  removePlayerTime: (playerTimeId: string) => void;
+  getUnsavedPlayerTimesCount: () => number;
 
-  // Core state management
-  setFixtureId: (id: number | null) => void;
-  addEvent: (type: string, description: string, time: number) => void;
+  // Core actions
+  setFixtureId: (fixtureId: number) => void;
+  updateScore: (homeScore: number, awayScore: number) => void;
   markAsSaved: () => void;
-  resetState: () => void;
-  triggerUIUpdate: () => void;
-  getUnsavedItemsCount: () => { goals: number; cards: number; playerTimes: number };
+  resetMatch: () => void;
+  getUnsavedItemsCount: () => number;
 }

@@ -5,12 +5,10 @@ import { MatchActions } from './actions';
 
 export interface CoreSlice {
   setFixtureId: MatchActions['setFixtureId'];
-  addEvent: MatchActions['addEvent'];
+  updateScore: MatchActions['updateScore'];
   markAsSaved: MatchActions['markAsSaved'];
-  resetState: MatchActions['resetState'];
-  triggerUIUpdate: MatchActions['triggerUIUpdate'];
+  resetMatch: MatchActions['resetMatch'];
   getUnsavedItemsCount: MatchActions['getUnsavedItemsCount'];
-  syncAllToDatabase: (fixtureId: number) => Promise<void>;
 }
 
 export const createCoreSlice: StateCreator<
@@ -19,24 +17,17 @@ export const createCoreSlice: StateCreator<
   [],
   CoreSlice
 > = (set, get) => ({
-  setFixtureId: (id) => {
-    set({ fixtureId: id });
+  setFixtureId: (fixtureId: number) => {
+    set({ fixtureId });
   },
 
-  addEvent: (type, description, time) => {
-    const newEvent = {
-      id: `event_${Date.now()}`,
-      type,
-      description,
-      time,
-      timestamp: Date.now()
-    };
-
-    set((state) => ({
-      events: [...state.events, newEvent],
+  updateScore: (homeScore: number, awayScore: number) => {
+    set({
+      homeScore,
+      awayScore,
       hasUnsavedChanges: true,
       lastUpdated: Date.now()
-    }));
+    });
   },
 
   markAsSaved: () => {
@@ -49,7 +40,7 @@ export const createCoreSlice: StateCreator<
     }));
   },
 
-  resetState: () => {
+  resetMatch: () => {
     set({
       fixtureId: null,
       homeScore: 0,
@@ -63,41 +54,11 @@ export const createCoreSlice: StateCreator<
     });
   },
 
-  triggerUIUpdate: () => {
-    set((state) => ({
-      lastUpdated: Date.now()
-    }));
-  },
-
   getUnsavedItemsCount: () => {
     const state = get();
-    return {
-      goals: state.goals.filter(g => !g.synced).length,
-      cards: state.cards.filter(c => !c.synced).length,
-      playerTimes: state.playerTimes.filter(pt => !pt.synced).length
-    };
-  },
-
-  syncAllToDatabase: async (fixtureId: number) => {
-    const state = get();
-    
-    try {
-      console.log('🔄 Starting comprehensive sync for fixture:', fixtureId);
-      
-      // Sync cards if we have the method available
-      if ('syncCardsToDatabase' in state) {
-        await (state as any).syncCardsToDatabase(fixtureId);
-      }
-      
-      // Sync player times if we have the method available
-      if ('syncPlayerTimesToDatabase' in state) {
-        await (state as any).syncPlayerTimesToDatabase(fixtureId);
-      }
-      
-      console.log('✅ Comprehensive sync completed');
-    } catch (error) {
-      console.error('❌ Error in comprehensive sync:', error);
-      throw error;
-    }
+    const unsavedGoals = state.goals.filter(g => !g.synced).length;
+    const unsavedCards = state.cards.filter(c => !c.synced).length;
+    const unsavedPlayerTimes = state.playerTimes.filter(pt => !pt.synced).length;
+    return unsavedGoals + unsavedCards + unsavedPlayerTimes;
   }
 });

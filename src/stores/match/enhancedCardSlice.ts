@@ -3,14 +3,12 @@ import { StateCreator } from 'zustand';
 import { MatchState } from './types';
 import { MatchActions } from './actions';
 import { generateId } from './utils';
-import { assignCardToPlayer } from '@/services/fixtures/simplifiedCardService';
 
 export interface EnhancedCardSlice {
   addCard: MatchActions['addCard'];
-  removeCard: (cardId: string) => void;
   updateCard: (cardId: string, updates: Partial<any>) => void;
-  getUnsavedCardsCount: MatchActions['getUnsavedCardsCount'];
-  syncCardsToDatabase: (fixtureId: number) => Promise<void>;
+  removeCard: (cardId: string) => void;
+  getUnsavedCardsCount: () => number;
 }
 
 export const createEnhancedCardSlice: StateCreator<
@@ -33,17 +31,8 @@ export const createEnhancedCardSlice: StateCreator<
       lastUpdated: Date.now()
     }));
 
-    console.log('🟨 Enhanced Card Store: Card added with save capability:', newCard);
+    console.log('🟨 Enhanced Card Store: Card added:', newCard);
     return newCard;
-  },
-
-  removeCard: (cardId: string) => {
-    set((state) => ({
-      cards: state.cards.filter(c => c.id !== cardId),
-      hasUnsavedChanges: true,
-      lastUpdated: Date.now()
-    }));
-    console.log('🗑️ Enhanced Card Store: Card removed:', cardId);
   },
 
   updateCard: (cardId: string, updates: Partial<any>) => {
@@ -58,44 +47,16 @@ export const createEnhancedCardSlice: StateCreator<
     }));
   },
 
-  getUnsavedCardsCount: () => {
-    return get().cards.filter(c => !c.synced).length;
+  removeCard: (cardId: string) => {
+    set((state) => ({
+      cards: state.cards.filter(c => c.id !== cardId),
+      hasUnsavedChanges: true,
+      lastUpdated: Date.now()
+    }));
+    console.log('🗑️ Enhanced Card Store: Card removed:', cardId);
   },
 
-  syncCardsToDatabase: async (fixtureId: number) => {
-    const state = get();
-    const unsyncedCards = state.cards.filter(c => !c.synced);
-    
-    if (unsyncedCards.length === 0) {
-      console.log('✅ No unsynced cards to save');
-      return;
-    }
-
-    try {
-      console.log('💾 Syncing', unsyncedCards.length, 'card records to database');
-      
-      for (const card of unsyncedCards) {
-        await assignCardToPlayer({
-          fixtureId,
-          playerId: card.playerId || 0,
-          playerName: card.playerName,
-          teamId: card.teamId.toString(),
-          cardType: card.type,
-          eventTime: card.time
-        });
-      }
-
-      // Mark all cards as synced
-      set((state) => ({
-        cards: state.cards.map(c => ({ ...c, synced: true })),
-        hasUnsavedChanges: state.goals.some(g => !g.synced) || state.playerTimes.some(pt => !pt.synced),
-        lastUpdated: Date.now()
-      }));
-
-      console.log('✅ Card sync completed successfully');
-    } catch (error) {
-      console.error('❌ Error syncing cards to database:', error);
-      throw error;
-    }
+  getUnsavedCardsCount: () => {
+    return get().cards.filter(c => !c.synced).length;
   }
 });

@@ -8,9 +8,18 @@ import { BaseStepProps } from "./types";
 interface ConfirmationStepProps extends Pick<BaseStepProps, 'selectedFixtureData' | 'wizardData'> {
   onConfirm: () => void;
   onBack: () => void;
+  matchTime?: number;
+  formatTime?: (seconds: number) => string;
 }
 
-const ConfirmationStep = ({ selectedFixtureData, wizardData, onConfirm, onBack }: ConfirmationStepProps) => {
+const ConfirmationStep = ({ 
+  selectedFixtureData, 
+  wizardData, 
+  onConfirm, 
+  onBack,
+  matchTime,
+  formatTime 
+}: ConfirmationStepProps) => {
   const { selectedPlayer, selectedTeam, isOwnGoal, needsAssist, assistPlayer } = wizardData;
 
   const getTeamName = (team: 'home' | 'away') => {
@@ -39,6 +48,11 @@ const ConfirmationStep = ({ selectedFixtureData, wizardData, onConfirm, onBack }
         <p className="text-muted-foreground">
           Please review the goal details before saving
         </p>
+        {matchTime && formatTime && (
+          <p className="text-sm text-muted-foreground mt-1">
+            Time: {formatTime(matchTime)}
+          </p>
+        )}
       </div>
 
       {/* Goal Summary Card */}

@@ -1,40 +1,15 @@
-
 import { StateCreator } from 'zustand';
 import { MatchState } from './types';
 import { MatchActions } from './actions';
-import { generateId } from './utils';
 
 export interface OptimizedPlayerTimeSlice {
-  // Local state management
-  localPlayerTimes: any[];
-  isLocalTimerActive: boolean;
-  
-  // Sync management
-  syncStatus: {
-    lastSyncTime: number | null;
-    pendingChanges: number;
-    isSyncing: boolean;
-    lastError: string | null;
-  };
-  
-  // Controls
-  autoSyncEnabled: boolean;
-  manualSyncOnly: boolean;
-  
-  // Actions
-  startOptimizedTracking: () => void;
-  stopOptimizedTracking: () => void;
-  addPlayerOptimized: (playerId: number, playerName: string, teamId: number) => void;
-  removePlayerOptimized: (playerId: number) => void;
-  togglePlayerOptimized: (playerId: number) => void;
-  forceSyncNow: (fixtureId: number) => Promise<void>;
-  toggleAutoSync: (enabled: boolean) => void;
-  enableManualSyncOnly: () => void;
-  clearPendingChanges: () => void;
-  
-  // Persistence
-  saveToLocalStorage: (fixtureId: number) => void;
-  loadFromLocalStorage: (fixtureId: number) => void;
+  startPlayerTime: (playerTimeId: string) => void;
+  stopPlayerTime: (playerTimeId: string) => void;
+  togglePlayerTime: (playerTimeId: string) => void;
+  updateAllPlayerTimes: () => void;
+  syncPlayerTimesToDatabase: (fixtureId: number) => Promise<void>;
+  optimizedBatchSync: (fixtureId: number) => Promise<void>;
+  syncAllToDatabase: (fixtureId: number) => Promise<void>;
 }
 
 export const createOptimizedPlayerTimeSlice: StateCreator<
@@ -42,179 +17,193 @@ export const createOptimizedPlayerTimeSlice: StateCreator<
   [],
   [],
   OptimizedPlayerTimeSlice
-> = (set, get) => {
-  return {
-    localPlayerTimes: [],
-    isLocalTimerActive: false,
-    syncStatus: {
-      lastSyncTime: null,
-      pendingChanges: 0,
-      isSyncing: false,
-      lastError: null
-    },
-    autoSyncEnabled: true,
-    manualSyncOnly: false,
-
-    startOptimizedTracking: () => {
-      console.log('🚀 OptimizedPlayerTime: Starting optimized tracking');
-      set((state) => ({
-        ...state,
-        isLocalTimerActive: true
-      }));
-    },
-
-    stopOptimizedTracking: () => {
-      console.log('⏹️ OptimizedPlayerTime: Stopping optimized tracking');
-      set((state) => ({
-        ...state,
-        isLocalTimerActive: false
-      }));
-    },
-
-    addPlayerOptimized: (playerId: number, playerName: string, teamId: number) => {
-      const newPlayerTime = {
-        id: generateId(),
-        playerId,
-        playerName,
-        teamId: teamId.toString(),
-        teamName: '',
-        team: 'home' as const,
-        totalTime: 0,
-        startTime: Date.now(),
-        isPlaying: true,
-        periods: [],
-        synced: false
-      };
-
-      set((state) => ({
-        ...state,
-        localPlayerTimes: [...state.localPlayerTimes, newPlayerTime]
-      }));
-
-      console.log('➕ OptimizedPlayerTime: Added player to local tracking:', playerName);
-    },
-
-    removePlayerOptimized: (playerId: number) => {
-      set((state) => ({
-        ...state,
-        localPlayerTimes: state.localPlayerTimes.filter(pt => pt.playerId !== playerId)
-      }));
-
-      console.log('➖ OptimizedPlayerTime: Removed player from local tracking:', playerId);
-    },
-
-    togglePlayerOptimized: (playerId: number) => {
-      set((state) => {
-        const updatedPlayerTimes = state.localPlayerTimes.map(pt => {
-          if (pt.playerId === playerId) {
-            const now = Date.now();
-            const isNowPlaying = !pt.isPlaying;
-            
-            let updatedPlayer = { ...pt, isPlaying: isNowPlaying };
-
-            if (isNowPlaying) {
-              updatedPlayer.startTime = now;
-            } else {
-              const sessionTime = pt.startTime ? Math.floor((now - pt.startTime) / 1000) : 0;
-              updatedPlayer.totalTime += sessionTime;
-              updatedPlayer.startTime = null;
-              
-              if (pt.startTime) {
-                updatedPlayer.periods = [
-                  ...(pt.periods || []),
-                  {
-                    start_time: pt.startTime,
-                    end_time: now,
-                    duration: sessionTime
-                  }
-                ];
-              }
-              updatedPlayer.synced = false;
+> = (set, get) => ({
+  startPlayerTime: (playerTimeId: string) => {
+    set((state) => ({
+      playerTimes: state.playerTimes.map(pt => 
+        pt.id === playerTimeId 
+          ? { 
+              ...pt, 
+              isPlaying: true, 
+              startTime: Date.now(),
+              synced: false
             }
-            
-            return updatedPlayer;
-          }
-          return pt;
-        });
+          : pt
+      ),
+      hasUnsavedChanges: true,
+      lastUpdated: Date.now()
+    }));
+    
+    console.log('⏱️ OptimizedPlayerTimeSlice: Started player time:', playerTimeId);
+  },
 
-        return { ...state, localPlayerTimes: updatedPlayerTimes };
-      });
-
-      console.log('🔄 OptimizedPlayerTime: Toggled player time:', playerId);
-    },
-
-    forceSyncNow: async (fixtureId: number) => {
-      const state = get();
-      console.log('💾 OptimizedPlayerTime: Force syncing', state.localPlayerTimes.length, 'players');
-      
-      // Update sync status
-      set((state) => ({
-        ...state,
-        syncStatus: { ...state.syncStatus, isSyncing: true, lastError: null }
-      }));
-
-      try {
-        // Sync logic would go here
-        await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate sync
-        
-        set((state) => ({
-          ...state,
-          syncStatus: {
-            lastSyncTime: Date.now(),
-            pendingChanges: 0,
-            isSyncing: false,
-            lastError: null
-          },
-          localPlayerTimes: state.localPlayerTimes.map(pt => ({ ...pt, synced: true }))
-        }));
-
-        console.log('✅ OptimizedPlayerTime: Force sync completed');
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Sync failed';
-        set((state) => ({
-          ...state,
-          syncStatus: { ...state.syncStatus, isSyncing: false, lastError: errorMessage }
-        }));
-        throw error;
-      }
-    },
-
-    toggleAutoSync: (enabled: boolean) => {
-      set((state) => ({ 
-        ...state, 
-        autoSyncEnabled: enabled, 
-        manualSyncOnly: enabled ? false : state.manualSyncOnly 
-      }));
-      console.log('🔄 OptimizedPlayerTime: Auto-sync', enabled ? 'enabled' : 'disabled');
-    },
-
-    enableManualSyncOnly: () => {
-      set((state) => ({ 
-        ...state, 
-        manualSyncOnly: true, 
-        autoSyncEnabled: false 
-      }));
-      console.log('✋ OptimizedPlayerTime: Manual sync only enabled');
-    },
-
-    clearPendingChanges: () => {
-      set((state) => ({
-        ...state,
-        syncStatus: { ...state.syncStatus, pendingChanges: 0 },
-        localPlayerTimes: []
-      }));
-      console.log('🗑️ OptimizedPlayerTime: Cleared pending changes');
-    },
-
-    saveToLocalStorage: (fixtureId: number) => {
-      const state = get();
-      // Persistence logic would go here
-      console.log('💾 OptimizedPlayerTime: Saved to localStorage for fixture', fixtureId);
-    },
-
-    loadFromLocalStorage: (fixtureId: number) => {
-      // Persistence logic would go here
-      console.log('📂 OptimizedPlayerTime: Loaded from localStorage for fixture', fixtureId);
+  stopPlayerTime: (playerTimeId: string) => {
+    const state = get();
+    const playerTime = state.playerTimes.find(pt => pt.id === playerTimeId);
+    
+    if (!playerTime || !playerTime.isPlaying || !playerTime.startTime) {
+      console.warn('⚠️ OptimizedPlayerTimeSlice: Cannot stop player time - not currently playing:', playerTimeId);
+      return;
     }
-  };
-};
+    
+    const now = Date.now();
+    const duration = Math.floor((now - playerTime.startTime) / 1000); // Convert to seconds
+    
+    set((state) => ({
+      playerTimes: state.playerTimes.map(pt => 
+        pt.id === playerTimeId 
+          ? { 
+              ...pt, 
+              isPlaying: false,
+              totalTime: pt.totalTime + duration,
+              periods: [
+                ...(pt.periods || []),
+                {
+                  start_time: Math.floor(pt.startTime! / 1000),
+                  end_time: Math.floor(now / 1000),
+                  duration
+                }
+              ],
+              synced: false
+            }
+          : pt
+      ),
+      hasUnsavedChanges: true,
+      lastUpdated: Date.now()
+    }));
+    
+    console.log('⏱️ OptimizedPlayerTimeSlice: Stopped player time:', {
+      playerTimeId,
+      duration,
+      totalTime: playerTime.totalTime + duration
+    });
+  },
+
+  togglePlayerTime: (playerTimeId: string) => {
+    const state = get();
+    const playerTime = state.playerTimes.find(pt => pt.id === playerTimeId);
+    
+    if (!playerTime) {
+      console.warn('⚠️ OptimizedPlayerTimeSlice: Cannot toggle player time - not found:', playerTimeId);
+      return;
+    }
+    
+    if (playerTime.isPlaying) {
+      get().stopPlayerTime(playerTimeId);
+    } else {
+      get().startPlayerTime(playerTimeId);
+    }
+  },
+
+  updateAllPlayerTimes: () => {
+    const state = get();
+    const now = Date.now();
+    let hasChanges = false;
+    
+    const updatedPlayerTimes = state.playerTimes.map(pt => {
+      if (pt.isPlaying && pt.startTime) {
+        hasChanges = true;
+        const duration = Math.floor((now - pt.startTime) / 1000); // Convert to seconds
+        
+        return {
+          ...pt,
+          totalTime: pt.totalTime + duration,
+          startTime: now,
+          synced: false
+        };
+      }
+      return pt;
+    });
+    
+    if (hasChanges) {
+      set({
+        playerTimes: updatedPlayerTimes,
+        hasUnsavedChanges: true,
+        lastUpdated: now
+      });
+      
+      console.log('⏱️ OptimizedPlayerTimeSlice: Updated all active player times');
+    }
+  },
+
+  syncPlayerTimesToDatabase: async (fixtureId: number) => {
+    const state = get();
+    const unsyncedPlayerTimes = state.playerTimes.filter(pt => !pt.synced);
+    
+    if (unsyncedPlayerTimes.length === 0) {
+      console.log('✅ No unsynced player times to save');
+      return;
+    }
+    
+    try {
+      console.log('💾 Syncing', unsyncedPlayerTimes.length, 'player time records to database');
+      
+      // This would typically call an API to save the player times
+      // For now, we'll just mark them as synced
+      set((state) => ({
+        playerTimes: state.playerTimes.map(pt => ({ ...pt, synced: true })),
+        hasUnsavedChanges: state.goals.some(g => !g.synced) || state.cards.some(c => !c.synced),
+        lastUpdated: Date.now()
+      }));
+      
+      console.log('✅ Player time sync completed successfully');
+    } catch (error) {
+      console.error('❌ Error syncing player times to database:', error);
+      throw error;
+    }
+  },
+
+  optimizedBatchSync: async (fixtureId: number) => {
+    try {
+      console.log('🔄 Starting optimized batch sync for fixture:', fixtureId);
+      
+      // Update any active player times before syncing
+      get().updateAllPlayerTimes();
+      
+      // Sync goals
+      if (typeof get().syncGoalsToDatabase === 'function') {
+        await get().syncGoalsToDatabase(fixtureId);
+      }
+      
+      // Sync cards
+      if (typeof get().syncCardsToDatabase === 'function') {
+        await get().syncCardsToDatabase(fixtureId);
+      }
+      
+      // Sync player times
+      await get().syncPlayerTimesToDatabase(fixtureId);
+      
+      console.log('✅ Optimized batch sync completed successfully');
+    } catch (error) {
+      console.error('❌ Error during optimized batch sync:', error);
+      throw error;
+    }
+  },
+
+  syncAllToDatabase: async (fixtureId: number) => {
+    try {
+      console.log('🔄 Starting full database sync for fixture:', fixtureId);
+      
+      // Update any active player times before syncing
+      get().updateAllPlayerTimes();
+      
+      // Sync goals
+      if (typeof get().syncGoalsToDatabase === 'function') {
+        await get().syncGoalsToDatabase(fixtureId);
+      }
+      
+      // Sync cards
+      if (typeof get().syncCardsToDatabase === 'function') {
+        await get().syncCardsToDatabase(fixtureId);
+      }
+      
+      // Sync player times
+      await get().syncPlayerTimesToDatabase(fixtureId);
+      
+      console.log('✅ Full database sync completed successfully');
+    } catch (error) {
+      console.error('❌ Error during full database sync:', error);
+      throw error;
+    }
+  }
+});

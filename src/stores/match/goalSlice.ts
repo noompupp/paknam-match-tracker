@@ -30,8 +30,12 @@ export const createGoalSlice: StateCreator<
 
     set((state) => {
       // Only increment score for actual goals, not assists
-      const newHomeScore = goalData.team === 'home' && goalData.type === 'goal' ? state.homeScore + 1 : state.homeScore;
-      const newAwayScore = goalData.team === 'away' && goalData.type === 'goal' ? state.awayScore + 1 : state.awayScore;
+      const newHomeScore = goalData.teamName && goalData.type === 'goal' ? 
+        (goalData.teamName === state.homeTeamName ? state.homeScore + 1 : state.homeScore) : 
+        state.homeScore;
+      const newAwayScore = goalData.teamName && goalData.type === 'goal' ? 
+        (goalData.teamName === state.awayTeamName ? state.awayScore + 1 : state.awayScore) : 
+        state.awayScore;
       
       const updatedState = {
         goals: [...state.goals, newGoal],
@@ -114,8 +118,12 @@ export const createGoalSlice: StateCreator<
       if (!goalToRemove) return state;
 
       // Only decrement score if it's an actual goal, not an assist
-      const newHomeScore = goalToRemove.team === 'home' && goalToRemove.type === 'goal' ? state.homeScore - 1 : state.homeScore;
-      const newAwayScore = goalToRemove.team === 'away' && goalToRemove.type === 'goal' ? state.awayScore - 1 : state.awayScore;
+      const newHomeScore = goalToRemove.teamName && goalToRemove.type === 'goal' ? 
+        (goalToRemove.teamName === state.homeTeamName ? state.homeScore - 1 : state.homeScore) : 
+        state.homeScore;
+      const newAwayScore = goalToRemove.teamName && goalToRemove.type === 'goal' ? 
+        (goalToRemove.teamName === state.awayTeamName ? state.awayScore - 1 : state.awayScore) : 
+        state.awayScore;
 
       return {
         goals: state.goals.filter(g => g.id !== goalId),
@@ -135,8 +143,12 @@ export const createGoalSlice: StateCreator<
       if (!goalToUndo) return state;
 
       // Only decrement score if it's an actual goal, not an assist
-      const newHomeScore = goalToUndo.team === 'home' && goalToUndo.type === 'goal' ? state.homeScore - 1 : state.homeScore;
-      const newAwayScore = goalToUndo.team === 'away' && goalToUndo.type === 'goal' ? state.awayScore - 1 : state.awayScore;
+      const newHomeScore = goalToUndo.teamName && goalToUndo.type === 'goal' ? 
+        (goalToUndo.teamName === state.homeTeamName ? state.homeScore - 1 : state.homeScore) : 
+        state.homeScore;
+      const newAwayScore = goalToUndo.teamName && goalToUndo.type === 'goal' ? 
+        (goalToUndo.teamName === state.awayTeamName ? state.awayScore - 1 : state.awayScore) : 
+        state.awayScore;
 
       console.log('🔄 MatchStore: Goal undone:', {
         goalId,
