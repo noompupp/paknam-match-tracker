@@ -40,7 +40,31 @@ export const coordinationService = {
       }
 
       if (!data || data.length === 0) {
-        console.log('ℹ️ CoordinationService: No coordination data found');
+        console.log('ℹ️ CoordinationService: No coordination data found for fixture:', fixtureId);
+        
+        // Check if we have a workflow config but no assignments
+        const { data: configData } = await supabase
+          .from('match_workflow_config')
+          .select('workflow_mode')
+          .eq('fixture_id', fixtureId)
+          .maybeSingle();
+        
+        if (configData) {
+          console.log('📋 Found workflow config without assignments, returning minimal structure');
+          return {
+            fixture_id: fixtureId,
+            workflow_mode: configData.workflow_mode as 'two_referees' | 'multi_referee',
+            assignments: [],
+            user_assignments: [],
+            completion_status: {
+              total_assignments: 0,
+              completed_assignments: 0,
+              in_progress_assignments: 0,
+              pending_assignments: 0
+            }
+          };
+        }
+        
         return null;
       }
 

@@ -793,6 +793,10 @@ export type Database = {
         Args: { user_uuid: string }
         Returns: string
       }
+      initialize_referee_assignments: {
+        Args: { p_fixture_id: number; p_workflow_mode: string }
+        Returns: Json
+      }
       is_authenticated_referee: {
         Args: Record<PropertyKey, never>
         Returns: boolean

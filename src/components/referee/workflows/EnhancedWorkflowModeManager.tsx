@@ -78,7 +78,9 @@ const EnhancedWorkflowModeManager = ({
 
   const handleWorkflowConfigured = async (config: WorkflowModeConfig) => {
     try {
-      // Set workflow config in database
+      console.log('🎯 Configuring workflow with enhanced initialization:', config);
+
+      // Set workflow config in database (this will also initialize assignments)
       const dbConfig = await refereeAssignmentService.setWorkflowConfig(
         config.fixtureId,
         config.mode,
@@ -88,11 +90,13 @@ const EnhancedWorkflowModeManager = ({
         }
       );
 
-      // Get updated assignments
+      // Get updated assignments after initialization
       const [userAssignments, allAssignments] = await Promise.all([
         refereeAssignmentService.getUserAssignments(config.fixtureId),
         refereeAssignmentService.getAllFixtureAssignments(config.fixtureId)
       ]);
+
+      console.log('✅ Assignments after initialization:', { userAssignments, allAssignments });
 
       const enhancedConfig: WorkflowModeConfig = {
         ...config,
@@ -107,7 +111,7 @@ const EnhancedWorkflowModeManager = ({
 
       toast({
         title: "Success",
-        description: "Workflow configured successfully",
+        description: `${config.mode === 'two_referees' ? 'Two Referees' : 'Multi-Referee'} workflow configured with ${allAssignments.length} assignments created`,
       });
     } catch (error) {
       console.error('Error saving workflow config:', error);
@@ -149,7 +153,7 @@ const EnhancedWorkflowModeManager = ({
         <CardContent>
           <div className="space-y-4">
             <p className="text-sm text-muted-foreground">
-              This match has a {isTwoRefereesMode ? 'Two Referees' : 'Multi-Referee'} workflow configured.
+              This match has a {isTwoRefereesMode ? 'Two Referees' : 'Multi-Referee'} workflow configured with {assignmentCount} referee assignments ready.
             </p>
             
             <div className="grid grid-cols-2 gap-4 text-sm">
@@ -160,6 +164,14 @@ const EnhancedWorkflowModeManager = ({
                 <span className="font-medium">Total Assignments:</span> {assignmentCount}
               </div>
             </div>
+
+            {assignmentCount > 0 && (
+              <div className="bg-green-50 border border-green-200 rounded-lg p-3 dark:bg-green-900/10 dark:border-green-800">
+                <p className="text-sm text-green-700 dark:text-green-400">
+                  ✅ Referee assignments have been initialized and are ready for coordination.
+                </p>
+              </div>
+            )}
 
             {isTwoRefereesMode && assignmentCount < 2 && (
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 dark:bg-blue-900/10 dark:border-blue-800">

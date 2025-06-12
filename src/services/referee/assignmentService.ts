@@ -151,6 +151,7 @@ export const refereeAssignmentService = {
       throw new Error('User not authenticated');
     }
 
+    // First, set the workflow config
     const { data, error } = await supabase
       .from('match_workflow_config')
       .upsert({
@@ -168,6 +169,19 @@ export const refereeAssignmentService = {
     }
 
     console.log('✅ Workflow config set successfully:', data);
+
+    // Then, initialize referee assignments
+    const { data: initData, error: initError } = await supabase.rpc('initialize_referee_assignments', {
+      p_fixture_id: fixtureId,
+      p_workflow_mode: workflowMode
+    });
+
+    if (initError) {
+      console.error('❌ Error initializing referee assignments:', initError);
+      throw initError;
+    }
+
+    console.log('✅ Referee assignments initialized:', initData);
     
     // Type cast the database response to ensure proper TypeScript types
     return {
@@ -193,5 +207,25 @@ export const refereeAssignmentService = {
     }
 
     console.log('✅ Assignment status updated successfully');
+  },
+
+  async initializeRefereeAssignments(
+    fixtureId: number,
+    workflowMode: 'two_referees' | 'multi_referee'
+  ): Promise<any> {
+    console.log('🎯 Initializing referee assignments:', { fixtureId, workflowMode });
+
+    const { data, error } = await supabase.rpc('initialize_referee_assignments', {
+      p_fixture_id: fixtureId,
+      p_workflow_mode: workflowMode
+    });
+
+    if (error) {
+      console.error('❌ Error initializing referee assignments:', error);
+      throw error;
+    }
+
+    console.log('✅ Referee assignments initialized successfully:', data);
+    return data;
   }
 };
