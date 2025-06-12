@@ -45,13 +45,17 @@ const EnhancedPlayersList = ({
     }
 
     // Apply position filter
-    filtered = filterByPosition(filtered, filters.position);
+    if (filters.position !== 'all') {
+      filtered = filterByPosition(filters.position);
+    }
 
     // Apply role filter
-    filtered = filterByRole(filtered, filters.role);
+    if (filters.role !== 'all') {
+      filtered = filterByRole(filters.role);
+    }
 
     // Apply sorting
-    return sortByMetric(filtered, filters.sortBy as keyof EnhancedPlayerStats, filters.sortOrder === 'asc');
+    return sortByMetric(filters.sortBy as keyof EnhancedPlayerStats, filters.sortOrder === 'asc');
   }, [players, filters, filterByPosition, filterByRole, sortByMetric]);
 
   if (isLoading) {
