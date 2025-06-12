@@ -11,7 +11,7 @@ interface OptimizedImageProps {
   height?: number;
   priority?: boolean;
   loading?: 'lazy' | 'eager';
-  fallback?: string;
+  fallback?: string | React.ReactNode;
   metadataId?: string;
   variant?: 'small' | 'medium' | 'large';
   style?: React.CSSProperties;
@@ -74,7 +74,7 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
     }
     
     // Use provided fallback
-    if (fallback) {
+    if (fallback && typeof fallback === 'string') {
       setImageSrc(fallback);
       setImageError(false);
     }
@@ -110,6 +110,21 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
         style={{ width, height, ...style }}
       >
         <span className="text-sm">Image not available</span>
+      </div>
+    );
+  }
+
+  // Show React element fallback if image failed and fallback is a React element
+  if (imageError && fallback && typeof fallback !== 'string') {
+    return (
+      <div 
+        className={cn(
+          "flex items-center justify-center",
+          className
+        )}
+        style={{ width, height, ...style }}
+      >
+        {fallback}
       </div>
     );
   }

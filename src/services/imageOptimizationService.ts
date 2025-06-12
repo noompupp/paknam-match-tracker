@@ -98,7 +98,7 @@ class ImageOptimizationService {
         };
       }
 
-      // Save metadata to database
+      // Save metadata to database with proper type conversion
       const { data: metadata, error: metadataError } = await supabase
         .from('image_metadata')
         .insert({
@@ -109,7 +109,7 @@ class ImageOptimizationService {
           width: dimensions.width,
           height: dimensions.height,
           format: file.type,
-          variants: uploadedVariants,
+          variants: uploadedVariants as any, // Cast to any for database insertion
           alt_text: altText
         })
         .select()
@@ -118,7 +118,12 @@ class ImageOptimizationService {
       if (metadataError) throw metadataError;
 
       console.log('✅ Image optimization completed successfully');
-      return metadata;
+      
+      // Return properly typed metadata
+      return {
+        ...metadata,
+        variants: uploadedVariants
+      } as ImageMetadata;
 
     } catch (error) {
       console.error('❌ Image optimization failed:', error);
@@ -194,7 +199,12 @@ class ImageOptimizationService {
 
     for (const variant of variantsToCreate) {
       try {
-        const optimized = await this.resizeImage(file, variant.width, variant.height, variant.quality);
+        const optimized = await this.resizeImage(
+          file, 
+          variant.width, 
+          variant.height, 
+          variant.quality
+        );
         variants[variant.name] = optimized;
       } catch (error) {
         console.warn(`Failed to create variant ${variant.name}:`, error);
@@ -347,7 +357,12 @@ class ImageOptimizationService {
         .single();
 
       if (error) throw error;
-      return data;
+      
+      // Convert the database response to our typed interface
+      return {
+        ...data,
+        variants: data.variants as Record<string, ImageVariant>
+      } as ImageMetadata;
     } catch (error) {
       console.error('Failed to get image metadata:', error);
       return null;

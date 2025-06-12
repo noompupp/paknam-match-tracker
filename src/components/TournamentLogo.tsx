@@ -51,6 +51,10 @@ const TournamentLogo = ({ size = 'medium', className = '' }: TournamentLogoProps
 
   const sizeClasses = getSizeClasses();
 
+  const getFallbackIcon = () => (
+    <Trophy className={`${size === 'small' ? 'w-4 h-4' : size === 'large' ? 'w-8 h-8' : 'w-6 h-6'} text-white`} />
+  );
+
   if (isLoading) {
     return (
       <div className={`flex items-center justify-center ${className}`}>
@@ -70,9 +74,7 @@ const TournamentLogo = ({ size = 'medium', className = '' }: TournamentLogoProps
             alt="Tournament Logo"
             className="w-full h-full object-cover"
             variant={size === 'small' ? 'small' : size === 'large' ? 'large' : 'medium'}
-            fallback={
-              <Trophy className={`${size === 'small' ? 'w-4 h-4' : size === 'large' ? 'w-8 h-8' : 'w-6 h-6'} text-white`} />
-            }
+            fallback={getFallbackIcon()}
             priority={size === 'large'}
           />
         ) : (

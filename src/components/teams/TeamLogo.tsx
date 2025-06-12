@@ -90,6 +90,13 @@ const TeamLogo = ({ team, size = 'medium', className = '', showColor = false }: 
   const imageSource = team?.optimized_logo_url || team?.logoURL;
   const metadataId = team?.logo_metadata_id;
 
+  // Create emoji fallback component
+  const getEmojiFallback = () => (
+    <span className={`${sizeClasses.replace(/w-\w+ h-\w+/, '')} drop-shadow-sm`}>
+      {team?.logo || '⚽'}
+    </span>
+  );
+
   // Use optimized image if available
   if (imageSource || metadataId) {
     console.log('🖼️ TeamLogo: Using optimized image system');
@@ -105,7 +112,7 @@ const TeamLogo = ({ team, size = 'medium', className = '', showColor = false }: 
             alt={`${team?.name || 'Team'} logo`}
             className="w-full h-full"
             variant={size === 'small' ? 'small' : size === 'large' ? 'large' : 'medium'}
-            fallback={team?.logo || '⚽'}
+            fallback={getEmojiFallback()}
             priority={size === 'large'}
             loading={size === 'small' ? 'lazy' : 'eager'}
           />
@@ -123,9 +130,7 @@ const TeamLogo = ({ team, size = 'medium', className = '', showColor = false }: 
         }`}
         style={gradientStyle}
       >
-        <span className={`${sizeClasses.replace(/w-\w+ h-\w+/, '')} drop-shadow-sm`}>
-          {team?.logo || '⚽'}
-        </span>
+        {getEmojiFallback()}
       </div>
     </div>
   );
