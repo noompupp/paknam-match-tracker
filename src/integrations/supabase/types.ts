@@ -246,8 +246,7 @@ export type Database = {
           event_type: string
           fixture_id: number
           id: number
-          is_own_goal: boolean | null
-          own_goal: boolean | null
+          is_own_goal: boolean
           player_name: string
           scoring_team_id: string | null
           team_id: string
@@ -261,8 +260,7 @@ export type Database = {
           event_type: string
           fixture_id: number
           id?: number
-          is_own_goal?: boolean | null
-          own_goal?: boolean | null
+          is_own_goal?: boolean
           player_name: string
           scoring_team_id?: string | null
           team_id: string
@@ -276,8 +274,7 @@ export type Database = {
           event_type?: string
           fixture_id?: number
           id?: number
-          is_own_goal?: boolean | null
-          own_goal?: boolean | null
+          is_own_goal?: boolean
           player_name?: string
           scoring_team_id?: string | null
           team_id?: string

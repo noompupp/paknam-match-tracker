@@ -15,7 +15,7 @@ export const processGoalsAndAssists = (matchEvents: any[]): Goal[] => {
       timestamp: new Date(event.created_at).getTime(),
       assistPlayerName: event.assist_player_name || null,
       assistTeamId: event.assist_team_id || null,
-      isOwnGoal: event.own_goal || false // Handle own goal flag
+      isOwnGoal: event.is_own_goal || false // Use standardized column
     }));
 };
 
@@ -61,7 +61,7 @@ export const processTimelineEvents = (matchEvents: any[]): TimelineEvent[] => {
       assistTeamId: event.assist_team_id || null,
       description: event.description,
       timestamp: new Date(event.created_at).getTime(),
-      isOwnGoal: event.own_goal || false // Handle own goal flag
+      isOwnGoal: event.is_own_goal || false // Use standardized column
     }))
     .sort((a, b) => a.time - b.time || a.timestamp - b.timestamp);
 };
@@ -95,24 +95,24 @@ export const calculateSummaryStats = (
 };
 
 export const processEnhancedFunctionData = (functionResult: any): EnhancedMatchSummaryData => {
-  console.log('🔧 Processing enhanced function data with own goal support:', functionResult);
+  console.log('🔧 Processing enhanced function data with standardized own goal support:', functionResult);
   
   // Parse the JSON data from the database function
   const goals = JSON.parse(functionResult.goals || '[]').map((goal: any) => ({
     ...goal,
-    isOwnGoal: goal.isOwnGoal || false // Ensure own goal flag is preserved
+    isOwnGoal: goal.isOwnGoal || false // Ensure standardized own goal flag is preserved
   }));
   
   const cards = JSON.parse(functionResult.cards || '[]');
   const playerTimes = JSON.parse(functionResult.player_times || '[]');
   const timelineEvents = JSON.parse(functionResult.timeline_events || '[]').map((event: any) => ({
     ...event,
-    isOwnGoal: event.isOwnGoal || false // Ensure own goal flag is preserved in timeline
+    isOwnGoal: event.isOwnGoal || false // Ensure standardized own goal flag is preserved in timeline
   }));
   
   const summaryStats = JSON.parse(functionResult.summary_stats || '{}');
 
-  console.log('✅ Enhanced function data processed with own goal support:', {
+  console.log('✅ Enhanced function data processed with standardized own goal support:', {
     goalsCount: goals.length,
     regularGoalsCount: goals.filter((g: any) => g.type === 'goal' && !g.isOwnGoal).length,
     ownGoalsCount: goals.filter((g: any) => g.type === 'goal' && g.isOwnGoal).length,

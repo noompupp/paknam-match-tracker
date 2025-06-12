@@ -15,10 +15,10 @@ export interface TopScorerData {
 
 export const memberStatsService = {
   async getTopScorers(limit: number = 10, excludeOwnGoals: boolean = true): Promise<TopScorerData[]> {
-    console.log('🏆 Getting top scorers with own goal filtering:', { limit, excludeOwnGoals });
+    console.log('🏆 Getting top scorers with standardized own goal filtering:', { limit, excludeOwnGoals });
     
     try {
-      // Get member stats with team information - fix the relationship hint
+      // Get member stats with team information
       const { data: members, error: membersError } = await supabase
         .from('members')
         .select(`
@@ -42,7 +42,7 @@ export const memberStatsService = {
         return [];
       }
 
-      // Verify and recalculate stats based on actual fixture results
+      // Calculate stats with standardized own goal handling
       const topScorers: TopScorerData[] = [];
 
       for (const member of members) {
@@ -50,13 +50,13 @@ export const memberStatsService = {
         let ownGoals = 0;
 
         if (excludeOwnGoals) {
-          // Count own goals for this member
+          // Count own goals using standardized is_own_goal column
           const { data: ownGoalEvents, error: ownGoalsError } = await supabase
             .from('match_events')
             .select('id')
             .eq('player_name', member.name)
             .eq('event_type', 'goal')
-            .eq('own_goal', true);
+            .eq('is_own_goal', true); // Use standardized column
 
           if (ownGoalsError) {
             console.error('Error fetching own goals for member:', member.name, ownGoalsError);
@@ -66,7 +66,7 @@ export const memberStatsService = {
           }
         }
 
-        // Only include players with goals (regular goals if excluding own goals)
+        // Only include players with goals
         const goalCount = excludeOwnGoals ? regularGoals : (member.goals || 0);
         if (goalCount > 0) {
           topScorers.push({
@@ -111,13 +111,13 @@ export const memberStatsService = {
 
       if (memberError) throw memberError;
 
-      // Count own goals from match events
+      // Count own goals using standardized is_own_goal column
       const { data: ownGoalEvents, error: ownGoalsError } = await supabase
         .from('match_events')
         .select('id')
         .eq('player_name', member.name)
         .eq('event_type', 'goal')
-        .eq('own_goal', true);
+        .eq('is_own_goal', true); // Use standardized column
 
       if (ownGoalsError) throw ownGoalsError;
 

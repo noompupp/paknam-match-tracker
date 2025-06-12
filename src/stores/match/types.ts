@@ -1,4 +1,3 @@
-
 export interface MatchGoal {
   id: string;
   playerId: number;
@@ -12,7 +11,7 @@ export interface MatchGoal {
   synced: boolean;
   assistPlayerName?: string;
   assistTeamId?: string;
-  isOwnGoal?: boolean; // Add own goal flag
+  isOwnGoal?: boolean; // Standardized own goal flag
 }
 
 export interface MatchCard {

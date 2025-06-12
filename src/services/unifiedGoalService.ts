@@ -14,271 +14,172 @@ interface UnifiedGoalData {
   eventTime: number;
   homeTeam: { id: string; name: string };
   awayTeam: { id: string; name: string };
-  isOwnGoal?: boolean;
+  isOwnGoal?: boolean; // Standardized own goal flag
 }
 
-interface GoalResult {
+interface UnifiedGoalResult {
   success: boolean;
-  goalData?: any;
-  shouldUpdateScore?: boolean;
+  goalEventId?: number;
+  duplicatePreventionApplied?: boolean;
+  scoreUpdated?: boolean;
+  homeScore?: number;
+  awayScore?: number;
   message?: string;
-  duplicatePrevented?: boolean;
-  autoScoreUpdated?: boolean;
+  error?: string;
 }
 
 export const unifiedGoalService = {
-  async assignGoalWithScoreUpdate(data: UnifiedGoalData): Promise<GoalResult> {
-    console.log('⚽ UnifiedGoalService: Starting unified goal assignment with enhanced own goal support:', data);
+  async addGoal(data: UnifiedGoalData): Promise<UnifiedGoalResult> {
+    console.log('🎯 Unified Goal Service: Processing goal with standardized own goal support:', data);
     
     try {
-      // Validate input data
-      this.validateGoalData(data);
-
-      // Enhanced duplicate check
-      const duplicateCheck = await enhancedDuplicatePreventionService.checkForDuplicateEvent({
+      // Enhanced duplicate prevention check
+      const duplicateCheck = await enhancedDuplicatePreventionService.checkForDuplicates({
         fixtureId: data.fixtureId,
-        teamId: data.teamId,
         playerName: data.playerName,
         eventTime: data.eventTime,
-        eventType: data.goalType
+        eventType: data.goalType,
+        teamId: data.teamId,
+        isOwnGoal: data.isOwnGoal || false // Include own goal in duplicate check
       });
 
-      if (duplicateCheck.isDuplicate) {
-        console.warn('⚠️ UnifiedGoalService: Enhanced duplicate detection prevented goal assignment:', duplicateCheck);
+      if (!duplicateCheck.canProceed) {
+        console.log('⚠️ Unified Goal Service: Duplicate prevention triggered');
         return {
           success: false,
-          message: duplicateCheck.message || 'Duplicate goal/assist prevented',
-          duplicatePrevented: true
+          duplicatePreventionApplied: true,
+          error: duplicateCheck.reason || 'Duplicate goal detected',
+          message: 'Goal not added due to duplicate detection'
         };
       }
 
-      // Handle own goals with enhanced service
-      if (data.goalType === 'goal' && data.isOwnGoal) {
-        console.log('🎯 UnifiedGoalService: Processing as own goal');
-        
-        const ownGoalResult = await enhancedOwnGoalService.recordOwnGoal({
+      // Route to appropriate service based on own goal flag
+      if (data.isOwnGoal) {
+        console.log('🥅 Unified Goal Service: Routing to enhanced own goal service');
+        const ownGoalResult = await enhancedOwnGoalService.addOwnGoal({
           fixtureId: data.fixtureId,
           playerId: data.playerId,
           playerName: data.playerName,
           playerTeamId: data.teamId,
+          playerTeamName: data.teamName,
           eventTime: data.eventTime,
           homeTeam: data.homeTeam,
           awayTeam: data.awayTeam
         });
 
-        if (!ownGoalResult.success) {
-          return {
-            success: false,
-            message: ownGoalResult.error || 'Failed to record own goal'
-          };
-        }
+        return {
+          success: ownGoalResult.success,
+          goalEventId: ownGoalResult.goalEventId,
+          scoreUpdated: ownGoalResult.scoreUpdated,
+          homeScore: ownGoalResult.homeScore,
+          awayScore: ownGoalResult.awayScore,
+          message: ownGoalResult.message,
+          error: ownGoalResult.error
+        };
+      } else {
+        console.log('⚽ Unified Goal Service: Routing to regular goal assignment service');
+        const goalResult = await assignGoalToPlayer({
+          fixtureId: data.fixtureId,
+          playerId: data.playerId,
+          playerName: data.playerName,
+          teamId: data.teamId,
+          eventTime: data.eventTime,
+          type: data.goalType,
+          isOwnGoal: false // Explicit regular goal
+        });
+
+        // Update fixture score for regular goals
+        const scoreUpdateResult = await this.updateFixtureScoreForRegularGoal(
+          data.fixtureId,
+          data.homeTeam,
+          data.awayTeam
+        );
 
         return {
-          success: true,
-          goalData: {
-            playerId: data.playerId,
-            playerName: data.playerName,
-            team: data.teamName,
-            time: data.eventTime,
-            type: 'goal',
-            isOwnGoal: true,
-            scoringTeamId: ownGoalResult.scoringTeamId,
-            affectedTeamId: ownGoalResult.affectedTeamId
-          },
-          shouldUpdateScore: true,
-          autoScoreUpdated: true,
-          message: ownGoalResult.message,
-          duplicatePrevented: false
+          success: goalResult.success,
+          goalEventId: goalResult.eventId,
+          scoreUpdated: scoreUpdateResult.success,
+          homeScore: scoreUpdateResult.homeScore,
+          awayScore: scoreUpdateResult.awayScore,
+          message: `${data.goalType === 'goal' ? 'Goal' : 'Assist'} recorded for ${data.playerName}${scoreUpdateResult.success ? ' and score updated' : ''}`
         };
       }
 
-      // Handle regular goals and assists
-      await this.removeUnknownPlayerPlaceholders(data.fixtureId, data.teamId, data.goalType);
-
-      // Assign the goal to the player and update stats
-      await assignGoalToPlayer({
-        fixtureId: data.fixtureId,
-        playerId: data.playerId,
-        playerName: data.playerName,
-        teamId: data.teamId,
-        eventTime: data.eventTime,
-        type: data.goalType,
-        isOwnGoal: false
-      });
-
-      // For goals (not assists), update the fixture score automatically
-      let autoScoreUpdated = false;
-      if (data.goalType === 'goal') {
-        autoScoreUpdated = await this.updateFixtureScoreAfterGoal(data);
-      }
-
-      console.log('✅ UnifiedGoalService: Goal assignment completed successfully');
-      
-      return {
-        success: true,
-        goalData: {
-          playerId: data.playerId,
-          playerName: data.playerName,
-          team: data.teamName,
-          time: data.eventTime,
-          type: data.goalType,
-          isOwnGoal: false
-        },
-        shouldUpdateScore: autoScoreUpdated,
-        autoScoreUpdated,
-        message: `${data.goalType === 'goal' ? 'Goal' : 'Assist'} assigned successfully`,
-        duplicatePrevented: false
-      };
-
     } catch (error) {
-      console.error('❌ UnifiedGoalService: Error in unified goal assignment:', error);
+      console.error('❌ Unified Goal Service: Error processing goal:', error);
       return {
         success: false,
-        message: error instanceof Error ? error.message : 'Failed to assign goal'
+        error: error instanceof Error ? error.message : 'Failed to process goal',
+        message: 'Goal processing failed'
       };
     }
   },
 
-  async removeUnknownPlayerPlaceholders(fixtureId: number, teamId: string, eventType: 'goal' | 'assist'): Promise<void> {
-    console.log('🧹 UnifiedGoalService: Removing Unknown Player placeholders for:', { fixtureId, teamId, eventType });
+  async updateFixtureScoreForRegularGoal(
+    fixtureId: number,
+    homeTeam: any,
+    awayTeam: any
+  ): Promise<{ success: boolean; homeScore: number; awayScore: number }> {
+    console.log('📊 Unified Goal Service: Updating fixture score for regular goal');
     
     try {
-      const { data: unknownEvents, error: fetchError } = await supabase
-        .from('match_events')
-        .select('id')
-        .eq('fixture_id', fixtureId)
-        .eq('team_id', teamId)
-        .eq('event_type', eventType)
-        .eq('player_name', 'Unknown Player');
+      const homeTeamId = homeTeam.__id__ || homeTeam.id;
+      const awayTeamId = awayTeam.__id__ || awayTeam.id;
 
-      if (fetchError) {
-        console.error('❌ UnifiedGoalService: Error fetching unknown player events:', fetchError);
-        return;
-      }
-
-      if (unknownEvents && unknownEvents.length > 0) {
-        const { error: deleteError } = await supabase
-          .from('match_events')
-          .delete()
-          .in('id', unknownEvents.map(e => e.id));
-
-        if (deleteError) {
-          console.error('❌ UnifiedGoalService: Error deleting unknown player events:', deleteError);
-        } else {
-          console.log(`✅ UnifiedGoalService: Removed ${unknownEvents.length} Unknown Player placeholders`);
-        }
-      }
-    } catch (error) {
-      console.error('❌ UnifiedGoalService: Error in removeUnknownPlayerPlaceholders:', error);
-    }
-  },
-
-  async updateFixtureScoreAfterGoal(data: UnifiedGoalData): Promise<boolean> {
-    console.log('📊 UnifiedGoalService: Updating fixture score after goal assignment');
-    
-    try {
-      // Use enhanced scoring logic that considers own goals
+      // Count all goals (regular + own goals that benefit each team)
       const { data: homeGoals } = await supabase
         .from('match_events')
-        .select('id')
-        .eq('fixture_id', data.fixtureId)
-        .eq('event_type', 'goal')
-        .eq('scoring_team_id', data.homeTeam.id);
+        .select('id, team_id, is_own_goal')
+        .eq('fixture_id', fixtureId)
+        .eq('event_type', 'goal');
 
-      const { data: awayGoals } = await supabase
-        .from('match_events')
-        .select('id')
-        .eq('fixture_id', data.fixtureId)
-        .eq('event_type', 'goal')
-        .eq('scoring_team_id', data.awayTeam.id);
+      let homeScore = 0;
+      let awayScore = 0;
 
-      const homeScore = (homeGoals || []).length;
-      const awayScore = (awayGoals || []).length;
+      (homeGoals || []).forEach(goal => {
+        if (goal.is_own_goal) {
+          // Own goal benefits the opposing team
+          if (goal.team_id === homeTeamId) {
+            awayScore++;
+          } else if (goal.team_id === awayTeamId) {
+            homeScore++;
+          }
+        } else {
+          // Regular goal benefits the scoring team
+          if (goal.team_id === homeTeamId) {
+            homeScore++;
+          } else if (goal.team_id === awayTeamId) {
+            awayScore++;
+          }
+        }
+      });
 
-      // Update fixture with calculated scores
+      console.log('📊 Unified Goal Service: Calculated scores with standardized own goal logic:', { 
+        homeScore, 
+        awayScore 
+      });
+
+      // Update fixture
       const { error: updateError } = await supabase
         .from('fixtures')
         .update({
           home_score: homeScore,
-          away_score: awayScore
+          away_score: awayScore,
+          updated_at: new Date().toISOString()
         })
-        .eq('id', data.fixtureId);
+        .eq('id', fixtureId);
 
       if (updateError) {
-        console.error('❌ UnifiedGoalService: Error updating fixture score:', updateError);
-        return false;
+        console.error('❌ Unified Goal Service: Error updating fixture score:', updateError);
+        return { success: false, homeScore: 0, awayScore: 0 };
       }
 
-      console.log('✅ UnifiedGoalService: Fixture score updated successfully:', { homeScore, awayScore });
-      return true;
+      console.log('✅ Unified Goal Service: Fixture score updated:', { homeScore, awayScore });
+      return { success: true, homeScore, awayScore };
 
     } catch (error) {
-      console.error('❌ UnifiedGoalService: Error in updateFixtureScoreAfterGoal:', error);
-      return false;
-    }
-  },
-
-  validateGoalData(data: UnifiedGoalData): void {
-    if (!data.fixtureId || data.fixtureId <= 0) {
-      throw new Error('Invalid fixture ID');
-    }
-    if (!data.playerId || data.playerId <= 0) {
-      throw new Error('Invalid player ID');
-    }
-    if (!data.playerName?.trim()) {
-      throw new Error('Player name is required');
-    }
-    if (!data.teamId?.trim()) {
-      throw new Error('Invalid team ID');
-    }
-    if (!['goal', 'assist'].includes(data.goalType)) {
-      throw new Error('Invalid goal type');
-    }
-    if (data.eventTime < 0) {
-      throw new Error('Invalid event time');
-    }
-    if (!data.homeTeam?.id || !data.awayTeam?.id) {
-      throw new Error('Invalid team data');
-    }
-  },
-
-  async getFixtureGoalSummary(fixtureId: number) {
-    console.log('📊 UnifiedGoalService: Getting fixture goal summary:', fixtureId);
-    
-    const { data: goals, error } = await supabase
-      .from('match_events')
-      .select('*')
-      .eq('fixture_id', fixtureId)
-      .in('event_type', ['goal', 'assist'])
-      .neq('player_name', 'Unknown Player')
-      .order('event_time', { ascending: true });
-
-    if (error) {
-      console.error('❌ UnifiedGoalService: Error fetching goal summary:', error);
-      return [];
-    }
-
-    return goals || [];
-  },
-
-  async cleanupDuplicateGoals(): Promise<{ success: boolean; removedCount: number; errors: string[] }> {
-    console.log('🧹 UnifiedGoalService: Cleaning up duplicate goals...');
-    
-    try {
-      const result = await enhancedDuplicatePreventionService.cleanupAllDuplicateEvents();
-      
-      return {
-        success: result.errors.length === 0,
-        removedCount: result.removedCount,
-        errors: result.errors
-      };
-    } catch (error) {
-      console.error('❌ UnifiedGoalService: Error during cleanup:', error);
-      return {
-        success: false,
-        removedCount: 0,
-        errors: [error instanceof Error ? error.message : 'Unknown cleanup error']
-      };
+      console.error('❌ Unified Goal Service: Error in updateFixtureScoreForRegularGoal:', error);
+      return { success: false, homeScore: 0, awayScore: 0 };
     }
   }
 };
