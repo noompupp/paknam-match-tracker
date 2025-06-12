@@ -1,21 +1,24 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Users, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
+import { Users, CheckCircle, AlertCircle, Loader2, Settings } from "lucide-react";
 import { useCoordinationManager } from "../../hooks/useCoordinationManager";
 import { useRoleBasedAccess } from "../../hooks/useRoleBasedAccess";
 import { ROLE_LABELS } from './constants';
 import TaskCompletionButton from './TaskCompletionButton';
+import DebugAccessPanel from './DebugAccessPanel';
 
 interface EnhancedCoordinationTabProps {
   selectedFixtureData: any;
 }
 
 const EnhancedCoordinationTab = ({ selectedFixtureData }: EnhancedCoordinationTabProps) => {
-  const { coordinationData, isLoading, completeAssignment, activateAssignment } = useCoordinationManager(selectedFixtureData?.id);
+  const { coordinationData, isLoading, lastError, completeAssignment, activateAssignment, retryLoadData } = useCoordinationManager(selectedFixtureData?.id);
   const { canAccessCoordination, isLoading: accessLoading } = useRoleBasedAccess(selectedFixtureData?.id);
+  const [showDebugPanel, setShowDebugPanel] = useState(false);
 
   if (accessLoading) {
     return (
@@ -41,6 +44,22 @@ const EnhancedCoordinationTab = ({ selectedFixtureData }: EnhancedCoordinationTa
           <p className="text-muted-foreground mb-4 max-w-md">
             You don't have permission to access coordination functionality. This feature is only available to referees assigned to coordination roles.
           </p>
+          <Button 
+            variant="outline" 
+            onClick={() => setShowDebugPanel(!showDebugPanel)}
+            className="mt-2"
+          >
+            <Settings className="h-4 w-4 mr-2" />
+            Debug Access Issues
+          </Button>
+          {showDebugPanel && (
+            <div className="mt-4 w-full max-w-2xl">
+              <DebugAccessPanel 
+                fixtureId={selectedFixtureData?.id} 
+                onClose={() => setShowDebugPanel(false)}
+              />
+            </div>
+          )}
         </CardContent>
       </Card>
     );
@@ -59,15 +78,36 @@ const EnhancedCoordinationTab = ({ selectedFixtureData }: EnhancedCoordinationTa
     );
   }
 
-  if (!coordinationData) {
+  if (lastError || !coordinationData) {
     return (
       <Card>
         <CardContent className="flex flex-col items-center justify-center py-12 text-center">
           <AlertCircle className="h-12 w-12 text-muted-foreground mb-4" />
-          <h3 className="text-lg font-semibold mb-2">No Coordination Setup</h3>
-          <p className="text-muted-foreground">
-            No coordination setup found for this match. Please configure the workflow first.
+          <h3 className="text-lg font-semibold mb-2">Failed to Load Coordination Data</h3>
+          <p className="text-muted-foreground mb-4">
+            {lastError || "No coordination setup found for this match. Please configure the workflow first."}
           </p>
+          <div className="flex gap-2">
+            <Button onClick={retryLoadData} variant="outline">
+              <Loader2 className="h-4 w-4 mr-2" />
+              Retry Loading
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={() => setShowDebugPanel(!showDebugPanel)}
+            >
+              <Settings className="h-4 w-4 mr-2" />
+              Debug Issues
+            </Button>
+          </div>
+          {showDebugPanel && (
+            <div className="mt-4 w-full max-w-2xl">
+              <DebugAccessPanel 
+                fixtureId={selectedFixtureData?.id} 
+                onClose={() => setShowDebugPanel(false)}
+              />
+            </div>
+          )}
         </CardContent>
       </Card>
     );
@@ -104,13 +144,30 @@ const EnhancedCoordinationTab = ({ selectedFixtureData }: EnhancedCoordinationTa
           <p className="text-sm text-muted-foreground">
             {selectedFixtureData.home_team?.name} vs {selectedFixtureData.away_team?.name}
           </p>
-          <Badge variant="outline">
-            {coordinationData.workflow_mode === 'two_referees' ? 'Two Referees' : 'Multi-Referee'} Mode
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Badge variant="outline">
+              {coordinationData.workflow_mode === 'two_referees' ? 'Two Referees' : 'Multi-Referee'} Mode
+            </Badge>
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={() => setShowDebugPanel(!showDebugPanel)}
+            >
+              <Settings className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       </CardHeader>
 
       <CardContent className="space-y-6">
+        {/* Debug Panel */}
+        {showDebugPanel && (
+          <DebugAccessPanel 
+            fixtureId={selectedFixtureData?.id} 
+            onClose={() => setShowDebugPanel(false)}
+          />
+        )}
+
         {/* Progress Overview */}
         <div className="space-y-2">
           <div className="flex items-center justify-between text-sm">

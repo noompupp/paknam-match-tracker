@@ -1,89 +1,126 @@
 
-import { useState, useEffect } from 'react';
-import { useToast } from "@/hooks/use-toast";
-import { coordinationService, CoordinationData, AssignmentData } from '@/services/referee/coordinationService';
+import { useState, useEffect, useCallback } from 'react';
+import { coordinationService, CoordinationData } from '@/services/referee/coordinationService';
+import { useToast } from '@/hooks/use-toast';
 
 export const useCoordinationManager = (fixtureId: number | null) => {
   const [coordinationData, setCoordinationData] = useState<CoordinationData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [lastError, setLastError] = useState<string | null>(null);
   const { toast } = useToast();
 
-  useEffect(() => {
-    if (fixtureId) {
-      loadCoordinationData();
-    }
-  }, [fixtureId]);
-
-  const loadCoordinationData = async () => {
+  const loadCoordinationData = useCallback(async () => {
     if (!fixtureId) return;
 
     try {
       setIsLoading(true);
+      setLastError(null);
+      console.log('🎯 useCoordinationManager: Loading coordination data for fixture:', fixtureId);
+
       const data = await coordinationService.getCoordinationData(fixtureId);
+      
+      if (!data) {
+        console.log('ℹ️ useCoordinationManager: No coordination data found');
+        setCoordinationData(null);
+        return;
+      }
+
+      console.log('✅ useCoordinationManager: Coordination data loaded:', data);
       setCoordinationData(data);
+
     } catch (error) {
-      console.error('Error loading coordination data:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to load coordination data';
+      console.error('❌ useCoordinationManager: Error loading coordination data:', error);
+      setLastError(errorMessage);
+      
       toast({
         title: "Error",
-        description: "Failed to load coordination data",
+        description: errorMessage,
         variant: "destructive"
       });
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [fixtureId, toast]);
 
-  const activateAssignment = async (assignmentId: string) => {
+  const activateAssignment = useCallback(async (assignmentId: string) => {
     try {
       setIsLoading(true);
+      console.log('🔄 useCoordinationManager: Activating assignment:', assignmentId);
+
       await coordinationService.activateAssignment(assignmentId);
+      
+      // Reload coordination data to reflect changes
+      await loadCoordinationData();
       
       toast({
         title: "Success",
         description: "Assignment activated successfully",
       });
 
-      await loadCoordinationData();
     } catch (error) {
-      console.error('Error activating assignment:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to activate assignment';
+      console.error('❌ useCoordinationManager: Error activating assignment:', error);
+      
       toast({
         title: "Error",
-        description: "Failed to activate assignment",
+        description: errorMessage,
         variant: "destructive"
       });
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [loadCoordinationData, toast]);
 
-  const completeAssignment = async (assignmentId: string, notes?: string) => {
+  const completeAssignment = useCallback(async (assignmentId: string, notes?: string) => {
     try {
       setIsLoading(true);
+      console.log('✅ useCoordinationManager: Completing assignment:', assignmentId);
+
       await coordinationService.completeAssignment(assignmentId, notes);
+      
+      // Reload coordination data to reflect changes
+      await loadCoordinationData();
       
       toast({
         title: "Success",
         description: "Assignment completed successfully",
       });
 
-      await loadCoordinationData();
     } catch (error) {
-      console.error('Error completing assignment:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to complete assignment';
+      console.error('❌ useCoordinationManager: Error completing assignment:', error);
+      
       toast({
         title: "Error",
-        description: "Failed to complete assignment",
+        description: errorMessage,
         variant: "destructive"
       });
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [loadCoordinationData, toast]);
+
+  const retryLoadData = useCallback(() => {
+    console.log('🔄 useCoordinationManager: Retrying to load coordination data...');
+    loadCoordinationData();
+  }, [loadCoordinationData]);
+
+  useEffect(() => {
+    if (fixtureId) {
+      loadCoordinationData();
+    } else {
+      setCoordinationData(null);
+      setLastError(null);
+    }
+  }, [fixtureId, loadCoordinationData]);
 
   return {
     coordinationData,
     isLoading,
-    loadCoordinationData,
+    lastError,
     activateAssignment,
-    completeAssignment
+    completeAssignment,
+    retryLoadData
   };
 };
