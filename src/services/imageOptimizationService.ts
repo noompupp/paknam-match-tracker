@@ -201,7 +201,7 @@ class ImageOptimizationService {
         const optimized = await this.resizeImage(
           file, 
           variant.width, 
-          variant.height || undefined, 
+          variant.height, 
           variant.quality || 85
         );
         variants[variant.name] = optimized;
