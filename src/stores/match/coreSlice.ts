@@ -87,7 +87,15 @@ export const createCoreSlice: StateCreator<
     };
   },
 
-  addEvent: (eventData: any) => {
+  addEvent: (eventType: string, description: string, time: number) => {
+    const eventData = {
+      id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      type: eventType,
+      description,
+      time,
+      timestamp: Date.now()
+    };
+    
     set((state) => ({
       events: [...state.events, eventData],
       hasUnsavedChanges: true,

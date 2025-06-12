@@ -39,7 +39,7 @@ export interface MatchActions {
 
   // Utility actions
   clearPlayerTimes: () => void;
-  addEvent: (eventData: any) => void;
+  addEvent: (eventType: string, description: string, time: number) => void;
   triggerUIUpdate: () => void;
   resetState: () => void;
 

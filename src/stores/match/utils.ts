@@ -10,19 +10,7 @@ export const createInitialState = (): MatchState => ({
   playerTimes: [],
   events: [],
   hasUnsavedChanges: false,
-  lastUpdated: Date.now(),
-  
-  // New optimized tracking properties
-  localPlayerTimes: [],
-  isLocalTimerActive: false,
-  syncStatus: {
-    lastSyncTime: null,
-    pendingChanges: 0,
-    isSyncing: false,
-    lastError: null
-  },
-  autoSyncEnabled: true,
-  manualSyncOnly: false
+  lastUpdated: Date.now()
 });
 
 export const generateId = (): string => {

@@ -51,6 +51,7 @@ export const useDetailedGoalHandler = ({
             team: goalData.team,
             teamId,
             teamName,
+            type: 'assist',
             time: matchTime
           });
         }
@@ -62,6 +63,7 @@ export const useDetailedGoalHandler = ({
           team: goalData.team,
           teamId,
           teamName,
+          type: 'assist',
           time: matchTime
         });
       }
