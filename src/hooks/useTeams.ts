@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { teamsApi } from '@/services/api';
 import { leagueTableService } from '@/services/leagueTableService';
@@ -28,11 +27,11 @@ export const useTeams = () => {
           points: entry.points,
           position: entry.position,
           previous_position: entry.previous_position,
-          // Default values for other fields
+          // Use actual logo fields from deduplicated data instead of defaults
           captain: null,
-          color: null,
-          logo: '⚽',
-          logoURL: null,
+          color: entry.color,
+          logo: entry.logo,
+          logoURL: entry.logoURL,
           founded: '2020',
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()

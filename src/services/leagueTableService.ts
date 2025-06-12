@@ -13,6 +13,9 @@ export interface LeagueTableEntry {
   points: number;
   position: number;
   previous_position: number | null;
+  logoURL: string | null;
+  logo: string;
+  color: string | null;
 }
 
 export const leagueTableService = {
@@ -20,7 +23,7 @@ export const leagueTableService = {
     console.log('🏆 Getting deduplicated league table...');
     
     try {
-      // Get all teams with their current stats
+      // Get all teams with their current stats and logo information
       const { data: teams, error: teamsError } = await supabase
         .from('teams')
         .select('*')
@@ -104,7 +107,11 @@ export const leagueTableService = {
           goal_difference: goalDifference,
           points,
           position: team.position || 1,
-          previous_position: team.previous_position
+          previous_position: team.previous_position,
+          // Preserve logo-related fields from teams data
+          logoURL: team.logoURL,
+          logo: team.logo || '⚽',
+          color: team.color
         });
       }
 
