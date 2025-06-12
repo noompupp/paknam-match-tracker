@@ -111,7 +111,7 @@ const MatchEventsSection = ({
                     </div>
                     <EnhancedTimeBadge 
                       time={formatTime(event.time)} 
-                      variant={isOwnGoal ? "destructive" : "goal"}
+                      variant={isOwnGoal ? "red" : "goal"}
                     />
                   </div>
                 );
