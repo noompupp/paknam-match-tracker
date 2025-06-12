@@ -1,7 +1,7 @@
 
 import RefereeToolsHeader from "./components/RefereeToolsHeader";
 import RefereeMainContent from "./components/RefereeMainContent";
-import RefereePageContainer from "./shared/RefereePageContainer";
+import UnifiedPageHeader from "@/components/shared/UnifiedPageHeader";
 import EnhancedWorkflowModeManager from "./workflows/EnhancedWorkflowModeManager";
 import { useRefereeStateOrchestrator } from "./hooks/useRefereeStateOrchestrator";
 import { useState } from "react";
@@ -113,34 +113,43 @@ const RefereeToolsContainer = () => {
 
   if (fixturesLoading) {
     return (
-      <RefereePageContainer>
-        <div className="flex items-center justify-center h-32">
-          <p>Loading fixtures...</p>
-        </div>
-      </RefereePageContainer>
+      <>
+        <UnifiedPageHeader 
+          title="Referee Tools"
+          showLanguageToggle={true}
+        />
+        <main className="container mx-auto px-4 py-6 space-y-6 min-h-screen">
+          <div className="flex items-center justify-center h-32">
+            <p>Loading fixtures...</p>
+          </div>
+        </main>
+      </>
     );
   }
 
   return (
-    <RefereePageContainer>
-      <RefereeToolsHeader
-        fixtures={fixtures || []}
-        selectedFixture={selectedFixture}
-        onFixtureChange={setSelectedFixture}
-        enhancedPlayersData={enhancedPlayersData}
+    <>
+      <UnifiedPageHeader 
+        title="Referee Tools"
+        showLanguageToggle={true}
       />
+      
+      <main className="container mx-auto px-4 py-6 space-y-6 min-h-screen">
+        <RefereeToolsHeader
+          fixtures={fixtures || []}
+          selectedFixture={selectedFixture}
+          onFixtureChange={setSelectedFixture}
+          enhancedPlayersData={enhancedPlayersData}
+        />
 
-      {selectedFixture && !workflowConfig && (
-        <div className="container mx-auto p-4">
+        {selectedFixture && !workflowConfig && (
           <EnhancedWorkflowModeManager
             selectedFixtureData={selectedFixtureData}
             onWorkflowConfigured={handleWorkflowConfigured}
           />
-        </div>
-      )}
+        )}
 
-      {selectedFixture && workflowConfig && (
-        <div className="container mx-auto p-4">
+        {selectedFixture && workflowConfig && (
           <RefereeMainContent
             selectedFixtureData={selectedFixtureData}
             homeScore={homeScore}
@@ -183,9 +192,9 @@ const RefereeToolsContainer = () => {
             onDataRefresh={handleManualRefresh}
             workflowConfig={workflowConfig}
           />
-        </div>
-      )}
-    </RefereePageContainer>
+        )}
+      </main>
+    </>
   );
 };
 

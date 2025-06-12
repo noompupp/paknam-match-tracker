@@ -1,22 +1,28 @@
 
 import { useState, useEffect } from 'react';
-import { useToast } from '@/hooks/use-toast';
-import { coordinationService, type CoordinationData } from '@/services/referee/coordinationService';
+import { useToast } from "@/hooks/use-toast";
+import { coordinationService, CoordinationData, AssignmentData } from '@/services/referee/coordinationService';
 
 export const useCoordinationManager = (fixtureId: number | null) => {
   const [coordinationData, setCoordinationData] = useState<CoordinationData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  const fetchCoordinationData = async () => {
+  useEffect(() => {
+    if (fixtureId) {
+      loadCoordinationData();
+    }
+  }, [fixtureId]);
+
+  const loadCoordinationData = async () => {
     if (!fixtureId) return;
 
-    setIsLoading(true);
     try {
+      setIsLoading(true);
       const data = await coordinationService.getCoordinationData(fixtureId);
       setCoordinationData(data);
     } catch (error) {
-      console.error('Error fetching coordination data:', error);
+      console.error('Error loading coordination data:', error);
       toast({
         title: "Error",
         description: "Failed to load coordination data",
@@ -28,14 +34,16 @@ export const useCoordinationManager = (fixtureId: number | null) => {
   };
 
   const activateAssignment = async (assignmentId: string) => {
-    setIsLoading(true);
     try {
+      setIsLoading(true);
       await coordinationService.activateAssignment(assignmentId);
-      await fetchCoordinationData(); // Refresh data
+      
       toast({
         title: "Success",
-        description: "Assignment activated successfully"
+        description: "Assignment activated successfully",
       });
+
+      await loadCoordinationData();
     } catch (error) {
       console.error('Error activating assignment:', error);
       toast({
@@ -49,14 +57,16 @@ export const useCoordinationManager = (fixtureId: number | null) => {
   };
 
   const completeAssignment = async (assignmentId: string, notes?: string) => {
-    setIsLoading(true);
     try {
+      setIsLoading(true);
       await coordinationService.completeAssignment(assignmentId, notes);
-      await fetchCoordinationData(); // Refresh data
+      
       toast({
         title: "Success",
-        description: "Assignment completed successfully"
+        description: "Assignment completed successfully",
       });
+
+      await loadCoordinationData();
     } catch (error) {
       console.error('Error completing assignment:', error);
       toast({
@@ -69,15 +79,11 @@ export const useCoordinationManager = (fixtureId: number | null) => {
     }
   };
 
-  useEffect(() => {
-    fetchCoordinationData();
-  }, [fixtureId]);
-
   return {
     coordinationData,
     isLoading,
+    loadCoordinationData,
     activateAssignment,
-    completeAssignment,
-    refreshData: fetchCoordinationData
+    completeAssignment
   };
 };
