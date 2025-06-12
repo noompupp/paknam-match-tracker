@@ -64,4 +64,16 @@ export interface MatchState {
   events: MatchEvent[];
   hasUnsavedChanges: boolean;
   lastUpdated: number;
+  
+  // New optimized tracking properties
+  localPlayerTimes: any[];
+  isLocalTimerActive: boolean;
+  syncStatus: {
+    lastSyncTime: number | null;
+    pendingChanges: number;
+    isSyncing: boolean;
+    lastError: string | null;
+  };
+  autoSyncEnabled: boolean;
+  manualSyncOnly: boolean;
 }

@@ -3,10 +3,6 @@ import { StateCreator } from 'zustand';
 import { MatchState } from './types';
 import { MatchActions } from './actions';
 import { generateId } from './utils';
-import { useSyncManager } from '@/hooks/playerTracking/syncManager';
-import { useLocalTimerState } from '@/hooks/playerTracking/localTimerState';
-import { useConditionalSync } from '@/hooks/playerTracking/conditionalSync';
-import { usePersistenceManager } from '@/hooks/playerTracking/persistenceManager';
 
 export interface OptimizedPlayerTimeSlice {
   // Local state management
@@ -47,12 +43,6 @@ export const createOptimizedPlayerTimeSlice: StateCreator<
   [],
   OptimizedPlayerTimeSlice
 > = (set, get) => {
-  // Initialize hooks (these would need to be used at component level)
-  let syncManager: ReturnType<typeof useSyncManager>;
-  let localTimer: ReturnType<typeof useLocalTimerState>;
-  let conditionalSync: ReturnType<typeof useConditionalSync>;
-  let persistence: ReturnType<typeof usePersistenceManager>;
-
   return {
     localPlayerTimes: [],
     isLocalTimerActive: false,
@@ -66,16 +56,17 @@ export const createOptimizedPlayerTimeSlice: StateCreator<
     manualSyncOnly: false,
 
     startOptimizedTracking: () => {
-      // This would start the local timer
       console.log('🚀 OptimizedPlayerTime: Starting optimized tracking');
-      set(state => ({
+      set((state) => ({
+        ...state,
         isLocalTimerActive: true
       }));
     },
 
     stopOptimizedTracking: () => {
       console.log('⏹️ OptimizedPlayerTime: Stopping optimized tracking');
-      set(state => ({
+      set((state) => ({
+        ...state,
         isLocalTimerActive: false
       }));
     },
@@ -96,6 +87,7 @@ export const createOptimizedPlayerTimeSlice: StateCreator<
       };
 
       set((state) => ({
+        ...state,
         localPlayerTimes: [...state.localPlayerTimes, newPlayerTime]
       }));
 
@@ -104,6 +96,7 @@ export const createOptimizedPlayerTimeSlice: StateCreator<
 
     removePlayerOptimized: (playerId: number) => {
       set((state) => ({
+        ...state,
         localPlayerTimes: state.localPlayerTimes.filter(pt => pt.playerId !== playerId)
       }));
 
@@ -144,7 +137,7 @@ export const createOptimizedPlayerTimeSlice: StateCreator<
           return pt;
         });
 
-        return { localPlayerTimes: updatedPlayerTimes };
+        return { ...state, localPlayerTimes: updatedPlayerTimes };
       });
 
       console.log('🔄 OptimizedPlayerTime: Toggled player time:', playerId);
@@ -155,7 +148,8 @@ export const createOptimizedPlayerTimeSlice: StateCreator<
       console.log('💾 OptimizedPlayerTime: Force syncing', state.localPlayerTimes.length, 'players');
       
       // Update sync status
-      set(state => ({
+      set((state) => ({
+        ...state,
         syncStatus: { ...state.syncStatus, isSyncing: true, lastError: null }
       }));
 
@@ -163,7 +157,8 @@ export const createOptimizedPlayerTimeSlice: StateCreator<
         // Sync logic would go here
         await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate sync
         
-        set(state => ({
+        set((state) => ({
+          ...state,
           syncStatus: {
             lastSyncTime: Date.now(),
             pendingChanges: 0,
@@ -176,7 +171,8 @@ export const createOptimizedPlayerTimeSlice: StateCreator<
         console.log('✅ OptimizedPlayerTime: Force sync completed');
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Sync failed';
-        set(state => ({
+        set((state) => ({
+          ...state,
           syncStatus: { ...state.syncStatus, isSyncing: false, lastError: errorMessage }
         }));
         throw error;
@@ -184,17 +180,26 @@ export const createOptimizedPlayerTimeSlice: StateCreator<
     },
 
     toggleAutoSync: (enabled: boolean) => {
-      set(state => ({ autoSyncEnabled: enabled, manualSyncOnly: enabled ? false : state.manualSyncOnly }));
+      set((state) => ({ 
+        ...state, 
+        autoSyncEnabled: enabled, 
+        manualSyncOnly: enabled ? false : state.manualSyncOnly 
+      }));
       console.log('🔄 OptimizedPlayerTime: Auto-sync', enabled ? 'enabled' : 'disabled');
     },
 
     enableManualSyncOnly: () => {
-      set(state => ({ manualSyncOnly: true, autoSyncEnabled: false }));
+      set((state) => ({ 
+        ...state, 
+        manualSyncOnly: true, 
+        autoSyncEnabled: false 
+      }));
       console.log('✋ OptimizedPlayerTime: Manual sync only enabled');
     },
 
     clearPendingChanges: () => {
-      set(state => ({
+      set((state) => ({
+        ...state,
         syncStatus: { ...state.syncStatus, pendingChanges: 0 },
         localPlayerTimes: []
       }));

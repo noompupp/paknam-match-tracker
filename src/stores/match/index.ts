@@ -10,8 +10,9 @@ import { createEnhancedPlayerTimeSlice, EnhancedPlayerTimeSlice } from './enhanc
 import { createPlayerTimeSlice, PlayerTimeSlice } from './playerTimeSlice';
 import { createCoreSlice, CoreSlice } from './coreSlice';
 import { createGoalSlice, GoalSlice } from './goalSlice';
+import { createOptimizedPlayerTimeSlice, OptimizedPlayerTimeSlice } from './optimizedPlayerTimeSlice';
 
-type MatchStore = MatchState & MatchActions & EnhancedPlayerTimeSlice & PlayerTimeSlice & {
+type MatchStore = MatchState & MatchActions & EnhancedPlayerTimeSlice & PlayerTimeSlice & OptimizedPlayerTimeSlice & {
   syncCardsToDatabase: (fixtureId: number) => Promise<void>;
   optimizedBatchSync: (fixtureId: number) => Promise<void>;
   syncAllToDatabase: (fixtureId: number) => Promise<void>;
@@ -28,7 +29,8 @@ export const useMatchStore = create<MatchStore>()(
     ...createEnhancedCardSlice(set, get, api),
     ...createEnhancedPlayerTimeSlice(set, get, api),
     ...createPlayerTimeSlice(set, get, api),
-    ...createCoreSlice(set, get, api)
+    ...createCoreSlice(set, get, api),
+    ...createOptimizedPlayerTimeSlice(set, get, api)
   }))
 );
 

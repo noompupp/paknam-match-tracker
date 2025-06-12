@@ -1,6 +1,6 @@
 
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { PlayerTime } from '@/types/database';
+import { OptimizedPlayerTime } from '@/types/optimizedPlayerTime';
 
 interface LocalTimerConfig {
   updateInterval: number; // milliseconds
@@ -11,7 +11,7 @@ export const useLocalTimerState = (config: LocalTimerConfig = {
   updateInterval: 1000, // 1 second
   autoSaveThreshold: 300 // 5 minutes
 }) => {
-  const [localPlayerTimes, setLocalPlayerTimes] = useState<Map<number, PlayerTime>>(new Map());
+  const [localPlayerTimes, setLocalPlayerTimes] = useState<Map<number, OptimizedPlayerTime>>(new Map());
   const [isTimerActive, setIsTimerActive] = useState(false);
   const intervalRef = useRef<NodeJS.Timeout>();
   const lastAutoSaveRef = useRef<Map<number, number>>(new Map());
@@ -63,7 +63,7 @@ export const useLocalTimerState = (config: LocalTimerConfig = {
     console.log('⏹️ LocalTimer: Stopped');
   }, []);
 
-  const addPlayerToLocalTimer = useCallback((playerTime: PlayerTime) => {
+  const addPlayerToLocalTimer = useCallback((playerTime: OptimizedPlayerTime) => {
     setLocalPlayerTimes(prev => {
       const updated = new Map(prev);
       updated.set(playerTime.playerId, {
@@ -131,11 +131,11 @@ export const useLocalTimerState = (config: LocalTimerConfig = {
     });
   }, []);
 
-  const getLocalPlayerTime = useCallback((playerId: number): PlayerTime | undefined => {
+  const getLocalPlayerTime = useCallback((playerId: number): OptimizedPlayerTime | undefined => {
     return localPlayerTimes.get(playerId);
   }, [localPlayerTimes]);
 
-  const getAllLocalPlayerTimes = useCallback((): PlayerTime[] => {
+  const getAllLocalPlayerTimes = useCallback((): OptimizedPlayerTime[] => {
     return Array.from(localPlayerTimes.values());
   }, [localPlayerTimes]);
 

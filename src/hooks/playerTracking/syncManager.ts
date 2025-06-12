@@ -1,7 +1,7 @@
 
 import { useCallback, useRef, useState } from 'react';
 import { playerTimeTrackingService } from '@/services/fixtures/playerTimeTrackingService';
-import { PlayerTime } from '@/types/database';
+import { OptimizedPlayerTime } from '@/types/optimizedPlayerTime';
 
 interface SyncManagerConfig {
   debounceInterval: number; // milliseconds
@@ -30,7 +30,7 @@ export const useSyncManager = (config: SyncManagerConfig = {
 
   const debounceTimerRef = useRef<NodeJS.Timeout>();
   const maxIntervalTimerRef = useRef<NodeJS.Timeout>();
-  const pendingDataRef = useRef<Map<number, PlayerTime>>(new Map());
+  const pendingDataRef = useRef<Map<number, OptimizedPlayerTime>>(new Map());
 
   const executeSync = useCallback(async (fixtureId: number) => {
     if (!fixtureId || pendingDataRef.current.size === 0) return;
@@ -75,7 +75,7 @@ export const useSyncManager = (config: SyncManagerConfig = {
     }
   }, []);
 
-  const scheduleSync = useCallback((fixtureId: number, playerTime: PlayerTime) => {
+  const scheduleSync = useCallback((fixtureId: number, playerTime: OptimizedPlayerTime) => {
     // Add to pending changes
     pendingDataRef.current.set(playerTime.playerId, playerTime);
     
