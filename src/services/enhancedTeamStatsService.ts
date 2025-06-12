@@ -1,6 +1,7 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { operationLoggingService } from './operationLoggingService';
+import { TeamStatisticsAggregationService } from './teamStatisticsAggregationService';
+import type { TeamStatistics, TopPerformers, PerformanceBreakdown, TeamInsights } from './teamStatisticsAggregationService';
 
 export interface EnhancedPlayerStats {
   id: number;
@@ -47,6 +48,13 @@ export interface TeamStatsOverview {
   topScorer: EnhancedPlayerStats | null;
   topAssister: EnhancedPlayerStats | null;
   mostExperienced: EnhancedPlayerStats | null;
+}
+
+export interface EnhancedTeamOverview extends TeamStatsOverview {
+  aggregatedStatistics: TeamStatistics;
+  topPerformers: TopPerformers;
+  performanceBreakdown: PerformanceBreakdown;
+  teamInsights: TeamInsights;
 }
 
 export const enhancedTeamStatsService = {
@@ -231,6 +239,29 @@ export const enhancedTeamStatsService = {
       };
     } catch (error) {
       console.error('❌ Error getting team overview:', error);
+      throw error;
+    }
+  },
+
+  async getEnhancedTeamOverview(teamId: string): Promise<EnhancedTeamOverview> {
+    console.log('📊 Getting enhanced team overview with aggregated statistics for:', teamId);
+    
+    try {
+      const players = await this.getTeamPlayerStats(teamId);
+      const basicOverview = await this.getTeamOverview(teamId);
+      
+      // Use the new aggregation service to get comprehensive analysis
+      const comprehensiveAnalysis = TeamStatisticsAggregationService.getComprehensiveAnalysis(players);
+
+      return {
+        ...basicOverview,
+        aggregatedStatistics: comprehensiveAnalysis.statistics,
+        topPerformers: comprehensiveAnalysis.topPerformers,
+        performanceBreakdown: comprehensiveAnalysis.breakdown,
+        teamInsights: comprehensiveAnalysis.insights
+      };
+    } catch (error) {
+      console.error('❌ Error getting enhanced team overview:', error);
       throw error;
     }
   },
