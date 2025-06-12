@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { imageOptimizationService, ImageMetadata } from '@/services/imageOptimization';
@@ -54,18 +55,24 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
         .finally(() => {
           setIsLoading(false);
         });
+    } else if (src) {
+      // For external URLs, use them directly
+      setImageSrc(src);
+      setIsLoading(false);
     } else {
       setIsLoading(false);
     }
   }, [metadataId, variant, src]);
 
   const handleImageError = () => {
+    console.log('Image failed to load:', imageSrc);
     setImageError(true);
     
     if (metadata) {
       // Try fallback to original image
       const originalUrl = metadata.original_url;
       if (originalUrl !== imageSrc) {
+        console.log('Trying fallback to original URL:', originalUrl);
         setImageSrc(originalUrl);
         setImageError(false);
         return;
@@ -74,13 +81,16 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
     
     // Use provided fallback
     if (fallback && typeof fallback === 'string') {
+      console.log('Using string fallback:', fallback);
       setImageSrc(fallback);
       setImageError(false);
     }
   };
 
   const handleImageLoad = () => {
+    console.log('Image loaded successfully:', imageSrc);
     setIsLoading(false);
+    setImageError(false);
   };
 
   // Show loading state
@@ -160,7 +170,7 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
     }
   }
 
-  // Standard img element
+  // Standard img element for external URLs and direct sources
   return (
     <img
       src={imageSrc}
@@ -172,6 +182,7 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
       onLoad={handleImageLoad}
       className={cn("object-cover", className)}
       style={style}
+      crossOrigin="anonymous"
       {...props}
     />
   );

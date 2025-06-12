@@ -1,7 +1,6 @@
 
 import { Trophy } from "lucide-react";
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import OptimizedImage from "./shared/OptimizedImage";
 
 interface TournamentLogoProps {
@@ -13,29 +12,27 @@ const TournamentLogo = ({ size = 'medium', className = '' }: TournamentLogoProps
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchTournamentLogo = async () => {
-      try {
-        // Get the tournament logo URL from the correct bucket
-        const { data } = supabase.storage
-          .from('tournament-assets')
-          .getPublicUrl('tournament-logo.png');
+  // Use the optimized CDN URL directly
+  const optimizedLogoUrl = "http://sangthongkrabi.com/wp-content/uploads/2025/06/Andaman-Paknam-FC-Logo-96-x-96-px.png";
 
-        if (data?.publicUrl) {
-          // Check if the file actually exists by trying to fetch it
-          const response = await fetch(data.publicUrl);
-          if (response.ok) {
-            setLogoUrl(data.publicUrl);
-          }
+  useEffect(() => {
+    const loadTournamentLogo = async () => {
+      try {
+        // Test if the optimized CDN URL is accessible
+        const response = await fetch(optimizedLogoUrl, { method: 'HEAD' });
+        if (response.ok) {
+          setLogoUrl(optimizedLogoUrl);
+        } else {
+          console.log('Optimized tournament logo not accessible, using fallback');
         }
       } catch (error) {
-        console.log('Tournament logo not found, using default trophy icon');
+        console.log('Failed to load optimized tournament logo, using fallback:', error);
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchTournamentLogo();
+    loadTournamentLogo();
   }, []);
 
   const getSizeClasses = () => {
@@ -76,6 +73,7 @@ const TournamentLogo = ({ size = 'medium', className = '' }: TournamentLogoProps
             variant={size === 'small' ? 'small' : size === 'large' ? 'large' : 'medium'}
             fallback={getFallbackIcon()}
             priority={size === 'large'}
+            loading="eager"
           />
         ) : (
           <Trophy className={`${size === 'small' ? 'w-4 h-4' : size === 'large' ? 'w-8 h-8' : 'w-6 h-6'} text-white`} />
