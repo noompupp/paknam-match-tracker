@@ -91,6 +91,8 @@ const EnhancedPlayerCard = ({
     );
   }
 
+  const RoleIcon = getRoleIcon(player.role);
+
   return (
     <Card className={cn("premier-league-card hover:shadow-md transition-all duration-200", className)}>
       <CardContent className="p-4">
@@ -120,8 +122,8 @@ const EnhancedPlayerCard = ({
 
                 <div className="flex items-center gap-2 mb-3">
                   <Badge className={cn("px-3 py-1", getRoleBadgeColor(player.role))}>
-                    {getRoleIcon(player.role) && (
-                      <getRoleIcon(player.role)! className="h-3 w-3 mr-1" />
+                    {RoleIcon && (
+                      <RoleIcon className="h-3 w-3 mr-1" />
                     )}
                     {getRoleDisplay(player.role)}
                   </Badge>
