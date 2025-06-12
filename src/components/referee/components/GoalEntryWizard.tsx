@@ -148,21 +148,22 @@ const GoalEntryWizard = ({
   const handleConfirm = () => {
     if (!wizardData.selectedPlayer || !wizardData.selectedTeam) return;
 
-    console.log('🎯 GoalEntryWizard: Confirming goal assignment:', {
+    console.log('🎯 GoalEntryWizard: Confirming goal assignment with enhanced data:', {
       isEditMode,
       editingGoalId: editingGoal?.id,
       player: wizardData.selectedPlayer,
       team: wizardData.selectedTeam,
       isOwnGoal: wizardData.isOwnGoal,
-      assistPlayer: wizardData.assistPlayer
+      assistPlayer: wizardData.assistPlayer,
+      timestamp: new Date().toISOString()
     });
 
-    // Single goal assignment call with edit information
+    // Enhanced goal assignment call with proper own goal handling
     onGoalAssigned({
       player: wizardData.selectedPlayer,
       goalType: 'goal',
       team: wizardData.selectedTeam,
-      isOwnGoal: wizardData.isOwnGoal,
+      isOwnGoal: wizardData.isOwnGoal, // Critical: Pass the own goal flag
       assistPlayer: wizardData.assistPlayer || undefined,
       isEdit: isEditMode,
       originalGoalId: editingGoal?.id

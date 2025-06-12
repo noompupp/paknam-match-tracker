@@ -1,7 +1,7 @@
 
 import { useToast } from "@/hooks/use-toast";
 import { ComponentPlayer } from "../useRefereeState";
-import { assignGoalToPlayer } from "@/services/fixtures/simplifiedGoalAssignmentService";
+import { unifiedGoalService } from "@/services/unifiedGoalService";
 import { getValidatedTeamId, normalizeTeamIdForDatabase, validateTeamData } from "@/utils/teamIdMapping";
 
 interface UseGoalHandlersProps {
@@ -41,8 +41,18 @@ export const useGoalHandlers = (props: UseGoalHandlersProps) => {
     });
   };
 
-  const handleAssignGoal = async (player: ComponentPlayer) => {
+  const handleAssignGoal = async (player: ComponentPlayer, isOwnGoal: boolean = false) => {
+    console.log('🎯 useGoalHandlers: Starting goal assignment with enhanced debugging:', {
+      player: player.name,
+      team: player.team,
+      type: props.selectedGoalType,
+      fixture: props.selectedFixtureData?.id,
+      isOwnGoal,
+      timestamp: new Date().toISOString()
+    });
+
     if (!props.selectedFixtureData) {
+      console.error('❌ useGoalHandlers: No fixture selected');
       toast({
         title: "Error",
         description: "No fixture selected",
@@ -52,13 +62,6 @@ export const useGoalHandlers = (props: UseGoalHandlersProps) => {
     }
 
     try {
-      console.log('⚽ useGoalHandlers: Assigning goal with enhanced team ID resolution:', {
-        player: player.name,
-        team: player.team,
-        type: props.selectedGoalType,
-        fixture: props.selectedFixtureData.id
-      });
-
       // Enhanced team data structure with proper __id__ prioritization
       const homeTeam = {
         id: props.selectedFixtureData.home_team_id || props.selectedFixtureData.home_team?.id?.toString(),
@@ -72,6 +75,12 @@ export const useGoalHandlers = (props: UseGoalHandlersProps) => {
         __id__: props.selectedFixtureData.away_team?.__id__ || props.selectedFixtureData.away_team_id
       };
 
+      console.log('🔍 useGoalHandlers: Team data prepared:', {
+        homeTeam,
+        awayTeam,
+        playerTeam: player.team
+      });
+
       // Validate team data
       if (!validateTeamData(homeTeam, awayTeam)) {
         throw new Error('Invalid team data in fixture - missing required team information');
@@ -81,6 +90,7 @@ export const useGoalHandlers = (props: UseGoalHandlersProps) => {
       let teamId: string;
       try {
         teamId = await getValidatedTeamId(player.team, homeTeam, awayTeam);
+        console.log('✅ useGoalHandlers: Team ID resolved successfully:', teamId);
       } catch (resolutionError) {
         console.error('❌ useGoalHandlers: Team ID resolution failed:', resolutionError);
         
@@ -113,51 +123,84 @@ export const useGoalHandlers = (props: UseGoalHandlersProps) => {
         description: `Adding ${props.selectedGoalType} for ${player.name}`,
       });
 
-      const result = await assignGoalToPlayer({
+      // Use unified goal service with proper isOwnGoal parameter
+      console.log('🚀 useGoalHandlers: Calling unified goal service with:', {
         fixtureId: props.selectedFixtureData.id,
         playerId: player.id,
         playerName: player.name,
         teamId: normalizedTeamId,
+        teamName: player.team,
+        goalType: props.selectedGoalType,
         eventTime: props.matchTime,
-        type: props.selectedGoalType
+        homeTeam,
+        awayTeam,
+        isOwnGoal
       });
 
-      if (result) {
-        // Update local score if it's a goal (not assist)
-        if (props.selectedGoalType === 'goal') {
-          const isHomeTeam = player.team === homeTeam.name;
-          const team = isHomeTeam ? 'home' : 'away';
-          
-          console.log('📊 useGoalHandlers: Automatically updating score for goal:', {
-            team,
-            player: player.name,
-            isHomeTeam
-          });
-          
-          props.addGoal(team);
-          
-          // Trigger immediate score refresh to sync with database
-          if (props.forceRefresh) {
-            console.log('🔄 useGoalHandlers: Triggering immediate score refresh after goal assignment');
-            setTimeout(() => {
-              props.forceRefresh?.();
-            }, 100); // Small delay to ensure database write completes
-          }
-        }
+      const result = await unifiedGoalService.addGoal({
+        fixtureId: props.selectedFixtureData.id,
+        playerId: player.id,
+        playerName: player.name,
+        teamId: normalizedTeamId,
+        teamName: player.team,
+        goalType: props.selectedGoalType,
+        eventTime: props.matchTime,
+        homeTeam,
+        awayTeam,
+        isOwnGoal // Critical fix: Include the isOwnGoal parameter
+      });
 
-        props.addEvent(
-          props.selectedGoalType,
-          `${props.selectedGoalType === 'goal' ? 'Goal' : 'Assist'} assigned to ${player.name} (${player.team})`,
-          props.matchTime
-        );
+      console.log('📊 useGoalHandlers: Unified goal service result:', result);
 
-        toast({
-          title: `${props.selectedGoalType === 'goal' ? 'Goal' : 'Assist'} Assigned!`,
-          description: `${props.selectedGoalType === 'goal' ? 'Goal' : 'Assist'} assigned to ${player.name} and ${props.selectedGoalType === 'goal' ? 'score updated with real-time sync' : 'stats updated'}`,
-        });
-
-        console.log('✅ useGoalHandlers: Goal assignment completed with immediate score sync');
+      if (!result.success) {
+        throw new Error(result.error || 'Goal assignment failed');
       }
+
+      // Update local score if it's a goal (not assist)
+      if (props.selectedGoalType === 'goal') {
+        const isHomeTeam = player.team === homeTeam.name;
+        let scoringTeam: 'home' | 'away';
+        
+        if (isOwnGoal) {
+          // Own goal benefits the opposing team
+          scoringTeam = isHomeTeam ? 'away' : 'home';
+        } else {
+          // Regular goal benefits the player's team
+          scoringTeam = isHomeTeam ? 'home' : 'away';
+        }
+        
+        console.log('📊 useGoalHandlers: Updating local score:', {
+          scoringTeam,
+          player: player.name,
+          isHomeTeam,
+          isOwnGoal
+        });
+        
+        props.addGoal(scoringTeam);
+        
+        // Trigger immediate score refresh to sync with database
+        if (props.forceRefresh) {
+          console.log('🔄 useGoalHandlers: Triggering immediate score refresh after goal assignment');
+          setTimeout(() => {
+            props.forceRefresh?.();
+          }, 100); // Small delay to ensure database write completes
+        }
+      }
+
+      props.addEvent(
+        props.selectedGoalType,
+        `${isOwnGoal ? 'Own goal' : (props.selectedGoalType === 'goal' ? 'Goal' : 'Assist')} assigned to ${player.name} (${player.team})`,
+        props.matchTime
+      );
+
+      toast({
+        title: `${props.selectedGoalType === 'goal' ? (isOwnGoal ? 'Own Goal' : 'Goal') : 'Assist'} Assigned!`,
+        description: `${props.selectedGoalType === 'goal' ? (isOwnGoal ? 'Own goal' : 'Goal') : 'Assist'} assigned to ${player.name} and ${props.selectedGoalType === 'goal' ? 'score updated with real-time sync' : 'stats updated'}`,
+      });
+
+      console.log('✅ useGoalHandlers: Goal assignment completed with immediate score sync');
+      return result;
+
     } catch (error) {
       console.error('❌ useGoalHandlers: Error assigning goal:', error);
       
@@ -180,6 +223,8 @@ export const useGoalHandlers = (props: UseGoalHandlersProps) => {
         description: errorMessage,
         variant: "destructive"
       });
+
+      throw error;
     }
   };
 

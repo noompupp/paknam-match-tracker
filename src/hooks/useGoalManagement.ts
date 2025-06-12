@@ -10,6 +10,7 @@ interface GoalData {
   time: number;
   type: 'goal' | 'assist';
   id?: string; // Add unique identifier for better deduplication
+  isOwnGoal?: boolean; // Add own goal flag
 }
 
 // Update TeamInfo interface to use string for id
@@ -25,8 +26,8 @@ export const useGoalManagement = () => {
   const [selectedGoalType, setSelectedGoalType] = useState<'goal' | 'assist'>('goal');
 
   // Helper function to create unique identifier for goals
-  const createGoalId = (playerId: number, time: number, type: string, team: string): string => {
-    return `${playerId}-${time}-${type}-${team}-${Date.now()}`;
+  const createGoalId = (playerId: number, time: number, type: string, team: string, isOwnGoal?: boolean): string => {
+    return `${playerId}-${time}-${type}-${team}-${isOwnGoal ? 'own' : 'regular'}-${Date.now()}`;
   };
 
   // Helper function to check for duplicates
@@ -35,7 +36,8 @@ export const useGoalManagement = () => {
       existingGoal.playerId === newGoal.playerId &&
       existingGoal.time === newGoal.time &&
       existingGoal.type === newGoal.type &&
-      existingGoal.team === newGoal.team
+      existingGoal.team === newGoal.team &&
+      existingGoal.isOwnGoal === newGoal.isOwnGoal
     );
   };
 
@@ -44,8 +46,21 @@ export const useGoalManagement = () => {
     matchTime: number, 
     fixtureId: number, 
     homeTeam: TeamInfo, // Updated type
-    awayTeam: TeamInfo  // Updated type
+    awayTeam: TeamInfo,  // Updated type
+    isOwnGoal: boolean = false // Add own goal parameter
   ) => {
+    console.log('⚽ useGoalManagement: Starting enhanced goal assignment:', {
+      player: player.name,
+      team: player.team,
+      type: selectedGoalType,
+      time: matchTime,
+      fixtureId,
+      homeTeam: homeTeam?.name,
+      awayTeam: awayTeam?.name,
+      isOwnGoal,
+      timestamp: new Date().toISOString()
+    });
+
     if (!player) {
       throw new Error('Player is required for goal assignment');
     }
@@ -56,7 +71,8 @@ export const useGoalManagement = () => {
       playerName: player.name,
       team: player.team,
       time: matchTime,
-      type: selectedGoalType
+      type: selectedGoalType,
+      isOwnGoal
     };
 
     // Check for duplicates in local state
@@ -64,16 +80,6 @@ export const useGoalManagement = () => {
       console.warn('🚫 useGoalManagement: Duplicate goal detected in local state, skipping assignment');
       throw new Error('This goal/assist has already been assigned to this player at this time');
     }
-
-    console.log('⚽ useGoalManagement: Starting unified goal assignment with enhanced duplicate prevention:', {
-      player: player.name,
-      team: player.team,
-      type: selectedGoalType,
-      time: matchTime,
-      fixtureId,
-      homeTeam: homeTeam?.name,
-      awayTeam: awayTeam?.name
-    });
 
     // Validate that we have all required data
     if (!fixtureId || !homeTeam || !awayTeam) {
@@ -91,7 +97,20 @@ export const useGoalManagement = () => {
         awayTeam: awayTeam.name
       });
 
-      // Use the unified goal service - fix method name
+      // Use the unified goal service with enhanced own goal support
+      console.log('🚀 useGoalManagement: Calling unified goal service with enhanced parameters:', {
+        fixtureId,
+        playerId: player.id,
+        playerName: player.name,
+        teamId,
+        teamName: player.team,
+        goalType: selectedGoalType,
+        eventTime: matchTime,
+        homeTeam,
+        awayTeam,
+        isOwnGoal
+      });
+
       const result = await unifiedGoalService.addGoal({
         fixtureId,
         playerId: player.id,
@@ -101,8 +120,11 @@ export const useGoalManagement = () => {
         goalType: selectedGoalType,
         eventTime: matchTime,
         homeTeam,
-        awayTeam
+        awayTeam,
+        isOwnGoal // Critical: Include the isOwnGoal parameter
       });
+
+      console.log('📊 useGoalManagement: Unified goal service response:', result);
 
       if (!result.success) {
         throw new Error(result.message || 'Failed to assign goal');
@@ -111,7 +133,7 @@ export const useGoalManagement = () => {
       // Add to local state only if successful and not duplicate
       const newGoal: GoalData = {
         ...preliminaryGoal,
-        id: createGoalId(player.id, matchTime, selectedGoalType, player.team)
+        id: createGoalId(player.id, matchTime, selectedGoalType, player.team, isOwnGoal)
       };
 
       setGoals(prev => {
@@ -125,14 +147,16 @@ export const useGoalManagement = () => {
       
       setSelectedGoalPlayer("");
       
-      console.log('✅ useGoalManagement: Goal successfully assigned with enhanced duplicate prevention');
+      console.log('✅ useGoalManagement: Goal successfully assigned with enhanced duplicate prevention and own goal support');
       
       return {
         success: result.success,
         goalEventId: result.goalEventId,
         scoreUpdated: result.scoreUpdated,
         autoScoreUpdated: selectedGoalType === 'goal',
-        goalId: newGoal.id
+        goalId: newGoal.id,
+        homeScore: result.homeScore,
+        awayScore: result.awayScore
       };
 
     } catch (error) {

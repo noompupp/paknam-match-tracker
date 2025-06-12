@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 
 interface DuplicateCheckParams {
@@ -17,7 +18,7 @@ interface DuplicateCheckResult {
 
 export const enhancedDuplicatePreventionService = {
   async checkForDuplicateEvent(params: DuplicateCheckParams): Promise<DuplicateCheckResult> {
-    console.log('🔍 EnhancedDuplicatePreventionService: Checking for duplicate event:', params);
+    console.log('🔍 EnhancedDuplicatePreventionService: Checking for duplicate event with own goal support:', params);
     
     try {
       const { data: existingEvents, error } = await supabase
@@ -27,7 +28,8 @@ export const enhancedDuplicatePreventionService = {
         .eq('team_id', params.teamId)
         .eq('player_name', params.playerName)
         .eq('event_type', params.eventType)
-        .eq('event_time', params.eventTime);
+        .eq('event_time', params.eventTime)
+        .eq('is_own_goal', params.isOwnGoal || false); // Include own goal in duplicate check
 
       if (error) {
         console.error('❌ EnhancedDuplicatePreventionService: Error checking duplicates:', error);
@@ -40,7 +42,7 @@ export const enhancedDuplicatePreventionService = {
         console.warn('⚠️ EnhancedDuplicatePreventionService: Duplicate event detected:', existingEvents);
         return {
           isDuplicate: true,
-          message: `Duplicate ${params.eventType} already exists for ${params.playerName} at time ${params.eventTime}`,
+          message: `Duplicate ${params.eventType}${params.isOwnGoal ? ' (own goal)' : ''} already exists for ${params.playerName} at time ${params.eventTime}`,
           conflictingEvents: existingEvents
         };
       }
