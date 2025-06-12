@@ -21,29 +21,31 @@ const CompactGoalScorers = ({
 
   return (
     <div className="space-y-2">
-      {goals.slice(0, 3).map((goal, index) => (
-        <div 
-          key={index} 
-          className="flex items-center gap-2 text-xs animate-fade-in hover:bg-muted/30 rounded-md p-1 transition-all duration-200 hover-scale"
-          style={{ animationDelay: `${index * 100}ms` }}
-        >
-          <Target className="h-3 w-3 transition-transform duration-200" style={{ color: teamColor }} />
-          <span className="font-medium text-foreground flex-1">
-            {getGoalPlayerName(goal)}
-          </span>
-          <Badge variant="secondary" className="text-xs px-2 py-0.5 font-mono">
-            {Math.floor(getGoalTime(goal) / 60)}'
-          </Badge>
-          {goal.type === 'assist' && (
-            <Users className="h-3 w-3 text-blue-500 animate-pulse" />
-          )}
-          {goal.isOwnGoal && (
-            <Badge variant="destructive" className="text-xs px-1 py-0">
-              OG
+      {goals.slice(0, 3).map((goal, index) => {
+        const isOwnGoal = goal.own_goal || goal.isOwnGoal || false;
+        
+        return (
+          <div 
+            key={index} 
+            className="flex items-center gap-2 text-xs animate-fade-in hover:bg-muted/30 rounded-md p-1 transition-all duration-200 hover-scale"
+            style={{ animationDelay: `${index * 100}ms` }}
+          >
+            <Target className="h-3 w-3 transition-transform duration-200" style={{ color: teamColor }} />
+            <span className="font-medium text-foreground flex-1">
+              {getGoalPlayerName(goal)}
+              {isOwnGoal && (
+                <span className="ml-1 text-red-600 font-medium">(OG)</span>
+              )}
+            </span>
+            <Badge variant="secondary" className="text-xs px-2 py-0.5 font-mono">
+              {Math.floor(getGoalTime(goal) / 60)}'
             </Badge>
-          )}
-        </div>
-      ))}
+            {goal.type === 'assist' && !isOwnGoal && (
+              <Users className="h-3 w-3 text-blue-500 animate-pulse" />
+            )}
+          </div>
+        );
+      })}
       {goals.length > 3 && (
         <div className="text-xs text-muted-foreground pl-5 animate-fade-in opacity-75">
           +{goals.length - 3} more goal{goals.length - 3 !== 1 ? 's' : ''}

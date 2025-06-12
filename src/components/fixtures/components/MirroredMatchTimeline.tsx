@@ -63,7 +63,7 @@ const MirroredMatchTimeline = ({
       teamColor: homeTeamColor,
       teamId: fixture.home_team_id,
       isOwnGoal: goal.own_goal || goal.isOwnGoal || false,
-      assistPlayerName: goal.assistPlayerName || goal.assist_player_name
+      assistPlayerName: (goal.own_goal || goal.isOwnGoal) ? undefined : (goal.assistPlayerName || goal.assist_player_name)
     })),
     ...awayGoals.map((goal: any) => ({
       id: goal.id,
@@ -74,7 +74,7 @@ const MirroredMatchTimeline = ({
       teamColor: awayTeamColor,
       teamId: fixture.away_team_id,
       isOwnGoal: goal.own_goal || goal.isOwnGoal || false,
-      assistPlayerName: goal.assistPlayerName || goal.assist_player_name
+      assistPlayerName: (goal.own_goal || goal.isOwnGoal) ? undefined : (goal.assistPlayerName || goal.assist_player_name)
     })),
     ...cards.map(card => {
       // Determine which team this card belongs to
@@ -174,8 +174,11 @@ const MirroredMatchTimeline = ({
               ${isMobile ? 'text-sm' : 'text-base'}
             `}>
               {event.playerName}
+              {event.isOwnGoal && (
+                <span className="ml-1 text-red-600 font-medium text-xs">(OG)</span>
+              )}
             </div>
-            {event.assistPlayerName && (
+            {event.assistPlayerName && !event.isOwnGoal && (
               <div className={`
                 text-muted-foreground leading-snug mt-0.5
                 ${isMobile ? 'text-xs line-clamp-2' : 'text-xs truncate'}
@@ -196,13 +199,6 @@ const MirroredMatchTimeline = ({
             </span>
           )}
         </div>
-        {event.isOwnGoal && (
-          <div className={`text-xs text-red-600 font-medium mt-1 ${
-            isHome ? 'text-left' : 'text-right'
-          }`}>
-            (Own Goal)
-          </div>
-        )}
       </div>
     </div>
   );
