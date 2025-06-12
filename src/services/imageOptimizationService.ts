@@ -1,4 +1,5 @@
 
+
 import { supabase } from '@/integrations/supabase/client';
 
 export interface ImageVariant {
@@ -202,7 +203,7 @@ class ImageOptimizationService {
         const optimized = await this.resizeImage(
           file, 
           variant.width, 
-          variant.height || undefined, 
+          'height' in variant ? variant.height : undefined, 
           variant.quality || 85
         );
         variants[variant.name] = optimized;
@@ -390,3 +391,4 @@ class ImageOptimizationService {
 }
 
 export const imageOptimizationService = new ImageOptimizationService();
+
