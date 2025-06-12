@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 
 export interface ImageVariant {
@@ -202,8 +201,8 @@ class ImageOptimizationService {
         const optimized = await this.resizeImage(
           file, 
           variant.width, 
-          variant.height, 
-          variant.quality
+          variant.height || undefined, 
+          variant.quality || 85
         );
         variants[variant.name] = optimized;
       } catch (error) {
@@ -358,10 +357,29 @@ class ImageOptimizationService {
 
       if (error) throw error;
       
-      // Convert the database response to our typed interface
+      // Convert the database response to our typed interface with proper type safety
+      const typedVariants: Record<string, ImageVariant> = {};
+      
+      if (data.variants && typeof data.variants === 'object' && !Array.isArray(data.variants)) {
+        Object.entries(data.variants).forEach(([key, value]) => {
+          if (value && typeof value === 'object' && !Array.isArray(value)) {
+            const variant = value as any;
+            if (variant.url && variant.width && variant.height && variant.format && variant.size) {
+              typedVariants[key] = {
+                url: variant.url,
+                width: variant.width,
+                height: variant.height,
+                format: variant.format,
+                size: variant.size
+              };
+            }
+          }
+        });
+      }
+      
       return {
         ...data,
-        variants: data.variants as Record<string, ImageVariant>
+        variants: typedVariants
       } as ImageMetadata;
     } catch (error) {
       console.error('Failed to get image metadata:', error);
