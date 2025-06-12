@@ -45,41 +45,33 @@ export const assignGoalToPlayer = async (data: GoalAssignmentData) => {
     // Update player stats if it's a goal or assist (but not for own goals affecting player stats negatively)
     if (data.playerId && data.playerId > 0) {
       try {
-        const statsUpdate: any = {};
-        
         if (data.type === 'goal' && !data.isOwnGoal) {
-          // Only count regular goals, not own goals
-          statsUpdate.goals = data.playerId; // Use member ID for proper increment
+          // Only count regular goals, not own goals - use RPC for atomic increment
+          const { error: goalsError } = await supabase.rpc('safe_update_member_stats', {
+            p_member_id: data.playerId,
+            p_goals: 1
+          });
+
+          if (goalsError) {
+            console.error('⚠️ Simplified Goal Assignment: Goals update failed:', goalsError);
+          } else {
+            console.log('✅ Simplified Goal Assignment: Goals updated via RPC');
+          }
         } else if (data.type === 'assist') {
-          statsUpdate.assists = data.playerId; // Use member ID for proper increment
+          // Update assists using RPC for atomic increment
+          const { error: assistsError } = await supabase.rpc('safe_update_member_stats', {
+            p_member_id: data.playerId,
+            p_assists: 1
+          });
+
+          if (assistsError) {
+            console.error('⚠️ Simplified Goal Assignment: Assists update failed:', assistsError);
+          } else {
+            console.log('✅ Simplified Goal Assignment: Assists updated via RPC');
+          }
         }
 
-        if (Object.keys(statsUpdate).length > 0) {
-          // Update goals or assists using direct increment
-          if (statsUpdate.goals) {
-            const { error: goalsError } = await supabase
-              .from('members')
-              .update({ goals: supabase.sql`goals + 1` })
-              .eq('id', data.playerId);
-
-            if (goalsError) {
-              console.error('⚠️ Simplified Goal Assignment: Goals update failed:', goalsError);
-            }
-          }
-
-          if (statsUpdate.assists) {
-            const { error: assistsError } = await supabase
-              .from('members')
-              .update({ assists: supabase.sql`assists + 1` })
-              .eq('id', data.playerId);
-
-            if (assistsError) {
-              console.error('⚠️ Simplified Goal Assignment: Assists update failed:', assistsError);
-            }
-          }
-
-          console.log('✅ Simplified Goal Assignment: Player stats updated');
-        }
+        console.log('✅ Simplified Goal Assignment: Player stats updated');
       } catch (statsError) {
         console.error('⚠️ Simplified Goal Assignment: Stats update error:', statsError);
         // Continue without throwing - event was created successfully

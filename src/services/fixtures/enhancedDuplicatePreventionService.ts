@@ -6,6 +6,7 @@ interface DuplicateCheckParams {
   playerName: string;
   eventTime: number;
   eventType: 'goal' | 'assist' | 'yellow' | 'red';
+  isOwnGoal?: boolean; // Add own goal support for duplicate checking
 }
 
 interface DuplicateCheckResult {
