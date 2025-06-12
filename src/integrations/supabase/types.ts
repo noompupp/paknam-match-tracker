@@ -151,6 +151,51 @@ export type Database = {
           },
         ]
       }
+      image_metadata: {
+        Row: {
+          alt_text: string | null
+          bucket_id: string
+          created_at: string | null
+          file_size: number
+          format: string
+          height: number
+          id: string
+          object_path: string
+          original_url: string
+          updated_at: string | null
+          variants: Json | null
+          width: number
+        }
+        Insert: {
+          alt_text?: string | null
+          bucket_id: string
+          created_at?: string | null
+          file_size: number
+          format: string
+          height: number
+          id?: string
+          object_path: string
+          original_url: string
+          updated_at?: string | null
+          variants?: Json | null
+          width: number
+        }
+        Update: {
+          alt_text?: string | null
+          bucket_id?: string
+          created_at?: string | null
+          file_size?: number
+          format?: string
+          height?: number
+          id?: string
+          object_path?: string
+          original_url?: string
+          updated_at?: string | null
+          variants?: Json | null
+          width?: number
+        }
+        Relationships: []
+      }
       league_table_operations: {
         Row: {
           away_score: number
@@ -404,6 +449,8 @@ export type Database = {
         Row: {
           __id__: string
           assists: number | null
+          avatar_metadata_id: string | null
+          avatar_variants: Json | null
           created_at: string | null
           goals: number | null
           id: number
@@ -413,6 +460,7 @@ export type Database = {
           name: string | null
           nickname: string | null
           number: string | null
+          optimized_avatar_url: string | null
           position: string | null
           ProfileURL: string | null
           red_cards: number | null
@@ -428,6 +476,8 @@ export type Database = {
         Insert: {
           __id__: string
           assists?: number | null
+          avatar_metadata_id?: string | null
+          avatar_variants?: Json | null
           created_at?: string | null
           goals?: number | null
           id?: number
@@ -437,6 +487,7 @@ export type Database = {
           name?: string | null
           nickname?: string | null
           number?: string | null
+          optimized_avatar_url?: string | null
           position?: string | null
           ProfileURL?: string | null
           red_cards?: number | null
@@ -452,6 +503,8 @@ export type Database = {
         Update: {
           __id__?: string
           assists?: number | null
+          avatar_metadata_id?: string | null
+          avatar_variants?: Json | null
           created_at?: string | null
           goals?: number | null
           id?: number
@@ -461,6 +514,7 @@ export type Database = {
           name?: string | null
           nickname?: string | null
           number?: string | null
+          optimized_avatar_url?: string | null
           position?: string | null
           ProfileURL?: string | null
           red_cards?: number | null
@@ -480,6 +534,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "teams"
             referencedColumns: ["__id__"]
+          },
+          {
+            foreignKeyName: "members_avatar_metadata_id_fkey"
+            columns: ["avatar_metadata_id"]
+            isOneToOne: false
+            referencedRelation: "image_metadata"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "members_team_id_fkey"
@@ -627,9 +688,12 @@ export type Database = {
           goals_for: number | null
           id: number
           logo: string | null
+          logo_metadata_id: string | null
+          logo_variants: Json | null
           logoURL: string | null
           lost: number | null
           name: string | null
+          optimized_logo_url: string | null
           played: number | null
           points: number | null
           position: number | null
@@ -647,9 +711,12 @@ export type Database = {
           goals_for?: number | null
           id?: number
           logo?: string | null
+          logo_metadata_id?: string | null
+          logo_variants?: Json | null
           logoURL?: string | null
           lost?: number | null
           name?: string | null
+          optimized_logo_url?: string | null
           played?: number | null
           points?: number | null
           position?: number | null
@@ -667,16 +734,27 @@ export type Database = {
           goals_for?: number | null
           id?: number
           logo?: string | null
+          logo_metadata_id?: string | null
+          logo_variants?: Json | null
           logoURL?: string | null
           lost?: number | null
           name?: string | null
+          optimized_logo_url?: string | null
           played?: number | null
           points?: number | null
           position?: number | null
           previous_position?: number | null
           won?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "teams_logo_metadata_id_fkey"
+            columns: ["logo_metadata_id"]
+            isOneToOne: false
+            referencedRelation: "image_metadata"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
@@ -692,6 +770,10 @@ export type Database = {
           p_responsibilities?: string[]
         }
         Returns: Json
+      }
+      cleanup_orphaned_images: {
+        Args: Record<PropertyKey, never>
+        Returns: number
       }
       complete_referee_assignment: {
         Args: { p_assignment_id: string; p_completion_notes?: string }

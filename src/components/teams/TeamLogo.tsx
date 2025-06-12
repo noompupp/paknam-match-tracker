@@ -1,4 +1,6 @@
 
+import OptimizedImage from '../shared/OptimizedImage';
+
 interface TeamLogoProps {
   team: any;
   size?: 'small' | 'medium' | 'large';
@@ -14,6 +16,8 @@ const TeamLogo = ({ team, size = 'medium', className = '', showColor = false }: 
     logo: team?.logo,
     hasColor: !!team?.color,
     color: team?.color,
+    hasOptimizedUrl: !!team?.optimized_logo_url,
+    hasMetadataId: !!team?.logo_metadata_id,
     size,
     showColor
   });
@@ -82,33 +86,29 @@ const TeamLogo = ({ team, size = 'medium', className = '', showColor = false }: 
   const gradientStyle = getGradientStyle();
   const hasColor = showColor && team?.color;
 
-  // Prioritize logoURL, then fallback to logo, then default emoji
-  if (team?.logoURL) {
-    console.log('🖼️ TeamLogo: Using logoURL:', team.logoURL);
+  // Determine which image source to use (prioritize optimized)
+  const imageSource = team?.optimized_logo_url || team?.logoURL;
+  const metadataId = team?.logo_metadata_id;
+
+  // Use optimized image if available
+  if (imageSource || metadataId) {
+    console.log('🖼️ TeamLogo: Using optimized image system');
     return (
       <div className={`flex items-center ${className}`}>
         <div 
           className={`${sizeClasses.replace(/text-\w+/, '')} rounded-lg overflow-hidden transition-all duration-200`}
           style={gradientStyle}
         >
-          <img 
-            src={team.logoURL} 
-            alt={`${team.name} logo`} 
-            className="w-full h-full object-contain"
-            onError={(e) => {
-              console.log('🖼️ TeamLogo: Image failed to load, falling back to emoji:', team.logoURL);
-              // Fallback to emoji if image fails to load
-              const target = e.target as HTMLImageElement;
-              target.style.display = 'none';
-              target.nextElementSibling?.classList.remove('hidden');
-            }}
-            onLoad={() => {
-              console.log('🖼️ TeamLogo: Image loaded successfully:', team.logoURL);
-            }}
+          <OptimizedImage
+            src={imageSource}
+            metadataId={metadataId}
+            alt={`${team?.name || 'Team'} logo`}
+            className="w-full h-full"
+            variant={size === 'small' ? 'small' : size === 'large' ? 'large' : 'medium'}
+            fallback={team?.logo || '⚽'}
+            priority={size === 'large'}
+            loading={size === 'small' ? 'lazy' : 'eager'}
           />
-          <span className={`${sizeClasses.replace(/w-\w+ h-\w+/, '')} hidden flex items-center justify-center text-white font-bold`}>
-            {team?.logo || '⚽'}
-          </span>
         </div>
       </div>
     );

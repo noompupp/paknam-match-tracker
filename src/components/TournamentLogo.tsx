@@ -2,6 +2,7 @@
 import { Trophy } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import OptimizedImage from "./shared/OptimizedImage";
 
 interface TournamentLogoProps {
   size?: 'small' | 'medium' | 'large';
@@ -17,7 +18,7 @@ const TournamentLogo = ({ size = 'medium', className = '' }: TournamentLogoProps
       try {
         // Get the tournament logo URL from the correct bucket
         const { data } = supabase.storage
-          .from('tournament-logo')
+          .from('tournament-assets')
           .getPublicUrl('tournament-logo.png');
 
         if (data?.publicUrl) {
@@ -64,11 +65,15 @@ const TournamentLogo = ({ size = 'medium', className = '' }: TournamentLogoProps
     <div className={`flex items-center justify-center ${className}`}>
       <div className={`${sizeClasses} bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center shadow-lg overflow-hidden`}>
         {logoUrl ? (
-          <img 
-            src={logoUrl} 
-            alt="Tournament Logo" 
+          <OptimizedImage
+            src={logoUrl}
+            alt="Tournament Logo"
             className="w-full h-full object-cover"
-            onError={() => setLogoUrl(null)}
+            variant={size === 'small' ? 'small' : size === 'large' ? 'large' : 'medium'}
+            fallback={
+              <Trophy className={`${size === 'small' ? 'w-4 h-4' : size === 'large' ? 'w-8 h-8' : 'w-6 h-6'} text-white`} />
+            }
+            priority={size === 'large'}
           />
         ) : (
           <Trophy className={`${size === 'small' ? 'w-4 h-4' : size === 'large' ? 'w-8 h-8' : 'w-6 h-6'} text-white`} />
