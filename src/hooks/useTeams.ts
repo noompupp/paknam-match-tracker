@@ -33,7 +33,9 @@ export const useTeams = () => {
           color: null,
           logo: '⚽',
           logoURL: null,
-          founded: '2020'
+          founded: '2020',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
         }));
         
         console.log('🎣 useTeams: Query successful with deduplicated data, teams:', teams);
