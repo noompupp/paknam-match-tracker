@@ -16,7 +16,16 @@ export interface BaseStepProps {
   homeTeamPlayers?: ComponentPlayer[];
   awayTeamPlayers?: ComponentPlayer[];
   wizardData: GoalWizardData;
-  onNext: () => void;
-  onBack: () => void;
   onDataChange: (data: Partial<GoalWizardData>) => void;
+  onNext: () => void;
+}
+
+export interface GoalAssignmentData {
+  player: ComponentPlayer;
+  goalType: 'goal' | 'assist';
+  team: 'home' | 'away';
+  isOwnGoal?: boolean;
+  assistPlayer?: ComponentPlayer;
+  isEdit?: boolean;
+  originalGoalId?: string | number;
 }

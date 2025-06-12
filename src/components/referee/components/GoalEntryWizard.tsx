@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Target, ArrowLeft, Edit } from "lucide-react";
 import { ComponentPlayer } from "../hooks/useRefereeState";
-import { WizardStep, GoalWizardData } from "./goalWizard/types";
+import { WizardStep, GoalWizardData, GoalAssignmentData } from "./goalWizard/types";
 import StepIndicator from "./goalWizard/StepIndicator";
 import TeamSelectionStep from "./goalWizard/TeamSelectionStep";
 import PlayerSelectionStep from "./goalWizard/PlayerSelectionStep";
@@ -31,18 +31,10 @@ interface GoalEntryWizardProps {
   awayTeamPlayers?: ComponentPlayer[];
   matchTime: number;
   formatTime: (seconds: number) => string;
-  onGoalAssigned: (goalData: {
-    player: ComponentPlayer;
-    goalType: 'goal' | 'assist';
-    team: 'home' | 'away';
-    isOwnGoal?: boolean;
-    assistPlayer?: ComponentPlayer;
-    isEdit?: boolean;
-    originalGoalId?: string | number;
-  }) => void;
+  onGoalAssigned: (goalData: GoalAssignmentData) => void;
   onCancel: () => void;
   initialTeam?: 'home' | 'away';
-  editingGoal?: QuickGoal; // New prop for editing mode
+  editingGoal?: QuickGoal;
 }
 
 const GoalEntryWizard = ({
@@ -72,7 +64,7 @@ const GoalEntryWizard = ({
   // Initialize wizard data when editing a goal
   useEffect(() => {
     if (editingGoal) {
-      console.log('🎯 GoalEntryWizard: Initializing edit mode with goal:', editingGoal);
+      console.log('🎯 GoalEntryWizard: Initializing edit mode with enhanced goal data:', editingGoal);
       
       // Determine team from the goal data
       let goalTeam: 'home' | 'away' = 'home';
@@ -90,16 +82,23 @@ const GoalEntryWizard = ({
         selectedTeam: goalTeam,
       }));
 
-      // Start from player selection since team is already determined
       setCurrentStep('player');
     }
   }, [editingGoal, homeTeamName, awayTeamName]);
 
   const handleDataChange = (data: Partial<GoalWizardData>) => {
+    console.log('🔄 GoalEntryWizard: Data change:', {
+      currentData: wizardData,
+      newData: data,
+      mergedData: { ...wizardData, ...data }
+    });
+    
     setWizardData(prev => ({ ...prev, ...data }));
   };
 
   const handleNext = () => {
+    console.log('➡️ GoalEntryWizard: Moving to next step from:', currentStep);
+    
     switch (currentStep) {
       case 'team':
         setCurrentStep('player');
@@ -109,8 +108,10 @@ const GoalEntryWizard = ({
         break;
       case 'goal-type':
         if (wizardData.isOwnGoal) {
+          console.log('🥅 GoalEntryWizard: Own goal detected, skipping to confirmation');
           setCurrentStep('confirm');
         } else {
+          console.log('⚽ GoalEntryWizard: Regular goal, proceeding to assist selection');
           setCurrentStep('assist');
         }
         break;
@@ -121,10 +122,12 @@ const GoalEntryWizard = ({
   };
 
   const handleBack = () => {
+    console.log('⬅️ GoalEntryWizard: Moving back from step:', currentStep);
+    
     switch (currentStep) {
       case 'player':
         if (initialTeam || isEditMode) {
-          onCancel(); // Can't go back if we started with a team or editing
+          onCancel();
         } else {
           setCurrentStep('team');
         }
@@ -146,9 +149,12 @@ const GoalEntryWizard = ({
   };
 
   const handleConfirm = () => {
-    if (!wizardData.selectedPlayer || !wizardData.selectedTeam) return;
+    if (!wizardData.selectedPlayer || !wizardData.selectedTeam) {
+      console.error('❌ GoalEntryWizard: Missing required data for confirmation');
+      return;
+    }
 
-    console.log('🎯 GoalEntryWizard: Confirming goal assignment with enhanced data:', {
+    console.log('🎯 GoalEntryWizard: Confirming goal assignment with complete data:', {
       isEditMode,
       editingGoalId: editingGoal?.id,
       player: wizardData.selectedPlayer,
@@ -159,21 +165,33 @@ const GoalEntryWizard = ({
     });
 
     // Enhanced goal assignment call with proper own goal handling
-    onGoalAssigned({
+    const goalData: GoalAssignmentData = {
       player: wizardData.selectedPlayer,
       goalType: 'goal',
       team: wizardData.selectedTeam,
-      isOwnGoal: wizardData.isOwnGoal, // Critical: Pass the own goal flag
+      isOwnGoal: wizardData.isOwnGoal,
       assistPlayer: wizardData.assistPlayer || undefined,
       isEdit: isEditMode,
       originalGoalId: editingGoal?.id
-    });
+    };
+
+    console.log('📤 GoalEntryWizard: Sending goal data to parent handler:', goalData);
+    onGoalAssigned(goalData);
   };
 
   const canGoBack = currentStep !== 'team' && !initialTeam && !isEditMode;
   const displayTime = editingGoal ? formatTime(editingGoal.event_time || editingGoal.time || 0) : formatTime(matchTime);
 
   const renderCurrentStep = () => {
+    const commonProps = {
+      selectedFixtureData,
+      homeTeamPlayers,
+      awayTeamPlayers,
+      wizardData,
+      onDataChange: handleDataChange,
+      onNext: handleNext
+    };
+
     switch (currentStep) {
       case 'team':
         return (
@@ -184,35 +202,11 @@ const GoalEntryWizard = ({
           />
         );
       case 'player':
-        return (
-          <PlayerSelectionStep
-            selectedFixtureData={selectedFixtureData}
-            homeTeamPlayers={homeTeamPlayers}
-            awayTeamPlayers={awayTeamPlayers}
-            wizardData={wizardData}
-            onDataChange={handleDataChange}
-            onNext={handleNext}
-          />
-        );
+        return <PlayerSelectionStep {...commonProps} />;
       case 'goal-type':
-        return (
-          <GoalTypeStep
-            selectedFixtureData={selectedFixtureData}
-            wizardData={wizardData}
-            onNext={handleNext}
-          />
-        );
+        return <GoalTypeStep {...commonProps} />;
       case 'assist':
-        return (
-          <AssistStep
-            selectedFixtureData={selectedFixtureData}
-            homeTeamPlayers={homeTeamPlayers}
-            awayTeamPlayers={awayTeamPlayers}
-            wizardData={wizardData}
-            onDataChange={handleDataChange}
-            onNext={handleNext}
-          />
-        );
+        return <AssistStep {...commonProps} />;
       case 'confirm':
         return (
           <ConfirmationStep
@@ -254,6 +248,16 @@ const GoalEntryWizard = ({
             <div className="text-xs text-orange-700">
               Team: {wizardData.selectedTeam === 'home' ? homeTeamName : awayTeamName}
             </div>
+          </div>
+        )}
+
+        {/* Debug info for development */}
+        {process.env.NODE_ENV === 'development' && (
+          <div className="bg-gray-50 border rounded p-2 text-xs">
+            <strong>Debug:</strong> Step: {currentStep}, Own Goal: {wizardData.isOwnGoal ? 'Yes' : 'No'}
+            {wizardData.selectedPlayer && (
+              <>, Player: {wizardData.selectedPlayer.name} ({wizardData.selectedPlayer.team})</>
+            )}
           </div>
         )}
       </CardHeader>
