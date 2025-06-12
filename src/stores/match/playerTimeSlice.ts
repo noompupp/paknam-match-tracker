@@ -1,4 +1,3 @@
-
 import { StateCreator } from 'zustand';
 import { MatchState } from './types';
 import { MatchActions } from './actions';
@@ -186,18 +185,39 @@ export const createPlayerTimeSlice: StateCreator<
       return;
     }
 
+    // Throttle sync requests - only sync if last sync was more than 30 seconds ago
+    const now = Date.now();
+    const lastSync = localStorage.getItem('lastPlayerTimeSync');
+    const lastSyncTime = lastSync ? parseInt(lastSync) : 0;
+    
+    if (now - lastSyncTime < 30000) { // 30 second throttle
+      console.log('⏸️ Sync throttled - too recent, queuing for later');
+      return;
+    }
+
     try {
-      console.log('💾 Syncing', unsyncedPlayerTimes.length, 'player time records to database');
+      console.log('💾 Syncing', unsyncedPlayerTimes.length, 'player time records (throttled)');
       
-      for (const pt of unsyncedPlayerTimes) {
-        await playerTimeTrackingService.savePlayerTime({
-          fixture_id: fixtureId,
-          player_id: pt.playerId,
-          player_name: pt.playerName,
-          team_id: parseInt(pt.teamId),
-          total_minutes: pt.totalTime,
-          periods: pt.periods
-        });
+      // Batch sync in chunks to avoid overwhelming the database
+      const BATCH_SIZE = 5;
+      for (let i = 0; i < unsyncedPlayerTimes.length; i += BATCH_SIZE) {
+        const batch = unsyncedPlayerTimes.slice(i, i + BATCH_SIZE);
+        
+        await Promise.all(batch.map(pt => 
+          playerTimeTrackingService.savePlayerTime({
+            fixture_id: fixtureId,
+            player_id: pt.playerId,
+            player_name: pt.playerName,
+            team_id: parseInt(pt.teamId),
+            total_minutes: pt.totalTime,
+            periods: pt.periods
+          })
+        ));
+        
+        // Small delay between batches
+        if (i + BATCH_SIZE < unsyncedPlayerTimes.length) {
+          await new Promise(resolve => setTimeout(resolve, 100));
+        }
       }
 
       set((state) => ({
@@ -206,7 +226,10 @@ export const createPlayerTimeSlice: StateCreator<
         lastUpdated: Date.now()
       }));
 
-      console.log('✅ Player time sync completed successfully');
+      // Update last sync time
+      localStorage.setItem('lastPlayerTimeSync', now.toString());
+
+      console.log('✅ Player time sync completed successfully (optimized)');
     } catch (error) {
       console.error('❌ Error syncing player times to database:', error);
       throw error;
@@ -224,20 +247,52 @@ export const createPlayerTimeSlice: StateCreator<
   optimizedBatchSync: async (fixtureId: number) => {
     const state = get();
     const unsyncedPlayerTimes = state.playerTimes.filter(pt => !pt.synced);
-    const activePlayerChanges = unsyncedPlayerTimes.filter(pt => 
-      pt.isPlaying !== undefined || pt.periods.length > 0
+    
+    // Only sync if we have meaningful changes and it's been long enough
+    const significantChanges = unsyncedPlayerTimes.filter(pt => 
+      pt.isPlaying !== undefined || pt.periods.length > 0 || pt.totalTime > 0
     );
     
-    if (activePlayerChanges.length === 0) {
+    if (significantChanges.length === 0) {
       console.log('⚡ No significant player time changes to sync');
       return;
     }
 
+    // Check throttling with more sophisticated logic
+    const now = Date.now();
+    const lastSync = localStorage.getItem('lastOptimizedPlayerSync');
+    const lastSyncTime = lastSync ? parseInt(lastSync) : 0;
+    const activePlayersCount = state.playerTimes.filter(pt => pt.isPlaying).length;
+    
+    // Dynamic throttling based on activity level
+    const throttleTime = activePlayersCount > 5 ? 20000 : 30000; // More frequent for high activity
+    
+    if (now - lastSyncTime < throttleTime && significantChanges.length < 3) {
+      console.log('⏸️ Optimized sync throttled - not enough activity');
+      return;
+    }
+
     try {
-      console.log('⚡ Optimized batch sync for', activePlayerChanges.length, 'significant changes');
+      console.log('⚡ Optimized batch sync for', significantChanges.length, 'significant changes');
       
-      // Only sync players with meaningful changes
-      for (const pt of activePlayerChanges) {
+      // Prioritize active players
+      const activePlayers = significantChanges.filter(pt => pt.isPlaying);
+      const inactivePlayers = significantChanges.filter(pt => !pt.isPlaying);
+      
+      // Sync active players first
+      for (const pt of activePlayers) {
+        await playerTimeTrackingService.savePlayerTime({
+          fixture_id: fixtureId,
+          player_id: pt.playerId,
+          player_name: pt.playerName,
+          team_id: parseInt(pt.teamId),
+          total_minutes: pt.totalTime,
+          periods: pt.periods
+        });
+      }
+      
+      // Then sync inactive players
+      for (const pt of inactivePlayers) {
         await playerTimeTrackingService.savePlayerTime({
           fixture_id: fixtureId,
           player_id: pt.playerId,
@@ -248,19 +303,21 @@ export const createPlayerTimeSlice: StateCreator<
         });
       }
 
-      // Mark only the synced items as saved
+      // Mark synced items
       set((state) => ({
         playerTimes: state.playerTimes.map(pt => 
-          activePlayerChanges.some(apt => apt.id === pt.id) 
+          significantChanges.some(spt => spt.id === pt.id) 
             ? { ...pt, synced: true }
             : pt
         ),
         hasUnsavedChanges: state.goals.some(g => !g.synced) || 
                           state.cards.some(c => !c.synced) || 
                           state.playerTimes.some(pt => !pt.synced && 
-                            !activePlayerChanges.some(apt => apt.id === pt.id)),
+                            !significantChanges.some(spt => spt.id === pt.id)),
         lastUpdated: Date.now()
       }));
+
+      localStorage.setItem('lastOptimizedPlayerSync', now.toString());
 
       console.log('✅ Optimized player time sync completed');
     } catch (error) {
