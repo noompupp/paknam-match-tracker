@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { refereeAssignmentService } from '@/services/referee/assignmentService';
 import { WORKFLOW_MODES } from './constants';
@@ -32,23 +33,36 @@ const EnhancedWorkflowModeManager = ({
     try {
       setIsLoading(true);
       
-      // Check for existing workflow config
+      // Check for existing workflow config first
       const workflowConfig = await refereeAssignmentService.getWorkflowConfig(selectedFixtureData.id);
       
-      if (workflowConfig) {
-        // Get user assignments and all assignments
-        const [userAssignments, allAssignments] = await Promise.all([
-          refereeAssignmentService.getUserAssignments(selectedFixtureData.id),
-          refereeAssignmentService.getAllFixtureAssignments(selectedFixtureData.id)
-        ]);
+      // Get assignments to understand the current state
+      const [userAssignments, allAssignments] = await Promise.all([
+        refereeAssignmentService.getUserAssignments(selectedFixtureData.id),
+        refereeAssignmentService.getAllFixtureAssignments(selectedFixtureData.id)
+      ]);
 
+      // Determine workflow mode based on assignments or config
+      let workflowMode: 'two_referees' | 'multi_referee' = 'two_referees';
+      
+      if (workflowConfig) {
+        workflowMode = workflowConfig.workflow_mode;
+      } else if (allAssignments.length > 0) {
+        // Detect Two Referees Mode by checking for team-based assignments
+        const hasTeamAssignments = allAssignments.some(assignment => 
+          assignment.assigned_role === 'home_team' || assignment.assigned_role === 'away_team'
+        );
+        workflowMode = hasTeamAssignments ? 'two_referees' : 'multi_referee';
+      }
+
+      if (workflowConfig || allAssignments.length > 0) {
         const enhancedConfig: WorkflowModeConfig = {
-          mode: workflowConfig.workflow_mode,
-          fixtureId: workflowConfig.fixture_id,
+          mode: workflowMode,
+          fixtureId: selectedFixtureData.id,
           userAssignments,
           allAssignments,
-          createdAt: workflowConfig.created_at,
-          updatedAt: workflowConfig.updated_at
+          createdAt: workflowConfig?.created_at || new Date().toISOString(),
+          updatedAt: workflowConfig?.updated_at || new Date().toISOString()
         };
 
         setExistingConfig(enhancedConfig);
@@ -118,24 +132,42 @@ const EnhancedWorkflowModeManager = ({
   }
 
   if (existingConfig) {
+    const isTwoRefereesMode = existingConfig.mode === WORKFLOW_MODES.TWO_REFEREES;
+    const assignmentCount = existingConfig.allAssignments.length;
+    const userAssignmentCount = existingConfig.userAssignments.length;
+
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Workflow Already Configured</CardTitle>
+          <CardTitle className="flex items-center justify-between">
+            <span>Workflow Configured</span>
+            <Badge variant="outline">
+              {isTwoRefereesMode ? 'Two Referees' : 'Multi-Referee'} Mode
+            </Badge>
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             <p className="text-sm text-muted-foreground">
-              This match already has a {existingConfig.mode === WORKFLOW_MODES.TWO_REFEREES ? 'Two Referees' : 'Multi-Referee'} workflow configured.
+              This match has a {isTwoRefereesMode ? 'Two Referees' : 'Multi-Referee'} workflow configured.
             </p>
+            
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
-                <span className="font-medium">User Assignments:</span> {existingConfig.userAssignments.length}
+                <span className="font-medium">Your Assignments:</span> {userAssignmentCount}
               </div>
               <div>
-                <span className="font-medium">Total Assignments:</span> {existingConfig.allAssignments.length}
+                <span className="font-medium">Total Assignments:</span> {assignmentCount}
               </div>
             </div>
+
+            {isTwoRefereesMode && assignmentCount < 2 && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 dark:bg-blue-900/10 dark:border-blue-800">
+                <p className="text-sm text-blue-700 dark:text-blue-400">
+                  Waiting for both referees to self-assign to their team roles.
+                </p>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>

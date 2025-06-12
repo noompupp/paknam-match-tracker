@@ -1,10 +1,11 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { RefereeWorkflowMode, WorkflowModeConfig, TwoRefereesConfig, MultiRefereeConfig } from './types';
+import { RefereeWorkflowMode, WorkflowModeConfig } from './types';
 import { WORKFLOW_MODES } from './constants';
 import WorkflowModeSelector from './WorkflowModeSelector';
-import TwoRefereesConfiguration from './TwoRefereesConfiguration';
+import TwoRefereesSelfAssignment from './TwoRefereesSelfAssignment';
 import MultiRefereeConfiguration from './MultiRefereeConfiguration';
 
 interface WorkflowModeManagerProps {
@@ -29,18 +30,25 @@ const WorkflowModeManager = ({
 
   const handleModeSelect = (mode: RefereeWorkflowMode) => {
     setSelectedMode(mode);
-    setShowConfiguration(true);
+    
+    if (mode === WORKFLOW_MODES.TWO_REFEREES) {
+      // For Two Referees Mode, go directly to self-assignment
+      setShowConfiguration(true);
+    } else if (mode === WORKFLOW_MODES.MULTI_REFEREE) {
+      // For Multi-Referee Mode, show the configuration screen
+      setShowConfiguration(true);
+    }
   };
 
-  const handleTwoRefereesConfigSave = async (config: TwoRefereesConfig) => {
+  const handleTwoRefereesAssignment = async () => {
     setIsLoading(true);
     try {
+      // Create a minimal workflow config for Two Referees Mode
       const workflowConfig: WorkflowModeConfig = {
         mode: WORKFLOW_MODES.TWO_REFEREES,
         fixtureId: selectedFixtureData.id,
         userAssignments: [],
         allAssignments: [],
-        twoRefereesConfig: config,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       };
@@ -49,15 +57,15 @@ const WorkflowModeManager = ({
 
       toast({
         title: "Success",
-        description: "Two Referees Mode configured successfully",
+        description: "Two Referees Mode assignment completed",
       });
 
       setShowConfiguration(false);
     } catch (error) {
-      console.error('Error configuring two referees mode:', error);
+      console.error('Error in two referees assignment:', error);
       toast({
         title: "Error",
-        description: "Failed to configure two referees mode",
+        description: "Failed to complete assignment",
         variant: "destructive"
       });
     } finally {
@@ -65,7 +73,7 @@ const WorkflowModeManager = ({
     }
   };
 
-  const handleMultiRefereeConfigSave = async (config: MultiRefereeConfig) => {
+  const handleMultiRefereeConfigSave = async (config: any) => {
     setIsLoading(true);
     try {
       const workflowConfig: WorkflowModeConfig = {
@@ -100,6 +108,7 @@ const WorkflowModeManager = ({
 
   const handleConfigCancel = () => {
     setShowConfiguration(false);
+    setSelectedMode(null);
   };
 
   if (!selectedFixtureData) {
@@ -116,16 +125,11 @@ const WorkflowModeManager = ({
   }
 
   if (showConfiguration && selectedMode) {
-    const homeTeamName = selectedFixtureData.home_team?.name || 'Home Team';
-    const awayTeamName = selectedFixtureData.away_team?.name || 'Away Team';
-
     if (selectedMode === WORKFLOW_MODES.TWO_REFEREES) {
       return (
-        <TwoRefereesConfiguration
-          homeTeamName={homeTeamName}
-          awayTeamName={awayTeamName}
-          onSave={handleTwoRefereesConfigSave}
-          onCancel={handleConfigCancel}
+        <TwoRefereesSelfAssignment
+          selectedFixtureData={selectedFixtureData}
+          onAssignmentComplete={handleTwoRefereesAssignment}
         />
       );
     }

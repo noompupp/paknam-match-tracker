@@ -65,21 +65,6 @@ export type Database = {
           },
         ]
       }
-      favicon: {
-        Row: {
-          created_at: string
-          logoURL: number
-        }
-        Insert: {
-          created_at?: string
-          logoURL?: number
-        }
-        Update: {
-          created_at?: string
-          logoURL?: number
-        }
-        Relationships: []
-      }
       fixtures: {
         Row: {
           __id__: string
