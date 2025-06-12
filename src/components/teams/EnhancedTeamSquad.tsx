@@ -1,10 +1,9 @@
 
 import { Card, CardContent } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
 import { useEnhancedTeamStats, useTeamOverview } from "@/hooks/useEnhancedTeamStats";
 import TeamSquadHeader from "./components/TeamSquadHeader";
 import EnhancedTeamStatsOverview from "./components/EnhancedTeamStatsOverview";
-import EnhancedPlayerCard from "./components/EnhancedPlayerCard";
+import EnhancedPlayersList from "./components/EnhancedPlayersList";
 import { AlertTriangle } from "lucide-react";
 
 interface EnhancedTeamSquadProps {
@@ -50,20 +49,11 @@ const EnhancedTeamSquad = ({ teamId, teamName }: EnhancedTeamSquadProps) => {
       <CardContent className="p-6">
         <div className="space-y-6">
           {/* Enhanced Team Overview */}
-          {overviewLoading ? (
-            <div className="space-y-4">
-              <Skeleton className="h-48 w-full" />
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                {Array.from({ length: 4 }).map((_, i) => (
-                  <Skeleton key={i} className="h-24 w-full" />
-                ))}
-              </div>
-            </div>
-          ) : overview ? (
+          {!overviewLoading && overview && (
             <EnhancedTeamStatsOverview overview={overview} />
-          ) : null}
+          )}
 
-          {/* Enhanced Players List */}
+          {/* Enhanced Players List with Filtering and Sorting */}
           <div>
             <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
               Squad Players
@@ -74,32 +64,12 @@ const EnhancedTeamSquad = ({ teamId, teamName }: EnhancedTeamSquadProps) => {
               )}
             </h3>
 
-            {playersLoading ? (
-              <div className="space-y-4">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <Skeleton key={i} className="h-32 w-full" />
-                ))}
-              </div>
-            ) : players && players.length > 0 ? (
-              <div className="space-y-4">
-                {players.map((player) => (
-                  <EnhancedPlayerCard
-                    key={player.id}
-                    player={player}
-                    showDetailedStats={true}
-                    variant="default"
-                  />
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-12 px-6">
-                <div className="w-16 h-16 bg-muted/50 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <AlertTriangle className="h-8 w-8 opacity-50" />
-                </div>
-                <p className="font-medium text-lg mb-2 text-muted-foreground">No players found for this team</p>
-                <p className="text-sm text-muted-foreground">Enhanced player data will appear here once available</p>
-              </div>
-            )}
+            <EnhancedPlayersList
+              players={players}
+              isLoading={playersLoading}
+              showDetailedStats={true}
+              variant="default"
+            />
           </div>
         </div>
       </CardContent>

@@ -5,15 +5,16 @@ import TeamsGrid from "./teams/TeamsGrid";
 import EnhancedTeamSquad from "./teams/EnhancedTeamSquad";
 import UnifiedPageHeader from "./shared/UnifiedPageHeader";
 import { useTranslation } from "@/hooks/useTranslation";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
 
 const Teams = () => {
   const { t } = useTranslation();
   const { data: teams, isLoading: teamsLoading, error } = useTeams();
   const [selectedTeamId, setSelectedTeamId] = useState<number | null>(null);
   
-  // Get the selected team or use first team
-  const targetTeamId = selectedTeamId || teams?.[0]?.id || 0;
-  const selectedTeam = teams?.find(team => team.id === targetTeamId);
+  // Get the selected team
+  const selectedTeam = teams?.find(team => team.id === selectedTeamId);
 
   const handleViewSquad = (teamId: number) => {
     setSelectedTeamId(teamId);
@@ -34,6 +35,11 @@ const Teams = () => {
     }
   };
 
+  const handleBackToTeams = () => {
+    setSelectedTeamId(null);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   if (error) {
     return (
       <div className="gradient-bg flex items-center justify-center min-h-screen">
@@ -50,21 +56,34 @@ const Teams = () => {
     <div className="gradient-bg">
       {/* Header */}
       <UnifiedPageHeader 
-        title={t('page.teams')}
+        title={selectedTeam ? `${selectedTeam.name} Squad` : t('page.teams')}
         logoSize="small"
         showLanguageToggle={true}
       />
 
       <div className="max-w-7xl mx-auto container-responsive py-8 space-y-8 mobile-content-spacing">
-        {/* Teams Grid */}
-        <TeamsGrid 
-          teams={teams}
-          isLoading={teamsLoading}
-          onViewSquad={handleViewSquad}
-        />
-
-        {/* Enhanced Team Squad */}
         {selectedTeam && (
+          <div className="flex items-center gap-3 mb-6">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleBackToTeams}
+              className="flex items-center gap-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back to Teams
+            </Button>
+          </div>
+        )}
+
+        {/* Teams Grid or Enhanced Squad */}
+        {!selectedTeam ? (
+          <TeamsGrid 
+            teams={teams}
+            isLoading={teamsLoading}
+            onViewSquad={handleViewSquad}
+          />
+        ) : (
           <div id="enhanced-team-squad" className="scroll-mt-nav">
             <EnhancedTeamSquad
               teamId={selectedTeam.__id__}
