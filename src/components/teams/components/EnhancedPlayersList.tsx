@@ -1,10 +1,13 @@
 
 import { useState, useMemo } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, Grid, List } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import type { EnhancedPlayerStats } from "@/services/enhancedTeamStatsService";
 import { usePlayerFiltering } from "@/hooks/useEnhancedTeamStats";
-import PlayerFilters, { type FilterOptions } from "./PlayerFilters";
+import { useDeviceOrientation } from "@/hooks/useDeviceOrientation";
+import ResponsivePlayerFilters, { type FilterOptions } from "./ResponsivePlayerFilters";
+import MobileOptimizedPlayerCard from "./MobileOptimizedPlayerCard";
 import PlayerStatsRow from "./PlayerStatsRow";
 
 interface EnhancedPlayersListProps {
@@ -20,6 +23,9 @@ const EnhancedPlayersList = ({
   showDetailedStats = false,
   variant = 'default'
 }: EnhancedPlayersListProps) => {
+  const { isMobile, isPortrait } = useDeviceOrientation();
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
+  
   const [filters, setFilters] = useState<FilterOptions>({
     search: '',
     position: 'all',
@@ -68,7 +74,10 @@ const EnhancedPlayersList = ({
         </div>
         <div className="space-y-4">
           {Array.from({ length: 5 }).map((_, i) => (
-            <Skeleton key={i} className={variant === 'compact' ? "h-16 w-full" : "h-20 w-full"} />
+            <Skeleton key={i} className={
+              isMobile && isPortrait ? "h-12 w-full" : 
+              variant === 'compact' ? "h-16 w-full" : "h-20 w-full"
+            } />
           ))}
         </div>
       </div>
@@ -89,25 +98,92 @@ const EnhancedPlayersList = ({
 
   return (
     <div className="space-y-6">
-      {/* Filters */}
-      <PlayerFilters
+      {/* Responsive Filters */}
+      <ResponsivePlayerFilters
         filters={filters}
         onFiltersChange={setFilters}
         playerCount={players.length}
         filteredCount={filteredAndSortedPlayers.length}
       />
 
-      {/* Players List */}
+      {/* View Mode Toggle (Desktop only) */}
+      {!isMobile && (
+        <div className="flex items-center gap-2">
+          <Button
+            variant={viewMode === 'list' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setViewMode('list')}
+          >
+            <List className="h-4 w-4 mr-2" />
+            List
+          </Button>
+          <Button
+            variant={viewMode === 'grid' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setViewMode('grid')}
+          >
+            <Grid className="h-4 w-4 mr-2" />
+            Grid
+          </Button>
+        </div>
+      )}
+
+      {/* Players List/Grid */}
       {filteredAndSortedPlayers.length > 0 ? (
-        <div className="space-y-3">
-          {filteredAndSortedPlayers.map((player) => (
-            <PlayerStatsRow
-              key={player.id}
-              player={player}
-              variant={variant}
-              showDetailedStats={showDetailedStats}
-            />
-          ))}
+        <div className={
+          !isMobile && viewMode === 'grid' 
+            ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+            : "space-y-3"
+        }>
+          {filteredAndSortedPlayers.map((player) => {
+            // Use mobile-optimized card for mobile devices
+            if (isMobile) {
+              return (
+                <MobileOptimizedPlayerCard
+                  key={player.id}
+                  player={{
+                    id: player.id,
+                    name: player.name,
+                    nickname: player.nickname,
+                    number: player.number,
+                    position: player.position,
+                    role: player.role,
+                    ProfileURL: player.ProfileURL,
+                    goals: player.goals,
+                    assists: player.assists,
+                    matches_played: player.matches_played,
+                    total_minutes_played: player.total_minutes_played,
+                    yellow_cards: player.yellow_cards,
+                    red_cards: player.red_cards,
+                    team_id: player.team.id,
+                    created_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString()
+                  }}
+                  teamData={{
+                    id: parseInt(player.team.id) || 0,
+                    __id__: player.team.id,
+                    name: player.team.name,
+                    color: player.team.color,
+                    logo: player.team.logo,
+                    created_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString()
+                  }}
+                  index={filteredAndSortedPlayers.indexOf(player)}
+                  variant={isPortrait ? 'compact' : 'default'}
+                />
+              );
+            }
+
+            // Use regular PlayerStatsRow for desktop
+            return (
+              <PlayerStatsRow
+                key={player.id}
+                player={player}
+                variant={variant}
+                showDetailedStats={showDetailedStats}
+              />
+            );
+          })}
         </div>
       ) : (
         <div className="text-center py-8 px-6">
