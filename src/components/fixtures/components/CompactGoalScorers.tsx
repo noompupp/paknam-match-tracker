@@ -22,7 +22,24 @@ const CompactGoalScorers = ({
   return (
     <div className="space-y-2">
       {goals.slice(0, 3).map((goal, index) => {
-        const isOwnGoal = goal.own_goal || goal.isOwnGoal || false;
+        // Enhanced own goal detection with comprehensive flag checking
+        const isOwnGoal = !!(
+          goal.own_goal || 
+          goal.isOwnGoal || 
+          goal.is_own_goal ||
+          (goal.description && goal.description.toLowerCase().includes('own goal'))
+        );
+        
+        console.log('🎯 CompactGoalScorers - Processing goal:', {
+          goalId: goal.id,
+          player: getGoalPlayerName(goal),
+          isOwnGoal,
+          ownGoalFlags: {
+            own_goal: goal.own_goal,
+            isOwnGoal: goal.isOwnGoal,
+            is_own_goal: goal.is_own_goal
+          }
+        });
         
         return (
           <div 

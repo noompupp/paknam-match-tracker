@@ -79,8 +79,26 @@ const MatchEventsSection = ({
               
               if (event.type === 'goal') {
                 const playerName = getGoalPlayerName(event.data);
-                const isOwnGoal = event.data.own_goal || event.data.isOwnGoal || false;
+                // Enhanced own goal detection with comprehensive flag checking
+                const isOwnGoal = !!(
+                  event.data.own_goal || 
+                  event.data.isOwnGoal || 
+                  event.data.is_own_goal ||
+                  (event.data.description && event.data.description.toLowerCase().includes('own goal'))
+                );
                 const assistName = !isOwnGoal ? getGoalAssistPlayerName(event.data) : undefined;
+                
+                console.log('🎯 MatchEventsSection - Processing goal event:', {
+                  goalId: event.data.id,
+                  player: playerName,
+                  isOwnGoal,
+                  assistName,
+                  ownGoalFlags: {
+                    own_goal: event.data.own_goal,
+                    isOwnGoal: event.data.isOwnGoal,
+                    is_own_goal: event.data.is_own_goal
+                  }
+                });
                 
                 return (
                   <div 

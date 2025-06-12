@@ -46,12 +46,25 @@ export const getGoalPlayerName = (goal: any): string => {
 };
 
 export const getGoalAssistPlayerName = (goal: any): string => {
-  // Check if this is an own goal first - own goals should not have assists
-  const isOwnGoal = goal.own_goal || goal.isOwnGoal || false;
+  // Enhanced own goal detection - check multiple possible fields
+  const isOwnGoal = !!(
+    goal.own_goal || 
+    goal.isOwnGoal || 
+    goal.is_own_goal ||
+    (goal.description && goal.description.toLowerCase().includes('own goal'))
+  );
+  
   if (isOwnGoal) {
     console.log('🅰️ getGoalAssistPlayerName - Skipping assist for own goal:', {
       goalId: goal.id,
-      isOwnGoal: true
+      player: goal.playerName,
+      isOwnGoal: true,
+      ownGoalFlags: {
+        own_goal: goal.own_goal,
+        isOwnGoal: goal.isOwnGoal,
+        is_own_goal: goal.is_own_goal,
+        description: goal.description
+      }
     });
     return '';
   }
@@ -72,6 +85,7 @@ export const getGoalAssistPlayerName = (goal: any): string => {
   
   console.log('🅰️ getGoalAssistPlayerName - Enhanced extraction:', {
     goalId: goal.id,
+    player: goal.playerName,
     goalType: goal.type,
     isOwnGoal,
     possibleAssistNames,
