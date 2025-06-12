@@ -1,16 +1,42 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { teamsApi } from '@/services/api';
+import { leagueTableService } from '@/services/leagueTableService';
 import { Team } from '@/types/database';
 
 export const useTeams = () => {
   return useQuery({
     queryKey: ['teams'],
     queryFn: async () => {
-      console.log('🎣 useTeams: Starting query...');
+      console.log('🎣 useTeams: Starting query with deduplicated league table...');
       try {
-        const teams = await teamsApi.getAll();
-        console.log('🎣 useTeams: Query successful, teams:', teams);
+        // Use the deduplicated league table service to get accurate team data
+        const deduplicatedTable = await leagueTableService.getDeduplicatedLeagueTable();
+        
+        // Convert league table entries back to Team format
+        const teams: Team[] = deduplicatedTable.map(entry => ({
+          id: entry.id,
+          __id__: entry.id.toString(), // Convert to string for consistency
+          name: entry.name,
+          played: entry.played,
+          won: entry.won,
+          drawn: entry.drawn,
+          lost: entry.lost,
+          goals_for: entry.goals_for,
+          goals_against: entry.goals_against,
+          goal_difference: entry.goal_difference,
+          points: entry.points,
+          position: entry.position,
+          previous_position: entry.previous_position,
+          // Default values for other fields
+          captain: null,
+          color: null,
+          logo: '⚽',
+          logoURL: null,
+          founded: '2020'
+        }));
+        
+        console.log('🎣 useTeams: Query successful with deduplicated data, teams:', teams);
         return teams;
       } catch (error) {
         console.error('🎣 useTeams: Query failed:', error);

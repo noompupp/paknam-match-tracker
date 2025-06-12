@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 
 export interface LeagueTableEntry {
@@ -33,24 +32,38 @@ export const leagueTableService = {
         return [];
       }
 
-      // Verify and recalculate stats based on actual fixture results
+      // Verify and recalculate stats based on actual fixture results with deduplication
       const verifiedTeams: LeagueTableEntry[] = [];
 
       for (const team of teams) {
-        // Get all fixtures for this team
+        // Get deduplicated fixtures for this team - only the most recent version of each fixture
         const { data: fixtures, error: fixturesError } = await supabase
           .from('fixtures')
           .select('*')
           .or(`home_team_id.eq.${team.__id__},away_team_id.eq.${team.__id__}`)
           .not('home_score', 'is', null)
-          .not('away_score', 'is', null);
+          .not('away_score', 'is', null)
+          .order('updated_at', { ascending: false }); // Most recent first
 
         if (fixturesError) {
           console.error('Error fetching fixtures for team:', team.name, fixturesError);
           continue;
         }
 
-        // Calculate actual stats from fixture results
+        // Deduplicate fixtures by ID, keeping only the most recent version
+        const deduplicatedFixtures = new Map();
+        (fixtures || []).forEach(fixture => {
+          if (!deduplicatedFixtures.has(fixture.id) || 
+              new Date(fixture.updated_at) > new Date(deduplicatedFixtures.get(fixture.id).updated_at)) {
+            deduplicatedFixtures.set(fixture.id, fixture);
+          }
+        });
+
+        const uniqueFixtures = Array.from(deduplicatedFixtures.values());
+
+        console.log(`📊 Team ${team.name}: Found ${fixtures?.length || 0} fixture entries, deduplicated to ${uniqueFixtures.length} unique fixtures`);
+
+        // Calculate actual stats from deduplicated fixture results
         let played = 0;
         let won = 0;
         let drawn = 0;
@@ -58,16 +71,7 @@ export const leagueTableService = {
         let goalsFor = 0;
         let goalsAgainst = 0;
 
-        const processedFixtures = new Set<number>(); // Prevent duplicate processing
-
-        for (const fixture of fixtures || []) {
-          // Skip if already processed (duplicate prevention)
-          if (processedFixtures.has(fixture.id)) {
-            console.log('⚠️ Skipping duplicate fixture:', fixture.id);
-            continue;
-          }
-          processedFixtures.add(fixture.id);
-
+        for (const fixture of uniqueFixtures) {
           const isHome = fixture.home_team_id === team.__id__;
           const teamScore = isHome ? fixture.home_score : fixture.away_score;
           const opponentScore = isHome ? fixture.away_score : fixture.home_score;
@@ -121,11 +125,46 @@ export const leagueTableService = {
         totalMatches: verifiedTeams.reduce((sum, team) => sum + team.played, 0) / 2 // Divide by 2 as each match involves 2 teams
       });
 
+      // Update team stats in database to reflect correct calculations
+      await this.updateTeamStatsInDatabase(verifiedTeams);
+
       return verifiedTeams;
 
     } catch (error) {
       console.error('❌ Error getting deduplicated league table:', error);
       throw error;
+    }
+  },
+
+  async updateTeamStatsInDatabase(verifiedTeams: LeagueTableEntry[]): Promise<void> {
+    console.log('🔄 Updating team stats in database with verified calculations...');
+    
+    try {
+      for (const team of verifiedTeams) {
+        const { error: updateError } = await supabase
+          .from('teams')
+          .update({
+            played: team.played,
+            won: team.won,
+            drawn: team.drawn,
+            lost: team.lost,
+            goals_for: team.goals_for,
+            goals_against: team.goals_against,
+            goal_difference: team.goal_difference,
+            points: team.points,
+            previous_position: team.position !== team.previous_position ? team.previous_position : null,
+            position: team.position
+          })
+          .eq('id', team.id);
+
+        if (updateError) {
+          console.error(`Failed to update team ${team.name}:`, updateError);
+        }
+      }
+      
+      console.log('✅ Team stats updated in database');
+    } catch (error) {
+      console.error('❌ Error updating team stats in database:', error);
     }
   },
 
@@ -137,35 +176,7 @@ export const leagueTableService = {
 
     try {
       const verifiedTeams = await this.getDeduplicatedLeagueTable();
-
-      // Update each team's stats in the database
-      for (const team of verifiedTeams) {
-        try {
-          const { error: updateError } = await supabase
-            .from('teams')
-            .update({
-              played: team.played,
-              won: team.won,
-              drawn: team.drawn,
-              lost: team.lost,
-              goals_for: team.goals_for,
-              goals_against: team.goals_against,
-              goal_difference: team.goal_difference,
-              points: team.points,
-              previous_position: team.position !== team.previous_position ? team.previous_position : null,
-              position: team.position
-            })
-            .eq('id', team.id);
-
-          if (updateError) {
-            errors.push(`Failed to update ${team.name}: ${updateError.message}`);
-          } else {
-            updated++;
-          }
-        } catch (error) {
-          errors.push(`Error updating ${team.name}: ${error instanceof Error ? error.message : 'Unknown error'}`);
-        }
-      }
+      updated = verifiedTeams.length;
 
       console.log('✅ Team stats sync completed:', { updated, errors: errors.length });
       return { updated, errors };

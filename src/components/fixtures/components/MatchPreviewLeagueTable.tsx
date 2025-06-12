@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
@@ -16,7 +15,7 @@ interface MatchPreviewLeagueTableProps {
 }
 
 const MatchPreviewLeagueTable = ({ homeTeam, awayTeam }: MatchPreviewLeagueTableProps) => {
-  const { data: teams, isLoading } = useTeams();
+  const { data: teams, isLoading } = useTeams(); // Now uses deduplicated data
   const { isMobile, isPortrait } = useDeviceOrientation();
   const isMobilePortrait = isMobile && isPortrait;
 
