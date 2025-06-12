@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
 import { useImageUpload } from '@/hooks/useImageUpload';
-import { ImageMetadata, OptimizationOptions } from '@/services/imageOptimizationService';
+import { ImageMetadata, OptimizationOptions } from '@/services/imageOptimization';
 import OptimizedImage from './OptimizedImage';
 
 interface ImageUploadProps {

@@ -1,7 +1,6 @@
-
 import React, { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
-import { imageOptimizationService, ImageMetadata } from '@/services/imageOptimizationService';
+import { imageOptimizationService, ImageMetadata } from '@/services/imageOptimization';
 
 interface OptimizedImageProps {
   src?: string;

@@ -1,7 +1,6 @@
-
 import { useState, useCallback } from 'react';
 import { toast } from 'sonner';
-import { imageOptimizationService, ImageMetadata, OptimizationOptions } from '@/services/imageOptimizationService';
+import { imageOptimizationService, ImageMetadata, OptimizationOptions } from '@/services/imageOptimization';
 
 interface UseImageUploadOptions {
   bucketId: string;
