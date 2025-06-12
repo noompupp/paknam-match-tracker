@@ -62,11 +62,14 @@ export const enhancedTeamStatsService = {
     console.log('🎯 EnhancedTeamStatsService: Fetching enhanced stats for team:', teamId);
     
     try {
-      // Enhanced team lookup with proper error handling and flexible ID matching
+      // Fixed team lookup with proper type handling
+      console.log('🔍 Looking up team with ID:', teamId);
+      
+      // First, try to find the team by __id__ (which is text) since that's what members.team_id references
       const { data: teams, error: teamError } = await supabase
         .from('teams')
         .select('id, __id__, name, color, logo')
-        .or(`id.eq.${teamId},__id__.eq.${teamId}`)
+        .eq('__id__', teamId)
         .limit(1);
 
       if (teamError) {
@@ -75,7 +78,7 @@ export const enhancedTeamStatsService = {
       }
 
       if (!teams || teams.length === 0) {
-        console.error('❌ Team not found with ID:', teamId);
+        console.error('❌ Team not found with __id__:', teamId);
         console.log('🔍 Available teams debug info - attempting to fetch all teams for comparison');
         
         // Debug: Get all teams to help diagnose the issue
@@ -95,7 +98,7 @@ export const enhancedTeamStatsService = {
       console.log('✅ Team found:', { id: team.id, __id__: team.__id__, name: team.name });
 
       // Use the team's __id__ for member lookup (as members.team_id references teams.__id__)
-      const teamIdentifier = team.__id__ || team.id?.toString();
+      const teamIdentifier = team.__id__;
       
       if (!teamIdentifier) {
         throw new Error(`Invalid team identifier for team: ${team.name}`);
