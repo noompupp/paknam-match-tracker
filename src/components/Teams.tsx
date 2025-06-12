@@ -1,7 +1,6 @@
 
 import { useState } from "react";
 import { useTeams } from "@/hooks/useTeams";
-import { useTeamMembers } from "@/hooks/useMembers";
 import TeamsGrid from "./teams/TeamsGrid";
 import EnhancedTeamSquad from "./teams/EnhancedTeamSquad";
 import UnifiedPageHeader from "./shared/UnifiedPageHeader";
@@ -12,14 +11,13 @@ const Teams = () => {
   const { data: teams, isLoading: teamsLoading, error } = useTeams();
   const [selectedTeamId, setSelectedTeamId] = useState<number | null>(null);
   
-  // Get members for the selected team (or first team if none selected)
+  // Get the selected team or use first team
   const targetTeamId = selectedTeamId || teams?.[0]?.id || 0;
-  const { data: teamMembers, isLoading: membersLoading } = useTeamMembers(targetTeamId);
   const selectedTeam = teams?.find(team => team.id === targetTeamId);
 
   const handleViewSquad = (teamId: number) => {
     setSelectedTeamId(teamId);
-    const squadSection = document.getElementById('team-squad');
+    const squadSection = document.getElementById('enhanced-team-squad');
     if (squadSection) {
       // Enhanced scroll calculation with safe area support
       const navHeight = 70;
@@ -65,9 +63,9 @@ const Teams = () => {
           onViewSquad={handleViewSquad}
         />
 
-        {/* Enhanced Team Squad (showing selected team's squad with enhanced data) */}
+        {/* Enhanced Team Squad */}
         {selectedTeam && (
-          <div id="team-squad" className="scroll-mt-nav">
+          <div id="enhanced-team-squad" className="scroll-mt-nav">
             <EnhancedTeamSquad
               teamId={selectedTeam.__id__}
               teamName={selectedTeam.name || 'Unknown Team'}
