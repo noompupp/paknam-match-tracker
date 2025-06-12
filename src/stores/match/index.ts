@@ -12,18 +12,14 @@ import { createCoreSlice, CoreSlice } from './coreSlice';
 import { createGoalSlice, GoalSlice } from './goalSlice';
 import { createOptimizedPlayerTimeSlice, OptimizedPlayerTimeSlice } from './optimizedPlayerTimeSlice';
 
-type MatchStore = MatchState & MatchActions & EnhancedPlayerTimeSlice & PlayerTimeSlice & OptimizedPlayerTimeSlice & {
-  syncCardsToDatabase: (fixtureId: number) => Promise<void>;
-  optimizedBatchSync: (fixtureId: number) => Promise<void>;
-  syncAllToDatabase: (fixtureId: number) => Promise<void>;
-};
+type MatchStore = MatchState & MatchActions;
 
 export const useMatchStore = create<MatchStore>()(
   subscribeWithSelector((set, get, api) => ({
     // Initial state
     ...createInitialState(),
     
-    // Combine all enhanced slices
+    // Combine all slices
     ...createEnhancedGoalSlice(set, get, api),
     ...createGoalSlice(set, get, api),
     ...createEnhancedCardSlice(set, get, api),

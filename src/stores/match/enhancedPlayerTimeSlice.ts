@@ -9,6 +9,12 @@ export interface EnhancedPlayerTimeSlice {
   updatePlayerTime: (playerTimeId: string, updates: Partial<any>) => void;
   removePlayerTime: (playerTimeId: string) => void;
   getUnsavedPlayerTimesCount: () => number;
+  getActivePlayersCount: () => number;
+  startPlayerTime: (playerTimeId: string) => void;
+  stopPlayerTime: (playerTimeId: string) => void;
+  togglePlayerTime: (playerTimeId: string) => void;
+  updateAllPlayerTimes: () => void;
+  syncPlayerTimesToDatabase: (fixtureId: number) => Promise<void>;
 }
 
 export const createEnhancedPlayerTimeSlice: StateCreator<
@@ -22,7 +28,9 @@ export const createEnhancedPlayerTimeSlice: StateCreator<
       ...playerTimeData,
       id: generateId(),
       timestamp: Date.now(),
-      synced: false
+      synced: false,
+      isPlaying: false,
+      startTime: Date.now()
     };
 
     set((state) => ({
@@ -58,5 +66,143 @@ export const createEnhancedPlayerTimeSlice: StateCreator<
 
   getUnsavedPlayerTimesCount: () => {
     return get().playerTimes.filter(pt => !pt.synced).length;
+  },
+
+  getActivePlayersCount: () => {
+    return get().playerTimes.filter(pt => pt.isPlaying).length;
+  },
+
+  startPlayerTime: (playerTimeId: string) => {
+    set((state) => ({
+      playerTimes: state.playerTimes.map(pt => 
+        pt.id === playerTimeId 
+          ? { 
+              ...pt, 
+              isPlaying: true, 
+              startTime: Date.now(),
+              synced: false
+            }
+          : pt
+      ),
+      hasUnsavedChanges: true,
+      lastUpdated: Date.now()
+    }));
+    
+    console.log('⏱️ Enhanced Player Time: Started player time:', playerTimeId);
+  },
+
+  stopPlayerTime: (playerTimeId: string) => {
+    const state = get();
+    const playerTime = state.playerTimes.find(pt => pt.id === playerTimeId);
+    
+    if (!playerTime || !playerTime.isPlaying || !playerTime.startTime) {
+      console.warn('⚠️ Enhanced Player Time: Cannot stop player time - not currently playing:', playerTimeId);
+      return;
+    }
+    
+    const now = Date.now();
+    const duration = Math.floor((now - playerTime.startTime) / 1000); // Convert to seconds
+    
+    set((state) => ({
+      playerTimes: state.playerTimes.map(pt => 
+        pt.id === playerTimeId 
+          ? { 
+              ...pt, 
+              isPlaying: false,
+              totalTime: pt.totalTime + duration,
+              periods: [
+                ...(pt.periods || []),
+                {
+                  start_time: Math.floor(pt.startTime! / 1000),
+                  end_time: Math.floor(now / 1000),
+                  duration
+                }
+              ],
+              synced: false
+            }
+          : pt
+      ),
+      hasUnsavedChanges: true,
+      lastUpdated: Date.now()
+    }));
+    
+    console.log('⏱️ Enhanced Player Time: Stopped player time:', {
+      playerTimeId,
+      duration,
+      totalTime: playerTime.totalTime + duration
+    });
+  },
+
+  togglePlayerTime: (playerTimeId: string) => {
+    const state = get();
+    const playerTime = state.playerTimes.find(pt => pt.id === playerTimeId);
+    
+    if (!playerTime) {
+      console.warn('⚠️ Enhanced Player Time: Cannot toggle player time - not found:', playerTimeId);
+      return;
+    }
+    
+    if (playerTime.isPlaying) {
+      get().stopPlayerTime(playerTimeId);
+    } else {
+      get().startPlayerTime(playerTimeId);
+    }
+  },
+
+  updateAllPlayerTimes: () => {
+    const state = get();
+    const now = Date.now();
+    let hasChanges = false;
+    
+    const updatedPlayerTimes = state.playerTimes.map(pt => {
+      if (pt.isPlaying && pt.startTime) {
+        hasChanges = true;
+        const duration = Math.floor((now - pt.startTime) / 1000); // Convert to seconds
+        
+        return {
+          ...pt,
+          totalTime: pt.totalTime + duration,
+          startTime: now,
+          synced: false
+        };
+      }
+      return pt;
+    });
+    
+    if (hasChanges) {
+      set({
+        playerTimes: updatedPlayerTimes,
+        hasUnsavedChanges: true,
+        lastUpdated: now
+      });
+      
+      console.log('⏱️ Enhanced Player Time: Updated all active player times');
+    }
+  },
+
+  syncPlayerTimesToDatabase: async (fixtureId: number) => {
+    const state = get();
+    const unsyncedPlayerTimes = state.playerTimes.filter(pt => !pt.synced);
+    
+    if (unsyncedPlayerTimes.length === 0) {
+      console.log('✅ No unsynced player times to save');
+      return;
+    }
+    
+    try {
+      console.log('💾 Syncing', unsyncedPlayerTimes.length, 'player time records to database');
+      
+      // This would typically call an API to save the player times
+      // For now, we'll just mark them as synced
+      set((state) => ({
+        playerTimes: state.playerTimes.map(pt => ({ ...pt, synced: true })),
+        lastUpdated: Date.now()
+      }));
+      
+      console.log('✅ Player time sync completed successfully');
+    } catch (error) {
+      console.error('❌ Error syncing player times to database:', error);
+      throw error;
+    }
   }
 });

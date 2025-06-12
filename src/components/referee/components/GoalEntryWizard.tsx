@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -215,6 +214,7 @@ const GoalEntryWizard = ({
             matchTime={editingGoal ? (editingGoal.event_time || editingGoal.time || 0) : matchTime}
             formatTime={formatTime}
             onConfirm={handleConfirm}
+            onBack={handleBack}
           />
         );
       default:

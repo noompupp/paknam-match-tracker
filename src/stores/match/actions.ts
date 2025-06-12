@@ -23,11 +23,30 @@ export interface MatchActions {
   updatePlayerTime: (playerTimeId: string, updates: Partial<MatchPlayerTime>) => void;
   removePlayerTime: (playerTimeId: string) => void;
   getUnsavedPlayerTimesCount: () => number;
+  getActivePlayersCount: () => number;
+  startPlayerTime: (playerTimeId: string) => void;
+  stopPlayerTime: (playerTimeId: string) => void;
+  togglePlayerTime: (playerTimeId: string) => void;
+  updateAllPlayerTimes: () => void;
+
+  // Database sync actions
+  loadPlayerTimesFromDatabase: (fixtureId: number) => Promise<void>;
+  syncPlayerTimesToDatabase: (fixtureId: number) => Promise<void>;
+  syncGoalsToDatabase: (fixtureId: number) => Promise<void>;
+  syncCardsToDatabase: (fixtureId: number) => Promise<void>;
+  optimizedBatchSync: (fixtureId: number) => Promise<void>;
+  syncAllToDatabase: (fixtureId: number) => Promise<void>;
+
+  // Utility actions
+  clearPlayerTimes: () => void;
+  addEvent: (eventData: any) => void;
+  triggerUIUpdate: () => void;
+  resetState: () => void;
 
   // Core actions
   setFixtureId: (fixtureId: number) => void;
   updateScore: (homeScore: number, awayScore: number) => void;
   markAsSaved: () => void;
   resetMatch: () => void;
-  getUnsavedItemsCount: () => number;
+  getUnsavedItemsCount: () => { goals: number; cards: number; playerTimes: number };
 }
