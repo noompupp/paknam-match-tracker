@@ -79,7 +79,8 @@ const MatchEventsSection = ({
               
               if (event.type === 'goal') {
                 const playerName = getGoalPlayerName(event.data);
-                const assistName = getGoalAssistPlayerName(event.data);
+                const isOwnGoal = event.data.own_goal || event.data.isOwnGoal || false;
+                const assistName = !isOwnGoal ? getGoalAssistPlayerName(event.data) : undefined;
                 
                 return (
                   <div 
@@ -93,10 +94,15 @@ const MatchEventsSection = ({
                       />
                       <div className="flex-1">
                         <div className="font-medium text-sm flex items-center gap-2">
-                          <span>⚽</span>
-                          <span>{playerName}</span>
+                          <span>{isOwnGoal ? '🔴' : '⚽'}</span>
+                          <span>
+                            {playerName}
+                            {isOwnGoal && (
+                              <span className="ml-1 text-red-600 font-medium">(OG)</span>
+                            )}
+                          </span>
                         </div>
-                        {assistName && (
+                        {assistName && !isOwnGoal && (
                           <div className="text-xs text-muted-foreground italic mt-1">
                             Assist: {assistName}
                           </div>
@@ -105,7 +111,7 @@ const MatchEventsSection = ({
                     </div>
                     <EnhancedTimeBadge 
                       time={formatTime(event.time)} 
-                      variant="goal"
+                      variant={isOwnGoal ? "destructive" : "goal"}
                     />
                   </div>
                 );
