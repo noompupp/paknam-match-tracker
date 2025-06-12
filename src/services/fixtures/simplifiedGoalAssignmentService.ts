@@ -8,36 +8,74 @@ interface GoalAssignmentData {
   teamId: string;
   eventTime: number;
   type: 'goal' | 'assist';
-  isOwnGoal?: boolean; // Standardized own goal flag
+  isOwnGoal?: boolean;
 }
 
 export const assignGoalToPlayer = async (data: GoalAssignmentData) => {
-  console.log('⚽ Simplified Goal Assignment: Assigning with standardized own goal support:', data);
+  console.log('⚽ Simplified Goal Assignment: Starting assignment with enhanced validation:', data);
   
   try {
-    // Validate input
-    if (!data.fixtureId || !data.playerName || data.eventTime < 0) {
-      throw new Error('Invalid goal assignment data provided');
+    // Enhanced input validation
+    if (!data.fixtureId || data.fixtureId <= 0) {
+      throw new Error('Invalid fixture ID provided');
+    }
+    
+    if (!data.playerName || data.playerName.trim().length === 0) {
+      throw new Error('Invalid player name provided');
+    }
+    
+    if (!data.teamId || data.teamId.trim().length === 0) {
+      throw new Error('Invalid team ID provided');
+    }
+    
+    if (data.eventTime < 0 || data.eventTime > 7200) { // Max 2 hours
+      throw new Error('Invalid event time provided');
+    }
+    
+    if (!['goal', 'assist'].includes(data.type)) {
+      throw new Error('Invalid goal type provided');
     }
 
-    // Create match event with standardized is_own_goal flag
+    // Validate team ID format
+    const sanitizedTeamId = data.teamId.trim();
+    console.log('🔍 Simplified Goal Assignment: Using team ID:', sanitizedTeamId);
+
+    // Create match event with proper validation
+    const eventData = {
+      fixture_id: data.fixtureId,
+      event_type: data.type,
+      player_name: data.playerName.trim(),
+      team_id: sanitizedTeamId,
+      event_time: data.eventTime,
+      is_own_goal: data.isOwnGoal || false,
+      description: `${data.isOwnGoal ? 'Own goal' : data.type === 'goal' ? 'Goal' : 'Assist'} by ${data.playerName.trim()} at ${Math.floor(data.eventTime / 60)}'${String(data.eventTime % 60).padStart(2, '0')}`
+    };
+
+    console.log('🚀 Simplified Goal Assignment: Inserting event data:', eventData);
+
     const { data: matchEvent, error } = await supabase
       .from('match_events')
-      .insert({
-        fixture_id: data.fixtureId,
-        event_type: data.type,
-        player_name: data.playerName,
-        team_id: data.teamId,
-        event_time: data.eventTime,
-        is_own_goal: data.isOwnGoal || false, // Use standardized flag
-        description: `${data.isOwnGoal ? 'Own goal' : data.type === 'goal' ? 'Goal' : 'Assist'} by ${data.playerName} at ${Math.floor(data.eventTime / 60)}'${String(data.eventTime % 60).padStart(2, '0')}`
-      })
+      .insert(eventData)
       .select()
       .single();
 
     if (error) {
       console.error('❌ Simplified Goal Assignment: Database error:', error);
-      throw error;
+      
+      // Enhanced error handling for common issues
+      if (error.message.includes('invalid input syntax for type uuid')) {
+        throw new Error(`Team ID format error: "${sanitizedTeamId}" is not a valid format for this database field. Please check team configuration.`);
+      }
+      
+      if (error.message.includes('foreign key')) {
+        throw new Error(`Team reference error: Team "${sanitizedTeamId}" not found in database. Please verify team data.`);
+      }
+      
+      if (error.message.includes('duplicate')) {
+        throw new Error(`Duplicate event: This ${data.type} has already been recorded for ${data.playerName} at this time.`);
+      }
+      
+      throw new Error(`Database error: ${error.message}`);
     }
 
     console.log('✅ Simplified Goal Assignment: Event created successfully:', matchEvent);
@@ -46,7 +84,7 @@ export const assignGoalToPlayer = async (data: GoalAssignmentData) => {
     if (data.playerId && data.playerId > 0) {
       try {
         if (data.type === 'goal' && !data.isOwnGoal) {
-          // Only count regular goals, not own goals - use RPC for atomic increment
+          // Only count regular goals, not own goals
           const { error: goalsError } = await supabase.rpc('safe_update_member_stats', {
             p_member_id: data.playerId,
             p_goals: 1
@@ -58,7 +96,7 @@ export const assignGoalToPlayer = async (data: GoalAssignmentData) => {
             console.log('✅ Simplified Goal Assignment: Goals updated via RPC');
           }
         } else if (data.type === 'assist') {
-          // Update assists using RPC for atomic increment
+          // Update assists
           const { error: assistsError } = await supabase.rpc('safe_update_member_stats', {
             p_member_id: data.playerId,
             p_assists: 1
@@ -71,7 +109,7 @@ export const assignGoalToPlayer = async (data: GoalAssignmentData) => {
           }
         }
 
-        console.log('✅ Simplified Goal Assignment: Player stats updated');
+        console.log('✅ Simplified Goal Assignment: Player stats updated successfully');
       } catch (statsError) {
         console.error('⚠️ Simplified Goal Assignment: Stats update error:', statsError);
         // Continue without throwing - event was created successfully
@@ -81,11 +119,22 @@ export const assignGoalToPlayer = async (data: GoalAssignmentData) => {
     return {
       success: true,
       eventId: matchEvent.id,
-      isOwnGoal: data.isOwnGoal || false
+      isOwnGoal: data.isOwnGoal || false,
+      teamId: sanitizedTeamId
     };
 
   } catch (error) {
     console.error('❌ Simplified Goal Assignment: Assignment failed:', error);
+    
+    // Enhanced error logging for debugging
+    console.error('❌ Assignment context:', {
+      fixtureId: data.fixtureId,
+      playerName: data.playerName,
+      teamId: data.teamId,
+      type: data.type,
+      isOwnGoal: data.isOwnGoal
+    });
+    
     throw error;
   }
 };

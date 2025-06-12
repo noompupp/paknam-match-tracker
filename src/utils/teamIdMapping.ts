@@ -22,13 +22,13 @@ export const resolveTeamIdForMatchEvent = (
   if (playerTeamName === homeTeam.name) {
     const textId = homeTeam.__id__ || homeTeam.id;
     console.log('✅ TeamIdMapping: Matched home team:', textId);
-    return textId;
+    return validateAndConvertTeamId(textId);
   }
   
   if (playerTeamName === awayTeam.name) {
     const textId = awayTeam.__id__ || awayTeam.id;
     console.log('✅ TeamIdMapping: Matched away team:', textId);
-    return textId;
+    return validateAndConvertTeamId(textId);
   }
 
   // Fallback to case-insensitive matching
@@ -39,13 +39,13 @@ export const resolveTeamIdForMatchEvent = (
   if (normalizedPlayerTeam === normalizedHomeTeam) {
     const textId = homeTeam.__id__ || homeTeam.id;
     console.log('✅ TeamIdMapping: Matched home team (case-insensitive):', textId);
-    return textId;
+    return validateAndConvertTeamId(textId);
   }
   
   if (normalizedPlayerTeam === normalizedAwayTeam) {
     const textId = awayTeam.__id__ || awayTeam.id;
     console.log('✅ TeamIdMapping: Matched away team (case-insensitive):', textId);
-    return textId;
+    return validateAndConvertTeamId(textId);
   }
 
   // Enhanced fallback - try to match using team IDs directly
@@ -55,26 +55,26 @@ export const resolveTeamIdForMatchEvent = (
   if (playerTeamName === homeTeam.__id__ || playerTeamName === homeTeam.id) {
     const textId = homeTeam.__id__ || homeTeam.id;
     console.log('✅ TeamIdMapping: Matched home team by ID:', textId);
-    return textId;
+    return validateAndConvertTeamId(textId);
   }
   
   if (playerTeamName === awayTeam.__id__ || playerTeamName === awayTeam.id) {
     const textId = awayTeam.__id__ || awayTeam.id;
     console.log('✅ TeamIdMapping: Matched away team by ID:', textId);
-    return textId;
+    return validateAndConvertTeamId(textId);
   }
 
   // Final attempt: partial matching
   if (normalizedHomeTeam.includes(normalizedPlayerTeam) || normalizedPlayerTeam.includes(normalizedHomeTeam)) {
     const textId = homeTeam.__id__ || homeTeam.id;
     console.log('✅ TeamIdMapping: Matched home team (partial):', textId);
-    return textId;
+    return validateAndConvertTeamId(textId);
   }
   
   if (normalizedAwayTeam.includes(normalizedPlayerTeam) || normalizedPlayerTeam.includes(normalizedAwayTeam)) {
     const textId = awayTeam.__id__ || awayTeam.id;
     console.log('✅ TeamIdMapping: Matched away team (partial):', textId);
-    return textId;
+    return validateAndConvertTeamId(textId);
   }
 
   // If no match found, provide fallback instead of throwing error
@@ -86,7 +86,38 @@ export const resolveTeamIdForMatchEvent = (
   });
   
   // Return the first available team ID as fallback
-  return homeTeam.__id__ || homeTeam.id;
+  return validateAndConvertTeamId(homeTeam.__id__ || homeTeam.id);
+};
+
+// New function to validate and convert team IDs to proper format
+export const validateAndConvertTeamId = (teamId: string | number): string => {
+  if (!teamId) {
+    throw new Error('Team ID cannot be null or undefined');
+  }
+  
+  const stringId = String(teamId).trim();
+  
+  // Check if it's a valid UUID format (8-4-4-4-12 hex digits)
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  
+  if (uuidRegex.test(stringId)) {
+    console.log('✅ TeamIdMapping: Valid UUID format detected:', stringId);
+    return stringId;
+  }
+  
+  // Check if it's a numeric ID that needs conversion
+  if (/^\d+$/.test(stringId)) {
+    console.warn('⚠️ TeamIdMapping: Numeric team ID detected, may cause UUID issues:', stringId);
+    throw new Error(`Invalid team ID format: ${stringId}. Expected UUID format but got numeric ID.`);
+  }
+  
+  // For text-based team IDs, validate they're reasonable
+  if (stringId.length < 3) {
+    throw new Error(`Invalid team ID format: ${stringId}. Team ID too short.`);
+  }
+  
+  console.log('✅ TeamIdMapping: Text-based team ID validated:', stringId);
+  return stringId;
 };
 
 export const validateTeamData = (homeTeam: TeamInfo, awayTeam: TeamInfo): boolean => {
@@ -103,13 +134,10 @@ export const validateTeamData = (homeTeam: TeamInfo, awayTeam: TeamInfo): boolea
 };
 
 export const normalizeTeamIdForDatabase = (teamId: string | number): string => {
-  if (!teamId) {
-    throw new Error('Team ID cannot be null or undefined');
-  }
-  return String(teamId).trim();
+  return validateAndConvertTeamId(teamId);
 };
 
-// New function to verify team exists in database before creating match events
+// Enhanced function to verify team exists in database before creating match events
 export const getValidatedTeamId = async (
   playerTeamName: string,
   homeTeam: TeamInfo,
@@ -117,16 +145,22 @@ export const getValidatedTeamId = async (
 ): Promise<string> => {
   console.log('🔍 TeamIdMapping: Validating team ID against database');
   
-  const resolvedId = resolveTeamIdForMatchEvent(playerTeamName, homeTeam, awayTeam);
-  
-  // Additional validation could be added here to check against database
-  // For now, we'll return the resolved ID with enhanced logging
-  console.log('✅ TeamIdMapping: Team ID validated:', {
-    playerTeamName,
-    resolvedId,
-    homeTeamId: homeTeam.__id__ || homeTeam.id,
-    awayTeamId: awayTeam.__id__ || awayTeam.id
-  });
-  
-  return resolvedId;
+  try {
+    const resolvedId = resolveTeamIdForMatchEvent(playerTeamName, homeTeam, awayTeam);
+    
+    // Additional validation to ensure we have a proper team ID
+    const validatedId = validateAndConvertTeamId(resolvedId);
+    
+    console.log('✅ TeamIdMapping: Team ID validated successfully:', {
+      playerTeamName,
+      resolvedId: validatedId,
+      homeTeamId: homeTeam.__id__ || homeTeam.id,
+      awayTeamId: awayTeam.__id__ || awayTeam.id
+    });
+    
+    return validatedId;
+  } catch (error) {
+    console.error('❌ TeamIdMapping: Team ID validation failed:', error);
+    throw new Error(`Team ID validation failed for player team "${playerTeamName}": ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
 };

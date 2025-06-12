@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { assignGoalToPlayer } from './fixtures/simplifiedGoalAssignmentService';
 import { enhancedDuplicatePreventionService } from './fixtures/enhancedDuplicatePreventionService';
@@ -11,9 +12,9 @@ interface UnifiedGoalData {
   teamName: string;
   goalType: 'goal' | 'assist';
   eventTime: number;
-  homeTeam: { id: string; name: string };
-  awayTeam: { id: string; name: string };
-  isOwnGoal?: boolean; // Standardized own goal flag
+  homeTeam: { id: string; name: string; __id__?: string };
+  awayTeam: { id: string; name: string; __id__?: string };
+  isOwnGoal?: boolean;
 }
 
 interface UnifiedGoalResult {
@@ -29,17 +30,38 @@ interface UnifiedGoalResult {
 
 export const unifiedGoalService = {
   async addGoal(data: UnifiedGoalData): Promise<UnifiedGoalResult> {
-    console.log('🎯 Unified Goal Service: Processing goal with standardized own goal support:', data);
+    console.log('🎯 Unified Goal Service: Processing goal with enhanced validation:', data);
     
     try {
-      // Enhanced duplicate prevention check - fix method name and use correct properties
+      // Enhanced input validation
+      if (!data.fixtureId || data.fixtureId <= 0) {
+        throw new Error('Invalid fixture ID provided');
+      }
+      
+      if (!data.playerName || data.playerName.trim().length === 0) {
+        throw new Error('Invalid player name provided');
+      }
+      
+      if (!data.teamId || data.teamId.trim().length === 0) {
+        throw new Error('Invalid team ID provided');
+      }
+      
+      if (!data.homeTeam?.id || !data.awayTeam?.id) {
+        throw new Error('Invalid team data provided');
+      }
+
+      // Sanitize team ID
+      const sanitizedTeamId = data.teamId.trim();
+      console.log('🔍 Unified Goal Service: Using sanitized team ID:', sanitizedTeamId);
+
+      // Enhanced duplicate prevention check
       const duplicateCheck = await enhancedDuplicatePreventionService.checkForDuplicateEvent({
         fixtureId: data.fixtureId,
-        playerName: data.playerName,
+        playerName: data.playerName.trim(),
         eventTime: data.eventTime,
         eventType: data.goalType,
-        teamId: data.teamId,
-        isOwnGoal: data.isOwnGoal || false // Include own goal in duplicate check
+        teamId: sanitizedTeamId,
+        isOwnGoal: data.isOwnGoal || false
       });
 
       if (duplicateCheck.isDuplicate) {
@@ -58,8 +80,8 @@ export const unifiedGoalService = {
         const ownGoalResult = await enhancedOwnGoalService.addOwnGoal({
           fixtureId: data.fixtureId,
           playerId: data.playerId,
-          playerName: data.playerName,
-          playerTeamId: data.teamId,
+          playerName: data.playerName.trim(),
+          playerTeamId: sanitizedTeamId,
           playerTeamName: data.teamName,
           eventTime: data.eventTime,
           homeTeam: data.homeTeam,
@@ -80,11 +102,11 @@ export const unifiedGoalService = {
         const goalResult = await assignGoalToPlayer({
           fixtureId: data.fixtureId,
           playerId: data.playerId,
-          playerName: data.playerName,
-          teamId: data.teamId,
+          playerName: data.playerName.trim(),
+          teamId: sanitizedTeamId,
           eventTime: data.eventTime,
           type: data.goalType,
-          isOwnGoal: false // Explicit regular goal
+          isOwnGoal: false
         });
 
         // Update fixture score for regular goals
@@ -106,6 +128,16 @@ export const unifiedGoalService = {
 
     } catch (error) {
       console.error('❌ Unified Goal Service: Error processing goal:', error);
+      
+      // Enhanced error context logging
+      console.error('❌ Goal processing context:', {
+        fixtureId: data.fixtureId,
+        playerName: data.playerName,
+        teamId: data.teamId,
+        goalType: data.goalType,
+        isOwnGoal: data.isOwnGoal
+      });
+      
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Failed to process goal',
@@ -126,36 +158,35 @@ export const unifiedGoalService = {
       const awayTeamId = awayTeam.__id__ || awayTeam.id;
 
       // Count all goals (regular + own goals that benefit each team)
-      const { data: homeGoals } = await supabase
+      const { data: allGoals, error: goalsError } = await supabase
         .from('match_events')
-        .select('id, team_id, is_own_goal')
+        .select('id, team_id, is_own_goal, scoring_team_id')
         .eq('fixture_id', fixtureId)
         .eq('event_type', 'goal');
+
+      if (goalsError) {
+        console.error('❌ Error fetching goals for score calculation:', goalsError);
+        throw goalsError;
+      }
 
       let homeScore = 0;
       let awayScore = 0;
 
-      (homeGoals || []).forEach(goal => {
-        if (goal.is_own_goal) {
-          // Own goal benefits the opposing team
-          if (goal.team_id === homeTeamId) {
-            awayScore++;
-          } else if (goal.team_id === awayTeamId) {
-            homeScore++;
-          }
-        } else {
-          // Regular goal benefits the scoring team
-          if (goal.team_id === homeTeamId) {
-            homeScore++;
-          } else if (goal.team_id === awayTeamId) {
-            awayScore++;
-          }
+      (allGoals || []).forEach(goal => {
+        // Use scoring_team_id if available (handles own goals), otherwise fall back to team_id
+        const scoringTeam = goal.scoring_team_id || goal.team_id;
+        
+        if (scoringTeam === homeTeamId) {
+          homeScore++;
+        } else if (scoringTeam === awayTeamId) {
+          awayScore++;
         }
       });
 
-      console.log('📊 Unified Goal Service: Calculated scores with standardized own goal logic:', { 
+      console.log('📊 Unified Goal Service: Calculated scores with enhanced logic:', { 
         homeScore, 
-        awayScore 
+        awayScore,
+        totalGoals: (allGoals || []).length
       });
 
       // Update fixture
@@ -173,7 +204,7 @@ export const unifiedGoalService = {
         return { success: false, homeScore: 0, awayScore: 0 };
       }
 
-      console.log('✅ Unified Goal Service: Fixture score updated:', { homeScore, awayScore });
+      console.log('✅ Unified Goal Service: Fixture score updated successfully:', { homeScore, awayScore });
       return { success: true, homeScore, awayScore };
 
     } catch (error) {

@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { unifiedGoalService } from "@/services/unifiedGoalService";
-import { resolveTeamIdForMatchEvent } from "@/utils/teamIdMapping";
+import { resolveTeamIdForMatchEvent, validateAndConvertTeamId } from "@/utils/teamIdMapping";
 
 interface GoalData {
   playerId: number;
@@ -9,13 +9,12 @@ interface GoalData {
   team: string;
   time: number;
   type: 'goal' | 'assist';
-  id?: string; // Add unique identifier for better deduplication
-  isOwnGoal?: boolean; // Add own goal flag
+  id?: string;
+  isOwnGoal?: boolean;
 }
 
-// Update TeamInfo interface to use string for id
 interface TeamInfo {
-  id: string; // Changed from number to string
+  id: string;
   name: string;
   __id__?: string;
 }
@@ -45,9 +44,9 @@ export const useGoalManagement = () => {
     player: any, 
     matchTime: number, 
     fixtureId: number, 
-    homeTeam: TeamInfo, // Updated type
-    awayTeam: TeamInfo,  // Updated type
-    isOwnGoal: boolean = false // Add own goal parameter
+    homeTeam: TeamInfo,
+    awayTeam: TeamInfo,
+    isOwnGoal: boolean = false
   ) => {
     console.log('⚽ useGoalManagement: Starting enhanced goal assignment:', {
       player: player.name,
@@ -81,24 +80,35 @@ export const useGoalManagement = () => {
       throw new Error('This goal/assist has already been assigned to this player at this time');
     }
 
-    // Validate that we have all required data
+    // Enhanced validation
     if (!fixtureId || !homeTeam || !awayTeam) {
       throw new Error('Missing required data for goal assignment');
     }
 
+    if (!homeTeam.id || !homeTeam.name || !awayTeam.id || !awayTeam.name) {
+      throw new Error('Invalid team data provided');
+    }
+
     try {
-      // Resolve the text team ID for the database
-      const teamId = resolveTeamIdForMatchEvent(player.team, homeTeam, awayTeam);
+      // Resolve and validate the team ID for the database
+      let teamId: string;
+      try {
+        teamId = resolveTeamIdForMatchEvent(player.team, homeTeam, awayTeam);
+        teamId = validateAndConvertTeamId(teamId); // Additional validation
+      } catch (teamError) {
+        console.error('❌ useGoalManagement: Team ID resolution failed:', teamError);
+        throw new Error(`Team resolution failed: ${teamError instanceof Error ? teamError.message : 'Unknown error'}`);
+      }
       
-      console.log('✅ useGoalManagement: Team ID resolved:', {
+      console.log('✅ useGoalManagement: Team ID resolved and validated:', {
         playerTeam: player.team,
         resolvedTeamId: teamId,
         homeTeam: homeTeam.name,
         awayTeam: awayTeam.name
       });
 
-      // Use the unified goal service with enhanced own goal support
-      console.log('🚀 useGoalManagement: Calling unified goal service with enhanced parameters:', {
+      // Use the unified goal service with enhanced error handling
+      console.log('🚀 useGoalManagement: Calling unified goal service with validated parameters:', {
         fixtureId,
         playerId: player.id,
         playerName: player.name,
@@ -115,19 +125,19 @@ export const useGoalManagement = () => {
         fixtureId,
         playerId: player.id,
         playerName: player.name,
-        teamId, // This is now a string
+        teamId,
         teamName: player.team,
         goalType: selectedGoalType,
         eventTime: matchTime,
         homeTeam,
         awayTeam,
-        isOwnGoal // Critical: Include the isOwnGoal parameter
+        isOwnGoal
       });
 
       console.log('📊 useGoalManagement: Unified goal service response:', result);
 
       if (!result.success) {
-        throw new Error(result.message || 'Failed to assign goal');
+        throw new Error(result.error || result.message || 'Failed to assign goal');
       }
 
       // Add to local state only if successful and not duplicate
@@ -147,7 +157,7 @@ export const useGoalManagement = () => {
       
       setSelectedGoalPlayer("");
       
-      console.log('✅ useGoalManagement: Goal successfully assigned with enhanced duplicate prevention and own goal support');
+      console.log('✅ useGoalManagement: Goal successfully assigned with enhanced validation');
       
       return {
         success: result.success,
@@ -161,6 +171,18 @@ export const useGoalManagement = () => {
 
     } catch (error) {
       console.error('❌ useGoalManagement: Failed to assign goal:', error);
+      
+      // Enhanced error context for debugging
+      console.error('❌ Goal assignment context:', {
+        player: player.name,
+        team: player.team,
+        fixtureId,
+        homeTeam: homeTeam?.name,
+        awayTeam: awayTeam?.name,
+        isOwnGoal,
+        selectedGoalType
+      });
+      
       throw error;
     }
   };
