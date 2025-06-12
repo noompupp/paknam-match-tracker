@@ -36,7 +36,8 @@ export const useGlobalBatchSaveManager = ({
         playerName: goal.playerName,
         team: goal.teamName,
         type: goal.type as 'goal' | 'assist',
-        time: goal.time
+        time: goal.time,
+        isOwnGoal: goal.isOwnGoal || false // CRITICAL FIX: Preserve own goal flag
       }));
   }, []);
 
@@ -78,7 +79,7 @@ export const useGlobalBatchSaveManager = ({
     isSaving.current = true;
 
     try {
-      console.log('📤 GlobalBatchSaveManager: Starting batch save...', {
+      console.log('📤 GlobalBatchSaveManager: Starting batch save with own goal support...', {
         fixtureId,
         homeScore,
         awayScore,
@@ -103,7 +104,7 @@ export const useGlobalBatchSaveManager = ({
         awayTeam: awayTeamData
       };
 
-      console.log('📊 GlobalBatchSaveManager: Prepared match data for save:', matchData);
+      console.log('📊 GlobalBatchSaveManager: Prepared match data with own goal flags:', matchData);
 
       const result = await unifiedRefereeService.saveCompleteMatchData(matchData);
 
@@ -115,7 +116,7 @@ export const useGlobalBatchSaveManager = ({
           description: result.message,
         });
 
-        console.log('✅ GlobalBatchSaveManager: Batch save completed successfully');
+        console.log('✅ GlobalBatchSaveManager: Batch save completed successfully with own goal support');
         return { success: true, message: result.message };
       } else {
         toast({

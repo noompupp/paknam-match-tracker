@@ -1,17 +1,15 @@
+
 export interface MatchGoal {
   id: string;
   playerId: number;
   playerName: string;
   teamId: string;
   teamName: string;
-  team: 'home' | 'away';
   type: 'goal' | 'assist';
   time: number;
   timestamp: number;
   synced: boolean;
-  assistPlayerName?: string;
-  assistTeamId?: string;
-  isOwnGoal?: boolean; // Standardized own goal flag
+  isOwnGoal?: boolean; // CRITICAL: Add own goal support to the type
 }
 
 export interface MatchCard {
@@ -20,7 +18,6 @@ export interface MatchCard {
   playerName: string;
   teamId: string;
   teamName: string;
-  team: 'home' | 'away';
   type: 'yellow' | 'red';
   time: number;
   timestamp: number;
@@ -33,15 +30,13 @@ export interface MatchPlayerTime {
   playerName: string;
   teamId: string;
   teamName: string;
-  team: 'home' | 'away';
   totalTime: number;
-  startTime: number | null;
-  isPlaying: boolean;
   periods: Array<{
     start_time: number;
     end_time: number;
     duration: number;
   }>;
+  timestamp: number;
   synced: boolean;
 }
 
@@ -63,16 +58,4 @@ export interface MatchState {
   events: MatchEvent[];
   hasUnsavedChanges: boolean;
   lastUpdated: number;
-  
-  // New optimized tracking properties
-  localPlayerTimes: any[];
-  isLocalTimerActive: boolean;
-  syncStatus: {
-    lastSyncTime: number | null;
-    pendingChanges: number;
-    isSyncing: boolean;
-    lastError: string | null;
-  };
-  autoSyncEnabled: boolean;
-  manualSyncOnly: boolean;
 }

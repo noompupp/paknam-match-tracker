@@ -1,7 +1,8 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { updateFixtureScore } from './scoreUpdateService';
-import { assignGoalToPlayer } from './goalAssignmentService';
+import { assignGoalToPlayer } from './simplifiedGoalAssignmentService';
+import { enhancedOwnGoalService } from './enhancedOwnGoalService';
 import { cardsApi } from '@/services/cardsApi';
 import { playerTimeTrackingService } from './playerTimeTrackingService';
 import { enhancedDuplicatePreventionService } from './enhancedDuplicatePreventionService';
@@ -32,6 +33,7 @@ export interface MatchDataToSave {
     team: string;
     type: 'goal' | 'assist';
     time: number;
+    isOwnGoal?: boolean; // CRITICAL: Add own goal support
   }>;
   cards: Array<{
     playerId: number;
@@ -57,11 +59,12 @@ export interface MatchDataToSave {
 
 export const unifiedRefereeService = {
   async saveCompleteMatchData(matchData: MatchDataToSave): Promise<UnifiedSaveResult> {
-    console.log('💾 UnifiedRefereeService: Starting secure match data save...', {
+    console.log('💾 UnifiedRefereeService: Starting match data save with own goal support...', {
       fixture: matchData.fixtureId,
       homeScore: matchData.homeScore,
       awayScore: matchData.awayScore,
       goals: matchData.goals.length,
+      ownGoals: matchData.goals.filter(g => g.isOwnGoal).length,
       cards: matchData.cards.length,
       playerTimes: matchData.playerTimes.length
     });
@@ -89,6 +92,7 @@ export const unifiedRefereeService = {
       payload: {
         fixture_id: matchData.fixtureId,
         goals_count: matchData.goals.length,
+        own_goals_count: matchData.goals.filter(g => g.isOwnGoal).length,
         cards_count: matchData.cards.length,
         player_times_count: matchData.playerTimes.length
       },
@@ -108,7 +112,7 @@ export const unifiedRefereeService = {
 
       // 1. Update fixture score with validation
       try {
-        console.log('📊 Updating fixture score with security validation...');
+        console.log('📊 Updating fixture score...');
         const scoreValidation = await inputValidationService.validateFixtureScore(
           matchData.homeScore, 
           matchData.awayScore
@@ -144,12 +148,12 @@ export const unifiedRefereeService = {
         });
       }
 
-      // 2. Assign goals and assists with validation and enhanced member stats update
+      // 2. Process goals with own goal support
       const memberStatsUpdates = new Map<number, { goals: number; assists: number }>();
       
       for (const goal of matchData.goals) {
         try {
-          console.log(`⚽ Assigning ${goal.type} to ${goal.playerName}...`);
+          console.log(`⚽ Processing ${goal.type} for ${goal.playerName} (Own Goal: ${goal.isOwnGoal})...`);
           
           // Validate player name
           const playerValidation = await inputValidationService.validatePlayerName(goal.playerName);
@@ -159,37 +163,63 @@ export const unifiedRefereeService = {
           
           // Resolve team ID to string format
           const teamId = goal.team === matchData.homeTeam.name ? matchData.homeTeam.id : matchData.awayTeam.id;
-          const canCreate = await enhancedDuplicatePreventionService.preventDuplicateGoalEvent(
-            matchData.fixtureId,
-            teamId,
-            goal.playerName
-          );
-
-          if (canCreate) {
-            await assignGoalToPlayer({
+          
+          // CRITICAL: Use enhanced own goal service for own goals
+          if (goal.type === 'goal' && goal.isOwnGoal) {
+            console.log('🥅 Processing own goal with enhanced service...');
+            
+            const ownGoalResult = await enhancedOwnGoalService.addOwnGoal({
               fixtureId: matchData.fixtureId,
               playerId: goal.playerId,
               playerName: playerValidation.sanitizedValue,
-              teamId,
+              playerTeamId: teamId,
+              playerTeamName: goal.team,
               eventTime: goal.time,
-              type: goal.type
+              homeTeam: matchData.homeTeam,
+              awayTeam: matchData.awayTeam
             });
-            goalsAssigned++;
             
-            // Track member stats updates
-            if (!memberStatsUpdates.has(goal.playerId)) {
-              memberStatsUpdates.set(goal.playerId, { goals: 0, assists: 0 });
+            if (ownGoalResult.success) {
+              goalsAssigned++;
+              console.log(`✅ Own goal processed successfully for ${goal.playerName}`);
+            } else {
+              throw new Error(ownGoalResult.error || 'Failed to process own goal');
             }
-            const stats = memberStatsUpdates.get(goal.playerId)!;
-            if (goal.type === 'goal') {
-              stats.goals += 1;
-            } else if (goal.type === 'assist') {
-              stats.assists += 1;
-            }
-            
-            console.log(`✅ ${goal.type} assigned to ${goal.playerName}`);
           } else {
-            console.log(`⚠️ Skipped duplicate ${goal.type} for ${goal.playerName}`);
+            // Regular goals and assists
+            const canCreate = await enhancedDuplicatePreventionService.preventDuplicateGoalEvent(
+              matchData.fixtureId,
+              teamId,
+              goal.playerName
+            );
+
+            if (canCreate) {
+              await assignGoalToPlayer({
+                fixtureId: matchData.fixtureId,
+                playerId: goal.playerId,
+                playerName: playerValidation.sanitizedValue,
+                teamId,
+                eventTime: goal.time,
+                type: goal.type,
+                isOwnGoal: false // Explicitly set for regular goals
+              });
+              goalsAssigned++;
+              
+              // Track member stats updates ONLY for regular goals/assists
+              if (!memberStatsUpdates.has(goal.playerId)) {
+                memberStatsUpdates.set(goal.playerId, { goals: 0, assists: 0 });
+              }
+              const stats = memberStatsUpdates.get(goal.playerId)!;
+              if (goal.type === 'goal') {
+                stats.goals += 1;
+              } else if (goal.type === 'assist') {
+                stats.assists += 1;
+              }
+              
+              console.log(`✅ ${goal.type} assigned to ${goal.playerName}`);
+            } else {
+              console.log(`⚠️ Skipped duplicate ${goal.type} for ${goal.playerName}`);
+            }
           }
         } catch (error) {
           const errorMsg = `Failed to assign ${goal.type} to ${goal.playerName}: ${error instanceof Error ? error.message : 'Unknown error'}`;
@@ -198,7 +228,7 @@ export const unifiedRefereeService = {
         }
       }
 
-      // Update member stats using the enhanced service
+      // Update member stats using the enhanced service (SKIP own goal scorers)
       for (const [playerId, stats] of memberStatsUpdates) {
         try {
           const result = await enhancedMemberStatsService.updateMemberStats({
@@ -292,7 +322,7 @@ export const unifiedRefereeService = {
 
       const success = errors.length === 0;
       const message = success 
-        ? `Match data saved successfully: Score updated, ${goalsAssigned} goals/assists assigned, ${cardsCreated} cards created, ${playerTimesUpdated} player times saved`
+        ? `Match data saved successfully with own goal support: Score updated, ${goalsAssigned} goals/assists assigned, ${cardsCreated} cards created, ${playerTimesUpdated} player times saved`
         : `Match data partially saved with ${errors.length} errors`;
 
       // Log the final result with security monitoring
@@ -302,7 +332,8 @@ export const unifiedRefereeService = {
         record_id: matchData.fixtureId.toString(),
         payload: {
           fixture_id: matchData.fixtureId,
-          total_errors: errors.length
+          total_errors: errors.length,
+          own_goals_processed: matchData.goals.filter(g => g.isOwnGoal).length
         },
         result: {
           score_updated: scoreUpdated,
@@ -323,7 +354,7 @@ export const unifiedRefereeService = {
         });
       }
 
-      console.log(success ? '✅' : '⚠️', 'UnifiedRefereeService save completed:', {
+      console.log(success ? '✅' : '⚠️', 'UnifiedRefereeService save completed with own goal support:', {
         success,
         scoreUpdated,
         goalsAssigned,
@@ -392,7 +423,7 @@ export const unifiedRefereeService = {
       errors.push('Invalid team data - missing team IDs or names');
     }
 
-    // Validate goals data with security checks
+    // Validate goals data with security checks and own goal support
     for (const goal of matchData.goals) {
       if (!goal.playerId || !goal.playerName || !goal.team || !['goal', 'assist'].includes(goal.type)) {
         errors.push(`Invalid goal data for ${goal.playerName || 'unknown player'}`);
@@ -401,6 +432,11 @@ export const unifiedRefereeService = {
       const playerValidation = await inputValidationService.validatePlayerName(goal.playerName);
       if (!playerValidation.isValid) {
         errors.push(`Invalid player name in goals: ${playerValidation.error}`);
+      }
+      
+      // Validate own goal flag is boolean if present
+      if (goal.isOwnGoal !== undefined && typeof goal.isOwnGoal !== 'boolean') {
+        errors.push(`Invalid own goal flag for ${goal.playerName}`);
       }
     }
 
