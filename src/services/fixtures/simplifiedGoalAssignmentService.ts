@@ -12,7 +12,7 @@ interface GoalAssignmentData {
 }
 
 export const assignGoalToPlayer = async (data: GoalAssignmentData) => {
-  console.log('⚽ Simplified Goal Assignment: Starting assignment with own goal support and enhanced validation:', data);
+  console.log('⚽ Simplified Goal Assignment: Starting assignment with standardized own goal support:', data);
   
   try {
     // Enhanced input validation
@@ -48,18 +48,18 @@ export const assignGoalToPlayer = async (data: GoalAssignmentData) => {
       teamId: sanitizedTeamId
     });
 
-    // Create match event with proper validation and own goal support
+    // Create match event with proper validation and standardized own goal support
     const eventData = {
       fixture_id: data.fixtureId,
       event_type: data.type,
       player_name: data.playerName.trim(),
       team_id: sanitizedTeamId,
       event_time: data.eventTime,
-      is_own_goal: isOwnGoal,
+      is_own_goal: isOwnGoal, // Use standardized column name
       description: `${isOwnGoal ? 'Own goal' : data.type === 'goal' ? 'Goal' : 'Assist'} by ${data.playerName.trim()} at ${Math.floor(data.eventTime / 60)}'${String(data.eventTime % 60).padStart(2, '0')}`
     };
 
-    console.log('🚀 Simplified Goal Assignment: Inserting event data with own goal support:', eventData);
+    console.log('🚀 Simplified Goal Assignment: Inserting event data with standardized own goal support:', eventData);
 
     const { data: matchEvent, error } = await supabase
       .from('match_events')
@@ -86,9 +86,9 @@ export const assignGoalToPlayer = async (data: GoalAssignmentData) => {
       throw new Error(`Database error: ${error.message}`);
     }
 
-    console.log('✅ Simplified Goal Assignment: Event created successfully with own goal support:', matchEvent);
+    console.log('✅ Simplified Goal Assignment: Event created successfully with standardized own goal support:', matchEvent);
 
-    // Update player stats if it's a goal or assist (with own goal consideration)
+    // Update player stats ONLY for regular goals and assists (not own goals)
     if (data.playerId && data.playerId > 0) {
       try {
         if (data.type === 'goal' && !isOwnGoal) {
@@ -116,10 +116,10 @@ export const assignGoalToPlayer = async (data: GoalAssignmentData) => {
             console.log('✅ Simplified Goal Assignment: Assists updated via RPC');
           }
         } else if (isOwnGoal) {
-          console.log('🥅 Simplified Goal Assignment: Own goal detected - not updating player positive stats');
+          console.log('🥅 Simplified Goal Assignment: Own goal detected - skipping player positive stats update');
         }
 
-        console.log('✅ Simplified Goal Assignment: Player stats updated successfully with own goal consideration');
+        console.log('✅ Simplified Goal Assignment: Player stats updated correctly with own goal consideration');
       } catch (statsError) {
         console.error('⚠️ Simplified Goal Assignment: Stats update error:', statsError);
         // Continue without throwing - event was created successfully
@@ -134,7 +134,7 @@ export const assignGoalToPlayer = async (data: GoalAssignmentData) => {
     };
 
   } catch (error) {
-    console.error('❌ Simplified Goal Assignment: Assignment failed with own goal support:', error);
+    console.error('❌ Simplified Goal Assignment: Assignment failed with standardized own goal support:', error);
     
     // Enhanced error logging for debugging
     console.error('❌ Assignment context:', {

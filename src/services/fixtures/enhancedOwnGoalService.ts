@@ -24,70 +24,35 @@ interface OwnGoalResult {
 
 export const enhancedOwnGoalService = {
   async addOwnGoal(data: OwnGoalData): Promise<OwnGoalResult> {
-    console.log('🥅 Enhanced Own Goal Service: Processing own goal with enhanced validation:', data);
+    console.log('🥅 Enhanced Own Goal Service: Processing own goal with standardized schema:', data);
     
     try {
-      // Enhanced input validation
-      if (!data.fixtureId || data.fixtureId <= 0) {
-        throw new Error('Invalid fixture ID provided');
-      }
+      // Determine which team benefits from the own goal
+      const playerTeamId = data.playerTeamId;
+      const homeTeamId = data.homeTeam.__id__ || data.homeTeam.id;
+      const awayTeamId = data.awayTeam.__id__ || data.awayTeam.id;
       
-      if (!data.playerName || data.playerName.trim().length === 0) {
-        throw new Error('Invalid player name provided');
-      }
+      const scoringTeamId = playerTeamId === homeTeamId ? awayTeamId : homeTeamId;
+      const scoringTeamName = playerTeamId === homeTeamId ? data.awayTeam.name : data.homeTeam.name;
       
-      if (!data.playerTeamId || data.playerTeamId.trim().length === 0) {
-        throw new Error('Invalid player team ID provided');
-      }
-      
-      if (data.eventTime < 0 || data.eventTime > 7200) { // Max 2 hours
-        throw new Error('Invalid event time provided');
-      }
-
-      // Sanitize team IDs
-      const playerTeamId = data.playerTeamId.trim();
-      const homeTeamId = (data.homeTeam.__id__ || data.homeTeam.id).trim();
-      const awayTeamId = (data.awayTeam.__id__ || data.awayTeam.id).trim();
-      
-      console.log('🔍 Enhanced Own Goal Service: Using sanitized team IDs:', {
+      console.log('🎯 Enhanced Own Goal Service: Own goal logic:', {
+        playerTeam: data.playerTeamName,
         playerTeamId,
+        scoringTeam: scoringTeamName,
+        scoringTeamId,
         homeTeamId,
         awayTeamId
       });
-      
-      let beneficiaryTeamId: string;
-      let beneficiaryTeamName: string;
-      
-      if (playerTeamId === homeTeamId) {
-        // Player is from home team, so away team benefits
-        beneficiaryTeamId = awayTeamId;
-        beneficiaryTeamName = data.awayTeam.name;
-      } else if (playerTeamId === awayTeamId) {
-        // Player is from away team, so home team benefits
-        beneficiaryTeamId = homeTeamId;
-        beneficiaryTeamName = data.homeTeam.name;
-      } else {
-        throw new Error(`Cannot determine beneficiary team for own goal. Player team "${playerTeamId}" does not match home team "${homeTeamId}" or away team "${awayTeamId}"`);
-      }
 
-      console.log('🎯 Enhanced Own Goal Service: Own goal beneficiary determined:', {
-        playerTeam: data.playerTeamName,
-        playerTeamId,
-        beneficiaryTeam: beneficiaryTeamName,
-        beneficiaryTeamId
-      });
-
-      // Create match event with proper own goal handling
+      // Create the own goal event with standardized schema
       const eventData = {
         fixture_id: data.fixtureId,
-        event_type: 'goal',
-        player_name: data.playerName.trim(),
+        event_type: 'goal' as const,
+        player_name: data.playerName,
         team_id: playerTeamId, // Player's actual team
-        scoring_team_id: beneficiaryTeamId, // Team that benefits from the own goal
-        affected_team_id: playerTeamId, // Player's team (affected negatively)
         event_time: data.eventTime,
-        is_own_goal: true, // Mark as own goal
-        description: `Own goal by ${data.playerName.trim()} (${data.playerTeamName}) - benefits ${beneficiaryTeamName}`
+        is_own_goal: true, // Use standardized column
+        description: `Own goal by ${data.playerName} (${data.playerTeamName}) - benefits ${scoringTeamName}`
       };
 
       console.log('🚀 Enhanced Own Goal Service: Inserting own goal event:', eventData);
@@ -100,27 +65,20 @@ export const enhancedOwnGoalService = {
 
       if (error) {
         console.error('❌ Enhanced Own Goal Service: Database error:', error);
-        
-        // Enhanced error handling
-        if (error.message.includes('invalid input syntax for type uuid')) {
-          throw new Error(`Team ID format error: One of the team IDs is not in the correct format. Player team: "${playerTeamId}", Beneficiary team: "${beneficiaryTeamId}"`);
-        }
-        
-        if (error.message.includes('foreign key')) {
-          throw new Error(`Team reference error: One of the teams was not found in the database. Please verify team data.`);
-        }
-        
-        throw new Error(`Database error: ${error.message}`);
+        throw new Error(`Failed to create own goal event: ${error.message}`);
       }
 
-      console.log('✅ Enhanced Own Goal Service: Own goal event created successfully:', matchEvent);
+      console.log('✅ Enhanced Own Goal Service: Own goal event created:', matchEvent);
 
-      // Update fixture score (own goals count towards opposing team)
+      // Update fixture score - own goals benefit the opposing team
       const scoreUpdateResult = await this.updateFixtureScoreForOwnGoal(
         data.fixtureId,
         data.homeTeam,
         data.awayTeam
       );
+
+      // Note: We deliberately do NOT update player stats for own goals
+      console.log('📊 Enhanced Own Goal Service: Skipping player stats update for own goal (correct behavior)');
 
       return {
         success: true,
@@ -128,21 +86,11 @@ export const enhancedOwnGoalService = {
         scoreUpdated: scoreUpdateResult.success,
         homeScore: scoreUpdateResult.homeScore,
         awayScore: scoreUpdateResult.awayScore,
-        message: `Own goal recorded for ${data.playerName} - ${beneficiaryTeamName} benefits`
+        message: `Own goal recorded for ${data.playerName} - benefits ${scoringTeamName}`
       };
 
     } catch (error) {
-      console.error('❌ Enhanced Own Goal Service: Own goal processing failed:', error);
-      
-      // Enhanced error context logging
-      console.error('❌ Own goal context:', {
-        fixtureId: data.fixtureId,
-        playerName: data.playerName,
-        playerTeamId: data.playerTeamId,
-        homeTeamId: data.homeTeam.__id__ || data.homeTeam.id,
-        awayTeamId: data.awayTeam.__id__ || data.awayTeam.id
-      });
-      
+      console.error('❌ Enhanced Own Goal Service: Error processing own goal:', error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Failed to process own goal',
@@ -159,13 +107,13 @@ export const enhancedOwnGoalService = {
     console.log('📊 Enhanced Own Goal Service: Updating fixture score for own goal');
     
     try {
-      const homeTeamId = (homeTeam.__id__ || homeTeam.id).trim();
-      const awayTeamId = (awayTeam.__id__ || awayTeam.id).trim();
+      const homeTeamId = homeTeam.__id__ || homeTeam.id;
+      const awayTeamId = awayTeam.__id__ || awayTeam.id;
 
-      // Count all goals with proper own goal handling
+      // Count goals using the standardized schema with proper own goal handling
       const { data: allGoals, error: goalsError } = await supabase
         .from('match_events')
-        .select('id, team_id, scoring_team_id, is_own_goal')
+        .select('id, team_id, is_own_goal, scoring_team_id')
         .eq('fixture_id', fixtureId)
         .eq('event_type', 'goal');
 
@@ -178,7 +126,7 @@ export const enhancedOwnGoalService = {
       let awayScore = 0;
 
       (allGoals || []).forEach(goal => {
-        // Use scoring_team_id if available (handles own goals), otherwise fall back to team_id
+        // Use scoring_team_id if available (for own goals), otherwise use team_id
         const scoringTeam = goal.scoring_team_id || goal.team_id;
         
         if (scoringTeam === homeTeamId) {
@@ -209,7 +157,7 @@ export const enhancedOwnGoalService = {
         return { success: false, homeScore: 0, awayScore: 0 };
       }
 
-      console.log('✅ Enhanced Own Goal Service: Fixture score updated:', { homeScore, awayScore });
+      console.log('✅ Enhanced Own Goal Service: Fixture score updated successfully:', { homeScore, awayScore });
       return { success: true, homeScore, awayScore };
 
     } catch (error) {

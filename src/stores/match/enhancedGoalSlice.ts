@@ -25,7 +25,7 @@ export const createEnhancedGoalSlice: StateCreator<
       id: generateId(),
       timestamp: Date.now(),
       synced: false,
-      isOwnGoal: goalData.isOwnGoal || false // Handle own goal flag
+      isOwnGoal: goalData.isOwnGoal || false // Handle own goal flag with standardized naming
     };
 
     set((state) => ({
@@ -34,7 +34,7 @@ export const createEnhancedGoalSlice: StateCreator<
       lastUpdated: Date.now()
     }));
 
-    console.log('⚽ Enhanced Goal Store: Goal added with own goal support:', newGoal);
+    console.log('⚽ Enhanced Goal Store: Goal added with standardized own goal support:', newGoal);
     return newGoal;
   },
 
@@ -73,7 +73,7 @@ export const createEnhancedGoalSlice: StateCreator<
     }
 
     try {
-      console.log('💾 Syncing', unsyncedGoals.length, 'goal records to database with own goal support');
+      console.log('💾 Syncing', unsyncedGoals.length, 'goal records to database with standardized own goal support');
       
       for (const goal of unsyncedGoals) {
         await assignGoalToPlayer({
@@ -83,7 +83,7 @@ export const createEnhancedGoalSlice: StateCreator<
           teamId: goal.teamId.toString(),
           eventTime: goal.time,
           type: goal.type,
-          isOwnGoal: goal.isOwnGoal || false // Pass own goal flag
+          isOwnGoal: goal.isOwnGoal || false // Pass standardized own goal flag
         });
       }
 
@@ -94,7 +94,7 @@ export const createEnhancedGoalSlice: StateCreator<
         lastUpdated: Date.now()
       }));
 
-      console.log('✅ Goal sync completed successfully with own goal support');
+      console.log('✅ Goal sync completed successfully with standardized own goal support');
     } catch (error) {
       console.error('❌ Error syncing goals to database:', error);
       throw error;
