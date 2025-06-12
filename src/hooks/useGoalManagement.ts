@@ -91,8 +91,8 @@ export const useGoalManagement = () => {
         awayTeam: awayTeam.name
       });
 
-      // Use the unified goal service with automatic score update
-      const result = await unifiedGoalService.assignGoalWithScoreUpdate({
+      // Use the unified goal service - fix method name
+      const result = await unifiedGoalService.addGoal({
         fixtureId,
         playerId: player.id,
         playerName: player.name,
@@ -128,8 +128,9 @@ export const useGoalManagement = () => {
       console.log('✅ useGoalManagement: Goal successfully assigned with enhanced duplicate prevention');
       
       return {
-        ...result.goalData,
-        shouldUpdateScore: result.shouldUpdateScore,
+        success: result.success,
+        goalEventId: result.goalEventId,
+        scoreUpdated: result.scoreUpdated,
         autoScoreUpdated: selectedGoalType === 'goal',
         goalId: newGoal.id
       };

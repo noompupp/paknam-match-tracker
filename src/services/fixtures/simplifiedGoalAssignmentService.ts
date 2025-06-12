@@ -49,23 +49,36 @@ export const assignGoalToPlayer = async (data: GoalAssignmentData) => {
         
         if (data.type === 'goal' && !data.isOwnGoal) {
           // Only count regular goals, not own goals
-          statsUpdate.goals = supabase.rpc('increment', { x: 1 });
+          statsUpdate.goals = data.playerId; // Use member ID for proper increment
         } else if (data.type === 'assist') {
-          statsUpdate.assists = supabase.rpc('increment', { x: 1 });
+          statsUpdate.assists = data.playerId; // Use member ID for proper increment
         }
 
         if (Object.keys(statsUpdate).length > 0) {
-          const { error: statsError } = await supabase
-            .from('members')
-            .update(statsUpdate)
-            .eq('id', data.playerId);
+          // Update goals or assists using direct increment
+          if (statsUpdate.goals) {
+            const { error: goalsError } = await supabase
+              .from('members')
+              .update({ goals: supabase.sql`goals + 1` })
+              .eq('id', data.playerId);
 
-          if (statsError) {
-            console.error('⚠️ Simplified Goal Assignment: Stats update failed:', statsError);
-            // Don't throw error for stats update failure
-          } else {
-            console.log('✅ Simplified Goal Assignment: Player stats updated');
+            if (goalsError) {
+              console.error('⚠️ Simplified Goal Assignment: Goals update failed:', goalsError);
+            }
           }
+
+          if (statsUpdate.assists) {
+            const { error: assistsError } = await supabase
+              .from('members')
+              .update({ assists: supabase.sql`assists + 1` })
+              .eq('id', data.playerId);
+
+            if (assistsError) {
+              console.error('⚠️ Simplified Goal Assignment: Assists update failed:', assistsError);
+            }
+          }
+
+          console.log('✅ Simplified Goal Assignment: Player stats updated');
         }
       } catch (statsError) {
         console.error('⚠️ Simplified Goal Assignment: Stats update error:', statsError);

@@ -1,6 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { assignGoalToPlayer } from './fixtures/goalAssignmentService';
+import { assignGoalToPlayer } from './fixtures/simplifiedGoalAssignmentService';
 import { enhancedDuplicatePreventionService } from './fixtures/enhancedDuplicatePreventionService';
 import { enhancedOwnGoalService } from './fixtures/enhancedOwnGoalService';
 
@@ -33,8 +33,8 @@ export const unifiedGoalService = {
     console.log('🎯 Unified Goal Service: Processing goal with standardized own goal support:', data);
     
     try {
-      // Enhanced duplicate prevention check
-      const duplicateCheck = await enhancedDuplicatePreventionService.checkForDuplicates({
+      // Enhanced duplicate prevention check - fix method name
+      const duplicateCheck = await enhancedDuplicatePreventionService.checkForDuplicateEvent({
         fixtureId: data.fixtureId,
         playerName: data.playerName,
         eventTime: data.eventTime,
