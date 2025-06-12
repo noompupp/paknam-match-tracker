@@ -46,7 +46,7 @@ const RoleBasedUnifiedTimerTab = ({
   onTogglePlayerTime
 }: RoleBasedUnifiedTimerTabProps) => {
   const isMobile = useIsMobile();
-  const { canAccessTimer, isLoading } = useRoleBasedAccess(selectedFixtureData?.id);
+  const { canAccessTimerControls, isLoading } = useRoleBasedAccess(selectedFixtureData?.id);
 
   // Calculate current phase for 7-a-side timer
   const HALF_DURATION = 25 * 60; // 25 minutes in seconds
@@ -63,7 +63,7 @@ const RoleBasedUnifiedTimerTab = ({
     );
   }
 
-  if (!canAccessTimer) {
+  if (!canAccessTimerControls) {
     return (
       <div className="space-y-6">
         <Card>

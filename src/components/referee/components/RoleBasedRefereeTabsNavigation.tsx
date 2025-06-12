@@ -10,9 +10,9 @@ interface RoleBasedRefereeTabsNavigationProps {
 
 const RoleBasedRefereeTabsNavigation = ({ selectedFixtureData }: RoleBasedRefereeTabsNavigationProps) => {
   const {
-    canAccessTimer,
-    canAccessScore,
-    canAccessCards,
+    canAccessTimerControls,
+    canAccessScoreManagement,
+    canAccessCardManagement,
     canAccessCoordination,
     isLoading
   } = useRoleBasedAccess(selectedFixtureData?.id);
@@ -52,52 +52,52 @@ const RoleBasedRefereeTabsNavigation = ({ selectedFixtureData }: RoleBasedRefere
     <TabsList className="grid w-full grid-cols-6">
       <TabsTrigger 
         value="score" 
-        disabled={!canAccessScore}
+        disabled={!canAccessScoreManagement}
         className="flex items-center gap-2"
-        title={!canAccessScore ? "Requires score/goals role access" : ""}
+        title={!canAccessScoreManagement ? "Requires score/goals role access" : ""}
       >
         <div className="flex items-center gap-1">
           <Trophy className="h-4 w-4" />
-          {!canAccessScore && <Lock className="h-3 w-3" />}
+          {!canAccessScoreManagement && <Lock className="h-3 w-3" />}
         </div>
         <span className="hidden sm:inline">Score</span>
       </TabsTrigger>
 
       <TabsTrigger 
         value="timer-tracking" 
-        disabled={!canAccessTimer}
+        disabled={!canAccessTimerControls}
         className="flex items-center gap-2"
-        title={!canAccessTimer ? "Requires time tracking role access" : ""}
+        title={!canAccessTimerControls ? "Requires time tracking role access" : ""}
       >
         <div className="flex items-center gap-1">
           <Clock className="h-4 w-4" />
-          {!canAccessTimer && <Lock className="h-3 w-3" />}
+          {!canAccessTimerControls && <Lock className="h-3 w-3" />}
         </div>
         <span className="hidden sm:inline">Timer</span>
       </TabsTrigger>
 
       <TabsTrigger 
         value="goals" 
-        disabled={!canAccessScore}
+        disabled={!canAccessScoreManagement}
         className="flex items-center gap-2"
-        title={!canAccessScore ? "Requires score/goals role access" : ""}
+        title={!canAccessScoreManagement ? "Requires score/goals role access" : ""}
       >
         <div className="flex items-center gap-1">
           <Trophy className="h-4 w-4" />
-          {!canAccessScore && <Lock className="h-3 w-3" />}
+          {!canAccessScoreManagement && <Lock className="h-3 w-3" />}
         </div>
         <span className="hidden sm:inline">Goals</span>
       </TabsTrigger>
 
       <TabsTrigger 
         value="cards" 
-        disabled={!canAccessCards}
+        disabled={!canAccessCardManagement}
         className="flex items-center gap-2"
-        title={!canAccessCards ? "Requires cards/discipline role access" : ""}
+        title={!canAccessCardManagement ? "Requires cards/discipline role access" : ""}
       >
         <div className="flex items-center gap-1">
           <AlertTriangle className="h-4 w-4" />
-          {!canAccessCards && <Lock className="h-3 w-3" />}
+          {!canAccessCardManagement && <Lock className="h-3 w-3" />}
         </div>
         <span className="hidden sm:inline">Cards</span>
       </TabsTrigger>
