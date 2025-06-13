@@ -6,17 +6,20 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
 import { useImageUpload } from '@/hooks/useImageUpload';
+import { ImageMetadata, OptimizationOptions } from '@/services/imageOptimization';
 import OptimizedImage from './OptimizedImage';
 
 interface ImageUploadProps {
   bucketId: string;
   objectPath: string;
   currentImage?: string;
+  currentMetadataId?: string;
   altText?: string;
   className?: string;
   maxFileSize?: number;
   acceptedFormats?: string[];
-  onUploadComplete?: (result: { url: string; name: string }) => void;
+  optimizationOptions?: OptimizationOptions;
+  onUploadComplete?: (metadata: ImageMetadata) => void;
   onUploadError?: (error: Error) => void;
   disabled?: boolean;
   showPreview?: boolean;
@@ -27,10 +30,12 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
   bucketId,
   objectPath,
   currentImage,
+  currentMetadataId,
   altText = 'Uploaded image',
   className,
   maxFileSize = 50 * 1024 * 1024,
   acceptedFormats = ['image/jpeg', 'image/png', 'image/webp'],
+  optimizationOptions,
   onUploadComplete,
   onUploadError,
   disabled = false,
@@ -44,10 +49,11 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
     bucketId,
     maxFileSize,
     acceptedFormats,
-    onUploadComplete: (result) => {
+    optimizationOptions,
+    onUploadComplete: (metadata) => {
       setPreview(null);
       setSelectedFile(null);
-      onUploadComplete?.(result);
+      onUploadComplete?.(metadata);
     },
     onUploadError
   });
@@ -98,14 +104,16 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
   return (
     <div className={cn("space-y-4", className)}>
       {/* Current Image Preview */}
-      {showPreview && currentImage && !preview && (
+      {showPreview && (currentImage || currentMetadataId) && !preview && (
         <div className="space-y-2">
           <label className="text-sm font-medium">Current Image</label>
           <div className={cn("relative rounded-lg overflow-hidden border", getPreviewSizeClasses())}>
             <OptimizedImage
               src={currentImage}
+              metadataId={currentMetadataId}
               alt={altText}
               className="w-full h-full object-cover"
+              variant="medium"
             />
           </div>
         </div>
@@ -181,7 +189,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
           {isUploading && (
             <div className="space-y-2">
               <div className="flex items-center justify-between text-sm">
-                <span>Uploading...</span>
+                <span>Optimizing and uploading...</span>
                 <span>{uploadProgress}%</span>
               </div>
               <Progress value={uploadProgress} className="h-2" />
@@ -202,7 +210,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
             ) : (
               <>
                 <ImageIcon className="w-4 h-4 mr-2" />
-                Upload Image
+                Upload & Optimize
               </>
             )}
           </Button>

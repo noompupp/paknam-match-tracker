@@ -17,6 +17,7 @@ const TeamLogo = ({ team, size = 'medium', className = '', showColor = false }: 
     hasColor: !!team?.color,
     color: team?.color,
     hasOptimizedUrl: !!team?.optimized_logo_url,
+    hasMetadataId: !!team?.logo_metadata_id,
     size,
     showColor
   });
@@ -87,6 +88,7 @@ const TeamLogo = ({ team, size = 'medium', className = '', showColor = false }: 
 
   // Determine which image source to use (prioritize optimized)
   const imageSource = team?.optimized_logo_url || team?.logoURL;
+  const metadataId = team?.logo_metadata_id;
 
   // Create emoji fallback component
   const getEmojiFallback = () => (
@@ -96,7 +98,7 @@ const TeamLogo = ({ team, size = 'medium', className = '', showColor = false }: 
   );
 
   // Use optimized image if available
-  if (imageSource) {
+  if (imageSource || metadataId) {
     console.log('🖼️ TeamLogo: Using optimized image system');
     return (
       <div className={`flex items-center ${className}`}>
@@ -106,8 +108,10 @@ const TeamLogo = ({ team, size = 'medium', className = '', showColor = false }: 
         >
           <OptimizedImage
             src={imageSource}
+            metadataId={metadataId}
             alt={`${team?.name || 'Team'} logo`}
             className="w-full h-full"
+            variant={size === 'small' ? 'small' : size === 'large' ? 'large' : 'medium'}
             fallback={getEmojiFallback()}
             priority={size === 'large'}
             loading={size === 'small' ? 'lazy' : 'eager'}

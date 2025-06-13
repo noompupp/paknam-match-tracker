@@ -1,6 +1,6 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
+import { imageOptimizationService, ImageMetadata } from '@/services/imageOptimization';
 
 interface OptimizedImageProps {
   src?: string;
@@ -11,6 +11,7 @@ interface OptimizedImageProps {
   priority?: boolean;
   loading?: 'lazy' | 'eager';
   fallback?: string | React.ReactNode;
+  metadataId?: string;
   variant?: 'small' | 'medium' | 'large';
   style?: React.CSSProperties;
 }
@@ -24,16 +25,58 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
   priority = false,
   loading = 'lazy',
   fallback,
+  metadataId,
+  variant = 'medium',
   style,
   ...props
 }) => {
+  const [imageSrc, setImageSrc] = useState<string>(src || '');
   const [imageError, setImageError] = useState(false);
+  const [metadata, setMetadata] = useState<ImageMetadata | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Load metadata if metadataId is provided
+  useEffect(() => {
+    if (metadataId && !src) {
+      imageOptimizationService
+        .getImageMetadata(metadataId)
+        .then((data) => {
+          if (data) {
+            setMetadata(data);
+            const optimizedUrl = imageOptimizationService.getOptimizedUrl(data, variant);
+            setImageSrc(optimizedUrl);
+          }
+        })
+        .catch((error) => {
+          console.error('Failed to load image metadata:', error);
+          setImageError(true);
+        })
+        .finally(() => {
+          setIsLoading(false);
+        });
+    } else {
+      setIsLoading(false);
+    }
+  }, [metadataId, variant, src]);
+
   const handleImageError = () => {
-    console.log('Image failed to load:', src);
     setImageError(true);
-    setIsLoading(false);
+    
+    if (metadata) {
+      // Try fallback to original image
+      const originalUrl = metadata.original_url;
+      if (originalUrl !== imageSrc) {
+        setImageSrc(originalUrl);
+        setImageError(false);
+        return;
+      }
+    }
+    
+    // Use provided fallback
+    if (fallback && typeof fallback === 'string') {
+      setImageSrc(fallback);
+      setImageError(false);
+    }
   };
 
   const handleImageLoad = () => {
@@ -41,7 +84,7 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
   };
 
   // Show loading state
-  if (isLoading && src) {
+  if (isLoading && metadataId) {
     return (
       <div 
         className={cn(
@@ -85,38 +128,42 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
     );
   }
 
-  // If no src provided, show fallback
-  if (!src) {
-    if (fallback && typeof fallback !== 'string') {
+  // Render responsive image with sources if metadata is available
+  if (metadata) {
+    const sources = imageOptimizationService.getResponsiveSources(metadata);
+    
+    if (sources.length > 0) {
       return (
-        <div 
-          className={cn(
-            "flex items-center justify-center",
-            className
-          )}
-          style={{ width, height, ...style }}
-        >
-          {fallback}
-        </div>
+        <picture className={className}>
+          {sources.map((source, index) => (
+            <source
+              key={index}
+              srcSet={source.srcSet}
+              media={source.media}
+              type="image/webp"
+            />
+          ))}
+          <img
+            src={imageSrc}
+            alt={alt}
+            width={width}
+            height={height}
+            loading={priority ? 'eager' : loading}
+            onError={handleImageError}
+            onLoad={handleImageLoad}
+            style={style}
+            className="w-full h-full object-cover"
+            {...props}
+          />
+        </picture>
       );
     }
-    return (
-      <div 
-        className={cn(
-          "bg-muted flex items-center justify-center text-muted-foreground",
-          className
-        )}
-        style={{ width, height, ...style }}
-      >
-        <span className="text-sm">No image</span>
-      </div>
-    );
   }
 
   // Standard img element
   return (
     <img
-      src={imageError && typeof fallback === 'string' ? fallback : src}
+      src={imageSrc}
       alt={alt}
       width={width}
       height={height}
