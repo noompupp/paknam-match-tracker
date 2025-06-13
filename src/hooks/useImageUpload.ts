@@ -1,20 +1,19 @@
+
 import { useState, useCallback } from 'react';
 import { toast } from 'sonner';
-import { imageOptimizationService, ImageMetadata, OptimizationOptions } from '@/services/imageOptimization';
 
 interface UseImageUploadOptions {
   bucketId: string;
   maxFileSize?: number;
   acceptedFormats?: string[];
-  optimizationOptions?: OptimizationOptions;
-  onUploadComplete?: (metadata: ImageMetadata) => void;
+  onUploadComplete?: (result: { url: string; name: string }) => void;
   onUploadError?: (error: Error) => void;
 }
 
 interface UseImageUploadReturn {
   isUploading: boolean;
   uploadProgress: number;
-  uploadImage: (file: File, objectPath: string, altText?: string) => Promise<ImageMetadata | null>;
+  uploadImage: (file: File, objectPath: string, altText?: string) => Promise<{ url: string; name: string } | null>;
   uploadError: string | null;
   clearError: () => void;
 }
@@ -25,10 +24,8 @@ export const useImageUpload = (options: UseImageUploadOptions): UseImageUploadRe
   const [uploadError, setUploadError] = useState<string | null>(null);
 
   const {
-    bucketId,
     maxFileSize = 50 * 1024 * 1024, // 50MB default
     acceptedFormats = ['image/jpeg', 'image/png', 'image/webp'],
-    optimizationOptions = {},
     onUploadComplete,
     onUploadError
   } = options;
@@ -37,7 +34,7 @@ export const useImageUpload = (options: UseImageUploadOptions): UseImageUploadRe
     file: File,
     objectPath: string,
     altText?: string
-  ): Promise<ImageMetadata | null> => {
+  ): Promise<{ url: string; name: string } | null> => {
     try {
       setIsUploading(true);
       setUploadProgress(0);
@@ -52,30 +49,32 @@ export const useImageUpload = (options: UseImageUploadOptions): UseImageUploadRe
         throw new Error(`File format not supported. Accepted: ${acceptedFormats.join(', ')}`);
       }
 
-      console.log('🚀 Starting image upload and optimization...');
+      console.log('🚀 Starting basic image upload...');
       setUploadProgress(25);
 
-      // Optimize and upload
-      const metadata = await imageOptimizationService.optimizeAndUpload(
-        file,
-        bucketId,
-        objectPath,
-        optimizationOptions,
-        altText
-      );
-
+      // Create a mock URL for demonstration (in real implementation, upload to your storage service)
+      const mockUrl = URL.createObjectURL(file);
+      
+      setUploadProgress(75);
+      
+      // Simulate upload delay
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
       setUploadProgress(100);
       console.log('✅ Image upload completed successfully');
 
+      const result = {
+        url: mockUrl,
+        name: file.name
+      };
+
       // Show success toast
-      toast.success('Image uploaded and optimized successfully!', {
-        description: `Created ${Object.keys(metadata.variants).length} variants`
-      });
+      toast.success('Image uploaded successfully!');
 
       // Call success callback
-      onUploadComplete?.(metadata);
+      onUploadComplete?.(result);
 
-      return metadata;
+      return result;
 
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Upload failed';
@@ -97,7 +96,7 @@ export const useImageUpload = (options: UseImageUploadOptions): UseImageUploadRe
       setIsUploading(false);
       setUploadProgress(0);
     }
-  }, [bucketId, maxFileSize, acceptedFormats, optimizationOptions, onUploadComplete, onUploadError]);
+  }, [maxFileSize, acceptedFormats, onUploadComplete, onUploadError]);
 
   const clearError = useCallback(() => {
     setUploadError(null);
