@@ -31,26 +31,16 @@ const TournamentLogo = ({ size = 'medium', className = '' }: TournamentLogoProps
     <Trophy className={`${size === 'small' ? 'w-4 h-4' : size === 'large' ? 'w-8 h-8' : 'w-6 h-6'} text-white`} />
   );
 
-  const handleImageError = () => {
-    console.log('Tournament logo failed to load from:', logoUrl);
-    setImageError(true);
-  };
-
   return (
     <div className={`flex items-center justify-center ${className}`}>
       <div className={`${sizeClasses} bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center shadow-lg overflow-hidden`}>
-        {!imageError ? (
-          <OptimizedImage
-            src={logoUrl}
-            alt="Tournament Logo"
-            className="w-full h-full object-cover"
-            fallback={getFallbackIcon()}
-            priority={size === 'large'}
-            onError={handleImageError}
-          />
-        ) : (
-          getFallbackIcon()
-        )}
+        <OptimizedImage
+          src={logoUrl}
+          alt="Tournament Logo"
+          className="w-full h-full object-cover"
+          fallback={getFallbackIcon()}
+          priority={size === 'large'}
+        />
       </div>
     </div>
   );
