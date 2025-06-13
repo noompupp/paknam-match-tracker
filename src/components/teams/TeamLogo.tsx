@@ -16,8 +16,6 @@ const TeamLogo = ({ team, size = 'medium', className = '', showColor = false }: 
     logo: team?.logo,
     hasColor: !!team?.color,
     color: team?.color,
-    hasOptimizedUrl: !!team?.optimized_logo_url,
-    hasMetadataId: !!team?.logo_metadata_id,
     size,
     showColor
   });
@@ -86,9 +84,8 @@ const TeamLogo = ({ team, size = 'medium', className = '', showColor = false }: 
   const gradientStyle = getGradientStyle();
   const hasColor = showColor && team?.color;
 
-  // Determine which image source to use (prioritize optimized)
-  const imageSource = team?.optimized_logo_url || team?.logoURL;
-  const metadataId = team?.logo_metadata_id;
+  // Determine which image source to use
+  const imageSource = team?.logoURL;
 
   // Create emoji fallback component
   const getEmojiFallback = () => (
@@ -98,7 +95,7 @@ const TeamLogo = ({ team, size = 'medium', className = '', showColor = false }: 
   );
 
   // Use optimized image if available
-  if (imageSource || metadataId) {
+  if (imageSource) {
     console.log('🖼️ TeamLogo: Using optimized image system');
     return (
       <div className={`flex items-center ${className}`}>
@@ -108,10 +105,8 @@ const TeamLogo = ({ team, size = 'medium', className = '', showColor = false }: 
         >
           <OptimizedImage
             src={imageSource}
-            metadataId={metadataId}
             alt={`${team?.name || 'Team'} logo`}
             className="w-full h-full"
-            variant={size === 'small' ? 'small' : size === 'large' ? 'large' : 'medium'}
             fallback={getEmojiFallback()}
             priority={size === 'large'}
             loading={size === 'small' ? 'lazy' : 'eager'}
