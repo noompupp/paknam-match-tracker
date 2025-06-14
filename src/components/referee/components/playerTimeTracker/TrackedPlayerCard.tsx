@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { UserMinus, ArrowRightLeft } from "lucide-react";
@@ -130,10 +129,23 @@ const TrackedPlayerCard = ({
 
   const buttonProps = getButtonProps();
 
+  // 👇 Add clarity for ON/OFF state by applying reduced opacity & muted bg to inactive players
+  const isActive = player.isPlaying;
+
   return (
-    <div className={`p-2 sm:p-3 rounded-md border bg-card hover:shadow-sm transition-all ${
-      isPendingSubstitution ? 'border-orange-300 bg-orange-50/50' : ''
-    } ${canCompleteStreamlinedSub ? 'border-green-300 bg-green-50/50' : ''}`}>
+    <div
+      className={`p-2 sm:p-3 rounded-md border bg-card hover:shadow-sm transition-all
+        ${isPendingSubstitution ? 'border-orange-300 bg-orange-50/50' : ''}
+        ${canCompleteStreamlinedSub ? 'border-green-300 bg-green-50/50' : ''}
+        ${!isActive && !isPendingSubstitution && !canCompleteStreamlinedSub ? 'opacity-40 bg-muted/60' : 'opacity-100'}
+      `}
+      tabIndex={0}
+      aria-label={
+        isActive
+          ? `${player.name} is currently playing`
+          : `${player.name} is not on the field`
+      }
+    >
       <div className="flex items-center gap-2 sm:gap-3">
         
         {/* Compact player number */}
