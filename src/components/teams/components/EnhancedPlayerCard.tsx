@@ -138,11 +138,11 @@ const EnhancedPlayerCard = ({
               <div className="block md:hidden">
                 <PlayerStatsBar player={player} size="compact" className="mt-1" />
               </div>
-              {/* DESKTOP/TABLET: vertical stat blocks for better spacing */}
+              {/* DESKTOP/TABLET: 2x2 grid for stat blocks */}
               <div className="hidden md:block">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
-                  {/* GOALS */}
-                  <div className="flex flex-col items-center bg-muted/30 rounded-lg min-h-[112px] py-4 px-2 justify-center">
+                <div className="grid grid-cols-2 grid-rows-2 gap-4 mt-4">
+                  {/* GOALS - Top Left */}
+                  <div className="flex flex-col items-center bg-muted/30 rounded-lg min-h-[90px] py-3 px-2 justify-center">
                     <Trophy className="h-5 w-5 text-yellow-600 mb-1" />
                     <span className="font-bold text-xl text-foreground leading-none">{formatStat(player.goals)}</span>
                     <span className="text-xs text-muted-foreground mt-1">Goals</span>
@@ -152,8 +152,8 @@ const EnhancedPlayerCard = ({
                       </span>
                     )}
                   </div>
-                  {/* ASSISTS */}
-                  <div className="flex flex-col items-center bg-muted/30 rounded-lg min-h-[112px] py-4 px-2 justify-center">
+                  {/* ASSISTS - Top Right */}
+                  <div className="flex flex-col items-center bg-muted/30 rounded-lg min-h-[90px] py-3 px-2 justify-center">
                     <Target className="h-5 w-5 text-blue-600 mb-1" />
                     <span className="font-bold text-xl text-foreground leading-none">{formatStat(player.assists)}</span>
                     <span className="text-xs text-muted-foreground mt-1">Assists</span>
@@ -163,8 +163,8 @@ const EnhancedPlayerCard = ({
                       </span>
                     )}
                   </div>
-                  {/* MATCHES */}
-                  <div className="flex flex-col items-center bg-muted/30 rounded-lg min-h-[112px] py-4 px-2 justify-center">
+                  {/* MATCHES - Bottom Left */}
+                  <div className="flex flex-col items-center bg-muted/30 rounded-lg min-h-[90px] py-3 px-2 justify-center">
                     <Clock className="h-5 w-5 text-green-600 mb-1" />
                     <span className="font-bold text-xl text-foreground leading-none">{formatStat(player.matches_played)}</span>
                     <span className="text-xs text-muted-foreground mt-1">Matches</span>
@@ -174,8 +174,8 @@ const EnhancedPlayerCard = ({
                       </span>
                     )}
                   </div>
-                  {/* CONTRIBUTION/SCORE */}
-                  <div className="flex flex-col items-center bg-muted/30 rounded-lg min-h-[112px] py-4 px-2 justify-center">
+                  {/* SCORE - Bottom Right */}
+                  <div className="flex flex-col items-center bg-muted/30 rounded-lg min-h-[90px] py-3 px-2 justify-center">
                     <Zap className="h-5 w-5 text-purple-600 mb-1" />
                     <span className="font-bold text-xl text-foreground leading-none">{formatStat(player.contributionScore)}</span>
                     <span className="text-xs text-muted-foreground mt-1">Score</span>
