@@ -1,5 +1,5 @@
 
-import { Trophy, Target, Clock, Zap } from "lucide-react";
+import { Goal, Target, Clock, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { EnhancedPlayerStats } from "@/services/enhancedTeamStatsService";
 import { usePlayerStatsFormatting } from "@/hooks/useEnhancedTeamStats";
@@ -39,7 +39,7 @@ const PlayerStatsBar = ({
       )}
     >
       <div className="flex flex-col items-center min-w-[44px]">
-        <Trophy className={cn(iconSize[size], "text-yellow-600")} />
+        <Goal className={cn(iconSize[size], "text-yellow-600")} />
         <span className={cn("font-semibold text-foreground leading-tight", textSize[size])}>
           {formatStat(player.goals)}
         </span>
@@ -71,4 +71,3 @@ const PlayerStatsBar = ({
 };
 
 export default PlayerStatsBar;
-

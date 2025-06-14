@@ -1,5 +1,5 @@
 
-import { Trophy, Target, Clock, Zap } from "lucide-react";
+import { Goal, Target, Clock, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { EnhancedPlayerStats } from "@/services/enhancedTeamStatsService";
 import { usePlayerStatsFormatting } from "@/hooks/useEnhancedTeamStats";
@@ -33,7 +33,7 @@ const PlayerStatsIcons = ({ player, size = 'md', showLabels = false }: PlayerSta
 
   const statItems = [
     {
-      icon: Trophy,
+      icon: Goal,
       value: player.goals,
       label: "G",
       color: "text-yellow-600 dark:text-yellow-400"
