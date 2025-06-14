@@ -2,14 +2,17 @@
 import { EnhancedDialog, EnhancedDialogContent, EnhancedDialogHeader, EnhancedDialogTitle } from "@/components/ui/enhanced-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Trophy, Target } from "lucide-react";
+import { Target } from "lucide-react";
 import MiniPlayerAvatar from "./MiniPlayerAvatar";
 
-// Medal styling for top 3 (same logic for modal)
+// Updated dark mode friendly medal styling for top 3 (matches other components)
 const rankStyles = [
-  "bg-gradient-to-r from-yellow-400/90 to-orange-300/95 border-yellow-500 shadow-gold",
-  "bg-gradient-to-r from-gray-300/80 to-slate-200/90 border-gray-400 shadow-silver",
-  "bg-gradient-to-r from-amber-400/40 to-orange-200/80 border-amber-400 shadow-bronze"
+  // Gold
+  "bg-yellow-50 border-yellow-300 shadow-gold dark:bg-yellow-950 dark:border-yellow-900",
+  // Silver
+  "bg-gray-50 border-gray-300 shadow-silver dark:bg-zinc-900 dark:border-zinc-700",
+  // Bronze
+  "bg-orange-50 border-orange-200 shadow-bronze dark:bg-orange-950 dark:border-orange-900"
 ];
 
 interface RankingPlayer {
@@ -45,14 +48,21 @@ const FullRankingModal = ({
     return statType === 'goals' ? player.goals || 0 : player.assists || 0;
   };
 
-  const getIcon = () => {
-    return statType === 'goals' ? Trophy : Target;
-  };
-
-  const Icon = getIcon();
+  // Always show Target icon in header for both assists and goals (no trophy)
+  const Icon = Target;
 
   const getStatColor = () => {
     return statType === 'goals' ? 'bg-primary text-primary-foreground' : 'bg-blue-600 text-white';
+  };
+
+  // Unified image extraction logic as in TopScorers/TopAssists/Squad
+  const extractPlayerImage = (player: RankingPlayer) => {
+    return (
+      (player.optimized_avatar_url && player.optimized_avatar_url.trim()) ||
+      (player.ProfileURL && player.ProfileURL.trim()) ||
+      (player.profile_picture && player.profile_picture.trim()) ||
+      ""
+    );
   };
 
   return (
@@ -92,23 +102,23 @@ const FullRankingModal = ({
           ) : players && players.length > 0 ? (
             <div className="space-y-3">
               {players.map((player, index) => {
-                const rankClass = index < 3 ? rankStyles[index] + " border-2" : "hover:bg-muted/50";
+                const isTop3 = index < 3;
+                const rankClass = isTop3
+                  ? `${rankStyles[index]} border-2 ring-[2px] ring-inset`
+                  : "hover:bg-muted/50";
                 return (
                   <div 
                     key={index} 
                     className={`flex items-center justify-between p-4 rounded-lg transition-colors border bg-card shadow-sm mb-1 ${rankClass}`}
                     style={{
                       boxShadow:
-                        index === 0
-                          ? "0 0 0 2px #ffd700, 0 4px 16px 0 #ffe06644"
-                          : index === 1
-                          ? "0 0 0 2px #c0c0c0, 0 4px 12px 0 #d6d6d6aa"
-                          : index === 2
-                          ? "0 0 0 2px #cd7f32, 0 4px 8px 0 #ffc98788"
+                        isTop3
+                          ? undefined
                           : undefined
                     }}
                   >
                     <div className="flex items-center space-x-4 min-w-0">
+                      {/* No trophy icon */}
                       <Badge 
                         variant="outline" 
                         className="w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm bg-white/80 border-zinc-200"
@@ -117,14 +127,7 @@ const FullRankingModal = ({
                       </Badge>
                       <MiniPlayerAvatar
                         name={player.name}
-                        imageUrl={
-                          player.optimized_avatar_url ||
-                          // @ts-ignore
-                          player.ProfileURL ||
-                          // @ts-ignore
-                          player.profile_picture ||
-                          ""
-                        }
+                        imageUrl={extractPlayerImage(player)}
                         size={38}
                       />
                       <div className="truncate max-w-[140px]">
@@ -144,7 +147,7 @@ const FullRankingModal = ({
               <Icon className="h-20 w-20 mx-auto mb-6 opacity-30" />
               <p className="font-semibold text-lg mb-2">No {statType} data yet</p>
               <p className="text-base">
-                {statType === 'goals' ? 'Goals' : 'Assists'} will appear here once matches are played
+                {statType === "goals" ? "Goals" : "Assists"} will appear here once matches are played
               </p>
             </div>
           )}

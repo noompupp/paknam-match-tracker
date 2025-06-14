@@ -3,16 +3,19 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowRight, Trophy } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { useFilteredAssistsRanking } from "@/hooks/useFullRankingData";
 import FullRankingModal from "./FullRankingModal";
 import MiniPlayerAvatar from "./MiniPlayerAvatar";
 
-// Softer highlight styles for top 3 assists
+// Updated highlight styles for top 3, with dark mode support (match TopScorersCard)
 const rankStyles = [
-  "bg-yellow-50 border-yellow-300 ring-[2.5px] ring-yellow-200",
-  "bg-gray-50 border-gray-300 ring-[2.5px] ring-gray-200",
-  "bg-orange-50 border-orange-200 ring-[2.5px] ring-orange-100"
+  // Gold
+  "bg-yellow-50 border-yellow-300 ring-[2.5px] ring-yellow-200 dark:bg-yellow-950 dark:border-yellow-900 dark:ring-yellow-900/70",
+  // Silver
+  "bg-gray-50 border-gray-300 ring-[2.5px] ring-gray-200 dark:bg-zinc-900 dark:border-zinc-700 dark:ring-zinc-800/70",
+  // Bronze
+  "bg-orange-50 border-orange-200 ring-[2.5px] ring-orange-100 dark:bg-orange-950 dark:border-orange-900 dark:ring-orange-900/70"
 ];
 
 interface TopAssist {
@@ -40,6 +43,16 @@ const TopAssistsCard = ({ topAssists, isLoading, error }: TopAssistsCardProps) =
 
   const handleSeeAllClick = () => setIsModalOpen(true);
 
+  // Unified image extraction logic (matches Squad list/Player components)
+  const extractPlayerImage = (player: TopAssist) => {
+    return (
+      (player.optimized_avatar_url && player.optimized_avatar_url.trim()) ||
+      (player.ProfileURL && player.ProfileURL.trim()) ||
+      (player.profile_picture && player.profile_picture.trim()) ||
+      ""
+    );
+  };
+
   return (
     <>
       <Card className="card-shadow-lg animate-fade-in">
@@ -58,7 +71,7 @@ const TopAssistsCard = ({ topAssists, isLoading, error }: TopAssistsCardProps) =
             <div className="text-center text-destructive py-3 sm:py-4">
               <p className="font-medium text-sm">Error loading assists data</p>
               <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-                {error.message || 'Unable to fetch top assists'}
+                {error.message || "Unable to fetch top assists"}
               </p>
             </div>
           ) : isLoading ? (
@@ -76,11 +89,7 @@ const TopAssistsCard = ({ topAssists, isLoading, error }: TopAssistsCardProps) =
             ))
           ) : topAssists && topAssists.length > 0 ? (
             topAssists.map((assist, index) => {
-              const imageUrl =
-                assist.optimized_avatar_url?.trim() ||
-                assist.ProfileURL?.trim() ||
-                assist.profile_picture?.trim() ||
-                "";
+              const imageUrl = extractPlayerImage(assist);
               const isTop3 = index < 3;
               const boxShadow = isTop3
                 ? "0 0 0 2px rgba(240,200,50,0.12), 0 1px 4px 0 rgba(0,0,0,0.03)"
@@ -88,36 +97,22 @@ const TopAssistsCard = ({ topAssists, isLoading, error }: TopAssistsCardProps) =
               return (
                 <div
                   key={index}
-                  className={`flex items-center justify-between p-2 sm:p-3 rounded-lg transition-colors mb-1 ${isTop3 ? `${rankStyles[index]} border ring` : "hover:bg-muted/30"}`}
+                  className={`flex items-center justify-between p-2 sm:p-3 rounded-lg transition-colors mb-1 ${
+                    isTop3 ? `${rankStyles[index]} border ring` : "hover:bg-muted/30"
+                  }`}
                   style={{
                     boxShadow: isTop3 ? boxShadow : undefined
                   }}
                 >
                   <div className="flex items-center space-x-2 sm:space-x-3 min-w-0">
+                    {/* No trophy icon */}
                     <Badge
                       variant="outline"
                       className={`w-7 h-7 sm:w-9 sm:h-9 rounded-full flex items-center justify-center text-xs font-bold border bg-white ${
-                        isTop3
-                          ? "shadow-sm"
-                          : ""
+                        isTop3 ? "shadow-sm" : ""
                       }`}
                     >
-                      <span className="flex items-center gap-1.5">
-                        {index + 1}
-                        {isTop3 && (
-                          <Trophy
-                            className={`ml-0.5 h-3.5 w-3.5 sm:h-4 sm:w-4 ${
-                              index === 0
-                                ? "text-yellow-400"
-                                : index === 1
-                                ? "text-gray-400"
-                                : "text-orange-300"
-                            } drop-shadow`}
-                            strokeWidth={2}
-                            aria-label="Trophy"
-                          />
-                        )}
-                      </span>
+                      <span className="flex items-center gap-1.5">{index + 1}</span>
                     </Badge>
                     <MiniPlayerAvatar
                       name={assist.name}
