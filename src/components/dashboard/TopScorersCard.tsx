@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -10,9 +9,10 @@ import MiniPlayerAvatar from "./MiniPlayerAvatar";
 
 // Consistent highlight styles for top 3, supporting dark mode
 const rankStyles = [
-  "bg-yellow-50 border-yellow-300 ring-[2.5px] ring-yellow-200 dark:bg-yellow-950 dark:border-yellow-900 dark:ring-yellow-900/70",
-  "bg-gray-50 border-gray-300 ring-[2.5px] ring-gray-200 dark:bg-zinc-900 dark:border-zinc-700 dark:ring-zinc-800/70",
-  "bg-orange-50 border-orange-200 ring-[2.5px] ring-orange-100 dark:bg-orange-950 dark:border-orange-900 dark:ring-orange-900/70"
+  // Gold, Silver, Bronze, with correct highlight and dark mode
+  "bg-yellow-50 border-yellow-300 ring-[2.5px] ring-yellow-300 dark:bg-yellow-950 dark:border-yellow-800 dark:ring-yellow-900/80",
+  "bg-gray-50 border-gray-300 ring-[2.5px] ring-gray-300 dark:bg-zinc-900 dark:border-zinc-700 dark:ring-zinc-400/60",
+  "bg-orange-50 border-orange-200 ring-[2.5px] ring-orange-200 dark:bg-orange-950 dark:border-orange-900 dark:ring-orange-900/70"
 ];
 
 interface TopScorer {
@@ -77,15 +77,14 @@ const TopScorersCard = ({ topScorers, isLoading, error }: TopScorersCardProps) =
               </div>
             ))
           ) : topScorers && topScorers.length > 0 ? (
-            topScorers.map((scorer, idx) => {
-              const index = topScorers.findIndex(s => s.id === scorer.id);
+            topScorers.map((scorer, index) => {
               const isTop3 = index < 3;
               const boxShadow = isTop3
                 ? "0 0 0 2px rgba(240,200,50,0.12), 0 1px 4px 0 rgba(0,0,0,0.03)"
                 : undefined;
               return (
                 <div
-                  key={scorer.id ?? idx}
+                  key={scorer.id ?? index}
                   className={`flex items-center justify-between p-2 sm:p-3 rounded-lg transition-colors mb-1 ${
                     isTop3 ? `${rankStyles[index]} border ring` : "hover:bg-muted/30"
                   }`}

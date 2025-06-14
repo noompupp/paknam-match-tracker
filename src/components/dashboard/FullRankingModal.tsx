@@ -1,4 +1,3 @@
-
 import { EnhancedDialog, EnhancedDialogContent, EnhancedDialogHeader, EnhancedDialogTitle } from "@/components/ui/enhanced-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -7,6 +6,7 @@ import MiniPlayerAvatar from "./MiniPlayerAvatar";
 
 // Consistent highlight styles for top 3, supporting dark mode
 const rankStyles = [
+  // Yellow(gold), Silver, Bronze for consistent highlight in light/dark
   "bg-yellow-50 border-yellow-300 shadow-gold dark:bg-yellow-950 dark:border-yellow-900",
   "bg-gray-50 border-gray-300 shadow-silver dark:bg-zinc-900 dark:border-zinc-700",
   "bg-orange-50 border-orange-200 shadow-bronze dark:bg-orange-950 dark:border-orange-900"
