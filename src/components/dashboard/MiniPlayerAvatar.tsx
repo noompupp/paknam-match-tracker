@@ -16,12 +16,10 @@ const MiniPlayerAvatar = ({
   className = "",
   size = 32,
 }: MiniPlayerAvatarProps) => {
-  // Log every time component renders
+  // Always log exactly what is received
   useEffect(() => {
-    console.log(
-      "[MiniPlayerAvatar] PROPS RECEIVED →",
-      { name, imageUrl, size }
-    );
+    // eslint-disable-next-line no-console
+    console.log("[MiniPlayerAvatar][PROPS RECEIVED]", { name, imageUrl, size });
   }, [name, imageUrl, size]);
 
   const getInitials = (n: string) =>
@@ -34,6 +32,7 @@ const MiniPlayerAvatar = ({
           .toUpperCase()
       : "?";
 
+  // Strict check: do not override imageUrl, do not sanitize/trim. Direct pass-through.
   return (
     <Avatar
       className={cn(
@@ -44,23 +43,31 @@ const MiniPlayerAvatar = ({
       aria-label={`${name || "Player"} avatar`}
     >
       {imageUrl ? (
-        <AvatarImage
-          src={imageUrl}
-          alt={name}
-          className="object-cover rounded-full"
-          style={{ width: size, height: size }}
-        />
+        <>
+          {/* Deep log rendering decision */}
+          {/* eslint-disable-next-line no-console */}
+          {console.log("[MiniPlayerAvatar][RENDERING IMAGE]", imageUrl)}
+          <AvatarImage
+            src={imageUrl}
+            alt={name}
+            className="object-cover rounded-full"
+            style={{ width: size, height: size }}
+          />
+        </>
       ) : (
-        <AvatarFallback
-          className="bg-muted text-xs text-foreground font-semibold flex items-center justify-center"
-          style={{ width: size, height: size }}
-        >
-          {getInitials(name)}
-        </AvatarFallback>
+        <>
+          {/* eslint-disable-next-line no-console */}
+          {console.log("[MiniPlayerAvatar][RENDERING FALLBACK INITIALS]", name)}
+          <AvatarFallback
+            className="bg-muted text-xs text-foreground font-semibold flex items-center justify-center"
+            style={{ width: size, height: size }}
+          >
+            {getInitials(name)}
+          </AvatarFallback>
+        </>
       )}
     </Avatar>
   );
 };
 
 export default MiniPlayerAvatar;
-

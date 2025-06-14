@@ -20,7 +20,6 @@ interface TopScorer {
   name: string;
   team: string;
   goals: number;
-  // Accept all possible profile image props from API/squad
   profileImageUrl?: string | null;
   optimized_avatar_url?: string | null;
   ProfileURL?: string | null;
@@ -33,6 +32,8 @@ interface TopScorersCardProps {
   error?: Error | null;
 }
 
+const HARDCODED_IMAGE_URL = "https://randomuser.me/api/portraits/men/75.jpg"; // Example - replace with known working path from Squad List
+
 const TopScorersCard = ({ topScorers, isLoading, error }: TopScorersCardProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { 
@@ -43,22 +44,19 @@ const TopScorersCard = ({ topScorers, isLoading, error }: TopScorersCardProps) =
 
   const handleSeeAllClick = () => setIsModalOpen(true);
 
-  // --- IMAGE RESOLUTION: Exact match with squad view (EnhancedPlayersList style) ---
+  // Use ONLY profileImageUrl for avatar. Hardcode a known test for player with name "กัปตันกล้า"
   const extractPlayerImage = (player: TopScorer) => {
-    // Always prefer profileImageUrl > optimized_avatar_url > ProfileURL > profile_picture
-    // If all fail, imageUrl should be ""
-    let imageUrl = 
-      (typeof player.profileImageUrl === "string" && player.profileImageUrl.trim()) ||
-      (typeof player.optimized_avatar_url === "string" && player.optimized_avatar_url.trim()) ||
-      (typeof player.ProfileURL === "string" && player.ProfileURL.trim()) ||
-      (typeof player.profile_picture === "string" && player.profile_picture.trim()) ||
-      "";
+    let imageUrl = typeof player.profileImageUrl === "string" ? player.profileImageUrl.trim() : "";
 
-    // Strict logging as requested
-    // eslint-disable-next-line no-console
-    console.log("[TopScorersCard/Avatar] player.name:", player.name, "player.id:", player.id, "imageUrl:", imageUrl);
-
-    // If avatar field is undefined, MiniPlayerAvatar will get "", as in squad.
+    // HARD TEST: force avatar for known player name or ID
+    if (player.name === "กัปตันกล้า") {
+      imageUrl = HARDCODED_IMAGE_URL;
+      // eslint-disable-next-line no-console
+      console.log("💡 [Ranking Avatar Debug][HARDCODE TEST] Forcing avatar for:", player.id, player.name, imageUrl);
+    } else {
+      // eslint-disable-next-line no-console
+      console.log("💡 [Ranking Avatar Debug] profileImageUrl ONLY:", player.id, player.name, imageUrl);
+    }
     return imageUrl;
   };
 
@@ -103,6 +101,14 @@ const TopScorersCard = ({ topScorers, isLoading, error }: TopScorersCardProps) =
               const boxShadow = isTop3
                 ? "0 0 0 2px rgba(240,200,50,0.12), 0 1px 4px 0 rgba(0,0,0,0.03)"
                 : undefined;
+
+              // Additional runtime log before rendering
+              // eslint-disable-next-line no-console
+              console.log("💡 [Ranking Avatar Debug][RENDER] TopScorersCard -> MiniPlayerAvatar", {
+                scorerId: scorer.id,
+                scorerName: scorer.name,
+                imageUrl,
+              });
 
               return (
                 <div

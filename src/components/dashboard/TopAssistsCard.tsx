@@ -32,6 +32,8 @@ interface TopAssistsCardProps {
   error?: Error | null;
 }
 
+const HARDCODED_IMAGE_URL = "https://randomuser.me/api/portraits/men/76.jpg"; // Example - replace with a real, working path
+
 const TopAssistsCard = ({ topAssists, isLoading, error }: TopAssistsCardProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const {
@@ -42,20 +44,19 @@ const TopAssistsCard = ({ topAssists, isLoading, error }: TopAssistsCardProps) =
 
   const handleSeeAllClick = () => setIsModalOpen(true);
 
-  // --- IMAGE RESOLUTION copied from EnhancedPlayersList (squad) ---
+  // Use ONLY profileImageUrl for avatar. Hardcode for testing player "กัปตันกล้า"
   const extractPlayerImage = (player: TopAssist) => {
-    // Use the same sequence as the team squad: profileImageUrl > optimized_avatar_url > ProfileURL > profile_picture
-    let imageUrl =
-      (typeof player.profileImageUrl === "string" && player.profileImageUrl.trim()) ||
-      (typeof player.optimized_avatar_url === "string" && player.optimized_avatar_url.trim()) ||
-      (typeof player.ProfileURL === "string" && player.ProfileURL.trim()) ||
-      (typeof player.profile_picture === "string" && player.profile_picture.trim()) ||
-      "";
+    let imageUrl = typeof player.profileImageUrl === "string" ? player.profileImageUrl.trim() : "";
 
-    // Strict logging as requested
-    // eslint-disable-next-line no-console
-    console.log("[TopAssistsCard/Avatar] player.name:", player.name, "player.id:", player.id, "imageUrl:", imageUrl);
-
+    // HARD TEST: force avatar for known player name
+    if (player.name === "กัปตันกล้า") {
+      imageUrl = HARDCODED_IMAGE_URL;
+      // eslint-disable-next-line no-console
+      console.log("💡 [Ranking Avatar Debug][HARDCODE TEST] Forcing avatar for:", player.id, player.name, imageUrl);
+    } else {
+      // eslint-disable-next-line no-console
+      console.log("💡 [Ranking Avatar Debug] profileImageUrl ONLY:", player.id, player.name, imageUrl);
+    }
     return imageUrl;
   };
 
@@ -100,6 +101,15 @@ const TopAssistsCard = ({ topAssists, isLoading, error }: TopAssistsCardProps) =
               const boxShadow = isTop3
                 ? "0 0 0 2px rgba(240,200,50,0.12), 0 1px 4px 0 rgba(0,0,0,0.03)"
                 : undefined;
+
+              // Additional runtime log before rendering
+              // eslint-disable-next-line no-console
+              console.log("💡 [Ranking Avatar Debug][RENDER] TopAssistsCard -> MiniPlayerAvatar", {
+                assistId: assist.id,
+                assistName: assist.name,
+                imageUrl,
+              });
+
               return (
                 <div
                   key={index}

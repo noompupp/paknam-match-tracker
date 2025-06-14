@@ -34,6 +34,8 @@ interface FullRankingModalProps {
   statType: 'goals' | 'assists';
 }
 
+const HARDCODED_IMAGE_URL = "https://randomuser.me/api/portraits/women/75.jpg"; // Example
+
 const FullRankingModal = ({
   isOpen,
   onClose,
@@ -47,27 +49,24 @@ const FullRankingModal = ({
     return statType === 'goals' ? player.goals || 0 : player.assists || 0;
   };
 
-  // Always show Target icon in header for both assists and goals (no trophy)
   const Icon = Target;
 
   const getStatColor = () => {
     return statType === 'goals' ? 'bg-primary text-primary-foreground' : 'bg-blue-600 text-white';
   };
 
-  // --- IMAGE RESOLUTION: Use squad style, log all (STRICT) ---
+  // Use ONLY profileImageUrl for avatar. Hardcode for "กัปตันกล้า"
   const extractPlayerImage = (player: RankingPlayer) => {
-    // Use explicit squad order
-    let imageUrl =
-      (typeof player.profileImageUrl === "string" && player.profileImageUrl.trim()) ||
-      (typeof player.optimized_avatar_url === "string" && player.optimized_avatar_url.trim()) ||
-      (typeof player.ProfileURL === "string" && player.ProfileURL.trim()) ||
-      (typeof player.profile_picture === "string" && player.profile_picture.trim()) ||
-      "";
+    let imageUrl = typeof player.profileImageUrl === "string" ? player.profileImageUrl.trim() : "";
 
-    // Strict logging requested
-    // eslint-disable-next-line no-console
-    console.log("[FullRankingModal/Avatar] player.name:", player.name, "player.id:", player.id, "imageUrl:", imageUrl);
-
+    if (player.name === "กัปตันกล้า") {
+      imageUrl = HARDCODED_IMAGE_URL;
+      // eslint-disable-next-line no-console
+      console.log("💡 [Ranking Avatar Debug][HARDCODE TEST] Forcing avatar for:", player.id, player.name, imageUrl);
+    } else {
+      // eslint-disable-next-line no-console
+      console.log("💡 [Ranking Avatar Debug] profileImageUrl ONLY:", player.id, player.name, imageUrl);
+    }
     return imageUrl;
   };
 
@@ -113,13 +112,21 @@ const FullRankingModal = ({
                   ? `${rankStyles[index]} border-2 ring-[2px] ring-inset`
                   : "hover:bg-muted/50";
                 const imageUrl = extractPlayerImage(player);
+
+                // Additional runtime log before rendering
+                // eslint-disable-next-line no-console
+                console.log("💡 [Ranking Avatar Debug][RENDER] FullRankingModal -> MiniPlayerAvatar", {
+                  playerId: player.id,
+                  playerName: player.name,
+                  imageUrl,
+                });
+
                 return (
                   <div 
                     key={index} 
                     className={`flex items-center justify-between p-4 rounded-lg transition-colors border bg-card shadow-sm mb-1 ${rankClass}`}
                   >
                     <div className="flex items-center space-x-4 min-w-0">
-                      {/* No trophy icon */}
                       <Badge 
                         variant="outline" 
                         className="w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm bg-white/80 border-zinc-200"
