@@ -3,7 +3,11 @@ import { useQuery } from "@tanstack/react-query";
 import { useEnhancedTopScorers, useEnhancedTopAssists } from './useEnhancedPlayerStats';
 import { membersApi } from "@/services/api";
 
-// Extract correct image URL; fallback to ""
+// Utility: Normalize string (robustly handle Unicode, undefined)
+const normalized = (str: any): string =>
+  typeof str === "string" ? str.trim().toLowerCase() : "";
+
+// Extract correct image URL; fallback to empty string
 const extractProfileImageUrl = (profile: any): string => {
   if (!profile) return "";
   return (
@@ -27,14 +31,11 @@ const useAllMembersProfiles = () => {
   });
 };
 
-// Normalize for safe matching
-const normalize = (value: any) => typeof value === "string" ? value.trim().toLowerCase() : "";
-
 // Hooks for ranking data (top-N, backend)
 export const useFullScorersRanking = () => useEnhancedTopScorers(100);
 export const useFullAssistsRanking = () => useEnhancedTopAssists(100);
 
-// Enhanced enrichment: better normalization and propagates image URL
+// Robust enrichment logic for player stats
 const enrichPlayerStatList = (
   statList: any[] | undefined,
   allProfiles: any[] | undefined,
@@ -42,10 +43,11 @@ const enrichPlayerStatList = (
 ) => {
   if (!statList || !allProfiles) return [];
 
-  return statList
+  // Patch: Always use robust normalization and safe fallbacks
+  const enrichedPlayers = statList
     .filter((player) => {
       const value = statType === "goals" ? player.goals : player.assists;
-      return value >= 1;
+      return Number(value) >= 1;
     })
     .sort((a, b) => {
       const aValue = statType === "goals" ? a.goals : a.assists;
@@ -53,31 +55,28 @@ const enrichPlayerStatList = (
       if (bValue !== aValue) return bValue - aValue;
       return a.name.localeCompare(b.name);
     })
-    .map((player) => {
-      // Use robust normalization for match
-      const statNameNorm = normalize(player.name);
-      const statTeamNorm = normalize(player.team);
-
-      // Prefer exact name + team match, else fallback to just name
-      const matchedProfile =
+    .map((stat, index) => {
+      // Find match in allProfiles: name AND team, fallback to just name if no team match
+      const profile =
         allProfiles.find(
-          (profile) =>
-            normalize(profile.name) === statNameNorm &&
-            normalize(profile.team?.name) === statTeamNorm
+          (p) =>
+            normalized(p.name) === normalized(stat.name) &&
+            (!stat.team || normalized(p.team?.name ?? p.team) === normalized(stat.team))
         ) ||
-        allProfiles.find(
-          (profile) =>
-            normalize(profile.name) === statNameNorm
-        );
+        allProfiles.find((p) => normalized(p.name) === normalized(stat.name));
 
-      // Compose enriched object (always populate profileImageUrl)
       return {
-        ...player,
-        id: matchedProfile?.id ?? player.name ?? player.id ?? Math.random().toString(36).slice(2, 9),
-        profileImageUrl: extractProfileImageUrl(matchedProfile),
-        team: matchedProfile?.team?.name || player.team || "",
+        ...stat,
+        id: profile?.id ?? `stat-${statType}-${index}`,
+        profileImageUrl: extractProfileImageUrl(profile),
+        team: profile?.team?.name || profile?.team || stat.team || "",
       };
     });
+
+  // Log the final enriched list for diagnostics
+  console.log(`[Ranking Enrichment] Final players enriched [${statType}]:`, enrichedPlayers);
+
+  return enrichedPlayers;
 };
 
 export const useFilteredScorersRanking = () => {
