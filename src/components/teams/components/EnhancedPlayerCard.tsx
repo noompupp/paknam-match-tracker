@@ -7,6 +7,12 @@ import { cn } from "@/lib/utils";
 import type { EnhancedPlayerStats } from "@/services/enhancedTeamStatsService";
 import { usePlayerStatsFormatting } from "@/hooks/useEnhancedTeamStats";
 
+/**
+ * Always render AvatarImage and AvatarFallback for player avatar.
+ * - Use initials if no image.
+ * - Never conditionally hide Avatar (aside from loading/props).
+ */
+
 interface EnhancedPlayerCardProps {
   player: EnhancedPlayerStats;
   showDetailedStats?: boolean;
@@ -42,6 +48,7 @@ const EnhancedPlayerCard = ({
     return colors[role?.toLowerCase() as keyof typeof colors] || 'bg-gray-100 text-gray-800 border-gray-300 dark:bg-gray-900/30 dark:text-gray-300 dark:border-gray-700';
   };
 
+  // Always show avatar image/initials for all layouts
   if (variant === 'compact') {
     return (
       <div className={cn(
@@ -52,7 +59,7 @@ const EnhancedPlayerCard = ({
           <Avatar className="h-10 w-10 border-2 border-border/30">
             <AvatarImage src={player.ProfileURL} alt={player.name} />
             <AvatarFallback className="text-sm font-semibold">
-              {player.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+              {player.name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || "?"}
             </AvatarFallback>
           </Avatar>
           
@@ -93,6 +100,7 @@ const EnhancedPlayerCard = ({
 
   const RoleIcon = getRoleIcon(player.role);
 
+  // Default = desktop/tablet = full card
   return (
     <Card className={cn("premier-league-card hover:shadow-md transition-all duration-200", className)}>
       <CardContent className="p-4">
@@ -102,7 +110,7 @@ const EnhancedPlayerCard = ({
             <Avatar className="h-16 w-16 border-2 border-border/30">
               <AvatarImage src={player.ProfileURL} alt={player.name} />
               <AvatarFallback className="text-lg font-semibold">
-                {player.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+                {player.name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || "?"}
               </AvatarFallback>
             </Avatar>
           </div>
