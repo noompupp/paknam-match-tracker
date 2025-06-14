@@ -9,6 +9,7 @@ export const useFullAssistsRanking = () => {
   return useEnhancedTopAssists(100); // Get a large number to capture all players
 };
 
+// Ensure filteredData preserves id and profileImageUrl (do not strip fields!)
 export const useFilteredScorersRanking = () => {
   const { data: allScorers, isLoading, error } = useFullScorersRanking();
   
@@ -17,7 +18,7 @@ export const useFilteredScorersRanking = () => {
     .sort((a, b) => {
       if (b.goals !== a.goals) return b.goals - a.goals;
       return a.name.localeCompare(b.name);
-    }) || [];
+    }) ?? [];
 
   return {
     data: filteredData,
@@ -34,7 +35,7 @@ export const useFilteredAssistsRanking = () => {
     .sort((a, b) => {
       if (b.assists !== a.assists) return b.assists - a.assists;
       return a.name.localeCompare(b.name);
-    }) || [];
+    }) ?? [];
 
   return {
     data: filteredData,

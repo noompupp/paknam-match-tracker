@@ -15,9 +15,11 @@ export const useEnhancedTopScorers = (limit: number = 10) => {
     select: (data) => {
       console.log('✅ useEnhancedTopScorers: Query successful, scorers:', data);
       return data?.map(player => ({
+        id: player.id,
         name: player.name,
         team: player.team_name,
-        goals: player.goals
+        goals: player.goals,
+        profileImageUrl: player.ProfileURL ?? null, // Add image field for downstream usage
       })) || [];
     }
   });
@@ -36,9 +38,11 @@ export const useEnhancedTopAssists = (limit: number = 10) => {
     select: (data) => {
       console.log('✅ useEnhancedTopAssists: Query successful, assists:', data);
       return data?.map(player => ({
+        id: player.id,
         name: player.name,
         team: player.team_name,
-        assists: player.assists
+        assists: player.assists,
+        profileImageUrl: player.ProfileURL ?? null, // Add image field for downstream usage
       })) || [];
     }
   });
@@ -83,9 +87,11 @@ export const useEnhancedTeamPlayerStats = (teamId: string) => {
           number: player.number || '',
           goals: player.goals || 0,
           assists: player.assists || 0,
-          role: role // This will be Captain, S-class, Starter, or undefined
+          role: role, // This will be Captain, S-class, Starter, or undefined
+          profileImageUrl: player.ProfileURL ?? null // Add image field
         };
       }) || [];
     }
   });
 };
+
