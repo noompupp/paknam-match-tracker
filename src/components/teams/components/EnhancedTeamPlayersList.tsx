@@ -1,8 +1,8 @@
-
 import { Users, AlertTriangle } from "lucide-react";
 import { Member, Team } from "@/types/database";
 import EnhancedPlayerStatsCard from "./EnhancedPlayerStatsCard";
 import { cn } from "@/lib/utils";
+import PlayerStatsLegend from "./PlayerStatsLegend";
 
 interface EnhancedTeamPlayersListProps {
   players: Member[];
@@ -59,6 +59,8 @@ const EnhancedTeamPlayersList = ({ players, teamData, className }: EnhancedTeamP
           />
         ))}
       </div>
+      {/* Stat Legend Displayed Below Player List */}
+      <PlayerStatsLegend />
     </div>
   );
 };
