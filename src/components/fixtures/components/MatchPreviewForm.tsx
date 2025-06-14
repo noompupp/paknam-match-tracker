@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -92,7 +91,9 @@ const MatchPreviewForm = ({ homeTeam, awayTeam, recentForm }: MatchPreviewFormPr
     return `Based on ${matches.length} recent matches`;
   };
 
-  const hasMinimumData = recentForm.homeTeam.length > 0 || recentForm.awayTeam.length > 0;
+  // FIX: Only allow form when BOTH teams have played at least 1 match
+  const hasMinimumData =
+    recentForm.homeTeam.length > 0 && recentForm.awayTeam.length > 0;
 
   const TeamFormCard = ({ team, matches, cardColor }: { 
     team: Team, 
@@ -215,6 +216,13 @@ const MatchPreviewForm = ({ homeTeam, awayTeam, recentForm }: MatchPreviewFormPr
   };
 
   if (!hasMinimumData) {
+    // Add debug log for visibility
+    console.debug("[MatchPreviewForm] Not enough recent data for form comparison", {
+      homeTeam: homeTeam.name,
+      homeRecentMatches: recentForm.homeTeam.length,
+      awayTeam: awayTeam.name,
+      awayRecentMatches: recentForm.awayTeam.length,
+    });
     return (
       <Alert className="bg-blue-50 border-blue-200 dark:bg-blue-900/10 dark:border-blue-800">
         <Info className="h-4 w-4" />

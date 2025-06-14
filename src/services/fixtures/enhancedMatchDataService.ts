@@ -98,18 +98,30 @@ export const enhancedMatchDataService = {
       const awaySquad = members?.filter(m => m.team_id === fixture.away_team_id) || [];
 
       // Get recent form (last 5 matches for each team)
+      // FIX: Only include matches that have both home_score and away_score set (= completed matches with real scores)
       const { data: recentMatches, error: recentError } = await supabase
         .from('fixtures')
         .select('*')
-        .or(`and(home_team_id.eq.${fixture.home_team_id},away_team_id.eq.${fixture.home_team_id}),and(home_team_id.eq.${fixture.away_team_id},away_team_id.eq.${fixture.home_team_id})`)
+        .or(`home_team_id.eq.${fixture.home_team_id},away_team_id.eq.${fixture.home_team_id},home_team_id.eq.${fixture.away_team_id},away_team_id.eq.${fixture.away_team_id}`)
         .eq('status', 'completed')
+        .not('home_score', 'is', null)
+        .not('away_score', 'is', null)
         .neq('id', fixtureId)
         .order('match_date', { ascending: false })
-        .limit(10);
+        .limit(14);
 
       if (recentError) {
         console.error('❌ Enhanced Match Data: Error fetching recent matches:', recentError);
       }
+
+      // Defensive: filter out any results that are missing scores or teams
+      const validMatches = (recentMatches || []).filter(m =>
+        m &&
+        m.home_team_id &&
+        m.away_team_id &&
+        typeof m.home_score === 'number' &&
+        typeof m.away_score === 'number'
+      );
 
       // Transform fixture data to match Fixture interface
       const transformFixture = (fixtureData: any): Fixture => ({
@@ -117,13 +129,26 @@ export const enhancedMatchDataService = {
         match_time: fixtureData.time || '18:00:00'
       });
 
-      const homeRecentForm = recentMatches?.filter(m => 
-        m.home_team_id === fixture.home_team_id || m.away_team_id === fixture.home_team_id
-      ).slice(0, 5).map(transformFixture) || [];
+      const homeRecentFormRaw = validMatches.filter(
+        m => m.home_team_id === fixture.home_team_id || m.away_team_id === fixture.home_team_id
+      );
+      const awayRecentFormRaw = validMatches.filter(
+        m => m.home_team_id === fixture.away_team_id || m.away_team_id === fixture.away_team_id
+      );
 
-      const awayRecentForm = recentMatches?.filter(m => 
-        m.home_team_id === fixture.away_team_id || m.away_team_id === fixture.away_team_id
-      ).slice(0, 5).map(transformFixture) || [];
+      const homeRecentForm = homeRecentFormRaw.slice(0, 5).map(transformFixture);
+      const awayRecentForm = awayRecentFormRaw.slice(0, 5).map(transformFixture);
+
+      // Extra debug for data quality
+      console.debug("[EnhancedMatchData] Recent matches fetched/valid:", {
+        fixture: fixtureId,
+        totalFetched: recentMatches?.length || 0,
+        totalValid: validMatches.length,
+        homeTeam: homeTeam.name,
+        homeRecentFormCount: homeRecentForm.length,
+        awayTeam: awayTeam.name,
+        awayRecentFormCount: awayRecentForm.length
+      });
 
       // Get head-to-head history
       const { data: headToHead, error: h2hError } = await supabase
@@ -164,7 +189,8 @@ export const enhancedMatchDataService = {
         awayTeam: awayTeam.name,
         homeSquadSize: homeSquad.length,
         awaySquadSize: awaySquad.length,
-        recentFormCount: homeRecentForm.length + awayRecentForm.length,
+        homeRecentForm: homeRecentForm.length,
+        awayRecentForm: awayRecentForm.length,
         headToHeadCount: headToHead?.length || 0,
         refereeAssignment: refereeAssignment ? refereeAssignmentService.formatRefereeAssignment(refereeAssignment) : 'None'
       });
