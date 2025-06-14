@@ -1,4 +1,3 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { useEnhancedTopScorers, useEnhancedTopAssists } from './useEnhancedPlayerStats';
 import { membersApi } from "@/services/api";
@@ -10,6 +9,10 @@ const extractProfileImageUrl = (profile: any) =>
   profile?.profile_picture ||
   profile?.ProfileURL ||
   "";
+
+// Normalizes a name/team string for robust matching
+const normalize = (value: any) =>
+  (typeof value === "string" ? value.trim().toLowerCase() : "");
 
 // Fetch ALL members with full info
 const useAllMembersProfiles = () => {
@@ -39,7 +42,7 @@ export const useFilteredScorersRanking = () => {
 
   let filteredData: any[] = [];
 
-  if (allScorers) {
+  if (allScorers && allMembers) {
     filteredData = allScorers
       .filter(player => player.goals >= 1)
       .sort((a, b) => {
@@ -47,16 +50,36 @@ export const useFilteredScorersRanking = () => {
         return a.name.localeCompare(b.name);
       })
       .map(statPlayer => {
-        // Attempt to find the best profile by name (and optionally team)
-        const profile = allMembers?.find(
-          (p: any) => p.name === statPlayer.name && (!statPlayer.team || p.team?.name === statPlayer.team)
-        ) || allMembers?.find((p: any) => p.name === statPlayer.name);
+        // Find enriched profile using normalized names & teams
+        const statPlayerName = normalize(statPlayer.name);
+        const statPlayerTeam = normalize(statPlayer.team);
+
+        let profile =
+          allMembers.find(
+            (p: any) =>
+              normalize(p.name) === statPlayerName &&
+              (statPlayerTeam
+                ? normalize(p.team?.name) === statPlayerTeam
+                : true)
+          ) ||
+          // fallback: match only on normalized name
+          allMembers.find((p: any) => normalize(p.name) === statPlayerName);
+
+        // Always extract profile data if available
+        const id = profile?.id ?? undefined;
+        const profileImageUrl = extractProfileImageUrl(profile);
+        const team = profile?.team?.name || statPlayer.team;
+
+        // Diagnostic logging (can be disabled later)
+        if (!profileImageUrl) {
+          console.warn("[Enrichment/Avatar] No image found for scorer:", { statPlayer, profile });
+        }
 
         return {
           ...statPlayer,
-          id: profile?.id ?? undefined,
-          profileImageUrl: extractProfileImageUrl(profile),
-          team: profile?.team?.name || statPlayer.team,
+          id,
+          profileImageUrl,
+          team,
         };
       });
   }
@@ -64,7 +87,7 @@ export const useFilteredScorersRanking = () => {
   return {
     data: filteredData,
     isLoading: isLoading || loadingMembers,
-    error
+    error,
   };
 };
 
@@ -74,7 +97,7 @@ export const useFilteredAssistsRanking = () => {
 
   let filteredData: any[] = [];
 
-  if (allAssists) {
+  if (allAssists && allMembers) {
     filteredData = allAssists
       .filter(player => player.assists >= 1)
       .sort((a, b) => {
@@ -82,16 +105,36 @@ export const useFilteredAssistsRanking = () => {
         return a.name.localeCompare(b.name);
       })
       .map(statPlayer => {
-        // Attempt to find the best profile by name (and optionally team)
-        const profile = allMembers?.find(
-          (p: any) => p.name === statPlayer.name && (!statPlayer.team || p.team?.name === statPlayer.team)
-        ) || allMembers?.find((p: any) => p.name === statPlayer.name);
+        // Find enriched profile using normalized names & teams
+        const statPlayerName = normalize(statPlayer.name);
+        const statPlayerTeam = normalize(statPlayer.team);
+
+        let profile =
+          allMembers.find(
+            (p: any) =>
+              normalize(p.name) === statPlayerName &&
+              (statPlayerTeam
+                ? normalize(p.team?.name) === statPlayerTeam
+                : true)
+          ) ||
+          // fallback: match only on normalized name
+          allMembers.find((p: any) => normalize(p.name) === statPlayerName);
+
+        // Always extract profile data if available
+        const id = profile?.id ?? undefined;
+        const profileImageUrl = extractProfileImageUrl(profile);
+        const team = profile?.team?.name || statPlayer.team;
+
+        // Diagnostic logging (can be disabled later)
+        if (!profileImageUrl) {
+          console.warn("[Enrichment/Avatar] No image found for assist:", { statPlayer, profile });
+        }
 
         return {
           ...statPlayer,
-          id: profile?.id ?? undefined,
-          profileImageUrl: extractProfileImageUrl(profile),
-          team: profile?.team?.name || statPlayer.team,
+          id,
+          profileImageUrl,
+          team,
         };
       });
   }
@@ -99,6 +142,6 @@ export const useFilteredAssistsRanking = () => {
   return {
     data: filteredData,
     isLoading: isLoading || loadingMembers,
-    error
+    error,
   };
 };
