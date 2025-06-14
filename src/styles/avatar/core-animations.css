@@ -1,5 +1,7 @@
 
-/* Core Avatar flip animation styles with team integration */
+/* Core Avatar animation styles with team integration — simplified to remove obsolete flip/3d styles */
+
+/* (REMOVED)
 .avatar-container {
   perspective: 1000px;
 }
@@ -15,14 +17,16 @@
 .rotate-y-180 {
   transform: rotateY(180deg);
 }
+*/
 
-/* Optimized smooth rotation animation with enhanced easing */
+/* Optimized smooth rotation animation and dynamic glow effect for jersey side — REMOVED obsolete 3D, flip and ::before states */
+
 .avatar-container .relative {
   transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   will-change: transform;
 }
 
-/* Dynamic glow effect for jersey side with team color awareness */
+/* (REMOVED) - no longer applying flip 3D shadow or pseudo element
 .avatar-container .rotate-y-180 {
   filter: 
     drop-shadow(0 0 8px rgba(0, 0, 0, 0.2)) 
@@ -30,7 +34,6 @@
     drop-shadow(0 2px 8px rgba(0, 0, 0, 0.15));
 }
 
-/* Enhanced 3D depth effect */
 .avatar-container .rotate-y-180::before {
   content: '';
   position: absolute;
@@ -40,6 +43,7 @@
   pointer-events: none;
   z-index: 10;
 }
+*/
 
 /* Enhanced animation states for loading */
 .avatar-container[data-loading="true"] .relative {
