@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { useEnhancedTopScorers, useEnhancedTopAssists } from './useEnhancedPlayerStats';
 import { membersApi } from "@/services/api";
@@ -82,6 +83,11 @@ export const useFilteredScorersRanking = () => {
           team,
         };
       });
+
+    // LOG enriched data for debugging
+    console.log("[Enrichment/FilteredScorers FINAL DATA]", filteredData.map(x => ({
+      name: x.name, team: x.team, id: x.id, profileImageUrl: x.profileImageUrl
+    })));
   }
 
   return {
@@ -137,6 +143,10 @@ export const useFilteredAssistsRanking = () => {
           team,
         };
       });
+    // LOG enriched data for debugging
+    console.log("[Enrichment/FilteredAssists FINAL DATA]", filteredData.map(x => ({
+      name: x.name, team: x.team, id: x.id, profileImageUrl: x.profileImageUrl
+    })));
   }
 
   return {
