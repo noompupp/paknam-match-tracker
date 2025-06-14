@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -7,6 +6,7 @@ import { ArrowRight } from "lucide-react";
 import { useFilteredAssistsRanking } from "@/hooks/useFullRankingData";
 import FullRankingModal from "./FullRankingModal";
 import MiniPlayerAvatar from "./MiniPlayerAvatar";
+import DiagnosticAvatar from "./DiagnosticAvatar";
 
 const rankStyles = [
   "bg-yellow-50 border-yellow-300 ring-[2.5px] ring-yellow-300 dark:bg-yellow-950 dark:border-yellow-800 dark:ring-yellow-900/80",
@@ -88,7 +88,6 @@ const TopAssistsCard = ({ topAssists, isLoading, error }: TopAssistsCardProps) =
                 ? "0 0 0 2px rgba(240,200,50,0.12), 0 1px 4px 0 rgba(0,0,0,0.03)"
                 : undefined;
 
-              // ONLY pass the image/props available, do not override
               return (
                 <div
                   key={`${assist.id ?? index}-${assist.profileImageUrl ?? "none"}`}
@@ -108,11 +107,23 @@ const TopAssistsCard = ({ topAssists, isLoading, error }: TopAssistsCardProps) =
                     >
                       <span className="flex items-center gap-1.5">{index + 1}</span>
                     </Badge>
-                    <MiniPlayerAvatar
-                      name={assist.name}
-                      imageUrl={assist.profileImageUrl}
-                      size={32}
-                    />
+                    {/* SIDE-BY-SIDE DEBUGGING */}
+                    <div className="flex flex-col">
+                      <MiniPlayerAvatar
+                        name={assist.name}
+                        imageUrl={assist.profileImageUrl}
+                        size={32}
+                      />
+                      <span className="block text-[10px] text-center text-gray-400">Mini</span>
+                    </div>
+                    <div className="flex flex-col">
+                      <DiagnosticAvatar
+                        name={assist.name}
+                        imageUrl={assist.profileImageUrl}
+                        playerId={assist.id}
+                      />
+                      <span className="block text-[10px] text-center text-blue-500">Diag</span>
+                    </div>
                     <div className="truncate">
                       <p className="font-semibold text-sm truncate">{assist.name}</p>
                       <p className="text-xs sm:text-sm text-muted-foreground truncate">{assist.team}</p>
