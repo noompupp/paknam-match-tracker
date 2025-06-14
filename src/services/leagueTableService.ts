@@ -1,7 +1,9 @@
+
 import { supabase } from '@/integrations/supabase/client';
 
 export interface LeagueTableEntry {
   id: number;
+  __id__: string; // <- Add document string ID
   name: string;
   played: number;
   won: number;
@@ -95,8 +97,10 @@ export const leagueTableService = {
         const goalDifference = goalsFor - goalsAgainst;
         const points = (won * 3) + drawn;
 
+        // CHANGED: set __id__ from the team's actual __id__ field
         verifiedTeams.push({
           id: team.id,
+          __id__: team.__id__ || team.id?.toString() || '', // <--- populate __id__ correctly
           name: team.name || '',
           played,
           won,
@@ -108,7 +112,6 @@ export const leagueTableService = {
           points,
           position: team.position || 1,
           previous_position: team.previous_position,
-          // Preserve logo-related fields from teams data
           logoURL: team.logoURL,
           logo: team.logo || '⚽',
           color: team.color
@@ -197,3 +200,4 @@ export const leagueTableService = {
     }
   }
 };
+

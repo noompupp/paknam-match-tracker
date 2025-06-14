@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { teamsApi } from '@/services/api';
 import { leagueTableService } from '@/services/leagueTableService';
@@ -13,29 +14,38 @@ export const useTeams = () => {
         const deduplicatedTable = await leagueTableService.getDeduplicatedLeagueTable();
         
         // Convert league table entries back to Team format
-        const teams: Team[] = deduplicatedTable.map(entry => ({
-          id: entry.id,
-          __id__: entry.id.toString(), // Convert to string for consistency
-          name: entry.name,
-          played: entry.played,
-          won: entry.won,
-          drawn: entry.drawn,
-          lost: entry.lost,
-          goals_for: entry.goals_for,
-          goals_against: entry.goals_against,
-          goal_difference: entry.goal_difference,
-          points: entry.points,
-          position: entry.position,
-          previous_position: entry.previous_position,
-          // Use actual logo fields from deduplicated data instead of defaults
-          captain: null,
-          color: entry.color,
-          logo: entry.logo,
-          logoURL: entry.logoURL,
-          founded: '2020',
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        }));
+        // CHANGED: Use __id__ from leagueTableEntry, not derived from numeric id
+        const teams: Team[] = deduplicatedTable.map(entry => {
+          const t = {
+            id: entry.id,
+            __id__: entry.__id__, // use the actual __id__ not stringified numeric id
+            name: entry.name,
+            played: entry.played,
+            won: entry.won,
+            drawn: entry.drawn,
+            lost: entry.lost,
+            goals_for: entry.goals_for,
+            goals_against: entry.goals_against,
+            goal_difference: entry.goal_difference,
+            points: entry.points,
+            position: entry.position,
+            previous_position: entry.previous_position,
+            captain: null,
+            color: entry.color,
+            logo: entry.logo,
+            logoURL: entry.logoURL,
+            founded: '2020',
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          };
+          // Add debug log
+          console.log("🆔 Mapped team:", {
+            id: t.id,
+            __id__: t.__id__,
+            name: t.name,
+          });
+          return t;
+        });
         
         console.log('🎣 useTeams: Query successful with deduplicated data, teams:', teams);
         return teams;
