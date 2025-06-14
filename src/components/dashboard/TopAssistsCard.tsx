@@ -41,6 +41,9 @@ const TopAssistsCard = ({ topAssists, isLoading, error }: TopAssistsCardProps) =
 
   const handleSeeAllClick = () => setIsModalOpen(true);
 
+  // DIAGNOSTIC LOG: Show fullRanking being rendered
+  console.log('[Card Render] TopAssistsCard final fullRanking prop:', fullRanking);
+
   return (
     <>
       <Card className="shadow-xl border bg-card text-card-foreground transition-all duration-200 animate-fade-in">
@@ -77,12 +80,9 @@ const TopAssistsCard = ({ topAssists, isLoading, error }: TopAssistsCardProps) =
             ))
           ) : topAssists && topAssists.length > 0 ? (
             topAssists.map((assist, index) => {
-              console.log("[Avatar Debug]", {
-                id: assist.id,
-                name: assist.name,
-                profileImageUrl: assist.profileImageUrl,
-                assist,
-              });
+              // DIAGNOSTIC LOG inside card, right before passing to MiniPlayerAvatar/DiagnosticAvatar
+              console.log("[Card Render] assist from topAssists:", assist);
+
               const isTop3 = index < 3;
               const boxShadow = isTop3
                 ? "0 0 0 2px rgba(240,200,50,0.12), 0 1px 4px 0 rgba(0,0,0,0.03)"
@@ -107,7 +107,6 @@ const TopAssistsCard = ({ topAssists, isLoading, error }: TopAssistsCardProps) =
                     >
                       <span className="flex items-center gap-1.5">{index + 1}</span>
                     </Badge>
-                    {/* SIDE-BY-SIDE DEBUGGING */}
                     <div className="flex flex-col">
                       <MiniPlayerAvatar
                         name={assist.name}
