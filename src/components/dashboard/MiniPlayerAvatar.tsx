@@ -14,11 +14,11 @@ const MiniPlayerAvatar = ({
   name,
   imageUrl,
   className = "",
-  size = 32,
+  size = 28, // Smarter default for compact lists
 }: MiniPlayerAvatarProps) => {
-  // Log the imageUrl every time avatar renders for tracking
   React.useEffect(() => {
-    console.log("[Avatar Debug] Rendering", { name, imageUrl });
+    // Small console log, can disable in prod
+    // console.log("[Avatar Debug] Rendering", { name, imageUrl });
   }, [name, imageUrl]);
 
   const profileImageSrc =
@@ -26,10 +26,7 @@ const MiniPlayerAvatar = ({
 
   // Warn if we are falling back to blank avatar
   if (!profileImageSrc) {
-    console.warn(
-      "[Avatar Fallback]",
-      { name, attemptedImage: imageUrl }
-    );
+    // console.warn("[Avatar Fallback]", { name, attemptedImage: imageUrl });
   }
 
   return (
