@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -40,14 +39,19 @@ const TopScorersCard = ({ topScorers, isLoading, error }: TopScorersCardProps) =
 
   const handleSeeAllClick = () => setIsModalOpen(true);
 
-  // --- Squad-style image extraction
-  const extractPlayerImage = (player: TopScorer): string => {
+  const KNOWN_WORKING_IMAGE = "https://randomuser.me/api/portraits/men/65.jpg"; // Hardcoded test
+
+  // --- Squad-style image extraction + force test image on first row
+  const extractPlayerImage = (player: TopScorer, index: number): string => {
+    if (index === 0) {
+      console.log(`[TopScorersCard][TEST] Forced test image for:`, player.name);
+      return KNOWN_WORKING_IMAGE;
+    }
     const src =
       (player.optimized_avatar_url && player.optimized_avatar_url.trim()) ||
       (player.ProfileURL && player.ProfileURL.trim()) ||
       (player.profile_picture && player.profile_picture.trim()) ||
       "";
-    // Dev: log per row
     console.log(`[TopScorersCard] name=${player.name}, imageUrl=${src}`);
     return src;
   };
@@ -88,7 +92,7 @@ const TopScorersCard = ({ topScorers, isLoading, error }: TopScorersCardProps) =
             ))
           ) : topScorers && topScorers.length > 0 ? (
             topScorers.map((scorer, index) => {
-              const imageUrl = extractPlayerImage(scorer);
+              const imageUrl = extractPlayerImage(scorer, index);
               const isTop3 = index < 3;
               const boxShadow = isTop3
                 ? "0 0 0 2px rgba(240,200,50,0.12), 0 1px 4px 0 rgba(0,0,0,0.03)"
@@ -105,7 +109,6 @@ const TopScorersCard = ({ topScorers, isLoading, error }: TopScorersCardProps) =
                   }}
                 >
                   <div className="flex items-center space-x-2 sm:space-x-3 min-w-0">
-                    {/* Rank number, no trophy */}
                     <Badge
                       variant="outline"
                       className={`w-7 h-7 sm:w-9 sm:h-9 rounded-full flex items-center justify-center text-xs font-bold border bg-white ${

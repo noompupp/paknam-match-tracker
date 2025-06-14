@@ -1,17 +1,13 @@
 
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
-import React from "react";
+import React, { useEffect } from "react";
 
-/**
- * Displays a small, circular player avatar with fallback to initials.
- * Tries avatar sources in order: optimized_avatar_url, ProfileURL, profile_picture, then fallback.
- */
 interface MiniPlayerAvatarProps {
   name: string;
-  imageUrl?: string | null; // If provided, takes priority (already selected upstream)
+  imageUrl?: string | null;
   className?: string;
-  size?: number; // px, for flexibility
+  size?: number;
 }
 
 const MiniPlayerAvatar = ({
@@ -20,7 +16,14 @@ const MiniPlayerAvatar = ({
   className = "",
   size = 32,
 }: MiniPlayerAvatarProps) => {
-  // Extract initials (up to 2 letters)
+  // Log every time component renders
+  useEffect(() => {
+    console.log(
+      "[MiniPlayerAvatar] PROPS RECEIVED →",
+      { name, imageUrl, size }
+    );
+  }, [name, imageUrl, size]);
+
   const getInitials = (n: string) =>
     n
       ? n
@@ -31,7 +34,6 @@ const MiniPlayerAvatar = ({
           .toUpperCase()
       : "?";
 
-  // Provide explicit aria-label
   return (
     <Avatar
       className={cn(
@@ -61,3 +63,4 @@ const MiniPlayerAvatar = ({
 };
 
 export default MiniPlayerAvatar;
+

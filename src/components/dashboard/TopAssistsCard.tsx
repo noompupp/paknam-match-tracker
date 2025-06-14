@@ -40,8 +40,14 @@ const TopAssistsCard = ({ topAssists, isLoading, error }: TopAssistsCardProps) =
 
   const handleSeeAllClick = () => setIsModalOpen(true);
 
-  // --- Squad-style image extraction, with console log
-  const extractPlayerImage = (player: TopAssist): string => {
+  const KNOWN_WORKING_IMAGE = "https://randomuser.me/api/portraits/women/10.jpg"; // Test image
+
+  // --- Squad-style image extraction + forced test image for first item
+  const extractPlayerImage = (player: TopAssist, index: number): string => {
+    if (index === 0) {
+      console.log(`[TopAssistsCard][TEST] Forced test image for:`, player.name);
+      return KNOWN_WORKING_IMAGE;
+    }
     const src =
       (player.optimized_avatar_url && player.optimized_avatar_url.trim()) ||
       (player.ProfileURL && player.ProfileURL.trim()) ||
@@ -87,7 +93,7 @@ const TopAssistsCard = ({ topAssists, isLoading, error }: TopAssistsCardProps) =
             ))
           ) : topAssists && topAssists.length > 0 ? (
             topAssists.map((assist, index) => {
-              const imageUrl = extractPlayerImage(assist);
+              const imageUrl = extractPlayerImage(assist, index);
               const isTop3 = index < 3;
               const boxShadow = isTop3
                 ? "0 0 0 2px rgba(240,200,50,0.12), 0 1px 4px 0 rgba(0,0,0,0.03)"
@@ -103,7 +109,6 @@ const TopAssistsCard = ({ topAssists, isLoading, error }: TopAssistsCardProps) =
                   }}
                 >
                   <div className="flex items-center space-x-2 sm:space-x-3 min-w-0">
-                    {/* Rank number */}
                     <Badge
                       variant="outline"
                       className={`w-7 h-7 sm:w-9 sm:h-9 rounded-full flex items-center justify-center text-xs font-bold border bg-white ${
@@ -134,7 +139,6 @@ const TopAssistsCard = ({ topAssists, isLoading, error }: TopAssistsCardProps) =
           )}
         </CardContent>
       </Card>
-
       <FullRankingModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
@@ -149,3 +153,4 @@ const TopAssistsCard = ({ topAssists, isLoading, error }: TopAssistsCardProps) =
 };
 
 export default TopAssistsCard;
+

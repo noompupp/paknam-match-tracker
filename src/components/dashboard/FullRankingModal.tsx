@@ -1,4 +1,3 @@
-
 import { EnhancedDialog, EnhancedDialogContent, EnhancedDialogHeader, EnhancedDialogTitle } from "@/components/ui/enhanced-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -53,7 +52,14 @@ const FullRankingModal = ({
   };
 
   // --- Squad-style image extraction + console log for every player
-  const extractPlayerImage = (player: RankingPlayer): string => {
+  const KNOWN_WORKING_IMAGE = "https://randomuser.me/api/portraits/men/75.jpg"; // Hardcoded test image
+
+  const extractPlayerImage = (player: RankingPlayer, index: number): string => {
+    // For test: first player always gets the known working image
+    if (index === 0) {
+      console.log(`[FullRankingModal][TEST] FORCED TEST IMAGE for player:`, player.name);
+      return KNOWN_WORKING_IMAGE;
+    }
     const src =
       (player.optimized_avatar_url && player.optimized_avatar_url.trim()) ||
       (player.ProfileURL && player.ProfileURL.trim()) ||
@@ -104,7 +110,7 @@ const FullRankingModal = ({
                 const rankClass = isTop3
                   ? `${rankStyles[index]} border-2 ring-[2px] ring-inset`
                   : "hover:bg-muted/50";
-                const imageUrl = extractPlayerImage(player);
+                const imageUrl = extractPlayerImage(player, index);
                 return (
                   <div 
                     key={index} 
