@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTeams } from "@/hooks/useTeams";
 import TeamsGrid from "./teams/TeamsGrid";
 import EnhancedTeamSquad from "./teams/EnhancedTeamSquad";
@@ -7,14 +7,21 @@ import UnifiedPageHeader from "./shared/UnifiedPageHeader";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
 
 const Teams = () => {
   const { t } = useTranslation();
   const { data: teams, isLoading: teamsLoading, error } = useTeams();
+  const queryClient = useQueryClient();
 
   // Use __id__ (string doc ID from Firestore/Supabase) for routing/enhanced services
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
 
+  // On mount, force cache invalidation for the 'teams' query to ensure latest data appears
+  useEffect(() => {
+    queryClient.invalidateQueries({ queryKey: ["teams"] });
+  }, [queryClient]);
+  
   // Find by __id__ not numeric id
   const selectedTeam = teams?.find(team => team.__id__ === selectedTeamId);
 
