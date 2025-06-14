@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -6,6 +5,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowRight } from "lucide-react";
 import { useFilteredScorersRanking } from "@/hooks/useFullRankingData";
 import FullRankingModal from "./FullRankingModal";
+import MiniPlayerAvatar from "./MiniPlayerAvatar";
 
 interface TopScorer {
   name: string;
@@ -72,6 +72,15 @@ const TopScorersCard = ({ topScorers, isLoading, error }: TopScorersCardProps) =
                   <Badge variant="outline" className="w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs">
                     {index + 1}
                   </Badge>
+                  <MiniPlayerAvatar
+                    name={scorer.name}
+                    imageUrl={
+                      // Use `profile_picture`, `ProfileURL`, or fallback
+                      // @ts-ignore - tolerate missing field temporarily
+                      scorer.profile_picture || (scorer as any).ProfileURL || ""
+                    }
+                    size={32}
+                  />
                   <div>
                     <p className="font-semibold text-sm">{scorer.name}</p>
                     <p className="text-xs sm:text-sm text-muted-foreground">{scorer.team}</p>

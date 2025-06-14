@@ -1,8 +1,8 @@
-
 import { EnhancedDialog, EnhancedDialogContent, EnhancedDialogHeader, EnhancedDialogTitle } from "@/components/ui/enhanced-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Trophy, Target } from "lucide-react";
+import MiniPlayerAvatar from "./MiniPlayerAvatar";
 
 interface RankingPlayer {
   name: string;
@@ -92,6 +92,15 @@ const FullRankingModal = ({
                     >
                       {index + 1}
                     </Badge>
+                    <MiniPlayerAvatar
+                      name={player.name}
+                      imageUrl={
+                        // Use `profile_picture`, `ProfileURL`, or fallback
+                        // @ts-ignore
+                        player.profile_picture || (player as any).ProfileURL || ""
+                      }
+                      size={38}
+                    />
                     <div>
                       <p className="font-semibold text-base">{player.name}</p>
                       <p className="text-sm text-muted-foreground">{player.team}</p>
