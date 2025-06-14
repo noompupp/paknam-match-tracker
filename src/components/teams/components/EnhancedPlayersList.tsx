@@ -7,9 +7,14 @@ const EnhancedPlayersList = ({
   players,
   isLoading,
   showDetailedStats = false,
-  variant = 'default',
+  variant, // passing down from parent if needed but we control computedVariant below
 }) => {
   const { isMobile, isPortrait } = useDeviceOrientation();
+
+  // Compute layout mode for each device/orientation
+  const isMobilePortrait = isMobile && isPortrait;
+  const computedVariant = isMobilePortrait ? "compact" : "default";
+  const computedDetailedStats = !isMobilePortrait;
 
   if (isLoading) {
     // Show skeletons (not modified here)
@@ -22,11 +27,10 @@ const EnhancedPlayersList = ({
     );
   }
 
-  // Desktop/tablet: show full cards. Mobile portrait: show compact cards.
   return (
     <div
       className={
-        isMobile && isPortrait
+        isMobilePortrait
           ? "space-y-3"
           : "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4"
       }
@@ -35,12 +39,9 @@ const EnhancedPlayersList = ({
         <EnhancedPlayerCard
           key={player.id}
           player={player}
-          showDetailedStats={showDetailedStats && !isMobile}
-          variant={
-            isMobile && isPortrait
-              ? "compact"
-              : "default"
-          }
+          // Force default variant and full stats for non-mobile-portrait layouts
+          showDetailedStats={computedDetailedStats}
+          variant={computedVariant}
           className=""
         />
       ))}
@@ -49,3 +50,4 @@ const EnhancedPlayersList = ({
 };
 
 export default EnhancedPlayersList;
+
