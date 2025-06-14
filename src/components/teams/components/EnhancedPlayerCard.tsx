@@ -139,55 +139,67 @@ const EnhancedPlayerCard = ({
                 <PlayerStatsBar player={player} size="compact" className="mt-1" />
               </div>
               <div className="hidden md:block">
-                {/* DESKTOP/TABLET: full stat bar (original layout) */}
+                {/* DESKTOP/TABLET: improved stat bar with better spacing */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
-                  <div className="text-center p-2 bg-muted/30 rounded-lg">
-                    <div className="flex items-center justify-center gap-1 mb-1">
-                      <Trophy className="h-4 w-4 text-yellow-600" />
-                      <span className="font-bold text-lg text-foreground">{formatStat(player.goals)}</span>
+                  {/* GOALS */}
+                  <div className="flex flex-col items-center justify-between bg-muted/30 rounded-lg min-h-[92px] py-3 px-2">
+                    <div className="flex flex-col items-center gap-1 w-full">
+                      <div className="flex items-center gap-1">
+                        <Trophy className="h-5 w-5 text-yellow-600" />
+                        <span className="font-bold text-lg text-foreground">{formatStat(player.goals)}</span>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-2">Goals</p>
+                      {showDetailedStats && (
+                        <p className="text-xs text-muted-foreground mt-1">
+                          ({player.goalsPerMatch}/match)
+                        </p>
+                      )}
                     </div>
-                    <p className="text-xs text-muted-foreground">Goals</p>
-                    {showDetailedStats && (
-                      <p className="text-xs text-muted-foreground mt-1">
-                        ({player.goalsPerMatch}/match)
-                      </p>
-                    )}
                   </div>
-                  <div className="text-center p-2 bg-muted/30 rounded-lg">
-                    <div className="flex items-center justify-center gap-1 mb-1">
-                      <Target className="h-4 w-4 text-blue-600" />
-                      <span className="font-bold text-lg text-foreground">{formatStat(player.assists)}</span>
+                  {/* ASSISTS */}
+                  <div className="flex flex-col items-center justify-between bg-muted/30 rounded-lg min-h-[92px] py-3 px-2">
+                    <div className="flex flex-col items-center gap-1 w-full">
+                      <div className="flex items-center gap-1">
+                        <Target className="h-5 w-5 text-blue-600" />
+                        <span className="font-bold text-lg text-foreground">{formatStat(player.assists)}</span>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-2">Assists</p>
+                      {showDetailedStats && (
+                        <p className="text-xs text-muted-foreground mt-1">
+                          ({player.assistsPerMatch}/match)
+                        </p>
+                      )}
                     </div>
-                    <p className="text-xs text-muted-foreground">Assists</p>
-                    {showDetailedStats && (
-                      <p className="text-xs text-muted-foreground mt-1">
-                        ({player.assistsPerMatch}/match)
-                      </p>
-                    )}
                   </div>
-                  <div className="text-center p-2 bg-muted/30 rounded-lg">
-                    <div className="flex items-center justify-center gap-1 mb-1">
-                      <Clock className="h-4 w-4 text-green-600" />
-                      <span className="font-bold text-lg text-foreground">{formatStat(player.matches_played)}</span>
+                  {/* MATCHES */}
+                  <div className="flex flex-col items-center justify-between bg-muted/30 rounded-lg min-h-[92px] py-3 px-2">
+                    <div className="flex flex-col items-center gap-1 w-full">
+                      <div className="flex items-center gap-1">
+                        <Clock className="h-5 w-5 text-green-600" />
+                        <span className="font-bold text-lg text-foreground">{formatStat(player.matches_played)}</span>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-2">Matches</p>
+                      {showDetailedStats && (
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {formatMinutes(player.total_minutes_played)}
+                        </p>
+                      )}
                     </div>
-                    <p className="text-xs text-muted-foreground">Matches</p>
-                    {showDetailedStats && (
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {formatMinutes(player.total_minutes_played)}
-                      </p>
-                    )}
                   </div>
-                  <div className="text-center p-2 bg-muted/30 rounded-lg">
-                    <div className="flex items-center justify-center gap-1 mb-1">
-                      <Zap className="h-4 w-4 text-purple-600" />
-                      <span className="font-bold text-lg text-foreground">{formatStat(player.contributionScore)}</span>
+                  {/* CONTRIBUTION/SCORE */}
+                  <div className="flex flex-col items-center justify-between bg-muted/30 rounded-lg min-h-[92px] py-3 px-2">
+                    <div className="flex flex-col items-center gap-1 w-full">
+                      <div className="flex items-center gap-1">
+                        <Zap className="h-5 w-5 text-purple-600" />
+                        <span className="font-bold text-lg text-foreground">{formatStat(player.contributionScore)}</span>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-2">Score</p>
+                      {showDetailedStats && player.minutesPerMatch > 0 && (
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {player.minutesPerMatch}min/match
+                        </p>
+                      )}
                     </div>
-                    <p className="text-xs text-muted-foreground">Score</p>
-                    {showDetailedStats && player.minutesPerMatch > 0 && (
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {player.minutesPerMatch}min/match
-                      </p>
-                    )}
                   </div>
                 </div>
               </div>
