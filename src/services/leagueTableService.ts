@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 export interface LeagueTableEntry {
   id: number;
-  __id__: string; // <- Add document string ID
+  __id__: string;
   name: string;
   played: number;
   won: number;
@@ -18,6 +18,7 @@ export interface LeagueTableEntry {
   logoURL: string | null;
   logo: string;
   color: string | null;
+  captain?: string | null; // <-- add captain
 }
 
 export const leagueTableService = {
@@ -100,7 +101,7 @@ export const leagueTableService = {
         // CHANGED: set __id__ from the team's actual __id__ field
         verifiedTeams.push({
           id: team.id,
-          __id__: team.__id__ || team.id?.toString() || '', // <--- populate __id__ correctly
+          __id__: team.__id__ || team.id?.toString() || '',
           name: team.name || '',
           played,
           won,
@@ -114,7 +115,8 @@ export const leagueTableService = {
           previous_position: team.previous_position,
           logoURL: team.logoURL,
           logo: team.logo || '⚽',
-          color: team.color
+          color: team.color,
+          captain: team.captain ?? null, // <-- ensure captain is included
         });
       }
 

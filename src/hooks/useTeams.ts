@@ -30,7 +30,7 @@ export const useTeams = () => {
             points: entry.points,
             position: entry.position,
             previous_position: entry.previous_position,
-            captain: null,
+            captain: entry.captain ?? "", // <-- use deduplicatedTable entry for captain
             color: entry.color,
             logo: entry.logo,
             logoURL: entry.logoURL,
@@ -43,6 +43,7 @@ export const useTeams = () => {
             id: t.id,
             __id__: t.__id__,
             name: t.name,
+            captain: t.captain,
           });
           return t;
         });
