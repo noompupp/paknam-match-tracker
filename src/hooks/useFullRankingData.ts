@@ -16,7 +16,6 @@ const useAllMembersProfiles = () => {
   return useQuery({
     queryKey: ['allMembersFullProfiles'],
     queryFn: async () => {
-      // This includes all fields for member avatars, etc
       const members = await membersApi.getAll();
       return members || [];
     },
@@ -32,14 +31,17 @@ export const useFullAssistsRanking = () => {
   return useEnhancedTopAssists(100); // Get a large number to capture all players
 };
 
-// ENRICHED version: joins the stat list with member profiles for full avatars
+// Use unified normalization for matching
+const normalize = (str: string | null | undefined) =>
+  typeof str === "string" ? str.trim().toLowerCase() : "";
+
 export const useFilteredScorersRanking = () => {
   const { data: allScorers, isLoading, error } = useFullScorersRanking();
   const { data: allMembers, isLoading: loadingMembers } = useAllMembersProfiles();
 
   let filteredData: any[] = [];
 
-  if (allScorers) {
+  if (allScorers && allMembers) {
     filteredData = allScorers
       .filter(player => player.goals >= 1)
       .sort((a, b) => {
@@ -47,10 +49,16 @@ export const useFilteredScorersRanking = () => {
         return a.name.localeCompare(b.name);
       })
       .map(statPlayer => {
-        // Attempt to find the best profile by name (and optionally team)
-        const profile = allMembers?.find(
-          (p: any) => p.name === statPlayer.name && (!statPlayer.team || p.team?.name === statPlayer.team)
-        ) || allMembers?.find((p: any) => p.name === statPlayer.name);
+        // Primary: name+team, fallback: only name
+        const statName = normalize(statPlayer.name);
+        const statTeam = normalize(statPlayer.team);
+
+        let profile =
+          allMembers.find((p: any) =>
+            normalize(p.name) === statName &&
+            p.team && normalize(p.team.name) === statTeam
+          ) ||
+          allMembers.find((p: any) => normalize(p.name) === statName);
 
         return {
           ...statPlayer,
@@ -74,7 +82,7 @@ export const useFilteredAssistsRanking = () => {
 
   let filteredData: any[] = [];
 
-  if (allAssists) {
+  if (allAssists && allMembers) {
     filteredData = allAssists
       .filter(player => player.assists >= 1)
       .sort((a, b) => {
@@ -82,10 +90,15 @@ export const useFilteredAssistsRanking = () => {
         return a.name.localeCompare(b.name);
       })
       .map(statPlayer => {
-        // Attempt to find the best profile by name (and optionally team)
-        const profile = allMembers?.find(
-          (p: any) => p.name === statPlayer.name && (!statPlayer.team || p.team?.name === statPlayer.team)
-        ) || allMembers?.find((p: any) => p.name === statPlayer.name);
+        const statName = normalize(statPlayer.name);
+        const statTeam = normalize(statPlayer.team);
+
+        let profile =
+          allMembers.find((p: any) =>
+            normalize(p.name) === statName &&
+            p.team && normalize(p.team.name) === statTeam
+          ) ||
+          allMembers.find((p: any) => normalize(p.name) === statName);
 
         return {
           ...statPlayer,
