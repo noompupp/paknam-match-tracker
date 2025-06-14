@@ -10,11 +10,8 @@ import MiniPlayerAvatar from "./MiniPlayerAvatar";
 
 // Softer highlight styles for top 3 with dark mode support
 const rankStyles = [
-  // Gold
   "bg-yellow-50 border-yellow-300 ring-[2.5px] ring-yellow-200 dark:bg-yellow-950 dark:border-yellow-900 dark:ring-yellow-900/70",
-  // Silver
   "bg-gray-50 border-gray-300 ring-[2.5px] ring-gray-200 dark:bg-zinc-900 dark:border-zinc-700 dark:ring-zinc-800/70",
-  // Bronze
   "bg-orange-50 border-orange-200 ring-[2.5px] ring-orange-100 dark:bg-orange-950 dark:border-orange-900 dark:ring-orange-900/70"
 ];
 
@@ -42,6 +39,18 @@ const TopScorersCard = ({ topScorers, isLoading, error }: TopScorersCardProps) =
   } = useFilteredScorersRanking();
 
   const handleSeeAllClick = () => setIsModalOpen(true);
+
+  // --- Squad-style image extraction
+  const extractPlayerImage = (player: TopScorer): string => {
+    const src =
+      (player.optimized_avatar_url && player.optimized_avatar_url.trim()) ||
+      (player.ProfileURL && player.ProfileURL.trim()) ||
+      (player.profile_picture && player.profile_picture.trim()) ||
+      "";
+    // Dev: log per row
+    console.log(`[TopScorersCard] name=${player.name}, imageUrl=${src}`);
+    return src;
+  };
 
   return (
     <>
@@ -79,23 +88,7 @@ const TopScorersCard = ({ topScorers, isLoading, error }: TopScorersCardProps) =
             ))
           ) : topScorers && topScorers.length > 0 ? (
             topScorers.map((scorer, index) => {
-              // New: log image sources for debugging avatar issues
-              const possibleImages = [
-                scorer.optimized_avatar_url,
-                scorer.ProfileURL,
-                scorer.profile_picture
-              ];
-              const imageUrl =
-                (scorer.optimized_avatar_url && scorer.optimized_avatar_url.trim()) ||
-                (scorer.ProfileURL && scorer.ProfileURL.trim()) ||
-                (scorer.profile_picture && scorer.profile_picture.trim()) ||
-                "";
-
-              // Double check: MiniPlayerAvatar expects imageUrl, name, size
-              // Troubleshoot: We log imageUrl and name for every scorer
-              console.log(`🖼 TopScorersCard: index=${index} name=${scorer.name} imageUrl=${imageUrl} (all:`, possibleImages, ")");
-
-              // Softer background, faint ring, and small shadow for top 3
+              const imageUrl = extractPlayerImage(scorer);
               const isTop3 = index < 3;
               const boxShadow = isTop3
                 ? "0 0 0 2px rgba(240,200,50,0.12), 0 1px 4px 0 rgba(0,0,0,0.03)"
@@ -112,13 +105,11 @@ const TopScorersCard = ({ topScorers, isLoading, error }: TopScorersCardProps) =
                   }}
                 >
                   <div className="flex items-center space-x-2 sm:space-x-3 min-w-0">
-                    {/* Rank number, NO trophy icon */}
+                    {/* Rank number, no trophy */}
                     <Badge
                       variant="outline"
                       className={`w-7 h-7 sm:w-9 sm:h-9 rounded-full flex items-center justify-center text-xs font-bold border bg-white ${
-                        isTop3
-                          ? "shadow-sm"
-                          : ""
+                        isTop3 ? "shadow-sm" : ""
                       }`}
                     >
                       <span className="flex items-center gap-1.5">
@@ -163,4 +154,3 @@ const TopScorersCard = ({ topScorers, isLoading, error }: TopScorersCardProps) =
 };
 
 export default TopScorersCard;
-

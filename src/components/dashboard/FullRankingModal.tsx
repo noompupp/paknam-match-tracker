@@ -7,11 +7,8 @@ import MiniPlayerAvatar from "./MiniPlayerAvatar";
 
 // Updated dark mode friendly medal styling for top 3 (matches other components)
 const rankStyles = [
-  // Gold
   "bg-yellow-50 border-yellow-300 shadow-gold dark:bg-yellow-950 dark:border-yellow-900",
-  // Silver
   "bg-gray-50 border-gray-300 shadow-silver dark:bg-zinc-900 dark:border-zinc-700",
-  // Bronze
   "bg-orange-50 border-orange-200 shadow-bronze dark:bg-orange-950 dark:border-orange-900"
 ];
 
@@ -55,14 +52,15 @@ const FullRankingModal = ({
     return statType === 'goals' ? 'bg-primary text-primary-foreground' : 'bg-blue-600 text-white';
   };
 
-  // Unified image extraction logic as in TopScorers/TopAssists/Squad
-  const extractPlayerImage = (player: RankingPlayer) => {
-    return (
+  // --- Squad-style image extraction + console log for every player
+  const extractPlayerImage = (player: RankingPlayer): string => {
+    const src =
       (player.optimized_avatar_url && player.optimized_avatar_url.trim()) ||
       (player.ProfileURL && player.ProfileURL.trim()) ||
       (player.profile_picture && player.profile_picture.trim()) ||
-      ""
-    );
+      "";
+    console.log(`[FullRankingModal] name=${player.name}, imageUrl=${src}`);
+    return src;
   };
 
   return (
@@ -106,16 +104,11 @@ const FullRankingModal = ({
                 const rankClass = isTop3
                   ? `${rankStyles[index]} border-2 ring-[2px] ring-inset`
                   : "hover:bg-muted/50";
+                const imageUrl = extractPlayerImage(player);
                 return (
                   <div 
                     key={index} 
                     className={`flex items-center justify-between p-4 rounded-lg transition-colors border bg-card shadow-sm mb-1 ${rankClass}`}
-                    style={{
-                      boxShadow:
-                        isTop3
-                          ? undefined
-                          : undefined
-                    }}
                   >
                     <div className="flex items-center space-x-4 min-w-0">
                       {/* No trophy icon */}
@@ -127,7 +120,7 @@ const FullRankingModal = ({
                       </Badge>
                       <MiniPlayerAvatar
                         name={player.name}
-                        imageUrl={extractPlayerImage(player)}
+                        imageUrl={imageUrl}
                         size={38}
                       />
                       <div className="truncate max-w-[140px]">

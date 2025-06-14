@@ -10,11 +10,8 @@ import MiniPlayerAvatar from "./MiniPlayerAvatar";
 
 // Updated highlight styles for top 3, with dark mode support (match TopScorersCard)
 const rankStyles = [
-  // Gold
   "bg-yellow-50 border-yellow-300 ring-[2.5px] ring-yellow-200 dark:bg-yellow-950 dark:border-yellow-900 dark:ring-yellow-900/70",
-  // Silver
   "bg-gray-50 border-gray-300 ring-[2.5px] ring-gray-200 dark:bg-zinc-900 dark:border-zinc-700 dark:ring-zinc-800/70",
-  // Bronze
   "bg-orange-50 border-orange-200 ring-[2.5px] ring-orange-100 dark:bg-orange-950 dark:border-orange-900 dark:ring-orange-900/70"
 ];
 
@@ -43,14 +40,15 @@ const TopAssistsCard = ({ topAssists, isLoading, error }: TopAssistsCardProps) =
 
   const handleSeeAllClick = () => setIsModalOpen(true);
 
-  // Unified image extraction logic (matches Squad list/Player components)
-  const extractPlayerImage = (player: TopAssist) => {
-    return (
+  // --- Squad-style image extraction, with console log
+  const extractPlayerImage = (player: TopAssist): string => {
+    const src =
       (player.optimized_avatar_url && player.optimized_avatar_url.trim()) ||
       (player.ProfileURL && player.ProfileURL.trim()) ||
       (player.profile_picture && player.profile_picture.trim()) ||
-      ""
-    );
+      "";
+    console.log(`[TopAssistsCard] name=${player.name}, imageUrl=${src}`);
+    return src;
   };
 
   return (
@@ -105,7 +103,7 @@ const TopAssistsCard = ({ topAssists, isLoading, error }: TopAssistsCardProps) =
                   }}
                 >
                   <div className="flex items-center space-x-2 sm:space-x-3 min-w-0">
-                    {/* No trophy icon */}
+                    {/* Rank number */}
                     <Badge
                       variant="outline"
                       className={`w-7 h-7 sm:w-9 sm:h-9 rounded-full flex items-center justify-center text-xs font-bold border bg-white ${
