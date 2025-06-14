@@ -1,4 +1,3 @@
-
 import { Badge } from "@/components/ui/badge";
 import { Eye } from "lucide-react";
 import { Fixture } from "@/types/database";
@@ -70,8 +69,8 @@ const MobilePortraitFixtureCard = ({
           <div className="flex items-center gap-3 min-w-0">
             {/* Logos */}
             <div className="flex flex-col items-center gap-1">
-              <TeamLogo team={fixture.home_team} size="tiny" />
-              <TeamLogo team={fixture.away_team} size="tiny" />
+              <TeamLogo team={fixture.home_team} size="small" />
+              <TeamLogo team={fixture.away_team} size="small" />
             </div>
             {/* Names */}
             <div className="flex flex-col justify-center min-w-0">
