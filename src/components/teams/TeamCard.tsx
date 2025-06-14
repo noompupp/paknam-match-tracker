@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -8,7 +7,7 @@ import { Team } from "@/types/database";
 
 interface TeamCardProps {
   team: Team;
-  onViewSquad: (teamId: number) => void;
+  onViewSquad: (teamId: string) => void;
 }
 
 const TeamCard = ({ team, onViewSquad }: TeamCardProps) => {
@@ -50,7 +49,7 @@ const TeamCard = ({ team, onViewSquad }: TeamCardProps) => {
         <Button 
           className="w-full mt-4 bg-primary hover:bg-primary/90" 
           size="sm"
-          onClick={() => onViewSquad(team.id)}
+          onClick={() => onViewSquad(team.__id__)}
         >
           View Squad <ArrowRight className="h-4 w-4 ml-1" />
         </Button>

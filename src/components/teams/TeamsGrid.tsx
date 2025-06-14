@@ -7,7 +7,7 @@ import { Team } from "@/types/database";
 interface TeamsGridProps {
   teams: Team[] | undefined;
   isLoading: boolean;
-  onViewSquad: (teamId: number) => void;
+  onViewSquad: (teamId: string) => void;
 }
 
 const TeamsGrid = ({ teams, isLoading, onViewSquad }: TeamsGridProps) => {
@@ -61,3 +61,4 @@ const TeamsGrid = ({ teams, isLoading, onViewSquad }: TeamsGridProps) => {
 };
 
 export default TeamsGrid;
+
