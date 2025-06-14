@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -7,7 +8,6 @@ import { useFilteredAssistsRanking } from "@/hooks/useFullRankingData";
 import FullRankingModal from "./FullRankingModal";
 import MiniPlayerAvatar from "./MiniPlayerAvatar";
 
-// Consistent highlight styles for top 3, supporting dark mode
 const rankStyles = [
   "bg-yellow-50 border-yellow-300 ring-[2.5px] ring-yellow-300 dark:bg-yellow-950 dark:border-yellow-800 dark:ring-yellow-900/80",
   "bg-gray-50 border-gray-300 ring-[2.5px] ring-gray-300 dark:bg-zinc-900 dark:border-zinc-700 dark:ring-zinc-400/60",
@@ -77,23 +77,18 @@ const TopAssistsCard = ({ topAssists, isLoading, error }: TopAssistsCardProps) =
             ))
           ) : topAssists && topAssists.length > 0 ? (
             topAssists.map((assist, index) => {
-              // Debug log for each item
-              console.log("[TopAssistsCard Player]", {
+              console.log("[Avatar Debug]", {
                 id: assist.id,
                 name: assist.name,
                 profileImageUrl: assist.profileImageUrl,
+                assist,
               });
               const isTop3 = index < 3;
               const boxShadow = isTop3
                 ? "0 0 0 2px rgba(240,200,50,0.12), 0 1px 4px 0 rgba(0,0,0,0.03)"
                 : undefined;
 
-              // Forcibly hardcode image in rank 1 (for debug)
-              const forcedImage =
-                index === 0
-                  ? "https://images.unsplash.com/photo-1582562124811-c09040d0a901?w=128&h=128&fit=facearea"
-                  : assist.profileImageUrl;
-
+              // ONLY pass the image/props available, do not override
               return (
                 <div
                   key={`${assist.id ?? index}-${assist.profileImageUrl ?? "none"}`}
@@ -115,7 +110,7 @@ const TopAssistsCard = ({ topAssists, isLoading, error }: TopAssistsCardProps) =
                     </Badge>
                     <MiniPlayerAvatar
                       name={assist.name}
-                      imageUrl={forcedImage}
+                      imageUrl={assist.profileImageUrl}
                       size={32}
                     />
                     <div className="truncate">

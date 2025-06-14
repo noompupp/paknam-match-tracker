@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -7,9 +8,7 @@ import { useFilteredScorersRanking } from "@/hooks/useFullRankingData";
 import FullRankingModal from "./FullRankingModal";
 import MiniPlayerAvatar from "./MiniPlayerAvatar";
 
-// Consistent highlight styles for top 3, supporting dark mode
 const rankStyles = [
-  // Gold, Silver, Bronze, with correct highlight and dark mode
   "bg-yellow-50 border-yellow-300 ring-[2.5px] ring-yellow-300 dark:bg-yellow-950 dark:border-yellow-800 dark:ring-yellow-900/80",
   "bg-gray-50 border-gray-300 ring-[2.5px] ring-gray-300 dark:bg-zinc-900 dark:border-zinc-700 dark:ring-zinc-400/60",
   "bg-orange-50 border-orange-200 ring-[2.5px] ring-orange-200 dark:bg-orange-950 dark:border-orange-900 dark:ring-orange-900/70"
@@ -78,26 +77,22 @@ const TopScorersCard = ({ topScorers, isLoading, error }: TopScorersCardProps) =
             ))
           ) : topScorers && topScorers.length > 0 ? (
             topScorers.map((scorer, index) => {
-              // Debug log for each item
-              console.log("[TopScorersCard Player]", {
+              // Log what is actually being passed to the Avatar
+              console.log("[Avatar Debug]", {
                 id: scorer.id,
                 name: scorer.name,
                 profileImageUrl: scorer.profileImageUrl,
+                scorer,
               });
               const isTop3 = index < 3;
               const boxShadow = isTop3
                 ? "0 0 0 2px rgba(240,200,50,0.12), 0 1px 4px 0 rgba(0,0,0,0.03)"
                 : undefined;
 
-              // Forcibly hardcode image in rank 1 (for debug)
-              const forcedImage =
-                index === 0
-                  ? "https://images.unsplash.com/photo-1582562124811-c09040d0a901?w=128&h=128&fit=facearea"
-                  : scorer.profileImageUrl;
-
+              // Only use the "profileImageUrl" that lives on the player object, with no overrides
               return (
                 <div
-                  key={`${scorer.id ?? index}-${scorer.profileImageUrl ?? "none"}`}
+                  key={`${scorer.id ?? index}-${scorer.profileImageUrl ?? ""}`}
                   className={`flex items-center justify-between p-2 sm:p-3 rounded-lg transition-colors mb-1 ${
                     isTop3 ? `${rankStyles[index]} border ring` : "hover:bg-muted/30"
                   }`}
@@ -118,7 +113,7 @@ const TopScorersCard = ({ topScorers, isLoading, error }: TopScorersCardProps) =
                     </Badge>
                     <MiniPlayerAvatar
                       name={scorer.name}
-                      imageUrl={forcedImage}
+                      imageUrl={scorer.profileImageUrl}
                       size={32}
                     />
                     <div className="truncate">

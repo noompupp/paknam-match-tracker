@@ -90,23 +90,19 @@ const FullRankingModal = ({
           ) : players && players.length > 0 ? (
             <div className="space-y-3">
               {players.map((player, index) => {
-                // Debug log for modal as well
-                console.log("[FullRankingModal Player]", {
+                // Debug log for modal avatar
+                console.log("[Avatar Debug]", {
                   id: player.id,
                   name: player.name,
                   profileImageUrl: player.profileImageUrl,
+                  player,
                 });
                 const isTop3 = index < 3;
                 const rankClass = isTop3
                   ? `${rankStyles[index]} border-2 ring-[2px] ring-inset`
                   : "hover:bg-muted/50";
 
-                // Forcibly use example image for rank 1 as debug
-                const forcedImage =
-                  index === 0
-                    ? "https://images.unsplash.com/photo-1582562124811-c09040d0a901?w=128&h=128&fit=facearea"
-                    : player.profileImageUrl;
-
+                // Only use what's in the object, do not override images
                 return (
                   <div 
                     key={`${player.id ?? index}-${player.profileImageUrl ?? "none"}`}
@@ -121,7 +117,7 @@ const FullRankingModal = ({
                       </Badge>
                       <MiniPlayerAvatar
                         name={player.name}
-                        imageUrl={forcedImage}
+                        imageUrl={player.profileImageUrl}
                         size={38}
                       />
                       <div className="truncate max-w-[140px]">
