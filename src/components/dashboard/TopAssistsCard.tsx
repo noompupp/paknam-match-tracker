@@ -42,27 +42,21 @@ const TopAssistsCard = ({ topAssists, isLoading, error }: TopAssistsCardProps) =
 
   const handleSeeAllClick = () => setIsModalOpen(true);
 
-  // ---- Image extraction logic - always prefer 'profileImageUrl' first ---
-  const extractPlayerImage = (player: TopAssist, index: number): string => {
-    // Log debug info for diagnostics
-    console.log(
-      `[TopAssistsCard] Player:`,
-      {
-        id: player.id,
-        name: player.name,
-        profileImageUrl: player.profileImageUrl,
-        optimized_avatar_url: player.optimized_avatar_url,
-        ProfileURL: player.ProfileURL,
-        profile_picture: player.profile_picture
-      }
-    );
-    return (
-      (player.profileImageUrl && player.profileImageUrl.trim()) ||
-      (player.optimized_avatar_url && player.optimized_avatar_url.trim()) ||
-      (player.ProfileURL && player.ProfileURL.trim()) ||
-      (player.profile_picture && player.profile_picture.trim()) ||
-      ""
-    );
+  // --- IMAGE RESOLUTION copied from EnhancedPlayersList (squad) ---
+  const extractPlayerImage = (player: TopAssist) => {
+    // Use the same sequence as the team squad: profileImageUrl > optimized_avatar_url > ProfileURL > profile_picture
+    let imageUrl =
+      (typeof player.profileImageUrl === "string" && player.profileImageUrl.trim()) ||
+      (typeof player.optimized_avatar_url === "string" && player.optimized_avatar_url.trim()) ||
+      (typeof player.ProfileURL === "string" && player.ProfileURL.trim()) ||
+      (typeof player.profile_picture === "string" && player.profile_picture.trim()) ||
+      "";
+
+    // Strict logging as requested
+    // eslint-disable-next-line no-console
+    console.log("[TopAssistsCard/Avatar] player.name:", player.name, "player.id:", player.id, "imageUrl:", imageUrl);
+
+    return imageUrl;
   };
 
   return (
@@ -101,7 +95,7 @@ const TopAssistsCard = ({ topAssists, isLoading, error }: TopAssistsCardProps) =
             ))
           ) : topAssists && topAssists.length > 0 ? (
             topAssists.map((assist, index) => {
-              const imageUrl = extractPlayerImage(assist, index);
+              const imageUrl = extractPlayerImage(assist);
               const isTop3 = index < 3;
               const boxShadow = isTop3
                 ? "0 0 0 2px rgba(240,200,50,0.12), 0 1px 4px 0 rgba(0,0,0,0.03)"
@@ -161,4 +155,3 @@ const TopAssistsCard = ({ topAssists, isLoading, error }: TopAssistsCardProps) =
 };
 
 export default TopAssistsCard;
-

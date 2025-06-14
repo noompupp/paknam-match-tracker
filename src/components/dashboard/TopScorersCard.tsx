@@ -43,27 +43,23 @@ const TopScorersCard = ({ topScorers, isLoading, error }: TopScorersCardProps) =
 
   const handleSeeAllClick = () => setIsModalOpen(true);
 
-  // ---- Image extraction logic - always prefer 'profileImageUrl' first like the squad view ---
-  const extractPlayerImage = (player: TopScorer, index: number): string => {
-    // Log useful debug info always
-    console.log(
-      `[TopScorersCard] Player:`, {
-        id: player.id,
-        name: player.name,
-        profileImageUrl: player.profileImageUrl,
-        optimized_avatar_url: player.optimized_avatar_url,
-        ProfileURL: player.ProfileURL,
-        profile_picture: player.profile_picture
-      }
-    );
-    // Pull from profileImageUrl primarily (exactly match Squad List logic)
-    return (
-      (player.profileImageUrl && player.profileImageUrl.trim()) ||
-      (player.optimized_avatar_url && player.optimized_avatar_url.trim()) ||
-      (player.ProfileURL && player.ProfileURL.trim()) ||
-      (player.profile_picture && player.profile_picture.trim()) ||
-      ""
-    );
+  // --- IMAGE RESOLUTION: Exact match with squad view (EnhancedPlayersList style) ---
+  const extractPlayerImage = (player: TopScorer) => {
+    // Always prefer profileImageUrl > optimized_avatar_url > ProfileURL > profile_picture
+    // If all fail, imageUrl should be ""
+    let imageUrl = 
+      (typeof player.profileImageUrl === "string" && player.profileImageUrl.trim()) ||
+      (typeof player.optimized_avatar_url === "string" && player.optimized_avatar_url.trim()) ||
+      (typeof player.ProfileURL === "string" && player.ProfileURL.trim()) ||
+      (typeof player.profile_picture === "string" && player.profile_picture.trim()) ||
+      "";
+
+    // Strict logging as requested
+    // eslint-disable-next-line no-console
+    console.log("[TopScorersCard/Avatar] player.name:", player.name, "player.id:", player.id, "imageUrl:", imageUrl);
+
+    // If avatar field is undefined, MiniPlayerAvatar will get "", as in squad.
+    return imageUrl;
   };
 
   return (
@@ -102,7 +98,7 @@ const TopScorersCard = ({ topScorers, isLoading, error }: TopScorersCardProps) =
             ))
           ) : topScorers && topScorers.length > 0 ? (
             topScorers.map((scorer, index) => {
-              const imageUrl = extractPlayerImage(scorer, index);
+              const imageUrl = extractPlayerImage(scorer);
               const isTop3 = index < 3;
               const boxShadow = isTop3
                 ? "0 0 0 2px rgba(240,200,50,0.12), 0 1px 4px 0 rgba(0,0,0,0.03)"
@@ -167,4 +163,3 @@ const TopScorersCard = ({ topScorers, isLoading, error }: TopScorersCardProps) =
 };
 
 export default TopScorersCard;
-

@@ -54,26 +54,21 @@ const FullRankingModal = ({
     return statType === 'goals' ? 'bg-primary text-primary-foreground' : 'bg-blue-600 text-white';
   };
 
-  // --- Image extraction mimics the enhanced Squad logic for consistency and id debug
-  const extractPlayerImage = (player: RankingPlayer, index: number): string => {
-    console.log(
-      `[FullRankingModal] Player:`,
-      {
-        id: player.id,
-        name: player.name,
-        profileImageUrl: player.profileImageUrl,
-        optimized_avatar_url: player.optimized_avatar_url,
-        ProfileURL: player.ProfileURL,
-        profile_picture: player.profile_picture
-      }
-    );
-    return (
-      (player.profileImageUrl && player.profileImageUrl.trim()) ||
-      (player.optimized_avatar_url && player.optimized_avatar_url.trim()) ||
-      (player.ProfileURL && player.ProfileURL.trim()) ||
-      (player.profile_picture && player.profile_picture.trim()) ||
-      ""
-    );
+  // --- IMAGE RESOLUTION: Use squad style, log all (STRICT) ---
+  const extractPlayerImage = (player: RankingPlayer) => {
+    // Use explicit squad order
+    let imageUrl =
+      (typeof player.profileImageUrl === "string" && player.profileImageUrl.trim()) ||
+      (typeof player.optimized_avatar_url === "string" && player.optimized_avatar_url.trim()) ||
+      (typeof player.ProfileURL === "string" && player.ProfileURL.trim()) ||
+      (typeof player.profile_picture === "string" && player.profile_picture.trim()) ||
+      "";
+
+    // Strict logging requested
+    // eslint-disable-next-line no-console
+    console.log("[FullRankingModal/Avatar] player.name:", player.name, "player.id:", player.id, "imageUrl:", imageUrl);
+
+    return imageUrl;
   };
 
   return (
@@ -117,7 +112,7 @@ const FullRankingModal = ({
                 const rankClass = isTop3
                   ? `${rankStyles[index]} border-2 ring-[2px] ring-inset`
                   : "hover:bg-muted/50";
-                const imageUrl = extractPlayerImage(player, index);
+                const imageUrl = extractPlayerImage(player);
                 return (
                   <div 
                     key={index} 
@@ -164,4 +159,3 @@ const FullRankingModal = ({
 };
 
 export default FullRankingModal;
-
