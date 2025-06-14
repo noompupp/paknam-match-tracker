@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -31,8 +32,6 @@ interface TopAssistsCardProps {
   error?: Error | null;
 }
 
-const HARDCODED_IMAGE_URL = "https://randomuser.me/api/portraits/men/76.jpg"; // Example - replace with a real, working path
-
 const TopAssistsCard = ({ topAssists, isLoading, error }: TopAssistsCardProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const {
@@ -43,11 +42,9 @@ const TopAssistsCard = ({ topAssists, isLoading, error }: TopAssistsCardProps) =
 
   const handleSeeAllClick = () => setIsModalOpen(true);
 
-  // Reuse image extraction logic as Squad ("EnhancedPlayersList")
+  // Use the exact EnhancedPlayersList logic: direct access, no trimming/sanitizing
   const extractPlayerImageUrl = (player: TopAssist) => {
-    return typeof player.profileImageUrl === "string" && player.profileImageUrl.trim()
-      ? player.profileImageUrl.trim()
-      : "";
+    return player.profileImageUrl || "";
   };
 
   return (
@@ -92,9 +89,9 @@ const TopAssistsCard = ({ topAssists, isLoading, error }: TopAssistsCardProps) =
                 ? "0 0 0 2px rgba(240,200,50,0.12), 0 1px 4px 0 rgba(0,0,0,0.03)"
                 : undefined;
 
-              // Add requested avatar log
+              // Logging as per requirements
               // eslint-disable-next-line no-console
-              console.log(`[Avatar] ${assist.name} (${assist.id}): ${imageUrl}`);
+              console.log("[Avatar Debug]", assist.id, assist.name, imageUrl);
 
               return (
                 <div

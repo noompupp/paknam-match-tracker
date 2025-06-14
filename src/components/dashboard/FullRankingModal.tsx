@@ -1,3 +1,4 @@
+
 import { EnhancedDialog, EnhancedDialogContent, EnhancedDialogHeader, EnhancedDialogTitle } from "@/components/ui/enhanced-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -52,11 +53,9 @@ const FullRankingModal = ({
     return statType === 'goals' ? 'bg-primary text-primary-foreground' : 'bg-blue-600 text-white';
   };
 
-  // Use the _EXACT SAME_ extraction logic as EnhancedPlayersList (profileImageUrl only)
+  // Use the exact EnhancedPlayersList logic: profileImageUrl as-is
   const extractPlayerImageUrl = (player: RankingPlayer) => {
-    return typeof player.profileImageUrl === "string" && player.profileImageUrl.trim()
-      ? player.profileImageUrl.trim()
-      : "";
+    return player.profileImageUrl || "";
   };
 
   return (
@@ -102,9 +101,9 @@ const FullRankingModal = ({
                   : "hover:bg-muted/50";
                 const imageUrl = extractPlayerImageUrl(player);
 
-                // Requested avatar log
+                // Logging required by user
                 // eslint-disable-next-line no-console
-                console.log(`[Avatar] ${player.name} (${player.id}): ${imageUrl}`);
+                console.log("[Avatar Debug]", player.id, player.name, imageUrl);
 
                 return (
                   <div 

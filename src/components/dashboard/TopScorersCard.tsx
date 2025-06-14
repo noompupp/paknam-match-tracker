@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -31,8 +32,6 @@ interface TopScorersCardProps {
   error?: Error | null;
 }
 
-const HARDCODED_IMAGE_URL = "https://randomuser.me/api/portraits/men/75.jpg"; // Example - replace with known working path from Squad List
-
 const TopScorersCard = ({ topScorers, isLoading, error }: TopScorersCardProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { 
@@ -43,12 +42,9 @@ const TopScorersCard = ({ topScorers, isLoading, error }: TopScorersCardProps) =
 
   const handleSeeAllClick = () => setIsModalOpen(true);
 
-  // Shared avatar extraction logic as in EnhancedPlayersList
+  // Use the exact EnhancedPlayersList logic: direct access, no modification
   const extractPlayerImageUrl = (player: TopScorer) => {
-    // Use profileImageUrl ONLY if present and non-empty (no extra fallbacks).
-    return typeof player.profileImageUrl === "string" && player.profileImageUrl.trim()
-      ? player.profileImageUrl.trim()
-      : "";
+    return player.profileImageUrl || "";
   };
 
   return (
@@ -93,9 +89,9 @@ const TopScorersCard = ({ topScorers, isLoading, error }: TopScorersCardProps) =
                 ? "0 0 0 2px rgba(240,200,50,0.12), 0 1px 4px 0 rgba(0,0,0,0.03)"
                 : undefined;
               
-              // Log actual avatar binding now
+              // Logging as per requirements
               // eslint-disable-next-line no-console
-              console.log(`[Avatar] ${scorer.name} (${scorer.id}): ${imageUrl}`);
+              console.log("[Avatar Debug]", scorer.id, scorer.name, imageUrl);
 
               return (
                 <div
@@ -118,7 +114,7 @@ const TopScorersCard = ({ topScorers, isLoading, error }: TopScorersCardProps) =
                         {index + 1}
                       </span>
                     </Badge>
-                    {/* Avatar */}
+                    {/* Avatar: Exact profileImageUrl, no fallback */}
                     <MiniPlayerAvatar
                       name={scorer.name}
                       imageUrl={imageUrl}
