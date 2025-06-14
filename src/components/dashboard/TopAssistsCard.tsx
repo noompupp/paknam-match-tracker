@@ -16,9 +16,11 @@ const rankStyles = [
 ];
 
 interface TopAssist {
+  id?: number | string;
   name: string;
   team: string;
   assists: number;
+  profileImageUrl?: string | null;
   optimized_avatar_url?: string | null;
   ProfileURL?: string | null;
   profile_picture?: string | null;
@@ -40,21 +42,27 @@ const TopAssistsCard = ({ topAssists, isLoading, error }: TopAssistsCardProps) =
 
   const handleSeeAllClick = () => setIsModalOpen(true);
 
-  const KNOWN_WORKING_IMAGE = "https://randomuser.me/api/portraits/women/10.jpg"; // Test image
-
-  // --- Squad-style image extraction + forced test image for first item
+  // ---- Image extraction logic - always prefer 'profileImageUrl' first ---
   const extractPlayerImage = (player: TopAssist, index: number): string => {
-    if (index === 0) {
-      console.log(`[TopAssistsCard][TEST] Forced test image for:`, player.name);
-      return KNOWN_WORKING_IMAGE;
-    }
-    const src =
+    // Log debug info for diagnostics
+    console.log(
+      `[TopAssistsCard] Player:`,
+      {
+        id: player.id,
+        name: player.name,
+        profileImageUrl: player.profileImageUrl,
+        optimized_avatar_url: player.optimized_avatar_url,
+        ProfileURL: player.ProfileURL,
+        profile_picture: player.profile_picture
+      }
+    );
+    return (
+      (player.profileImageUrl && player.profileImageUrl.trim()) ||
       (player.optimized_avatar_url && player.optimized_avatar_url.trim()) ||
       (player.ProfileURL && player.ProfileURL.trim()) ||
       (player.profile_picture && player.profile_picture.trim()) ||
-      "";
-    console.log(`[TopAssistsCard] name=${player.name}, imageUrl=${src}`);
-    return src;
+      ""
+    );
   };
 
   return (

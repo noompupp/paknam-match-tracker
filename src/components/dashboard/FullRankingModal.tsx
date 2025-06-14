@@ -1,3 +1,4 @@
+
 import { EnhancedDialog, EnhancedDialogContent, EnhancedDialogHeader, EnhancedDialogTitle } from "@/components/ui/enhanced-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -12,10 +13,12 @@ const rankStyles = [
 ];
 
 interface RankingPlayer {
+  id?: number | string;
   name: string;
   team: string;
   goals?: number;
   assists?: number;
+  profileImageUrl?: string | null;
   optimized_avatar_url?: string | null;
   ProfileURL?: string | null;
   profile_picture?: string | null;
@@ -51,22 +54,26 @@ const FullRankingModal = ({
     return statType === 'goals' ? 'bg-primary text-primary-foreground' : 'bg-blue-600 text-white';
   };
 
-  // --- Squad-style image extraction + console log for every player
-  const KNOWN_WORKING_IMAGE = "https://randomuser.me/api/portraits/men/75.jpg"; // Hardcoded test image
-
+  // --- Image extraction mimics the enhanced Squad logic for consistency and id debug
   const extractPlayerImage = (player: RankingPlayer, index: number): string => {
-    // For test: first player always gets the known working image
-    if (index === 0) {
-      console.log(`[FullRankingModal][TEST] FORCED TEST IMAGE for player:`, player.name);
-      return KNOWN_WORKING_IMAGE;
-    }
-    const src =
+    console.log(
+      `[FullRankingModal] Player:`,
+      {
+        id: player.id,
+        name: player.name,
+        profileImageUrl: player.profileImageUrl,
+        optimized_avatar_url: player.optimized_avatar_url,
+        ProfileURL: player.ProfileURL,
+        profile_picture: player.profile_picture
+      }
+    );
+    return (
+      (player.profileImageUrl && player.profileImageUrl.trim()) ||
       (player.optimized_avatar_url && player.optimized_avatar_url.trim()) ||
       (player.ProfileURL && player.ProfileURL.trim()) ||
       (player.profile_picture && player.profile_picture.trim()) ||
-      "";
-    console.log(`[FullRankingModal] name=${player.name}, imageUrl=${src}`);
-    return src;
+      ""
+    );
   };
 
   return (
@@ -157,3 +164,4 @@ const FullRankingModal = ({
 };
 
 export default FullRankingModal;
+

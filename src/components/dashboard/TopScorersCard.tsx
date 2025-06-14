@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -15,9 +16,12 @@ const rankStyles = [
 ];
 
 interface TopScorer {
+  id?: number | string;
   name: string;
   team: string;
   goals: number;
+  // Accept all possible profile image props from API/squad
+  profileImageUrl?: string | null;
   optimized_avatar_url?: string | null;
   ProfileURL?: string | null;
   profile_picture?: string | null;
@@ -39,21 +43,27 @@ const TopScorersCard = ({ topScorers, isLoading, error }: TopScorersCardProps) =
 
   const handleSeeAllClick = () => setIsModalOpen(true);
 
-  const KNOWN_WORKING_IMAGE = "https://randomuser.me/api/portraits/men/65.jpg"; // Hardcoded test
-
-  // --- Squad-style image extraction + force test image on first row
+  // ---- Image extraction logic - always prefer 'profileImageUrl' first like the squad view ---
   const extractPlayerImage = (player: TopScorer, index: number): string => {
-    if (index === 0) {
-      console.log(`[TopScorersCard][TEST] Forced test image for:`, player.name);
-      return KNOWN_WORKING_IMAGE;
-    }
-    const src =
+    // Log useful debug info always
+    console.log(
+      `[TopScorersCard] Player:`, {
+        id: player.id,
+        name: player.name,
+        profileImageUrl: player.profileImageUrl,
+        optimized_avatar_url: player.optimized_avatar_url,
+        ProfileURL: player.ProfileURL,
+        profile_picture: player.profile_picture
+      }
+    );
+    // Pull from profileImageUrl primarily (exactly match Squad List logic)
+    return (
+      (player.profileImageUrl && player.profileImageUrl.trim()) ||
       (player.optimized_avatar_url && player.optimized_avatar_url.trim()) ||
       (player.ProfileURL && player.ProfileURL.trim()) ||
       (player.profile_picture && player.profile_picture.trim()) ||
-      "";
-    console.log(`[TopScorersCard] name=${player.name}, imageUrl=${src}`);
-    return src;
+      ""
+    );
   };
 
   return (
@@ -157,3 +167,4 @@ const TopScorersCard = ({ topScorers, isLoading, error }: TopScorersCardProps) =
 };
 
 export default TopScorersCard;
+
