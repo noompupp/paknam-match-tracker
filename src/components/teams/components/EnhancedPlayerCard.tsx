@@ -92,6 +92,7 @@ const EnhancedPlayerCard = ({
   return (
     <Card className={cn(
       "premier-league-card hover:shadow-md transition-all duration-200",
+      // GRID VIEW: fix mobile portrait overlapping with responsive stacking
       "select-none",
       className
     )}>
@@ -134,65 +135,70 @@ const EnhancedPlayerCard = ({
             {/* Responsive Stat Bar for Grid Card */}
             <div className="w-full">
               <div className="block md:hidden">
+                {/* MOBILE: stat bar below details, stack tight */}
                 <PlayerStatsBar player={player} size="compact" className="mt-1" />
               </div>
               <div className="hidden md:block">
-                {/* DESKTOP/TABLET: improved stat bar with horizontal stat row per spec */}
+                {/* DESKTOP/TABLET: improved stat bar with better spacing */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
                   {/* GOALS */}
-                  <div className="flex flex-col items-center justify-center bg-muted/30 rounded-lg min-h-[72px] py-2 px-2">
-                    <div className="flex items-center gap-2 w-full h-full">
-                      <Trophy className="h-5 w-5 text-yellow-600 shrink-0" />
-                      <span className="font-medium text-foreground truncate text-sm">
-                        Goals: <span className="font-bold text-lg">{formatStat(player.goals)}</span>
-                        {showDetailedStats && player.goalsPerMatch !== undefined && (
-                          <span className="ml-1 text-xs text-muted-foreground">
-                            ({player.goalsPerMatch}/match)
-                          </span>
-                        )}
-                      </span>
+                  <div className="flex flex-col items-center justify-between bg-muted/30 rounded-lg min-h-[92px] py-3 px-2">
+                    <div className="flex flex-col items-center gap-1 w-full">
+                      <div className="flex items-center gap-1">
+                        <Trophy className="h-5 w-5 text-yellow-600" />
+                        <span className="font-bold text-lg text-foreground">{formatStat(player.goals)}</span>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-2">Goals</p>
+                      {showDetailedStats && (
+                        <p className="text-xs text-muted-foreground mt-1">
+                          ({player.goalsPerMatch}/match)
+                        </p>
+                      )}
                     </div>
                   </div>
                   {/* ASSISTS */}
-                  <div className="flex flex-col items-center justify-center bg-muted/30 rounded-lg min-h-[72px] py-2 px-2">
-                    <div className="flex items-center gap-2 w-full h-full">
-                      <Target className="h-5 w-5 text-blue-600 shrink-0" />
-                      <span className="font-medium text-foreground truncate text-sm">
-                        Assists: <span className="font-bold text-lg">{formatStat(player.assists)}</span>
-                        {showDetailedStats && player.assistsPerMatch !== undefined && (
-                          <span className="ml-1 text-xs text-muted-foreground">
-                            ({player.assistsPerMatch}/match)
-                          </span>
-                        )}
-                      </span>
+                  <div className="flex flex-col items-center justify-between bg-muted/30 rounded-lg min-h-[92px] py-3 px-2">
+                    <div className="flex flex-col items-center gap-1 w-full">
+                      <div className="flex items-center gap-1">
+                        <Target className="h-5 w-5 text-blue-600" />
+                        <span className="font-bold text-lg text-foreground">{formatStat(player.assists)}</span>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-2">Assists</p>
+                      {showDetailedStats && (
+                        <p className="text-xs text-muted-foreground mt-1">
+                          ({player.assistsPerMatch}/match)
+                        </p>
+                      )}
                     </div>
                   </div>
                   {/* MATCHES */}
-                  <div className="flex flex-col items-center justify-center bg-muted/30 rounded-lg min-h-[72px] py-2 px-2">
-                    <div className="flex items-center gap-2 w-full h-full">
-                      <Clock className="h-5 w-5 text-green-600 shrink-0" />
-                      <span className="font-medium text-foreground truncate text-sm">
-                        Matches: <span className="font-bold text-lg">{formatStat(player.matches_played)}</span>
-                        {showDetailedStats && player.total_minutes_played !== undefined && (
-                          <span className="ml-1 text-xs text-muted-foreground">
-                            {formatMinutes(player.total_minutes_played)}
-                          </span>
-                        )}
-                      </span>
+                  <div className="flex flex-col items-center justify-between bg-muted/30 rounded-lg min-h-[92px] py-3 px-2">
+                    <div className="flex flex-col items-center gap-1 w-full">
+                      <div className="flex items-center gap-1">
+                        <Clock className="h-5 w-5 text-green-600" />
+                        <span className="font-bold text-lg text-foreground">{formatStat(player.matches_played)}</span>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-2">Matches</p>
+                      {showDetailedStats && (
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {formatMinutes(player.total_minutes_played)}
+                        </p>
+                      )}
                     </div>
                   </div>
                   {/* CONTRIBUTION/SCORE */}
-                  <div className="flex flex-col items-center justify-center bg-muted/30 rounded-lg min-h-[72px] py-2 px-2">
-                    <div className="flex items-center gap-2 w-full h-full">
-                      <Zap className="h-5 w-5 text-purple-600 shrink-0" />
-                      <span className="font-medium text-foreground truncate text-sm">
-                        Score: <span className="font-bold text-lg">{formatStat(player.contributionScore)}</span>
-                        {showDetailedStats && player.minutesPerMatch > 0 && (
-                          <span className="ml-1 text-xs text-muted-foreground">
-                            {player.minutesPerMatch}min/match
-                          </span>
-                        )}
-                      </span>
+                  <div className="flex flex-col items-center justify-between bg-muted/30 rounded-lg min-h-[92px] py-3 px-2">
+                    <div className="flex flex-col items-center gap-1 w-full">
+                      <div className="flex items-center gap-1">
+                        <Zap className="h-5 w-5 text-purple-600" />
+                        <span className="font-bold text-lg text-foreground">{formatStat(player.contributionScore)}</span>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-2">Score</p>
+                      {showDetailedStats && player.minutesPerMatch > 0 && (
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {player.minutesPerMatch}min/match
+                        </p>
+                      )}
                     </div>
                   </div>
                 </div>
