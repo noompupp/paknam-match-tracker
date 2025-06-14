@@ -1,5 +1,6 @@
+
 import { Badge } from "@/components/ui/badge";
-import { Target, Trophy, Clock, Zap, Award } from "lucide-react";
+import { Target, Trophy, Clock, Zap, Award, Users, ChevronUp, ChevronDown } from "lucide-react";
 import { useState } from "react";
 import PlayerAvatar from "@/components/shared/PlayerAvatar";
 import { Member, Team } from "@/types/database";

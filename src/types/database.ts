@@ -1,4 +1,3 @@
-
 export interface Team {
   id: number;
   name: string;
@@ -40,6 +39,7 @@ export interface Member {
   updated_at: string;
   ProfileURL?: string; // Add ProfileURL property
   team?: Team;
+  contributionScore?: number; // <-- Add this line to fix the type error
 }
 
 export interface Fixture {
