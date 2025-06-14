@@ -76,7 +76,7 @@ const TopAssistsCard = ({ topAssists, isLoading, error }: TopAssistsCardProps) =
               </div>
             ))
           ) : topAssists && topAssists.length > 0 ? (
-            topAssists.map((assist) => {
+            topAssists.map((assist, idx) => {
               // Explicitly log and bind image as requested
               // eslint-disable-next-line no-console
               console.log("[Avatar Debug]", assist.id, assist.name, assist.profileImageUrl);
@@ -89,7 +89,7 @@ const TopAssistsCard = ({ topAssists, isLoading, error }: TopAssistsCardProps) =
 
               return (
                 <div
-                  key={assist.id}
+                  key={`${assist.id}-${assist.profileImageUrl || ""}`}
                   className={`flex items-center justify-between p-2 sm:p-3 rounded-lg transition-colors mb-1 ${
                     isTop3 ? `${rankStyles[index]} border ring` : "hover:bg-muted/30"
                   }`}
@@ -111,6 +111,26 @@ const TopAssistsCard = ({ topAssists, isLoading, error }: TopAssistsCardProps) =
                       imageUrl={assist.profileImageUrl}
                       size={32}
                     />
+                    {/* TEMP FORCED IMAGE for debugging FIRST row */}
+                    {idx === 0 && assist.profileImageUrl && (
+                      <img
+                        src={assist.profileImageUrl}
+                        alt="DEBUG: direct img"
+                        style={{
+                          width: 32,
+                          height: 32,
+                          borderRadius: "50%",
+                          marginLeft: 4,
+                          border: "2px solid #0af"
+                        }}
+                        ref={el => {
+                          if (el) {
+                            // eslint-disable-next-line no-console
+                            console.log("[Forced IMG TEST][Loaded]", assist.profileImageUrl, el.naturalWidth, el.naturalHeight);
+                          }
+                        }}
+                      />
+                    )}
                     <div className="truncate">
                       <p className="font-semibold text-sm truncate">{assist.name}</p>
                       <p className="text-xs sm:text-sm text-muted-foreground truncate">{assist.team}</p>

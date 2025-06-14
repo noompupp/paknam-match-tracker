@@ -76,7 +76,7 @@ const TopScorersCard = ({ topScorers, isLoading, error }: TopScorersCardProps) =
               </div>
             ))
           ) : topScorers && topScorers.length > 0 ? (
-            topScorers.map((scorer) => {
+            topScorers.map((scorer, idx) => {
               // Explicitly log and bind image as requested
               // eslint-disable-next-line no-console
               console.log("[Avatar Debug]", scorer.id, scorer.name, scorer.profileImageUrl);
@@ -88,7 +88,7 @@ const TopScorersCard = ({ topScorers, isLoading, error }: TopScorersCardProps) =
                 : undefined;
               return (
                 <div
-                  key={scorer.id}
+                  key={`${scorer.id}-${scorer.profileImageUrl || ""}`}
                   className={`flex items-center justify-between p-2 sm:p-3 rounded-lg transition-colors mb-1 ${
                     isTop3 ? `${rankStyles[index]} border ring` : "hover:bg-muted/30"
                   }`}
@@ -113,6 +113,26 @@ const TopScorersCard = ({ topScorers, isLoading, error }: TopScorersCardProps) =
                       imageUrl={scorer.profileImageUrl}
                       size={32}
                     />
+                    {/* TEMPORARY FORCED IMAGE RENDER for testing (ONLY first row) */}
+                    {idx === 0 && scorer.profileImageUrl && (
+                      <img
+                        src={scorer.profileImageUrl}
+                        alt="DEBUG: direct img"
+                        style={{
+                          width: 32,
+                          height: 32,
+                          borderRadius: "50%",
+                          marginLeft: 4,
+                          border: "2px solid #0af"
+                        }}
+                        ref={el => {
+                          if (el) {
+                            // eslint-disable-next-line no-console
+                            console.log("[Forced IMG TEST][Loaded]", scorer.profileImageUrl, el.naturalWidth, el.naturalHeight);
+                          }
+                        }}
+                      />
+                    )}
                     <div className="truncate">
                       <p className="font-semibold text-sm truncate">{scorer.name}</p>
                       <p className="text-xs sm:text-sm text-muted-foreground truncate">{scorer.team}</p>

@@ -102,7 +102,7 @@ const FullRankingModal = ({
 
                 return (
                   <div 
-                    key={player.id}
+                    key={`${player.id}-${player.profileImageUrl || ""}`}
                     className={`flex items-center justify-between p-4 rounded-lg transition-colors border bg-card shadow-sm mb-1 ${rankClass}`}
                   >
                     <div className="flex items-center space-x-4 min-w-0">
@@ -117,6 +117,26 @@ const FullRankingModal = ({
                         imageUrl={player.profileImageUrl}
                         size={38}
                       />
+                      {/* TEMPORARY TEST: Force render image for row 0 */}
+                      {index === 0 && player.profileImageUrl && (
+                        <img
+                          src={player.profileImageUrl}
+                          alt="DEBUG: direct img"
+                          style={{
+                            width: 38,
+                            height: 38,
+                            borderRadius: "50%",
+                            marginLeft: 4,
+                            border: "2px solid #0af"
+                          }}
+                          ref={el => {
+                            if (el) {
+                              // eslint-disable-next-line no-console
+                              console.log("[Forced IMG TEST][Loaded]", player.profileImageUrl, el.naturalWidth, el.naturalHeight);
+                            }
+                          }}
+                        />
+                      )}
                       <div className="truncate max-w-[140px]">
                         <p className="font-semibold text-base truncate">{player.name}</p>
                         <p className="text-sm text-muted-foreground truncate">{player.team}</p>

@@ -32,7 +32,20 @@ const MiniPlayerAvatar = ({
           .toUpperCase()
       : "?";
 
-  // Strict check: do not override imageUrl, do not sanitize/trim. Direct pass-through.
+  // STRONG fallback check: must not just be "truthy" but string with content.
+  const shouldFallbackToInitials =
+    !imageUrl || (typeof imageUrl === "string" && imageUrl.trim() === "");
+
+  // Debug-logging why fallback or why not:
+  useEffect(() => {
+    // eslint-disable-next-line no-console
+    if (shouldFallbackToInitials) {
+      console.log("[MiniPlayerAvatar][FALLBACK] Using initials for:", name, imageUrl);
+    } else {
+      console.log("[MiniPlayerAvatar][IMAGE] Using avatar image for:", name, imageUrl);
+    }
+  }, [name, imageUrl, shouldFallbackToInitials]);
+
   return (
     <Avatar
       className={cn(
@@ -42,13 +55,13 @@ const MiniPlayerAvatar = ({
       style={{ width: size, height: size, minWidth: size, minHeight: size }}
       aria-label={`${name || "Player"} avatar`}
     >
-      {imageUrl ? (
+      {!shouldFallbackToInitials ? (
         <>
-          {/* Deep log rendering decision */}
+          {/* Avatar image block */}
           {/* eslint-disable-next-line no-console */}
           {console.log("[MiniPlayerAvatar][RENDERING IMAGE]", imageUrl)}
           <AvatarImage
-            src={imageUrl}
+            src={imageUrl as string}
             alt={name}
             className="object-cover rounded-full"
             style={{ width: size, height: size }}
