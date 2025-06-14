@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -42,11 +41,6 @@ const TopAssistsCard = ({ topAssists, isLoading, error }: TopAssistsCardProps) =
 
   const handleSeeAllClick = () => setIsModalOpen(true);
 
-  // Use the exact EnhancedPlayersList logic: direct access, no trimming/sanitizing
-  const extractPlayerImageUrl = (player: TopAssist) => {
-    return player.profileImageUrl || "";
-  };
-
   return (
     <>
       <Card className="card-shadow-lg animate-fade-in">
@@ -82,20 +76,20 @@ const TopAssistsCard = ({ topAssists, isLoading, error }: TopAssistsCardProps) =
               </div>
             ))
           ) : topAssists && topAssists.length > 0 ? (
-            topAssists.map((assist, index) => {
-              const imageUrl = extractPlayerImageUrl(assist);
+            topAssists.map((assist) => {
+              // Explicitly log and bind image as requested
+              // eslint-disable-next-line no-console
+              console.log("[Avatar Debug]", assist.id, assist.name, assist.profileImageUrl);
+
+              const index = topAssists.findIndex(a => a.id === assist.id);
               const isTop3 = index < 3;
               const boxShadow = isTop3
                 ? "0 0 0 2px rgba(240,200,50,0.12), 0 1px 4px 0 rgba(0,0,0,0.03)"
                 : undefined;
 
-              // Logging as per requirements
-              // eslint-disable-next-line no-console
-              console.log("[Avatar Debug]", assist.id, assist.name, imageUrl);
-
               return (
                 <div
-                  key={index}
+                  key={assist.id}
                   className={`flex items-center justify-between p-2 sm:p-3 rounded-lg transition-colors mb-1 ${
                     isTop3 ? `${rankStyles[index]} border ring` : "hover:bg-muted/30"
                   }`}
@@ -114,7 +108,7 @@ const TopAssistsCard = ({ topAssists, isLoading, error }: TopAssistsCardProps) =
                     </Badge>
                     <MiniPlayerAvatar
                       name={assist.name}
-                      imageUrl={imageUrl}
+                      imageUrl={assist.profileImageUrl}
                       size={32}
                     />
                     <div className="truncate">

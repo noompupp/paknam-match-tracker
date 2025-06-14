@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -42,11 +41,6 @@ const TopScorersCard = ({ topScorers, isLoading, error }: TopScorersCardProps) =
 
   const handleSeeAllClick = () => setIsModalOpen(true);
 
-  // Use the exact EnhancedPlayersList logic: direct access, no modification
-  const extractPlayerImageUrl = (player: TopScorer) => {
-    return player.profileImageUrl || "";
-  };
-
   return (
     <>
       <Card className="card-shadow-lg animate-fade-in">
@@ -82,20 +76,19 @@ const TopScorersCard = ({ topScorers, isLoading, error }: TopScorersCardProps) =
               </div>
             ))
           ) : topScorers && topScorers.length > 0 ? (
-            topScorers.map((scorer, index) => {
-              const imageUrl = extractPlayerImageUrl(scorer);
+            topScorers.map((scorer) => {
+              // Explicitly log and bind image as requested
+              // eslint-disable-next-line no-console
+              console.log("[Avatar Debug]", scorer.id, scorer.name, scorer.profileImageUrl);
+
+              const index = topScorers.findIndex(s => s.id === scorer.id);
               const isTop3 = index < 3;
               const boxShadow = isTop3
                 ? "0 0 0 2px rgba(240,200,50,0.12), 0 1px 4px 0 rgba(0,0,0,0.03)"
                 : undefined;
-              
-              // Logging as per requirements
-              // eslint-disable-next-line no-console
-              console.log("[Avatar Debug]", scorer.id, scorer.name, imageUrl);
-
               return (
                 <div
-                  key={index}
+                  key={scorer.id}
                   className={`flex items-center justify-between p-2 sm:p-3 rounded-lg transition-colors mb-1 ${
                     isTop3 ? `${rankStyles[index]} border ring` : "hover:bg-muted/30"
                   }`}
@@ -114,10 +107,10 @@ const TopScorersCard = ({ topScorers, isLoading, error }: TopScorersCardProps) =
                         {index + 1}
                       </span>
                     </Badge>
-                    {/* Avatar: Exact profileImageUrl, no fallback */}
+                    {/* Avatar: Always pass .profileImageUrl explicitly */}
                     <MiniPlayerAvatar
                       name={scorer.name}
-                      imageUrl={imageUrl}
+                      imageUrl={scorer.profileImageUrl}
                       size={32}
                     />
                     <div className="truncate">

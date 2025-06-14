@@ -1,4 +1,3 @@
-
 import { EnhancedDialog, EnhancedDialogContent, EnhancedDialogHeader, EnhancedDialogTitle } from "@/components/ui/enhanced-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -53,10 +52,7 @@ const FullRankingModal = ({
     return statType === 'goals' ? 'bg-primary text-primary-foreground' : 'bg-blue-600 text-white';
   };
 
-  // Use the exact EnhancedPlayersList logic: profileImageUrl as-is
-  const extractPlayerImageUrl = (player: RankingPlayer) => {
-    return player.profileImageUrl || "";
-  };
+  // 🚨 REMOVE legacy helper. Avatar image will be passed explicitly.
 
   return (
     <EnhancedDialog open={isOpen} onOpenChange={onClose}>
@@ -95,19 +91,18 @@ const FullRankingModal = ({
           ) : players && players.length > 0 ? (
             <div className="space-y-3">
               {players.map((player, index) => {
+                // Explicit logging of the avatar binding mapping
+                // eslint-disable-next-line no-console
+                console.log("[Avatar Debug]", player.id, player.name, player.profileImageUrl);
+
                 const isTop3 = index < 3;
                 const rankClass = isTop3
                   ? `${rankStyles[index]} border-2 ring-[2px] ring-inset`
                   : "hover:bg-muted/50";
-                const imageUrl = extractPlayerImageUrl(player);
-
-                // Logging required by user
-                // eslint-disable-next-line no-console
-                console.log("[Avatar Debug]", player.id, player.name, imageUrl);
 
                 return (
                   <div 
-                    key={index} 
+                    key={player.id}
                     className={`flex items-center justify-between p-4 rounded-lg transition-colors border bg-card shadow-sm mb-1 ${rankClass}`}
                   >
                     <div className="flex items-center space-x-4 min-w-0">
@@ -119,7 +114,7 @@ const FullRankingModal = ({
                       </Badge>
                       <MiniPlayerAvatar
                         name={player.name}
-                        imageUrl={imageUrl}
+                        imageUrl={player.profileImageUrl}
                         size={38}
                       />
                       <div className="truncate max-w-[140px]">
