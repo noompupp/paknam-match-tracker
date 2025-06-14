@@ -3,10 +3,9 @@ import { useQuery } from "@tanstack/react-query";
 import { useEnhancedTopScorers, useEnhancedTopAssists } from './useEnhancedPlayerStats';
 import { membersApi } from "@/services/api";
 
-// Return the correct property if it exists, blank otherwise
+// Extract correct image URL; fallback to ""
 const extractProfileImageUrl = (profile: any): string => {
   if (!profile) return "";
-  // Use any available avatar/profile fields (ordered by preference)
   return (
     profile.profileImageUrl ||
     profile.optimized_avatar_url ||
@@ -16,7 +15,7 @@ const extractProfileImageUrl = (profile: any): string => {
   );
 };
 
-// Fetch ALL members (with as much info as possible)
+// Fetch ALL members/profiles
 const useAllMembersProfiles = () => {
   return useQuery({
     queryKey: ['allMembersFullProfiles'],
@@ -24,21 +23,18 @@ const useAllMembersProfiles = () => {
       const members = await membersApi.getAll();
       return members || [];
     },
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 5 * 60 * 1000,
   });
 };
 
-// Always normalize strings for safe matching
-const normalize = (value: any) =>
-  typeof value === "string" ? value.trim().toLowerCase() : "";
+// Normalize for safe matching
+const normalize = (value: any) => typeof value === "string" ? value.trim().toLowerCase() : "";
 
-// Return top N scorers (raw from backend)
+// Hooks for ranking data (top-N, backend)
 export const useFullScorersRanking = () => useEnhancedTopScorers(100);
-
-// Return top N assists (raw from backend)
 export const useFullAssistsRanking = () => useEnhancedTopAssists(100);
 
-// Generic enrichment logic for profile data
+// Enhanced enrichment: better normalization and propagates image URL
 const enrichPlayerStatList = (
   statList: any[] | undefined,
   allProfiles: any[] | undefined,
@@ -58,22 +54,26 @@ const enrichPlayerStatList = (
       return a.name.localeCompare(b.name);
     })
     .map((player) => {
-      // Try to match by both name and team
-      const statName = normalize(player.name);
-      const statTeam = normalize(player.team);
+      // Use robust normalization for match
+      const statNameNorm = normalize(player.name);
+      const statTeamNorm = normalize(player.team);
 
-      // Find matching profile (first by name/team, fallback to name)
+      // Prefer exact name + team match, else fallback to just name
       const matchedProfile =
         allProfiles.find(
           (profile) =>
-            normalize(profile.name) === statName &&
-            normalize(profile.team?.name) === statTeam
+            normalize(profile.name) === statNameNorm &&
+            normalize(profile.team?.name) === statTeamNorm
         ) ||
-        allProfiles.find((profile) => normalize(profile.name) === statName);
+        allProfiles.find(
+          (profile) =>
+            normalize(profile.name) === statNameNorm
+        );
 
+      // Compose enriched object (always populate profileImageUrl)
       return {
         ...player,
-        id: matchedProfile?.id ?? player.name ?? player.id ?? Math.random().toString(36).slice(2, 9), // always present
+        id: matchedProfile?.id ?? player.name ?? player.id ?? Math.random().toString(36).slice(2, 9),
         profileImageUrl: extractProfileImageUrl(matchedProfile),
         team: matchedProfile?.team?.name || player.team || "",
       };
