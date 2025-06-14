@@ -1,7 +1,7 @@
 
-// Stripped-down MiniPlayerAvatar relying purely on provided profileImageUrl
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
+import React from "react";
 
 interface MiniPlayerAvatarProps {
   name: string;
@@ -16,7 +16,21 @@ const MiniPlayerAvatar = ({
   className = "",
   size = 32,
 }: MiniPlayerAvatarProps) => {
-  const profileImageSrc = typeof imageUrl === "string" && imageUrl.trim() !== "" ? imageUrl : undefined;
+  // Log the imageUrl every time avatar renders for tracking
+  React.useEffect(() => {
+    console.log("[Avatar Debug] Rendering", { name, imageUrl });
+  }, [name, imageUrl]);
+
+  const profileImageSrc =
+    typeof imageUrl === "string" && imageUrl.trim() !== "" ? imageUrl : undefined;
+
+  // Warn if we are falling back to blank avatar
+  if (!profileImageSrc) {
+    console.warn(
+      "[Avatar Fallback]",
+      { name, attemptedImage: imageUrl }
+    );
+  }
 
   return (
     <Avatar
@@ -26,6 +40,7 @@ const MiniPlayerAvatar = ({
       )}
       style={{ width: size, height: size, minWidth: size, minHeight: size }}
       aria-label={`${name || "Player"} avatar`}
+      data-avatar={name}
     >
       {profileImageSrc ? (
         <AvatarImage

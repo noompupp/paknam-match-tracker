@@ -77,14 +77,26 @@ const TopAssistsCard = ({ topAssists, isLoading, error }: TopAssistsCardProps) =
             ))
           ) : topAssists && topAssists.length > 0 ? (
             topAssists.map((assist, index) => {
+              // Debug log for each item
+              console.log("[TopAssistsCard Player]", {
+                id: assist.id,
+                name: assist.name,
+                profileImageUrl: assist.profileImageUrl,
+              });
               const isTop3 = index < 3;
               const boxShadow = isTop3
                 ? "0 0 0 2px rgba(240,200,50,0.12), 0 1px 4px 0 rgba(0,0,0,0.03)"
                 : undefined;
 
+              // Forcibly hardcode image in rank 1 (for debug)
+              const forcedImage =
+                index === 0
+                  ? "https://images.unsplash.com/photo-1582562124811-c09040d0a901?w=128&h=128&fit=facearea"
+                  : assist.profileImageUrl;
+
               return (
                 <div
-                  key={assist.id ?? index}
+                  key={`${assist.id ?? index}-${assist.profileImageUrl ?? "none"}`}
                   className={`flex items-center justify-between p-2 sm:p-3 rounded-lg transition-colors mb-1 ${
                     isTop3 ? `${rankStyles[index]} border ring` : "hover:bg-muted/30"
                   }`}
@@ -103,7 +115,7 @@ const TopAssistsCard = ({ topAssists, isLoading, error }: TopAssistsCardProps) =
                     </Badge>
                     <MiniPlayerAvatar
                       name={assist.name}
-                      imageUrl={assist.profileImageUrl}
+                      imageUrl={forcedImage}
                       size={32}
                     />
                     <div className="truncate">
