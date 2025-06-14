@@ -1,4 +1,3 @@
-
 import { Card, CardContent } from "@/components/ui/card";
 import { BarChart3, Trophy } from "lucide-react";
 import CollapsibleScoreBanner from "./CollapsibleScoreBanner";
@@ -44,15 +43,6 @@ const AccordionMatchSummaryLayout = ({
 
   return (
     <div className="space-y-6">
-      {/* Centered Header */}
-      <div className="text-center space-y-2">
-        <div className="flex items-center justify-center gap-2">
-          <Trophy className="h-6 w-6 text-primary" />
-          <h2 className="text-2xl font-bold text-foreground">Match Summary</h2>
-        </div>
-        <p className="text-muted-foreground">Comprehensive match overview and statistics</p>
-      </div>
-
       {/* New Collapsible Score Banner with Integrated Timeline */}
       <CollapsibleScoreBanner
         fixture={fixture}
