@@ -11,12 +11,15 @@ import { ArrowLeft } from "lucide-react";
 const Teams = () => {
   const { t } = useTranslation();
   const { data: teams, isLoading: teamsLoading, error } = useTeams();
-  const [selectedTeamId, setSelectedTeamId] = useState<number | null>(null);
   
-  // Get the selected team
-  const selectedTeam = teams?.find(team => team.id === selectedTeamId);
+  // CHANGED: Use __id__ (string doc ID from Firestore/Supabase) for routing/enhanced services
+  const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
 
-  const handleViewSquad = (teamId: number) => {
+  // CHANGED: Find by __id__ not numeric id
+  const selectedTeam = teams?.find(team => team.__id__ === selectedTeamId);
+
+  // CHANGED: Always pass and store team.__id__ (doc key)
+  const handleViewSquad = (teamId: string) => {
     setSelectedTeamId(teamId);
     const squadSection = document.getElementById('enhanced-team-squad');
     if (squadSection) {
@@ -81,7 +84,28 @@ const Teams = () => {
           <TeamsGrid 
             teams={teams}
             isLoading={teamsLoading}
-            onViewSquad={handleViewSquad}
+            // CHANGED: Always pass team.__id__ from grid to handler (GRID must be using __id__ as param for squad view)
+            onViewSquad={(teamIdOrObj: any) => {
+              // Support both API signatures: pass team object or string
+              if (typeof teamIdOrObj === "string") {
+                handleViewSquad(teamIdOrObj);
+              } else if (typeof teamIdOrObj === 'object' && teamIdOrObj?.__id__) {
+                handleViewSquad(teamIdOrObj.__id__);
+              } else if (typeof teamIdOrObj === 'object' && teamIdOrObj?.id) {
+                // fallback if only numeric provided
+                // try lookup via id to get __id__:
+                const match = teams?.find(t => t.id === teamIdOrObj.id);
+                if (match?.__id__) {
+                  handleViewSquad(match.__id__);
+                } else {
+                  // fallback again
+                  handleViewSquad(String(teamIdOrObj.id));
+                }
+              } else {
+                // fallback: just try as string
+                handleViewSquad(String(teamIdOrObj));
+              }
+            }}
           />
         ) : (
           <div id="enhanced-team-squad" className="scroll-mt-nav">
@@ -97,3 +121,4 @@ const Teams = () => {
 };
 
 export default Teams;
+
