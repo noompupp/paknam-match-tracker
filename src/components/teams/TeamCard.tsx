@@ -39,31 +39,10 @@ const TeamCard = ({ team, onViewSquad }: TeamCardProps) => {
     }
   }, [team]);
 
-  // Fallback: show "TBD" if empty/undefined, otherwise display name
-  // If captain has Thai, add a small badge for visual confirmation
+  // Show plain captain name, or "TBD" if empty/undefined
   const captainDisplay = team.captain && team.captain.trim() !== ""
-    ? (
-      <span>
-        <span
-          className={containsThai(team.captain) ? "font-bold text-pink-600" : ""}
-          style={{
-            // Force a font that supports Thai for debugging (if fails, fallback to system-ui)
-            fontFamily: containsThai(team.captain)
-              ? `'Noto Sans Thai', 'Noto Sans', 'Tahoma', 'Arial', 'sans-serif'`
-              : undefined,
-          }}
-        >
-          {team.captain}
-        </span>
-        {containsThai(team.captain) && (
-          <span className="ml-1 px-1 py-0.5 rounded bg-yellow-100 text-yellow-800 text-[10px] align-middle border border-yellow-200">
-            ไทย
-          </span>
-        )}
-      </span>
-    ) : (
-      <span className="italic text-muted-foreground">TBD</span>
-    );
+    ? <span>{team.captain}</span>
+    : <span className="italic text-muted-foreground">TBD</span>;
 
   return (
     <Card className="card-shadow-lg hover:card-shadow-lg hover:scale-105 transition-all duration-300 animate-fade-in">
