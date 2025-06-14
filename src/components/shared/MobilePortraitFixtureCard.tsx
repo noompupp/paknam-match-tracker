@@ -82,8 +82,11 @@ const MobilePortraitFixtureCard = ({
               </div>
             </div>
           </div>
-          {/* Right: Status and Score, vertically stacked and centered */}
-          <div className="flex flex-col items-center justify-center min-w-[88px] pl-3 pr-2">
+          {/* Right: Status and Score, vertically stacked and centered, slightly inset */}
+          <div
+            className="flex flex-col items-center justify-center w-[86px] mx-auto"
+            style={{ marginRight: '8px' }} // slightly inside from the far right
+          >
             <Badge
               variant="default"
               className="text-xs px-2 py-1 font-bold mb-1 w-[72px] text-center"
