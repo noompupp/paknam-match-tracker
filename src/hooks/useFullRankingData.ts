@@ -37,7 +37,6 @@ export const useFilteredScorersRanking = () => {
   const { data: allScorers, isLoading, error } = useFullScorersRanking();
   const { data: allMembers, isLoading: loadingMembers } = useAllMembersProfiles();
 
-  // Map stat ranking -> join with member by name or id, merge full profile & stat info
   let filteredData: any[] = [];
 
   if (allScorers) {
@@ -48,15 +47,16 @@ export const useFilteredScorersRanking = () => {
         return a.name.localeCompare(b.name);
       })
       .map(statPlayer => {
-        // Try to match by id (number or string), fall back to name (for cases where id might not exist)
+        // Attempt to find the best profile by name (and optionally team)
         const profile = allMembers?.find(
-          p => (String(p.id) === String(statPlayer.id)) || (p.name === statPlayer.name)
-        );
+          (p: any) => p.name === statPlayer.name && (!statPlayer.team || p.team?.name === statPlayer.team)
+        ) || allMembers?.find((p: any) => p.name === statPlayer.name);
+
         return {
           ...statPlayer,
+          id: profile?.id ?? undefined,
           profileImageUrl: extractProfileImageUrl(profile),
           team: profile?.team?.name || statPlayer.team,
-          // add any more from profile if needed!
         };
       });
   }
@@ -82,12 +82,14 @@ export const useFilteredAssistsRanking = () => {
         return a.name.localeCompare(b.name);
       })
       .map(statPlayer => {
-        // Try to match by id (number or string), fall back to name
+        // Attempt to find the best profile by name (and optionally team)
         const profile = allMembers?.find(
-          p => (String(p.id) === String(statPlayer.id)) || (p.name === statPlayer.name)
-        );
+          (p: any) => p.name === statPlayer.name && (!statPlayer.team || p.team?.name === statPlayer.team)
+        ) || allMembers?.find((p: any) => p.name === statPlayer.name);
+
         return {
           ...statPlayer,
+          id: profile?.id ?? undefined,
           profileImageUrl: extractProfileImageUrl(profile),
           team: profile?.team?.name || statPlayer.team,
         };
