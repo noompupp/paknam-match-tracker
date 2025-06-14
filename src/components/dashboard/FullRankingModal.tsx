@@ -1,14 +1,25 @@
+
 import { EnhancedDialog, EnhancedDialogContent, EnhancedDialogHeader, EnhancedDialogTitle } from "@/components/ui/enhanced-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Trophy, Target } from "lucide-react";
 import MiniPlayerAvatar from "./MiniPlayerAvatar";
 
+// Medal styling for top 3 (same logic for modal)
+const rankStyles = [
+  "bg-gradient-to-r from-yellow-400/90 to-orange-300/95 border-yellow-500 shadow-gold",
+  "bg-gradient-to-r from-gray-300/80 to-slate-200/90 border-gray-400 shadow-silver",
+  "bg-gradient-to-r from-amber-400/40 to-orange-200/80 border-amber-400 shadow-bronze"
+];
+
 interface RankingPlayer {
   name: string;
   team: string;
   goals?: number;
   assists?: number;
+  optimized_avatar_url?: string | null;
+  ProfileURL?: string | null;
+  profile_picture?: string | null;
 }
 
 interface FullRankingModalProps {
@@ -80,37 +91,53 @@ const FullRankingModal = ({
             </div>
           ) : players && players.length > 0 ? (
             <div className="space-y-3">
-              {players.map((player, index) => (
-                <div 
-                  key={index} 
-                  className="flex items-center justify-between p-4 rounded-lg hover:bg-muted/50 transition-colors border bg-card shadow-sm"
-                >
-                  <div className="flex items-center space-x-4">
-                    <Badge 
-                      variant="outline" 
-                      className="w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm"
-                    >
-                      {index + 1}
-                    </Badge>
-                    <MiniPlayerAvatar
-                      name={player.name}
-                      imageUrl={
-                        // Use `profile_picture`, `ProfileURL`, or fallback
-                        // @ts-ignore
-                        player.profile_picture || (player as any).ProfileURL || ""
-                      }
-                      size={38}
-                    />
-                    <div>
-                      <p className="font-semibold text-base">{player.name}</p>
-                      <p className="text-sm text-muted-foreground">{player.team}</p>
+              {players.map((player, index) => {
+                const rankClass = index < 3 ? rankStyles[index] + " border-2" : "hover:bg-muted/50";
+                return (
+                  <div 
+                    key={index} 
+                    className={`flex items-center justify-between p-4 rounded-lg transition-colors border bg-card shadow-sm mb-1 ${rankClass}`}
+                    style={{
+                      boxShadow:
+                        index === 0
+                          ? "0 0 0 2px #ffd700, 0 4px 16px 0 #ffe06644"
+                          : index === 1
+                          ? "0 0 0 2px #c0c0c0, 0 4px 12px 0 #d6d6d6aa"
+                          : index === 2
+                          ? "0 0 0 2px #cd7f32, 0 4px 8px 0 #ffc98788"
+                          : undefined
+                    }}
+                  >
+                    <div className="flex items-center space-x-4 min-w-0">
+                      <Badge 
+                        variant="outline" 
+                        className="w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm bg-white/80 border-zinc-200"
+                      >
+                        {index + 1}
+                      </Badge>
+                      <MiniPlayerAvatar
+                        name={player.name}
+                        imageUrl={
+                          player.optimized_avatar_url ||
+                          // @ts-ignore
+                          player.ProfileURL ||
+                          // @ts-ignore
+                          player.profile_picture ||
+                          ""
+                        }
+                        size={38}
+                      />
+                      <div className="truncate max-w-[140px]">
+                        <p className="font-semibold text-base truncate">{player.name}</p>
+                        <p className="text-sm text-muted-foreground truncate">{player.team}</p>
+                      </div>
                     </div>
+                    <Badge className={`${getStatColor()} font-bold text-base px-3 py-1 shadow-md`}>
+                      {getStatValue(player)}
+                    </Badge>
                   </div>
-                  <Badge className={`${getStatColor()} font-bold text-base px-3 py-1`}>
-                    {getStatValue(player)}
-                  </Badge>
-                </div>
-              ))}
+                );
+              })}
             </div>
           ) : (
             <div className="text-center text-muted-foreground py-16">

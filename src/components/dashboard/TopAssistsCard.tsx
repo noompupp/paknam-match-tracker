@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -7,10 +8,20 @@ import { useFilteredAssistsRanking } from "@/hooks/useFullRankingData";
 import FullRankingModal from "./FullRankingModal";
 import MiniPlayerAvatar from "./MiniPlayerAvatar";
 
+// Medal styling for top 3
+const rankStyles = [
+  "bg-gradient-to-r from-yellow-300/80 to-orange-200/80 border-yellow-500 shadow-gold",
+  "bg-gradient-to-r from-gray-300/80 to-slate-200/90 border-gray-400 shadow-silver",
+  "bg-gradient-to-r from-amber-300/45 to-orange-100/80 border-amber-400 shadow-bronze"
+];
+
 interface TopAssist {
   name: string;
   team: string;
   assists: number;
+  optimized_avatar_url?: string | null;
+  ProfileURL?: string | null;
+  profile_picture?: string | null;
 }
 
 interface TopAssistsCardProps {
@@ -27,9 +38,7 @@ const TopAssistsCard = ({ topAssists, isLoading, error }: TopAssistsCardProps) =
     error: fullRankingError 
   } = useFilteredAssistsRanking();
 
-  const handleSeeAllClick = () => {
-    setIsModalOpen(true);
-  };
+  const handleSeeAllClick = () => setIsModalOpen(true);
 
   return (
     <>
@@ -66,29 +75,50 @@ const TopAssistsCard = ({ topAssists, isLoading, error }: TopAssistsCardProps) =
               </div>
             ))
           ) : topAssists && topAssists.length > 0 ? (
-            topAssists.map((assist, index) => (
-              <div key={index} className="flex items-center justify-between p-2 sm:p-3 rounded-lg hover:bg-muted/30 transition-colors">
-                <div className="flex items-center space-x-2 sm:space-x-3">
-                  <Badge variant="outline" className="w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs">
-                    {index + 1}
-                  </Badge>
-                  <MiniPlayerAvatar
-                    name={assist.name}
-                    imageUrl={
-                      // Use `profile_picture`, `ProfileURL`, or fallback
-                      // @ts-ignore - tolerate missing field temporarily
-                      assist.profile_picture || (assist as any).ProfileURL || ""
-                    }
-                    size={32}
-                  />
-                  <div>
-                    <p className="font-semibold text-sm">{assist.name}</p>
-                    <p className="text-xs sm:text-sm text-muted-foreground">{assist.team}</p>
+            topAssists.map((assist, index) => {
+              // Avatars: prefer optimized_avatar_url, then ProfileURL, then profile_picture
+              // Visual emphasis for top 3
+              const rankClass = index < 3 ? rankStyles[index] + " border-2" : "hover:bg-muted/30";
+              return (
+                <div
+                  key={index}
+                  className={`flex items-center justify-between p-2 sm:p-3 rounded-lg transition-colors mb-1 ${rankClass}`}
+                  style={{
+                    boxShadow:
+                      index === 0
+                        ? "0 0 0 2px #ffd700, 0 4px 16px 0 #ffe06644"
+                        : index === 1
+                        ? "0 0 0 2px #c0c0c0, 0 4px 12px 0 #d6d6d6aa"
+                        : index === 2
+                        ? "0 0 0 2px #cd7f32, 0 4px 8px 0 #ffc98788"
+                        : undefined
+                  }}
+                >
+                  <div className="flex items-center space-x-2 sm:space-x-3 min-w-0">
+                    <Badge variant="outline" className="w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs font-bold bg-white/80 border-zinc-200">
+                      {index + 1}
+                    </Badge>
+                    <MiniPlayerAvatar
+                      name={assist.name}
+                      imageUrl={
+                        assist.optimized_avatar_url ||
+                        // @ts-ignore
+                        assist.ProfileURL ||
+                        // @ts-ignore
+                        assist.profile_picture ||
+                        ""
+                      }
+                      size={32}
+                    />
+                    <div className="truncate">
+                      <p className="font-semibold text-sm truncate">{assist.name}</p>
+                      <p className="text-xs sm:text-sm text-muted-foreground truncate">{assist.team}</p>
+                    </div>
                   </div>
+                  <Badge className="bg-blue-600 text-white text-xs font-bold shadow-md">{assist.assists}</Badge>
                 </div>
-                <Badge className="bg-blue-600 text-white text-xs">{assist.assists}</Badge>
-              </div>
-            ))
+              );
+            })
           ) : (
             <div className="text-center text-muted-foreground py-6 sm:py-8">
               <p className="font-medium text-sm">No assist data yet</p>
