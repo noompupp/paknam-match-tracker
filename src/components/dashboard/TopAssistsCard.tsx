@@ -3,16 +3,16 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Trophy } from "lucide-react";
 import { useFilteredAssistsRanking } from "@/hooks/useFullRankingData";
 import FullRankingModal from "./FullRankingModal";
 import MiniPlayerAvatar from "./MiniPlayerAvatar";
 
-// Medal styling for top 3
+// Softer highlight styles for top 3 assists
 const rankStyles = [
-  "bg-gradient-to-r from-yellow-300/80 to-orange-200/80 border-yellow-500 shadow-gold",
-  "bg-gradient-to-r from-gray-300/80 to-slate-200/90 border-gray-400 shadow-silver",
-  "bg-gradient-to-r from-amber-300/45 to-orange-100/80 border-amber-400 shadow-bronze"
+  "bg-yellow-50 border-yellow-300 ring-[2.5px] ring-yellow-200",
+  "bg-gray-50 border-gray-300 ring-[2.5px] ring-gray-200",
+  "bg-orange-50 border-orange-200 ring-[2.5px] ring-orange-100"
 ];
 
 interface TopAssist {
@@ -32,10 +32,10 @@ interface TopAssistsCardProps {
 
 const TopAssistsCard = ({ topAssists, isLoading, error }: TopAssistsCardProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const { 
-    data: fullRanking, 
-    isLoading: fullRankingLoading, 
-    error: fullRankingError 
+  const {
+    data: fullRanking,
+    isLoading: fullRankingLoading,
+    error: fullRankingError
   } = useFilteredAssistsRanking();
 
   const handleSeeAllClick = () => setIsModalOpen(true);
@@ -76,38 +76,52 @@ const TopAssistsCard = ({ topAssists, isLoading, error }: TopAssistsCardProps) =
             ))
           ) : topAssists && topAssists.length > 0 ? (
             topAssists.map((assist, index) => {
-              // Avatars: prefer optimized_avatar_url, then ProfileURL, then profile_picture
-              // Visual emphasis for top 3
-              const rankClass = index < 3 ? rankStyles[index] + " border-2" : "hover:bg-muted/30";
+              const imageUrl =
+                assist.optimized_avatar_url?.trim() ||
+                assist.ProfileURL?.trim() ||
+                assist.profile_picture?.trim() ||
+                "";
+              const isTop3 = index < 3;
+              const boxShadow = isTop3
+                ? "0 0 0 2px rgba(240,200,50,0.12), 0 1px 4px 0 rgba(0,0,0,0.03)"
+                : undefined;
               return (
                 <div
                   key={index}
-                  className={`flex items-center justify-between p-2 sm:p-3 rounded-lg transition-colors mb-1 ${rankClass}`}
+                  className={`flex items-center justify-between p-2 sm:p-3 rounded-lg transition-colors mb-1 ${isTop3 ? `${rankStyles[index]} border ring` : "hover:bg-muted/30"}`}
                   style={{
-                    boxShadow:
-                      index === 0
-                        ? "0 0 0 2px #ffd700, 0 4px 16px 0 #ffe06644"
-                        : index === 1
-                        ? "0 0 0 2px #c0c0c0, 0 4px 12px 0 #d6d6d6aa"
-                        : index === 2
-                        ? "0 0 0 2px #cd7f32, 0 4px 8px 0 #ffc98788"
-                        : undefined
+                    boxShadow: isTop3 ? boxShadow : undefined
                   }}
                 >
                   <div className="flex items-center space-x-2 sm:space-x-3 min-w-0">
-                    <Badge variant="outline" className="w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs font-bold bg-white/80 border-zinc-200">
-                      {index + 1}
+                    <Badge
+                      variant="outline"
+                      className={`w-7 h-7 sm:w-9 sm:h-9 rounded-full flex items-center justify-center text-xs font-bold border bg-white ${
+                        isTop3
+                          ? "shadow-sm"
+                          : ""
+                      }`}
+                    >
+                      <span className="flex items-center gap-1.5">
+                        {index + 1}
+                        {isTop3 && (
+                          <Trophy
+                            className={`ml-0.5 h-3.5 w-3.5 sm:h-4 sm:w-4 ${
+                              index === 0
+                                ? "text-yellow-400"
+                                : index === 1
+                                ? "text-gray-400"
+                                : "text-orange-300"
+                            } drop-shadow`}
+                            strokeWidth={2}
+                            aria-label="Trophy"
+                          />
+                        )}
+                      </span>
                     </Badge>
                     <MiniPlayerAvatar
                       name={assist.name}
-                      imageUrl={
-                        assist.optimized_avatar_url ||
-                        // @ts-ignore
-                        assist.ProfileURL ||
-                        // @ts-ignore
-                        assist.profile_picture ||
-                        ""
-                      }
+                      imageUrl={imageUrl}
                       size={32}
                     />
                     <div className="truncate">
