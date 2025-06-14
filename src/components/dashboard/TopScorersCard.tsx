@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -7,7 +8,7 @@ import { useFilteredScorersRanking } from "@/hooks/useFullRankingData";
 import FullRankingModal from "./FullRankingModal";
 import MiniPlayerAvatar from "./MiniPlayerAvatar";
 
-// Softer highlight styles for top 3 with dark mode support
+// Consistent highlight styles for top 3, supporting dark mode
 const rankStyles = [
   "bg-yellow-50 border-yellow-300 ring-[2.5px] ring-yellow-200 dark:bg-yellow-950 dark:border-yellow-900 dark:ring-yellow-900/70",
   "bg-gray-50 border-gray-300 ring-[2.5px] ring-gray-200 dark:bg-zinc-900 dark:border-zinc-700 dark:ring-zinc-800/70",
@@ -43,7 +44,7 @@ const TopScorersCard = ({ topScorers, isLoading, error }: TopScorersCardProps) =
 
   return (
     <>
-      <Card className="card-shadow-lg animate-fade-in">
+      <Card className="shadow-xl border bg-card text-card-foreground transition-all duration-200 animate-fade-in">
         <CardHeader className="flex flex-row items-center justify-between pb-2 sm:pb-4">
           <CardTitle className="text-lg sm:text-xl font-bold">Top Scorers</CardTitle>
           <button
@@ -77,10 +78,6 @@ const TopScorersCard = ({ topScorers, isLoading, error }: TopScorersCardProps) =
             ))
           ) : topScorers && topScorers.length > 0 ? (
             topScorers.map((scorer, idx) => {
-              // Explicitly log and bind image as requested
-              // eslint-disable-next-line no-console
-              console.log("[Avatar Debug]", scorer.id, scorer.name, scorer.profileImageUrl);
-
               const index = topScorers.findIndex(s => s.id === scorer.id);
               const isTop3 = index < 3;
               const boxShadow = isTop3
@@ -88,7 +85,7 @@ const TopScorersCard = ({ topScorers, isLoading, error }: TopScorersCardProps) =
                 : undefined;
               return (
                 <div
-                  key={`${scorer.id}-${scorer.profileImageUrl || ""}`}
+                  key={scorer.id ?? idx}
                   className={`flex items-center justify-between p-2 sm:p-3 rounded-lg transition-colors mb-1 ${
                     isTop3 ? `${rankStyles[index]} border ring` : "hover:bg-muted/30"
                   }`}
@@ -107,32 +104,11 @@ const TopScorersCard = ({ topScorers, isLoading, error }: TopScorersCardProps) =
                         {index + 1}
                       </span>
                     </Badge>
-                    {/* Avatar: Always pass .profileImageUrl explicitly */}
                     <MiniPlayerAvatar
                       name={scorer.name}
                       imageUrl={scorer.profileImageUrl}
                       size={32}
                     />
-                    {/* TEMPORARY FORCED IMAGE RENDER for testing (ONLY first row) */}
-                    {idx === 0 && scorer.profileImageUrl && (
-                      <img
-                        src={scorer.profileImageUrl}
-                        alt="DEBUG: direct img"
-                        style={{
-                          width: 32,
-                          height: 32,
-                          borderRadius: "50%",
-                          marginLeft: 4,
-                          border: "2px solid #0af"
-                        }}
-                        ref={el => {
-                          if (el) {
-                            // eslint-disable-next-line no-console
-                            console.log("[Forced IMG TEST][Loaded]", scorer.profileImageUrl, el.naturalWidth, el.naturalHeight);
-                          }
-                        }}
-                      />
-                    )}
                     <div className="truncate">
                       <p className="font-semibold text-sm truncate">{scorer.name}</p>
                       <p className="text-xs sm:text-sm text-muted-foreground truncate">{scorer.team}</p>
@@ -150,7 +126,6 @@ const TopScorersCard = ({ topScorers, isLoading, error }: TopScorersCardProps) =
           )}
         </CardContent>
       </Card>
-
       <FullRankingModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}

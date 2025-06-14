@@ -16,7 +16,6 @@ const MiniPlayerAvatar = ({
   className = "",
   size = 32,
 }: MiniPlayerAvatarProps) => {
-  // Always log exactly what is received
   useEffect(() => {
     // eslint-disable-next-line no-console
     console.log("[MiniPlayerAvatar][PROPS RECEIVED]", { name, imageUrl, size });
@@ -32,11 +31,10 @@ const MiniPlayerAvatar = ({
           .toUpperCase()
       : "?";
 
-  // STRONG fallback check: must not just be "truthy" but string with content.
+  // Strict fallback: Only fallback if imageUrl is null, undefined, or only whitespace
   const shouldFallbackToInitials =
     !imageUrl || (typeof imageUrl === "string" && imageUrl.trim() === "");
 
-  // Debug-logging why fallback or why not:
   useEffect(() => {
     // eslint-disable-next-line no-console
     if (shouldFallbackToInitials) {
@@ -56,28 +54,19 @@ const MiniPlayerAvatar = ({
       aria-label={`${name || "Player"} avatar`}
     >
       {!shouldFallbackToInitials ? (
-        <>
-          {/* Avatar image block */}
-          {/* eslint-disable-next-line no-console */}
-          {console.log("[MiniPlayerAvatar][RENDERING IMAGE]", imageUrl)}
-          <AvatarImage
-            src={imageUrl as string}
-            alt={name}
-            className="object-cover rounded-full"
-            style={{ width: size, height: size }}
-          />
-        </>
+        <AvatarImage
+          src={imageUrl as string}
+          alt={name}
+          className="object-cover rounded-full"
+          style={{ width: size, height: size }}
+        />
       ) : (
-        <>
-          {/* eslint-disable-next-line no-console */}
-          {console.log("[MiniPlayerAvatar][RENDERING FALLBACK INITIALS]", name)}
-          <AvatarFallback
-            className="bg-muted text-xs text-foreground font-semibold flex items-center justify-center"
-            style={{ width: size, height: size }}
-          >
-            {getInitials(name)}
-          </AvatarFallback>
-        </>
+        <AvatarFallback
+          className="bg-muted text-xs text-foreground font-semibold flex items-center justify-center"
+          style={{ width: size, height: size }}
+        >
+          {getInitials(name)}
+        </AvatarFallback>
       )}
     </Avatar>
   );

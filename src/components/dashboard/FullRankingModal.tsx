@@ -1,10 +1,11 @@
+
 import { EnhancedDialog, EnhancedDialogContent, EnhancedDialogHeader, EnhancedDialogTitle } from "@/components/ui/enhanced-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Target } from "lucide-react";
 import MiniPlayerAvatar from "./MiniPlayerAvatar";
 
-// Updated dark mode friendly medal styling for top 3 (matches other components)
+// Consistent highlight styles for top 3, supporting dark mode
 const rankStyles = [
   "bg-yellow-50 border-yellow-300 shadow-gold dark:bg-yellow-950 dark:border-yellow-900",
   "bg-gray-50 border-gray-300 shadow-silver dark:bg-zinc-900 dark:border-zinc-700",
@@ -52,8 +53,6 @@ const FullRankingModal = ({
     return statType === 'goals' ? 'bg-primary text-primary-foreground' : 'bg-blue-600 text-white';
   };
 
-  // 🚨 REMOVE legacy helper. Avatar image will be passed explicitly.
-
   return (
     <EnhancedDialog open={isOpen} onOpenChange={onClose}>
       <EnhancedDialogContent className="w-[100vw] h-[100vh] sm:w-auto sm:h-auto sm:max-w-md sm:max-h-[85vh] overflow-hidden flex flex-col p-4 sm:p-6 sm:rounded-lg">
@@ -91,18 +90,13 @@ const FullRankingModal = ({
           ) : players && players.length > 0 ? (
             <div className="space-y-3">
               {players.map((player, index) => {
-                // Explicit logging of the avatar binding mapping
-                // eslint-disable-next-line no-console
-                console.log("[Avatar Debug]", player.id, player.name, player.profileImageUrl);
-
                 const isTop3 = index < 3;
                 const rankClass = isTop3
                   ? `${rankStyles[index]} border-2 ring-[2px] ring-inset`
                   : "hover:bg-muted/50";
-
                 return (
                   <div 
-                    key={`${player.id}-${player.profileImageUrl || ""}`}
+                    key={player.id ?? index}
                     className={`flex items-center justify-between p-4 rounded-lg transition-colors border bg-card shadow-sm mb-1 ${rankClass}`}
                   >
                     <div className="flex items-center space-x-4 min-w-0">
@@ -117,26 +111,6 @@ const FullRankingModal = ({
                         imageUrl={player.profileImageUrl}
                         size={38}
                       />
-                      {/* TEMPORARY TEST: Force render image for row 0 */}
-                      {index === 0 && player.profileImageUrl && (
-                        <img
-                          src={player.profileImageUrl}
-                          alt="DEBUG: direct img"
-                          style={{
-                            width: 38,
-                            height: 38,
-                            borderRadius: "50%",
-                            marginLeft: 4,
-                            border: "2px solid #0af"
-                          }}
-                          ref={el => {
-                            if (el) {
-                              // eslint-disable-next-line no-console
-                              console.log("[Forced IMG TEST][Loaded]", player.profileImageUrl, el.naturalWidth, el.naturalHeight);
-                            }
-                          }}
-                        />
-                      )}
                       <div className="truncate max-w-[140px]">
                         <p className="font-semibold text-base truncate">{player.name}</p>
                         <p className="text-sm text-muted-foreground truncate">{player.team}</p>

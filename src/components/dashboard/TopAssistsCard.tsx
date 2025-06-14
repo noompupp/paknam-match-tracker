@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -7,7 +8,7 @@ import { useFilteredAssistsRanking } from "@/hooks/useFullRankingData";
 import FullRankingModal from "./FullRankingModal";
 import MiniPlayerAvatar from "./MiniPlayerAvatar";
 
-// Updated highlight styles for top 3, with dark mode support (match TopScorersCard)
+// Consistent highlight styles for top 3, supporting dark mode
 const rankStyles = [
   "bg-yellow-50 border-yellow-300 ring-[2.5px] ring-yellow-200 dark:bg-yellow-950 dark:border-yellow-900 dark:ring-yellow-900/70",
   "bg-gray-50 border-gray-300 ring-[2.5px] ring-gray-200 dark:bg-zinc-900 dark:border-zinc-700 dark:ring-zinc-800/70",
@@ -43,7 +44,7 @@ const TopAssistsCard = ({ topAssists, isLoading, error }: TopAssistsCardProps) =
 
   return (
     <>
-      <Card className="card-shadow-lg animate-fade-in">
+      <Card className="shadow-xl border bg-card text-card-foreground transition-all duration-200 animate-fade-in">
         <CardHeader className="flex flex-row items-center justify-between pb-2 sm:pb-4">
           <CardTitle className="text-lg sm:text-xl font-bold">Top Assists</CardTitle>
           <button
@@ -77,10 +78,6 @@ const TopAssistsCard = ({ topAssists, isLoading, error }: TopAssistsCardProps) =
             ))
           ) : topAssists && topAssists.length > 0 ? (
             topAssists.map((assist, idx) => {
-              // Explicitly log and bind image as requested
-              // eslint-disable-next-line no-console
-              console.log("[Avatar Debug]", assist.id, assist.name, assist.profileImageUrl);
-
               const index = topAssists.findIndex(a => a.id === assist.id);
               const isTop3 = index < 3;
               const boxShadow = isTop3
@@ -89,7 +86,7 @@ const TopAssistsCard = ({ topAssists, isLoading, error }: TopAssistsCardProps) =
 
               return (
                 <div
-                  key={`${assist.id}-${assist.profileImageUrl || ""}`}
+                  key={assist.id ?? idx}
                   className={`flex items-center justify-between p-2 sm:p-3 rounded-lg transition-colors mb-1 ${
                     isTop3 ? `${rankStyles[index]} border ring` : "hover:bg-muted/30"
                   }`}
@@ -111,26 +108,6 @@ const TopAssistsCard = ({ topAssists, isLoading, error }: TopAssistsCardProps) =
                       imageUrl={assist.profileImageUrl}
                       size={32}
                     />
-                    {/* TEMP FORCED IMAGE for debugging FIRST row */}
-                    {idx === 0 && assist.profileImageUrl && (
-                      <img
-                        src={assist.profileImageUrl}
-                        alt="DEBUG: direct img"
-                        style={{
-                          width: 32,
-                          height: 32,
-                          borderRadius: "50%",
-                          marginLeft: 4,
-                          border: "2px solid #0af"
-                        }}
-                        ref={el => {
-                          if (el) {
-                            // eslint-disable-next-line no-console
-                            console.log("[Forced IMG TEST][Loaded]", assist.profileImageUrl, el.naturalWidth, el.naturalHeight);
-                          }
-                        }}
-                      />
-                    )}
                     <div className="truncate">
                       <p className="font-semibold text-sm truncate">{assist.name}</p>
                       <p className="text-xs sm:text-sm text-muted-foreground truncate">{assist.team}</p>
