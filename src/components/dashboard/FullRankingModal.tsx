@@ -3,7 +3,6 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Target } from "lucide-react";
 import MiniPlayerAvatar from "./MiniPlayerAvatar";
-import DiagnosticAvatar from "./DiagnosticAvatar";
 
 // Consistent highlight styles for top 3, supporting dark mode
 const rankStyles = [
@@ -103,7 +102,7 @@ const FullRankingModal = ({
                   ? `${rankStyles[index]} border-2 ring-[2px] ring-inset`
                   : "hover:bg-muted/50";
 
-                // Render both MiniPlayerAvatar and DiagnosticAvatar
+                // Only use what's in the object, do not override images
                 return (
                   <div 
                     key={`${player.id ?? index}-${player.profileImageUrl ?? "none"}`}
@@ -116,23 +115,12 @@ const FullRankingModal = ({
                       >
                         {index + 1}
                       </Badge>
-                      <div className="flex flex-col">
-                        <MiniPlayerAvatar
-                          name={player.name}
-                          imageUrl={player.profileImageUrl}
-                          size={38}
-                        />
-                        <span className="block text-[10px] text-center text-gray-400">Mini</span>
-                      </div>
-                      <div className="flex flex-col">
-                        <DiagnosticAvatar
-                          name={player.name}
-                          imageUrl={player.profileImageUrl}
-                          playerId={player.id}
-                        />
-                        <span className="block text-[10px] text-center text-blue-500">Diag</span>
-                      </div>
-                      <div className="truncate max-w-[120px]">
+                      <MiniPlayerAvatar
+                        name={player.name}
+                        imageUrl={player.profileImageUrl}
+                        size={38}
+                      />
+                      <div className="truncate max-w-[140px]">
                         <p className="font-semibold text-base truncate">{player.name}</p>
                         <p className="text-sm text-muted-foreground truncate">{player.team}</p>
                       </div>

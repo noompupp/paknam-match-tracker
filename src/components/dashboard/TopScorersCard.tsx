@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -6,7 +7,6 @@ import { ArrowRight } from "lucide-react";
 import { useFilteredScorersRanking } from "@/hooks/useFullRankingData";
 import FullRankingModal from "./FullRankingModal";
 import MiniPlayerAvatar from "./MiniPlayerAvatar";
-import DiagnosticAvatar from "./DiagnosticAvatar";
 
 const rankStyles = [
   "bg-yellow-50 border-yellow-300 ring-[2.5px] ring-yellow-300 dark:bg-yellow-950 dark:border-yellow-800 dark:ring-yellow-900/80",
@@ -40,9 +40,6 @@ const TopScorersCard = ({ topScorers, isLoading, error }: TopScorersCardProps) =
   } = useFilteredScorersRanking();
 
   const handleSeeAllClick = () => setIsModalOpen(true);
-
-  // DIAGNOSTIC LOG: Show fullRanking being rendered
-  console.log('[Card Render] TopScorersCard final fullRanking prop:', fullRanking);
 
   return (
     <>
@@ -80,14 +77,19 @@ const TopScorersCard = ({ topScorers, isLoading, error }: TopScorersCardProps) =
             ))
           ) : topScorers && topScorers.length > 0 ? (
             topScorers.map((scorer, index) => {
-              // DIAGNOSTIC LOG inside card, right before passing to MiniPlayerAvatar/DiagnosticAvatar
-              console.log("[Card Render] scorer from topScorers:", scorer);
-
+              // Log what is actually being passed to the Avatar
+              console.log("[Avatar Debug]", {
+                id: scorer.id,
+                name: scorer.name,
+                profileImageUrl: scorer.profileImageUrl,
+                scorer,
+              });
               const isTop3 = index < 3;
               const boxShadow = isTop3
                 ? "0 0 0 2px rgba(240,200,50,0.12), 0 1px 4px 0 rgba(0,0,0,0.03)"
                 : undefined;
 
+              // Only use the "profileImageUrl" that lives on the player object, with no overrides
               return (
                 <div
                   key={`${scorer.id ?? index}-${scorer.profileImageUrl ?? ""}`}
@@ -109,22 +111,11 @@ const TopScorersCard = ({ topScorers, isLoading, error }: TopScorersCardProps) =
                         {index + 1}
                       </span>
                     </Badge>
-                    <div className="flex flex-col">
-                      <MiniPlayerAvatar
-                        name={scorer.name}
-                        imageUrl={scorer.profileImageUrl}
-                        size={32}
-                      />
-                      <span className="block text-[10px] text-center text-gray-400">Mini</span>
-                    </div>
-                    <div className="flex flex-col">
-                      <DiagnosticAvatar
-                        name={scorer.name}
-                        imageUrl={scorer.profileImageUrl}
-                        playerId={scorer.id}
-                      />
-                      <span className="block text-[10px] text-center text-blue-500">Diag</span>
-                    </div>
+                    <MiniPlayerAvatar
+                      name={scorer.name}
+                      imageUrl={scorer.profileImageUrl}
+                      size={32}
+                    />
                     <div className="truncate">
                       <p className="font-semibold text-sm truncate">{scorer.name}</p>
                       <p className="text-xs sm:text-sm text-muted-foreground truncate">{scorer.team}</p>

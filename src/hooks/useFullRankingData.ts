@@ -3,104 +3,102 @@ import { useQuery } from "@tanstack/react-query";
 import { useEnhancedTopScorers, useEnhancedTopAssists } from './useEnhancedPlayerStats';
 import { membersApi } from "@/services/api";
 
-// Utility: Normalize string (robustly handle Unicode, undefined)
-const normalized = (str: any): string =>
-  typeof str === "string" ? str.trim().toLowerCase() : "";
+// Helper to extract image URL from possible member fields
+const extractProfileImageUrl = (profile: any) =>
+  profile?.profileImageUrl ||
+  profile?.optimized_avatar_url ||
+  profile?.profile_picture ||
+  profile?.ProfileURL ||
+  "";
 
-// Extract correct image URL; fallback to empty string
-const extractProfileImageUrl = (profile: any): string => {
-  if (!profile) return "";
-  return (
-    profile.profileImageUrl ||
-    profile.optimized_avatar_url ||
-    profile.ProfileURL ||
-    profile.profile_picture ||
-    ""
-  );
-};
-
-// Fetch ALL members/profiles
+// Fetch ALL members with full info
 const useAllMembersProfiles = () => {
   return useQuery({
     queryKey: ['allMembersFullProfiles'],
     queryFn: async () => {
+      // This includes all fields for member avatars, etc
       const members = await membersApi.getAll();
       return members || [];
     },
-    staleTime: 5 * 60 * 1000,
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 };
 
-// Hooks for ranking data (top-N, backend)
-export const useFullScorersRanking = () => useEnhancedTopScorers(100);
-export const useFullAssistsRanking = () => useEnhancedTopAssists(100);
-
-// Robust enrichment logic for player stats
-const enrichPlayerStatList = (
-  statList: any[] | undefined,
-  allProfiles: any[] | undefined,
-  statType: "goals" | "assists"
-) => {
-  if (!statList || !allProfiles) return [];
-
-  // Patch: Always use robust normalization and safe fallbacks
-  const enrichedPlayers = statList
-    .filter((player) => {
-      const value = statType === "goals" ? player.goals : player.assists;
-      return Number(value) >= 1;
-    })
-    .sort((a, b) => {
-      const aValue = statType === "goals" ? a.goals : a.assists;
-      const bValue = statType === "goals" ? b.goals : b.assists;
-      if (bValue !== aValue) return bValue - aValue;
-      return a.name.localeCompare(b.name);
-    })
-    .map((stat, index) => {
-      // Find match in allProfiles: name AND team, fallback to just name if no team match
-      const profile =
-        allProfiles.find(
-          (p) =>
-            normalized(p.name) === normalized(stat.name) &&
-            (!stat.team || normalized(p.team?.name ?? p.team) === normalized(stat.team))
-        ) ||
-        allProfiles.find((p) => normalized(p.name) === normalized(stat.name));
-
-      return {
-        ...stat,
-        id: profile?.id ?? `stat-${statType}-${index}`,
-        profileImageUrl: extractProfileImageUrl(profile),
-        team: profile?.team?.name || profile?.team || stat.team || "",
-      };
-    });
-
-  // Log the final enriched list for diagnostics
-  console.log(`[Ranking Enrichment] Final players enriched [${statType}]:`, enrichedPlayers);
-
-  return enrichedPlayers;
+export const useFullScorersRanking = () => {
+  return useEnhancedTopScorers(100); // Get a large number to capture all players
 };
 
+export const useFullAssistsRanking = () => {
+  return useEnhancedTopAssists(100); // Get a large number to capture all players
+};
+
+// ENRICHED version: joins the stat list with member profiles for full avatars
 export const useFilteredScorersRanking = () => {
   const { data: allScorers, isLoading, error } = useFullScorersRanking();
-  const { data: allMembers, isLoading: membersLoading } = useAllMembersProfiles();
+  const { data: allMembers, isLoading: loadingMembers } = useAllMembersProfiles();
 
-  const enriched = enrichPlayerStatList(allScorers, allMembers, "goals");
+  let filteredData: any[] = [];
+
+  if (allScorers) {
+    filteredData = allScorers
+      .filter(player => player.goals >= 1)
+      .sort((a, b) => {
+        if (b.goals !== a.goals) return b.goals - a.goals;
+        return a.name.localeCompare(b.name);
+      })
+      .map(statPlayer => {
+        // Attempt to find the best profile by name (and optionally team)
+        const profile = allMembers?.find(
+          (p: any) => p.name === statPlayer.name && (!statPlayer.team || p.team?.name === statPlayer.team)
+        ) || allMembers?.find((p: any) => p.name === statPlayer.name);
+
+        return {
+          ...statPlayer,
+          id: profile?.id ?? undefined,
+          profileImageUrl: extractProfileImageUrl(profile),
+          team: profile?.team?.name || statPlayer.team,
+        };
+      });
+  }
 
   return {
-    data: enriched,
-    isLoading: isLoading || membersLoading,
-    error,
+    data: filteredData,
+    isLoading: isLoading || loadingMembers,
+    error
   };
 };
 
 export const useFilteredAssistsRanking = () => {
   const { data: allAssists, isLoading, error } = useFullAssistsRanking();
-  const { data: allMembers, isLoading: membersLoading } = useAllMembersProfiles();
+  const { data: allMembers, isLoading: loadingMembers } = useAllMembersProfiles();
 
-  const enriched = enrichPlayerStatList(allAssists, allMembers, "assists");
+  let filteredData: any[] = [];
+
+  if (allAssists) {
+    filteredData = allAssists
+      .filter(player => player.assists >= 1)
+      .sort((a, b) => {
+        if (b.assists !== a.assists) return b.assists - a.assists;
+        return a.name.localeCompare(b.name);
+      })
+      .map(statPlayer => {
+        // Attempt to find the best profile by name (and optionally team)
+        const profile = allMembers?.find(
+          (p: any) => p.name === statPlayer.name && (!statPlayer.team || p.team?.name === statPlayer.team)
+        ) || allMembers?.find((p: any) => p.name === statPlayer.name);
+
+        return {
+          ...statPlayer,
+          id: profile?.id ?? undefined,
+          profileImageUrl: extractProfileImageUrl(profile),
+          team: profile?.team?.name || statPlayer.team,
+        };
+      });
+  }
 
   return {
-    data: enriched,
-    isLoading: isLoading || membersLoading,
-    error,
+    data: filteredData,
+    isLoading: isLoading || loadingMembers,
+    error
   };
 };
