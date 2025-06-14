@@ -82,16 +82,17 @@ const MobilePortraitFixtureCard = ({
               </div>
             </div>
           </div>
-          {/* Right: Status and Score, vertically centered */}
-          <div className="flex flex-col items-center min-w-[80px] text-center pl-3">
+          {/* Right: Status and Score, vertically stacked and centered */}
+          <div className="flex flex-col items-center justify-center min-w-[88px] pl-3 pr-2">
             <Badge
               variant="default"
-              className="text-xs px-2 py-1 font-bold mb-1"
+              className="text-xs px-2 py-1 font-bold mb-1 w-[72px] text-center"
+              style={{ borderRadius: 16 }}
             >
               FT
             </Badge>
             <div
-              className="text-xl font-bold mt-1"
+              className="text-xl font-bold mt-1 w-[72px] text-center"
               style={getNeutralScoreStyle(true)}
             >
               {fixture.home_score || 0} - {fixture.away_score || 0}
