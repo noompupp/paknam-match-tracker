@@ -15,6 +15,10 @@ interface OptimizedImageProps {
   style?: React.CSSProperties;
 }
 
+/**
+ * Renders an image with loading overlay, proper error handling, and customizable fallback.
+ * Always renders <img> when src is provided, overlays loading, and simplifies state.
+ */
 const OptimizedImage: React.FC<OptimizedImageProps> = ({
   src,
   alt,
@@ -29,7 +33,7 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
   ...props
 }) => {
   const [imageError, setImageError] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(!!src);
 
   const handleImageError = () => {
     setImageError(true);
@@ -40,66 +44,92 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
     setIsLoading(false);
   };
 
-  // Show loading state
-  if (isLoading && src) {
-    return (
-      <div 
-        className={cn(
-          "bg-muted animate-pulse flex items-center justify-center",
-          className
-        )}
-        style={{ width, height, ...style }}
-      >
-        <div className="w-8 h-8 rounded-full bg-muted-foreground/20 animate-pulse" />
-      </div>
-    );
-  }
+  const sizeStyle = (width || height)
+    ? { width, height, ...style }
+    : style;
 
-  // Show error state or fallback
-  if (imageError && !fallback) {
+  // Show fallback/error state if image failed to load
+  if (imageError) {
+    if (fallback && typeof fallback !== 'string') {
+      // fallback is a React element
+      return (
+        <div
+          className={cn("flex items-center justify-center", className)}
+          style={sizeStyle}
+        >
+          {fallback}
+        </div>
+      );
+    }
+    // fallback is a string or not provided
     return (
-      <div 
+      <div
         className={cn(
           "bg-muted flex items-center justify-center text-muted-foreground",
           className
         )}
-        style={{ width, height, ...style }}
+        style={sizeStyle}
       >
-        <span className="text-sm">Image not available</span>
+        <span className="text-sm">
+          {typeof fallback === 'string' ? fallback : 'Image not available'}
+        </span>
       </div>
     );
   }
 
-  // Show React element fallback if image failed and fallback is a React element
-  if (imageError && fallback && typeof fallback !== 'string') {
+  // No src at all, just render fallback or placeholder
+  if (!src) {
+    if (fallback && typeof fallback !== 'string') {
+      return (
+        <div
+          className={cn("flex items-center justify-center", className)}
+          style={sizeStyle}
+        >
+          {fallback}
+        </div>
+      );
+    }
     return (
-      <div 
+      <div
         className={cn(
-          "flex items-center justify-center",
+          "bg-muted flex items-center justify-center text-muted-foreground",
           className
         )}
-        style={{ width, height, ...style }}
+        style={sizeStyle}
       >
-        {fallback}
+        <span className="text-sm">
+          {typeof fallback === 'string' ? fallback : 'Image not available'}
+        </span>
       </div>
     );
   }
 
-  // Standard img element
+  // Render <img> with a loading overlay if not loaded yet
   return (
-    <img
-      src={imageError && fallback && typeof fallback === 'string' ? fallback : src}
-      alt={alt}
-      width={width}
-      height={height}
-      loading={priority ? 'eager' : loading}
-      onError={handleImageError}
-      onLoad={handleImageLoad}
-      className={cn("object-cover", className)}
-      style={style}
-      {...props}
-    />
+    <div className={cn("relative", className)} style={sizeStyle}>
+      <img
+        src={src}
+        alt={alt}
+        width={width}
+        height={height}
+        loading={priority ? 'eager' : loading}
+        onError={handleImageError}
+        onLoad={handleImageLoad}
+        className={cn(
+          "object-cover w-full h-full",
+          isLoading ? "opacity-60 transition-opacity" : "opacity-100"
+        )}
+        style={{ width: "100%", height: "100%", display: 'block' }}
+        {...props}
+      />
+      {isLoading && (
+        <div className="absolute inset-0 flex items-center justify-center bg-muted/70 z-10 animate-pulse">
+          <div className="w-8 h-8 rounded-full bg-muted-foreground/20 animate-pulse" />
+        </div>
+      )}
+    </div>
   );
 };
 
 export default OptimizedImage;
+
