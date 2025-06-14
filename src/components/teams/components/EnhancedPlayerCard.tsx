@@ -92,7 +92,6 @@ const EnhancedPlayerCard = ({
   return (
     <Card className={cn(
       "premier-league-card hover:shadow-md transition-all duration-200",
-      // GRID VIEW: fix mobile portrait overlapping with responsive stacking
       "select-none",
       className
     )}>
@@ -135,67 +134,66 @@ const EnhancedPlayerCard = ({
             {/* Responsive Stat Bar for Grid Card */}
             <div className="w-full">
               <div className="block md:hidden">
-                {/* MOBILE: stat bar below details, stack tight */}
                 <PlayerStatsBar player={player} size="compact" className="mt-1" />
               </div>
               <div className="hidden md:block">
-                {/* DESKTOP/TABLET: improved stat bar with better spacing */}
+                {/* DESKTOP/TABLET: improved stat bar with better spacing & NO OVERLAP */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
                   {/* GOALS */}
-                  <div className="flex flex-col items-center justify-between bg-muted/30 rounded-lg min-h-[92px] py-3 px-2">
-                    <div className="flex flex-col items-center gap-1 w-full">
-                      <div className="flex items-center gap-1">
+                  <div className="flex flex-col items-center justify-between bg-muted/30 rounded-lg min-h-[112px] py-4 px-2">
+                    <div className="flex flex-col items-center gap-0 w-full h-full">
+                      <div className="flex items-center gap-1 mt-1">
                         <Trophy className="h-5 w-5 text-yellow-600" />
                         <span className="font-bold text-lg text-foreground">{formatStat(player.goals)}</span>
                       </div>
-                      <p className="text-xs text-muted-foreground mt-2">Goals</p>
+                      <p className="text-xs text-muted-foreground mt-3">Goals</p>
                       {showDetailedStats && (
-                        <p className="text-xs text-muted-foreground mt-1">
+                        <p className="text-xs text-muted-foreground mt-2 leading-tight">
                           ({player.goalsPerMatch}/match)
                         </p>
                       )}
                     </div>
                   </div>
                   {/* ASSISTS */}
-                  <div className="flex flex-col items-center justify-between bg-muted/30 rounded-lg min-h-[92px] py-3 px-2">
-                    <div className="flex flex-col items-center gap-1 w-full">
-                      <div className="flex items-center gap-1">
+                  <div className="flex flex-col items-center justify-between bg-muted/30 rounded-lg min-h-[112px] py-4 px-2">
+                    <div className="flex flex-col items-center gap-0 w-full h-full">
+                      <div className="flex items-center gap-1 mt-1">
                         <Target className="h-5 w-5 text-blue-600" />
                         <span className="font-bold text-lg text-foreground">{formatStat(player.assists)}</span>
                       </div>
-                      <p className="text-xs text-muted-foreground mt-2">Assists</p>
+                      <p className="text-xs text-muted-foreground mt-3">Assists</p>
                       {showDetailedStats && (
-                        <p className="text-xs text-muted-foreground mt-1">
+                        <p className="text-xs text-muted-foreground mt-2 leading-tight">
                           ({player.assistsPerMatch}/match)
                         </p>
                       )}
                     </div>
                   </div>
                   {/* MATCHES */}
-                  <div className="flex flex-col items-center justify-between bg-muted/30 rounded-lg min-h-[92px] py-3 px-2">
-                    <div className="flex flex-col items-center gap-1 w-full">
-                      <div className="flex items-center gap-1">
+                  <div className="flex flex-col items-center justify-between bg-muted/30 rounded-lg min-h-[112px] py-4 px-2">
+                    <div className="flex flex-col items-center gap-0 w-full h-full">
+                      <div className="flex items-center gap-1 mt-1">
                         <Clock className="h-5 w-5 text-green-600" />
                         <span className="font-bold text-lg text-foreground">{formatStat(player.matches_played)}</span>
                       </div>
-                      <p className="text-xs text-muted-foreground mt-2">Matches</p>
+                      <p className="text-xs text-muted-foreground mt-3">Matches</p>
                       {showDetailedStats && (
-                        <p className="text-xs text-muted-foreground mt-1">
+                        <p className="text-xs text-muted-foreground mt-2 leading-tight">
                           {formatMinutes(player.total_minutes_played)}
                         </p>
                       )}
                     </div>
                   </div>
                   {/* CONTRIBUTION/SCORE */}
-                  <div className="flex flex-col items-center justify-between bg-muted/30 rounded-lg min-h-[92px] py-3 px-2">
-                    <div className="flex flex-col items-center gap-1 w-full">
-                      <div className="flex items-center gap-1">
+                  <div className="flex flex-col items-center justify-between bg-muted/30 rounded-lg min-h-[112px] py-4 px-2">
+                    <div className="flex flex-col items-center gap-0 w-full h-full">
+                      <div className="flex items-center gap-1 mt-1">
                         <Zap className="h-5 w-5 text-purple-600" />
                         <span className="font-bold text-lg text-foreground">{formatStat(player.contributionScore)}</span>
                       </div>
-                      <p className="text-xs text-muted-foreground mt-2">Score</p>
+                      <p className="text-xs text-muted-foreground mt-3">Score</p>
                       {showDetailedStats && player.minutesPerMatch > 0 && (
-                        <p className="text-xs text-muted-foreground mt-1">
+                        <p className="text-xs text-muted-foreground mt-2 leading-tight">
                           {player.minutesPerMatch}min/match
                         </p>
                       )}
