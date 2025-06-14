@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -77,8 +78,12 @@ const TopScorersCard = ({ topScorers, isLoading, error }: TopScorersCardProps) =
           ) : topScorers && topScorers.length > 0 ? (
             topScorers.map((scorer, index) => {
               // Log what is actually being passed to the Avatar
-              console.log("🧩 Ranking Row:", scorer.name, scorer.id, scorer.profileImageUrl);
-
+              console.log("[Avatar Debug]", {
+                id: scorer.id,
+                name: scorer.name,
+                profileImageUrl: scorer.profileImageUrl,
+                scorer,
+              });
               const isTop3 = index < 3;
               const boxShadow = isTop3
                 ? "0 0 0 2px rgba(240,200,50,0.12), 0 1px 4px 0 rgba(0,0,0,0.03)"
