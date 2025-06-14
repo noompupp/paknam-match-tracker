@@ -1,4 +1,3 @@
-
 import { EnhancedDialog, EnhancedDialogContent, EnhancedDialogHeader, EnhancedDialogTitle } from "@/components/ui/enhanced-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -34,8 +33,6 @@ interface FullRankingModalProps {
   statType: 'goals' | 'assists';
 }
 
-const HARDCODED_IMAGE_URL = "https://randomuser.me/api/portraits/women/75.jpg"; // Example
-
 const FullRankingModal = ({
   isOpen,
   onClose,
@@ -55,19 +52,11 @@ const FullRankingModal = ({
     return statType === 'goals' ? 'bg-primary text-primary-foreground' : 'bg-blue-600 text-white';
   };
 
-  // Use ONLY profileImageUrl for avatar. Hardcode for "กัปตันกล้า"
-  const extractPlayerImage = (player: RankingPlayer) => {
-    let imageUrl = typeof player.profileImageUrl === "string" ? player.profileImageUrl.trim() : "";
-
-    if (player.name === "กัปตันกล้า") {
-      imageUrl = HARDCODED_IMAGE_URL;
-      // eslint-disable-next-line no-console
-      console.log("💡 [Ranking Avatar Debug][HARDCODE TEST] Forcing avatar for:", player.id, player.name, imageUrl);
-    } else {
-      // eslint-disable-next-line no-console
-      console.log("💡 [Ranking Avatar Debug] profileImageUrl ONLY:", player.id, player.name, imageUrl);
-    }
-    return imageUrl;
+  // Use the _EXACT SAME_ extraction logic as EnhancedPlayersList (profileImageUrl only)
+  const extractPlayerImageUrl = (player: RankingPlayer) => {
+    return typeof player.profileImageUrl === "string" && player.profileImageUrl.trim()
+      ? player.profileImageUrl.trim()
+      : "";
   };
 
   return (
@@ -111,15 +100,11 @@ const FullRankingModal = ({
                 const rankClass = isTop3
                   ? `${rankStyles[index]} border-2 ring-[2px] ring-inset`
                   : "hover:bg-muted/50";
-                const imageUrl = extractPlayerImage(player);
+                const imageUrl = extractPlayerImageUrl(player);
 
-                // Additional runtime log before rendering
+                // Requested avatar log
                 // eslint-disable-next-line no-console
-                console.log("💡 [Ranking Avatar Debug][RENDER] FullRankingModal -> MiniPlayerAvatar", {
-                  playerId: player.id,
-                  playerName: player.name,
-                  imageUrl,
-                });
+                console.log(`[Avatar] ${player.name} (${player.id}): ${imageUrl}`);
 
                 return (
                   <div 

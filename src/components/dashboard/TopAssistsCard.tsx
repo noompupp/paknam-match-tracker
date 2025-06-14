@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -44,20 +43,11 @@ const TopAssistsCard = ({ topAssists, isLoading, error }: TopAssistsCardProps) =
 
   const handleSeeAllClick = () => setIsModalOpen(true);
 
-  // Use ONLY profileImageUrl for avatar. Hardcode for testing player "กัปตันกล้า"
-  const extractPlayerImage = (player: TopAssist) => {
-    let imageUrl = typeof player.profileImageUrl === "string" ? player.profileImageUrl.trim() : "";
-
-    // HARD TEST: force avatar for known player name
-    if (player.name === "กัปตันกล้า") {
-      imageUrl = HARDCODED_IMAGE_URL;
-      // eslint-disable-next-line no-console
-      console.log("💡 [Ranking Avatar Debug][HARDCODE TEST] Forcing avatar for:", player.id, player.name, imageUrl);
-    } else {
-      // eslint-disable-next-line no-console
-      console.log("💡 [Ranking Avatar Debug] profileImageUrl ONLY:", player.id, player.name, imageUrl);
-    }
-    return imageUrl;
+  // Reuse image extraction logic as Squad ("EnhancedPlayersList")
+  const extractPlayerImageUrl = (player: TopAssist) => {
+    return typeof player.profileImageUrl === "string" && player.profileImageUrl.trim()
+      ? player.profileImageUrl.trim()
+      : "";
   };
 
   return (
@@ -96,19 +86,15 @@ const TopAssistsCard = ({ topAssists, isLoading, error }: TopAssistsCardProps) =
             ))
           ) : topAssists && topAssists.length > 0 ? (
             topAssists.map((assist, index) => {
-              const imageUrl = extractPlayerImage(assist);
+              const imageUrl = extractPlayerImageUrl(assist);
               const isTop3 = index < 3;
               const boxShadow = isTop3
                 ? "0 0 0 2px rgba(240,200,50,0.12), 0 1px 4px 0 rgba(0,0,0,0.03)"
                 : undefined;
 
-              // Additional runtime log before rendering
+              // Add requested avatar log
               // eslint-disable-next-line no-console
-              console.log("💡 [Ranking Avatar Debug][RENDER] TopAssistsCard -> MiniPlayerAvatar", {
-                assistId: assist.id,
-                assistName: assist.name,
-                imageUrl,
-              });
+              console.log(`[Avatar] ${assist.name} (${assist.id}): ${imageUrl}`);
 
               return (
                 <div

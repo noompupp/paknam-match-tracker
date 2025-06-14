@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -44,20 +43,12 @@ const TopScorersCard = ({ topScorers, isLoading, error }: TopScorersCardProps) =
 
   const handleSeeAllClick = () => setIsModalOpen(true);
 
-  // Use ONLY profileImageUrl for avatar. Hardcode a known test for player with name "กัปตันกล้า"
-  const extractPlayerImage = (player: TopScorer) => {
-    let imageUrl = typeof player.profileImageUrl === "string" ? player.profileImageUrl.trim() : "";
-
-    // HARD TEST: force avatar for known player name or ID
-    if (player.name === "กัปตันกล้า") {
-      imageUrl = HARDCODED_IMAGE_URL;
-      // eslint-disable-next-line no-console
-      console.log("💡 [Ranking Avatar Debug][HARDCODE TEST] Forcing avatar for:", player.id, player.name, imageUrl);
-    } else {
-      // eslint-disable-next-line no-console
-      console.log("💡 [Ranking Avatar Debug] profileImageUrl ONLY:", player.id, player.name, imageUrl);
-    }
-    return imageUrl;
+  // Shared avatar extraction logic as in EnhancedPlayersList
+  const extractPlayerImageUrl = (player: TopScorer) => {
+    // Use profileImageUrl ONLY if present and non-empty (no extra fallbacks).
+    return typeof player.profileImageUrl === "string" && player.profileImageUrl.trim()
+      ? player.profileImageUrl.trim()
+      : "";
   };
 
   return (
@@ -96,19 +87,15 @@ const TopScorersCard = ({ topScorers, isLoading, error }: TopScorersCardProps) =
             ))
           ) : topScorers && topScorers.length > 0 ? (
             topScorers.map((scorer, index) => {
-              const imageUrl = extractPlayerImage(scorer);
+              const imageUrl = extractPlayerImageUrl(scorer);
               const isTop3 = index < 3;
               const boxShadow = isTop3
                 ? "0 0 0 2px rgba(240,200,50,0.12), 0 1px 4px 0 rgba(0,0,0,0.03)"
                 : undefined;
-
-              // Additional runtime log before rendering
+              
+              // Log actual avatar binding now
               // eslint-disable-next-line no-console
-              console.log("💡 [Ranking Avatar Debug][RENDER] TopScorersCard -> MiniPlayerAvatar", {
-                scorerId: scorer.id,
-                scorerName: scorer.name,
-                imageUrl,
-              });
+              console.log(`[Avatar] ${scorer.name} (${scorer.id}): ${imageUrl}`);
 
               return (
                 <div
