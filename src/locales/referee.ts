@@ -190,6 +190,19 @@ const referee: LocaleModule = {
     'referee.action.start': 'Start',
     'referee.action.subIn': 'Sub In',
     'referee.action.subOut': 'Sub Out',
+
+    // --- Substitution Modal: Add all new keys for modal text ---
+    "subModal.title": "Select Replacement Player",
+    "subModal.description": "Select a replacement player to complete the substitution.",
+    "subModal.outgoingPlayerLabel": "Outgoing Player",
+    "subModal.selectReplacementLabel": "Select Replacement Player",
+    "subModal.selectReplacementPlaceholder": "Choose replacement player",
+    "subModal.noAvailablePlayers": "No available players for substitution",
+    "subModal.completeBtn": "Complete Substitution",
+    "subModal.tipUndo": 'Tip: Click the X to undo the substitution and return {name} to play',
+    "subModal.allTracked": "All eligible players are already being tracked",
+    "subModal.alertOutDescription": '{name} has been substituted out. Select a replacement player to complete the substitution.',
+    "subModal.undoAndClose": "Undo and close",
   },
   th: {
     'page.referee': 'เครื่องมือผู้ตัดสิน',
@@ -367,6 +380,19 @@ const referee: LocaleModule = {
     'referee.action.start': 'เริ่ม',
     'referee.action.subIn': 'เปลี่ยนเข้า',
     'referee.action.subOut': 'เปลี่ยนออก',
+
+    // --- Substitution Modal: Add all new keys for modal text ---
+    "subModal.title": "เลือกผู้เล่นทดแทน",
+    "subModal.description": "เลือกผู้เล่นคนใหม่เพื่อเปลี่ยนตัว",
+    "subModal.outgoingPlayerLabel": "ผู้เล่นที่ออก",
+    "subModal.selectReplacementLabel": "เลือกผู้เล่นทดแทน",
+    "subModal.selectReplacementPlaceholder": "เลือกนักเตะทดแทน",
+    "subModal.noAvailablePlayers": "ไม่มีนักเตะเหลือสำหรับเปลี่ยนตัว",
+    "subModal.completeBtn": "เสร็จสิ้นการเปลี่ยนตัว",
+    "subModal.tipUndo": 'หมายเหตุ: กด X เพื่อย้อนกลับการเปลี่ยนตัวและให้ {name} เล่นต่อ',
+    "subModal.allTracked": "นักเตะที่มีสิทธิ์ทุกคนถูกติดตามอยู่แล้ว",
+    "subModal.alertOutDescription": '{name} ถูกเปลี่ยนตัวออก กรุณาเลือกผู้เล่นใหม่เพื่อเสร็จสิ้นการเปลี่ยนตัว',
+    "subModal.undoAndClose": "ย้อนกลับและปิด",
   }
 };
 

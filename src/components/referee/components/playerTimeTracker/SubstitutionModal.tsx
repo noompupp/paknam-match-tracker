@@ -7,6 +7,7 @@ import { EnhancedRefereeSelect, EnhancedRefereeSelectContent, EnhancedRefereeSel
 import { ProcessedPlayer } from "@/utils/refereeDataProcessor";
 import { Users, UserPlus, AlertTriangle, X } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface SubstitutionModalProps {
   isOpen: boolean;
@@ -29,11 +30,11 @@ const SubstitutionModal = ({
   onSubstitute,
   onUndoSubOut
 }: SubstitutionModalProps) => {
+  const { t } = useTranslation();
   const [selectedIncomingPlayer, setSelectedIncomingPlayer] = useState("");
 
   const handleSubstitute = () => {
     if (!selectedIncomingPlayer) return;
-    
     const incomingPlayer = availablePlayers.find(p => p.id.toString() === selectedIncomingPlayer);
     if (incomingPlayer) {
       onSubstitute(incomingPlayer);
@@ -43,14 +44,10 @@ const SubstitutionModal = ({
   };
 
   const handleUndoClose = () => {
-    console.log('🔄 SubstitutionModal: Undoing Sub Out action for:', outgoingPlayer?.name);
     setSelectedIncomingPlayer("");
-    
-    // Call the undo function to revert the "Sub Out" action
     if (onUndoSubOut) {
       onUndoSubOut();
     }
-    
     onClose();
   };
 
@@ -63,16 +60,16 @@ const SubstitutionModal = ({
         <button
           onClick={handleUndoClose}
           className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground z-10"
-          aria-label="Undo substitution and close"
+          aria-label={t("subModal.undoAndClose", "Undo and close")}
         >
           <X className="h-4 w-4" />
-          <span className="sr-only">Undo and close</span>
+          <span className="sr-only">{t("subModal.undoAndClose", "Undo and close")}</span>
         </button>
 
         <DialogHeader className="pr-8">
           <DialogTitle className="flex items-center gap-2">
             <Users className="h-5 w-5" />
-            Select Replacement Player
+            {t("subModal.title", "Select Replacement Player")}
           </DialogTitle>
         </DialogHeader>
         
@@ -80,14 +77,13 @@ const SubstitutionModal = ({
           <Alert>
             <AlertTriangle className="h-4 w-4" />
             <AlertDescription>
-              <span className="font-medium">{outgoingPlayer.name}</span> has been substituted out. 
-              Select a replacement player to complete the substitution.
+              {t("subModal.alertOutDescription", "{name} has been substituted out. Select a replacement player to complete the substitution.", { name: outgoingPlayer.name })}
             </AlertDescription>
           </Alert>
 
           <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
             <div className="flex items-center gap-2 text-red-800">
-              <span className="text-sm font-medium">Outgoing Player:</span>
+              <span className="text-sm font-medium">{t("subModal.outgoingPlayerLabel", "Outgoing Player")}:</span>
             </div>
             <div className="mt-1">
               <span className="font-semibold">{outgoingPlayer.name}</span>
@@ -96,14 +92,14 @@ const SubstitutionModal = ({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="incomingPlayer">Select Replacement Player</Label>
+            <Label htmlFor="incomingPlayer">{t("subModal.selectReplacementLabel", "Select Replacement Player")}</Label>
             <EnhancedRefereeSelect 
               value={selectedIncomingPlayer} 
               onValueChange={setSelectedIncomingPlayer}
               placeholder={
                 availablePlayers.length > 0 
-                  ? "Choose replacement player" 
-                  : "No available players"
+                  ? t("subModal.selectReplacementPlaceholder", "Choose replacement player")
+                  : t("subModal.noAvailablePlayers", "No available players for substitution")
               }
               disabled={availablePlayers.length === 0}
               className="mobile-optimized-select"
@@ -111,7 +107,7 @@ const SubstitutionModal = ({
               <EnhancedRefereeSelectContent className="mobile-select-content-optimized">
                 {availablePlayers.length === 0 ? (
                   <EnhancedRefereeSelectItem value="no-players" disabled>
-                    No available players for substitution
+                    {t("subModal.noAvailablePlayers", "No available players for substitution")}
                   </EnhancedRefereeSelectItem>
                 ) : (
                   availablePlayers.map((player) => (
@@ -140,18 +136,18 @@ const SubstitutionModal = ({
               className="flex-1 mobile-action-button"
             >
               <UserPlus className="h-4 w-4 mr-2" />
-              Complete Substitution
+              {t("subModal.completeBtn", "Complete Substitution")}
             </Button>
           </div>
 
           {availablePlayers.length === 0 && (
             <p className="text-xs text-muted-foreground text-center">
-              All eligible players are already being tracked
+              {t("subModal.allTracked", "All eligible players are already being tracked")}
             </p>
           )}
 
           <div className="text-xs text-muted-foreground text-center pt-2 border-t">
-            Tip: Click the X to undo the substitution and return {outgoingPlayer.name} to play
+            {t("subModal.tipUndo", 'Tip: Click the X to undo the substitution and return {name} to play', { name: outgoingPlayer.name })}
           </div>
         </div>
       </DialogContent>
