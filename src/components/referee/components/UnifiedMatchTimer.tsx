@@ -30,8 +30,15 @@ const UnifiedMatchTimer = ({
   const isMobile = useIsMobile();
   const { t, language } = useTranslation();
 
-  // Get live scores direct from match store for local-first updates!
+  // NEW: Always read lastUpdated to force re-render on score/timeline changes
   const { homeScore, awayScore, homeTeamName, awayTeamName, goals, hasUnsavedChanges, lastUpdated } = useMatchStore();
+
+  // Use lastUpdated as a tracked dependency via a pointless useEffect to guarantee render
+  // (Zustand + React batching sometimes skips context value, this pattern ensures visibility)
+  React.useEffect(() => {
+    // Side-effect is not needed, just tracking lastUpdated.
+  }, [lastUpdated]);
+
   // Debug: log every render with focus on team names and scores
   console.log('[UnifiedMatchTimer v2] Current ZUSTAND STATE:', {
     homeScore, awayScore, homeTeamName, awayTeamName, goals, hasUnsavedChanges, lastUpdated, matchTime

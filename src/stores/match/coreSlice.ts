@@ -67,7 +67,7 @@ export const createCoreSlice = (set: any, get: any, api: any): CoreSlice => ({
         homeScore,
         awayScore,
         hasUnsavedChanges: false,
-        lastUpdated: Date.now()
+        lastUpdated: Date.now()  // <-- always updated
       };
     });
 
@@ -87,11 +87,11 @@ export const createCoreSlice = (set: any, get: any, api: any): CoreSlice => ({
     }, 0);
   },
   setFixtureId: (fixtureId: number) => {
-    set({ fixtureId });
+    set({ fixtureId, lastUpdated: Date.now() });
     console.log("[FIXTURE ID] Set fixtureId:", fixtureId);
   },
   updateScore: (homeScore: number, awayScore: number) => {
-    set({ homeScore, awayScore });
+    set({ homeScore, awayScore, lastUpdated: Date.now() });
   },
   markAsSaved: () => {
     set((state: MatchState) => {
