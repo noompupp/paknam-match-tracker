@@ -1,3 +1,5 @@
+
+import { MatchSaveStatusProvider } from "./hooks/useMatchSaveStatus";
 import RefereeToolsHeader from "./components/RefereeToolsHeader";
 import RefereeMainContent from "./components/RefereeMainContent";
 import UnifiedPageHeader from "@/components/shared/UnifiedPageHeader";
@@ -6,7 +8,8 @@ import { useRefereeStateOrchestrator } from "./hooks/useRefereeStateOrchestrator
 import { useState } from "react";
 import { WorkflowModeConfig } from "./workflows/types";
 
-const RefereeToolsContainer = () => {
+// Split hook-using logic to a sub component!
+const RefereeToolsContent = () => {
   const [workflowConfig, setWorkflowConfig] = useState<WorkflowModeConfig | null>(null);
 
   const {
@@ -194,6 +197,14 @@ const RefereeToolsContainer = () => {
         )}
       </main>
     </>
+  );
+};
+
+const RefereeToolsContainer = () => {
+  return (
+    <MatchSaveStatusProvider>
+      <RefereeToolsContent />
+    </MatchSaveStatusProvider>
   );
 };
 
