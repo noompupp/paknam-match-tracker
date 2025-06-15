@@ -1,4 +1,3 @@
-
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -32,7 +31,22 @@ const UnifiedMatchTimer = ({
   const { t, language } = useTranslation();
 
   // Get live scores direct from match store for local-first updates!
-  const { homeScore, awayScore } = useMatchStore();
+  const { homeScore, awayScore, homeTeamName, awayTeamName, goals, hasUnsavedChanges, lastUpdated } = useMatchStore();
+
+  // DEBUG: Print state on every render
+  console.log('[UnifiedMatchTimer] 🔍 Store state snapshot on render:', {
+    homeScore, awayScore, homeTeamName, awayTeamName, matchTime, goals, isRunning, hasUnsavedChanges, lastUpdated,
+    fixtureData: selectedFixtureData
+  });
+
+  if (selectedFixtureData) {
+    console.log('[UnifiedMatchTimer] 🔎 Fixture data team names:', {
+      fixtureHome: selectedFixtureData.home_team?.name,
+      fixtureAway: selectedFixtureData.away_team?.name,
+      storeHome: homeTeamName,
+      storeAway: awayTeamName
+    });
+  }
 
   // Calculate phase time for 7-a-side (25 minutes per half)
   const HALF_DURATION = 25 * 60; // 25 minutes in seconds

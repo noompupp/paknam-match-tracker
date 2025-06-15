@@ -7,7 +7,7 @@ export const useRefereeStateOrchestrator = () => {
   // Get all integrated state
   const orchestrator = useRefereeStateIntegration();
   // Use match store directly for homeScore/awayScore to avoid accidental drift/duplicate
-  const { homeScore, awayScore, setupMatch } = useMatchStore();
+  const { homeScore, awayScore, homeTeamName, awayTeamName } = useMatchStore();
 
   // Track last fixture id in a ref to avoid duplicate calls
   const lastFixtureIdRef = useRef<number | null>(null);
@@ -20,24 +20,36 @@ export const useRefereeStateOrchestrator = () => {
       selectedFixtureData.home_team &&
       selectedFixtureData.away_team
     ) {
-      const homeTeamName = selectedFixtureData.home_team?.name || "";
-      const awayTeamName = selectedFixtureData.away_team?.name || "";
+      const homeTeamNameValue = selectedFixtureData.home_team?.name || "";
+      const awayTeamNameValue = selectedFixtureData.away_team?.name || "";
       const homeTeamId = String(selectedFixtureData.home_team?.id || "");
       const awayTeamId = String(selectedFixtureData.away_team?.id || "");
-      setupMatch({
+      orchestrator.matchState?.setupMatch?.({
         fixtureId: selectedFixtureData.id,
-        homeTeamName,
-        awayTeamName,
+        homeTeamName: homeTeamNameValue,
+        awayTeamName: awayTeamNameValue,
         homeTeamId,
         awayTeamId
       });
       lastFixtureIdRef.current = selectedFixtureData.id;
+      // Deep state log: store after setupMatch runs
+      setTimeout(() => {
+        const storeState = useMatchStore.getState();
+        console.log('[useRefereeStateOrchestrator] 🟢 Store snapshot immediately after setupMatch:', {
+          fixtureId: selectedFixtureData.id,
+          homeTeamName: storeState.homeTeamName,
+          awayTeamName: storeState.awayTeamName,
+          homeScore: storeState.homeScore,
+          awayScore: storeState.awayScore,
+          goals: storeState.goals,
+        });
+      }, 0);
       console.log(
         "[useRefereeStateOrchestrator] setupMatch called on fixture change:",
         {
           fixtureId: selectedFixtureData.id,
-          homeTeamName,
-          awayTeamName,
+          homeTeamName: homeTeamNameValue,
+          awayTeamName: awayTeamNameValue,
           homeTeamId,
           awayTeamId
         }
@@ -45,7 +57,7 @@ export const useRefereeStateOrchestrator = () => {
     }
   }, [
     orchestrator.baseState.selectedFixtureData,
-    setupMatch
+    orchestrator.matchState?.setupMatch
   ]);
 
   // Get enhanced handlers
