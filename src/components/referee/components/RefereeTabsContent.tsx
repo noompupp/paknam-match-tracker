@@ -1,8 +1,9 @@
+
 import { TabsContent } from "@/components/ui/tabs";
 import { ComponentPlayer } from "../hooks/useRefereeState";
 import ScoreTab from "./tabs/ScoreTab";
 import RoleBasedUnifiedTimerTab from "./tabs/RoleBasedUnifiedTimerTab";
-import GoalsTab from "./tabs/GoalsTab";
+// Removed import of GoalsTab
 import CardsTab from "./tabs/CardsTab";
 import CoordinationTab from "./tabs/CoordinationTab";
 import SummaryTab from "./tabs/SummaryTab";
@@ -104,24 +105,7 @@ const RefereeTabsContent = (props: RefereeTabsContentProps) => {
         />
       </TabsContent>
 
-      <TabsContent value="goals" className="space-y-6">
-        <div className="flex justify-between items-center">
-          <h3 className="text-lg font-semibold">Goals Management</h3>
-          <SaveNowButton onSave={props.onSaveMatch} />
-        </div>
-        <GoalsTab
-          selectedFixtureData={props.selectedFixtureData}
-          homeTeamPlayers={props.homeTeamPlayers}
-          awayTeamPlayers={props.awayTeamPlayers}
-          matchTime={props.matchTime}
-          formatTime={props.formatTime}
-          onGoalAssigned={props.onAssignGoal}
-          homeScore={props.homeScore}
-          awayScore={props.awayScore}
-          showGoalWizard={false}
-          onCancelGoalWizard={() => {}}
-        />
-      </TabsContent>
+      {/* Removed Goals Tab */}
 
       <TabsContent value="cards" className="space-y-6">
         <div className="flex justify-between items-center">

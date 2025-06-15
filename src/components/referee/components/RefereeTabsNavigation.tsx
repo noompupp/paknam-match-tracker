@@ -4,7 +4,7 @@ import { Trophy, Clock, FileText, Users, AlertTriangle, UserCheck } from "lucide
 
 const RefereeTabsNavigation = () => {
   return (
-    <TabsList className="grid w-full grid-cols-6">
+    <TabsList className="grid w-full grid-cols-5">
       <TabsTrigger value="score" className="flex items-center gap-2">
         <Trophy className="h-4 w-4" />
         <span className="hidden sm:inline">Score</span>
@@ -13,10 +13,7 @@ const RefereeTabsNavigation = () => {
         <Clock className="h-4 w-4" />
         <span className="hidden sm:inline">Timer</span>
       </TabsTrigger>
-      <TabsTrigger value="goals" className="flex items-center gap-2">
-        <Trophy className="h-4 w-4" />
-        <span className="hidden sm:inline">Goals</span>
-      </TabsTrigger>
+      {/* Removed Goals Tab */}
       <TabsTrigger value="cards" className="flex items-center gap-2">
         <AlertTriangle className="h-4 w-4" />
         <span className="hidden sm:inline">Cards</span>
