@@ -1,4 +1,3 @@
-
 import { StateCreator } from 'zustand';
 import { MatchState } from './types';
 import { MatchActions } from './actions';
@@ -144,7 +143,7 @@ export const createCoreSlice: StateCreator<
           event_time: localGoal.time ?? 0,
           event_type: 'goal' as const,
           is_own_goal: !!localGoal.isOwnGoal,
-          description: localGoal.description || '',
+          description: '', // Fixed: MatchGoal does not have description, set as empty string
           card_type: null, // Not used for goals
           affected_team_id: null,
           scoring_team_id: null,
@@ -175,10 +174,16 @@ export const createCoreSlice: StateCreator<
     try {
       console.log('💾 Syncing', unsyncedCards.length, 'cards to database');
       for (const localCard of unsyncedCards) {
-        // Map local type to database accepted event_type
+        // Map local type to database accepted event_type and card_type
         let event_type: "yellow_card" | "red_card" = "yellow_card";
-        if (localCard.type === "yellow") event_type = "yellow_card";
-        else if (localCard.type === "red") event_type = "red_card";
+        let card_type: "yellow" | "red" = "yellow";
+        if (localCard.type === "yellow") {
+          event_type = "yellow_card";
+          card_type = "yellow";
+        } else if (localCard.type === "red") {
+          event_type = "red_card";
+          card_type = "red";
+        }
 
         // Compose event payload
         const payload = {
@@ -187,8 +192,8 @@ export const createCoreSlice: StateCreator<
           team_id: localCard.teamId || '',
           event_time: localCard.time ?? 0,
           event_type,
-          card_type: event_type === "yellow_card" ? "yellow" : "red",
-          description: '', // No description property on MatchCard
+          card_type,
+          description: '', // No description on cards
           is_own_goal: false,
           affected_team_id: null,
           scoring_team_id: null,
