@@ -101,7 +101,7 @@ const referee: LocaleModule = {
     'referee.recordGoalTitle': 'Record Goal',
     'referee.recordGoalDesc': 'Use the wizard to record goals with full details',
     'referee.openGoalEntry': 'Open Goal Entry Wizard',
-    'referee.recordGoalsFor': 'Record goals for <0>{home}</0> vs <1>{away}</1>',
+    'referee.recordGoalsFor': 'Record goals for {home} vs {away}',
     // Wizard steps
     'wizard.selectScoringTeam': 'Which team scored?',
     'wizard.selectGoalScorer': 'Select Goal Scorer',
@@ -230,7 +230,7 @@ const referee: LocaleModule = {
     'referee.recordGoalTitle': 'บันทึกประตู',
     'referee.recordGoalDesc': 'ใช้วิซาร์ดเพื่อบันทึกประตูอย่างละเอียด',
     'referee.openGoalEntry': 'เปิดตัวช่วยบันทึกประตู',
-    'referee.recordGoalsFor': 'บันทึกประตูสำหรับ <0>{home}</0> พบ <1>{away}</1>',
+    'referee.recordGoalsFor': 'บันทึกประตูสำหรับ {home} พบ {away}',
     // Wizard steps
     'wizard.selectScoringTeam': 'ทีมใดเป็นผู้ทำประตู?',
     'wizard.selectGoalScorer': 'เลือกผู้ทำประตู',
