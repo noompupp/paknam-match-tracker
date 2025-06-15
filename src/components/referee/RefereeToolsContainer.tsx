@@ -1,18 +1,16 @@
 
-import { MatchSaveStatusProvider } from "./hooks/useMatchSaveStatus";
 import RefereeToolsHeader from "./components/RefereeToolsHeader";
 import RefereeMainContent from "./components/RefereeMainContent";
 import UnifiedPageHeader from "@/components/shared/UnifiedPageHeader";
-import EnhancedWorkflowModeManager from "./workflows/EnhancedWorkflowModeManager";
 import { useRefereeStateOrchestrator } from "./hooks/useRefereeStateOrchestrator";
-import { useState } from "react";
-import { WorkflowModeConfig } from "./workflows/types";
 import { useIntelligentSyncManager } from "./hooks/useIntelligentSyncManager";
+import { MatchSaveStatusProvider } from "./hooks/useMatchSaveStatus";
+import { useState } from "react";
 
-// Split hook-using logic to a sub component!
+// Remove all workflow/coordination logic and types
+// The referee tool is now always for a solo referee
+
 const RefereeToolsContent = () => {
-  const [workflowConfig, setWorkflowConfig] = useState<WorkflowModeConfig | null>(null);
-
   const {
     fixtures,
     fixturesLoading,
@@ -63,33 +61,8 @@ const RefereeToolsContent = () => {
     handleManualRefresh
   } = useRefereeStateOrchestrator();
 
-  // --- NEW: Improve batch sync/atomicity/minimal REST feedback ---
+  // --- Improved batch sync/atomicity/minimal REST feedback ---
   const { syncStatus, forceSync, pendingChanges } = useIntelligentSyncManager();
-
-  const handleWorkflowConfigured = (config: any) => {
-    console.log('🎯 Enhanced workflow configured in container:', config);
-    const workflowModeConfig: WorkflowModeConfig = {
-      mode: config.mode,
-      fixtureId: config.fixtureId,
-      userAssignments: config.userAssignments || [],
-      allAssignments: config.allAssignments || [],
-      createdAt: config.createdAt || new Date().toISOString(),
-      updatedAt: config.updatedAt || new Date().toISOString()
-    };
-    setWorkflowConfig(workflowModeConfig);
-  };
-
-  console.log('🎮 RefereeToolsContainer: Enhanced workflow system active:', {
-    selectedGoalTeam,
-    selectedTimeTeam,
-    homePlayersCount: homeTeamPlayers?.length || 0,
-    awayPlayersCount: awayTeamPlayers?.length || 0,
-    hasValidData: enhancedPlayersData.hasValidData,
-    manualScore: { homeScore, awayScore },
-    workflowConfigured: !!workflowConfig,
-    userAssignments: workflowConfig?.userAssignments?.length || 0,
-    allAssignments: workflowConfig?.allAssignments?.length || 0
-  });
 
   if (fixturesLoading) {
     return (
@@ -143,14 +116,7 @@ const RefereeToolsContent = () => {
           enhancedPlayersData={enhancedPlayersData}
         />
 
-        {selectedFixture && !workflowConfig && (
-          <EnhancedWorkflowModeManager
-            selectedFixtureData={selectedFixtureData}
-            onWorkflowConfigured={handleWorkflowConfigured}
-          />
-        )}
-
-        {selectedFixture && workflowConfig && (
+        {selectedFixture && (
           <RefereeMainContent
             selectedFixtureData={selectedFixtureData}
             homeScore={homeScore}
@@ -191,7 +157,6 @@ const RefereeToolsContent = () => {
             onSaveMatch={handleSaveMatch}
             onResetMatch={handleResetMatch}
             onDataRefresh={handleManualRefresh}
-            workflowConfig={workflowConfig}
           />
         )}
       </main>

@@ -1,7 +1,5 @@
-
 import RefereeMatchControlsContainer from "./RefereeMatchControlsContainer";
 import { ComponentPlayer } from "../hooks/useRefereeState";
-import { WorkflowModeConfig } from "../workflows/types";
 
 interface RefereeMatchControlsProps {
   selectedFixtureData: any;
@@ -48,55 +46,12 @@ interface RefereeMatchControlsProps {
   onRemovePlayer: (playerId: number) => void;
   onTogglePlayerTime: (playerId: number) => void;
   onExportSummary: () => void;
-  workflowConfig: WorkflowModeConfig;
 }
 
-const RefereeMatchControls = (props: RefereeMatchControlsProps) => {
+const RefereeMatchControls = (props: any) => {
   return (
     <RefereeMatchControlsContainer 
-      selectedFixtureData={props.selectedFixtureData}
-      homeScore={props.homeScore}
-      awayScore={props.awayScore}
-      matchTime={props.matchTime}
-      isRunning={props.isRunning}
-      formatTime={props.formatTime}
-      allPlayers={props.allPlayers}
-      homeTeamPlayers={props.homeTeamPlayers}
-      awayTeamPlayers={props.awayTeamPlayers}
-      goals={props.goals}
-      selectedGoalPlayer={props.selectedGoalPlayer}
-      selectedGoalType={props.selectedGoalType}
-      selectedGoalTeam={props.selectedGoalTeam}
-      setSelectedGoalPlayer={props.setSelectedGoalPlayer}
-      setSelectedGoalType={props.setSelectedGoalType}
-      setSelectedGoalTeam={props.setSelectedGoalTeam}
-      selectedPlayer={props.selectedPlayer}
-      selectedTeam={props.selectedTeam}
-      selectedCardType={props.selectedCardType}
-      setSelectedPlayer={props.setSelectedPlayer}
-      setSelectedTeam={props.setSelectedTeam}
-      setSelectedCardType={props.setSelectedCardType}
-      cards={props.cards}
-      trackedPlayers={props.trackedPlayers}
-      selectedTimePlayer={props.selectedTimePlayer}
-      selectedTimeTeam={props.selectedTimeTeam}
-      setSelectedTimePlayer={props.setSelectedTimePlayer}
-      setSelectedTimeTeam={props.setSelectedTimeTeam}
-      events={props.events}
-      onAddGoal={props.onAddGoal}
-      onRemoveGoal={props.onRemoveGoal}
-      onToggleTimer={props.onToggleTimer}
-      onResetMatch={props.onResetMatch}
-      onSaveMatch={props.onSaveMatch}
-      onQuickGoal={props.onQuickGoal}
-      onOpenGoalWizard={props.onOpenGoalWizard}
-      onAssignGoal={props.onAssignGoal}
-      onAddCard={props.onAddCard}
-      onAddPlayer={props.onAddPlayer}
-      onRemovePlayer={props.onRemovePlayer}
-      onTogglePlayerTime={props.onTogglePlayerTime}
-      onExportSummary={props.onExportSummary}
-      workflowConfig={props.workflowConfig}
+      {...props}
     />
   );
 };

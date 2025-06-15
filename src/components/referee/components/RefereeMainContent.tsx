@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Tabs } from "@/components/ui/tabs";
 import RoleBasedRefereeTabsNavigation from "./RoleBasedRefereeTabsNavigation";
@@ -46,17 +45,10 @@ interface RefereeMainContentProps {
   onSaveMatch: () => void;
   onResetMatch: () => void;
   onDataRefresh: () => void;
-  workflowConfig: {
-    mode: 'two_referees' | 'multi_referee';
-    fixtureId: number;
-    userAssignments: any[];
-    allAssignments: any[];
-    createdAt: string;
-    updatedAt: string;
-  };
 }
 
-const RefereeMainContent = (props: RefereeMainContentProps) => {
+const RefereeMainContent = (props: any) => {
+  // Remove all workflowConfig and coordination logic.
   const handleAddGoal = (team: 'home' | 'away') => {
     console.log('🎯 Adding goal for team:', team);
   };
@@ -84,10 +76,9 @@ const RefereeMainContent = (props: RefereeMainContentProps) => {
   return (
     <div className="space-y-6">
       <RefereeMatchHeader selectedFixtureData={props.selectedFixtureData} />
-      
       <Tabs defaultValue="score" className="w-full">
+        {/* Remove all workflowConfig/coordination navigation */}
         <RoleBasedRefereeTabsNavigation selectedFixtureData={props.selectedFixtureData} />
-        
         <RefereeTabsContent
           selectedFixtureData={props.selectedFixtureData}
           homeScore={props.homeScore}
@@ -131,7 +122,6 @@ const RefereeMainContent = (props: RefereeMainContentProps) => {
           onRemovePlayer={props.removePlayer}
           onTogglePlayerTime={props.togglePlayerTime}
           onExportSummary={handleExportSummary}
-          workflowConfig={props.workflowConfig}
         />
       </Tabs>
     </div>
