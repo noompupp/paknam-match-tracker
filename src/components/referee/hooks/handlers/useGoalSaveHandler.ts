@@ -33,7 +33,11 @@ export const useGoalSaveHandler = ({ fixtureId, refreshScore }: UseGoalSaveHandl
 
       // Refresh the score AFTER syncing to database
       if (refreshScore) {
+        console.log('[GOALS SAVE HANDLER] Awaiting post-save refreshScore callback...');
         await refreshScore();
+        console.log('[GOALS SAVE HANDLER] refreshScore completed.');
+      } else {
+        console.log('[GOALS SAVE HANDLER] No refreshScore callback provided.');
       }
 
       toast({
@@ -52,3 +56,4 @@ export const useGoalSaveHandler = ({ fixtureId, refreshScore }: UseGoalSaveHandl
 
   return { handleSaveGoals };
 };
+
