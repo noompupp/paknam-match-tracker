@@ -40,11 +40,31 @@ export const usePlayerTimeTrackerState = ({
   const { toast } = useToast();
   const { t, language } = useTranslation();
 
+  // Adapter: convert PlayerTime to ProcessedPlayer for onAddPlayer
+  const addPlayerAdapter = (player: PlayerTime, time: number) => {
+    // Try to find the ProcessedPlayer by id
+    const found = allPlayers.find(p => p.id === player.id);
+    if (found) {
+      return Promise.resolve(onAddPlayer(found));
+    }
+    // Fallback: Construct a minimal ProcessedPlayer
+    const fallbackProcessedPlayer: ProcessedPlayer = {
+      id: player.id,
+      name: player.name,
+      team: player.team,
+      team_id: "",
+      number: "",
+      position: "Player",
+      role: "Starter",
+    };
+    return Promise.resolve(onAddPlayer(fallbackProcessedPlayer));
+  };
+
   const handlersProps = {
     selectedFixtureData,
     matchTime,
     playersForTimeTracker: trackedPlayers,
-    addPlayer: async (player: ProcessedPlayer, time: number) => onAddPlayer(player),
+    addPlayer: addPlayerAdapter,
     removePlayer: onRemovePlayer,
     togglePlayerTime: async (playerId: number, time: number) => onTogglePlayerTime(playerId),
     addEvent: (type: string, description: string, time: number) => {

@@ -81,12 +81,32 @@ export const useRefereeHandlers = (props: UseRefereeHandlersProps) => {
     addEvent: props.addEvent
   });
 
+  // Adapter for PlayerTime -> ComponentPlayer
+  const addPlayerAdapter = (player: any, matchTime: number) => {
+    // Try to find actual ComponentPlayer by id
+    const found = props.allPlayers.find(p => p.id === player.id);
+    if (found) {
+      return props.addPlayer(found, matchTime);
+    }
+    // Fallback: best-effort minimal ComponentPlayer
+    const fallback: ComponentPlayer = {
+      id: player.id,
+      name: player.name,
+      team_id: player.team_id || "",
+      number: player.number || "",
+      position: player.position || "Player",
+      role: player.role || "Starter",
+      team: player.team || "",
+    };
+    return props.addPlayer(fallback, matchTime);
+  };
+
   // Player time handlers
   const playerTimeHandlers = usePlayerTimeHandlers({
     selectedFixtureData: props.selectedFixtureData,
     matchTime: props.matchTime,
     playersForTimeTracker: props.playersForTimeTracker,
-    addPlayer: props.addPlayer,
+    addPlayer: addPlayerAdapter,
     removePlayer: props.removePlayer,
     togglePlayerTime: props.togglePlayerTime,
     addEvent: props.addEvent
