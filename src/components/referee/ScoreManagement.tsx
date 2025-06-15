@@ -1,15 +1,13 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Minus, Play, Square, RotateCcw, Save, CheckCircle, AlertTriangle, Info } from "lucide-react";
 import { Fixture } from "@/types/database";
 import { validateMatchData, formatMatchResult } from "@/utils/matchValidation";
+import { useMatchStore } from "@/stores/useMatchStore"; // Import match store
 
 interface ScoreManagementProps {
   selectedFixtureData: Fixture;
-  homeScore: number;
-  awayScore: number;
   isRunning: boolean;
   isPending: boolean;
   onAddGoal: (team: 'home' | 'away') => void;
@@ -19,10 +17,10 @@ interface ScoreManagementProps {
   onSaveMatch: () => void;
 }
 
+// REMOVE homeScore/awayScore as incoming props, use match store exclusively
+
 const ScoreManagement = ({
   selectedFixtureData,
-  homeScore,
-  awayScore,
   isRunning,
   isPending,
   onAddGoal,
@@ -31,6 +29,9 @@ const ScoreManagement = ({
   onResetMatch,
   onSaveMatch
 }: ScoreManagementProps) => {
+  // Read scores from match store
+  const { homeScore, awayScore } = useMatchStore();
+
   const getTeamLogo = (team: any) => {
     if (team?.logoURL) {
       return (
@@ -114,13 +115,13 @@ const ScoreManagement = ({
         <div className="flex items-center justify-between">
           <CardTitle>Score Management</CardTitle>
           <div className="flex gap-2">
-            {isMatchComplete && (
+            {selectedFixtureData.status === 'completed' && (
               <Badge variant="default" className="bg-green-600">
                 <CheckCircle className="h-3 w-3 mr-1" />
                 Match Completed
               </Badge>
             )}
-            {hasScoreChange && (
+            {(homeScore !== (selectedFixtureData.home_score || 0) || awayScore !== (selectedFixtureData.away_score || 0)) && (
               <Badge variant="outline" className="border-yellow-500 text-yellow-600">
                 <AlertTriangle className="h-3 w-3 mr-1" />
                 Unsaved Changes
@@ -160,6 +161,7 @@ const ScoreManagement = ({
         )}
 
         <div className="space-y-3">
+          {/* Home */}
           <div className="flex items-center justify-between p-3 rounded-lg bg-muted/20">
             <div className="flex items-center gap-3">
               <div className="flex items-center">
@@ -170,9 +172,9 @@ const ScoreManagement = ({
               <Badge variant="outline" className="text-xs">Home</Badge>
             </div>
             <div className="flex items-center gap-2">
-              <Button 
-                size="sm" 
-                variant="outline" 
+              <Button
+                size="sm"
+                variant="outline"
                 onClick={() => onRemoveGoal('home')}
                 disabled={homeScore <= 0}
               >
@@ -187,6 +189,7 @@ const ScoreManagement = ({
             </div>
           </div>
           
+          {/* Away */}
           <div className="flex items-center justify-between p-3 rounded-lg bg-muted/20">
             <div className="flex items-center gap-3">
               <div className="flex items-center">
@@ -197,9 +200,9 @@ const ScoreManagement = ({
               <Badge variant="outline" className="text-xs">Away</Badge>
             </div>
             <div className="flex items-center gap-2">
-              <Button 
-                size="sm" 
-                variant="outline" 
+              <Button
+                size="sm"
+                variant="outline"
                 onClick={() => onRemoveGoal('away')}
                 disabled={awayScore <= 0}
               >

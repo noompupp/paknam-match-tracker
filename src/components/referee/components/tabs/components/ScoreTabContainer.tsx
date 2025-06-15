@@ -1,3 +1,4 @@
+
 import React from "react";
 import { ComponentPlayer } from "../../../hooks/useRefereeState";
 import { useMatchStore } from "@/stores/useMatchStore";
@@ -7,6 +8,8 @@ import ScoreTabGoalsSummarySection from "./ScoreTabGoalsSummarySection";
 import ScoreTabGoalRecordingSection from "./ScoreTabGoalRecordingSection";
 import ScoreTabUnsavedChangesSection from "./ScoreTabUnsavedChangesSection";
 import ScoreTabMatchControlsSection from "./ScoreTabMatchControlsSection";
+
+// removed homeScore/awayScore props (use store)
 
 interface ScoreTabContainerProps {
   selectedFixtureData: any;
@@ -42,7 +45,7 @@ const ScoreTabContainer = ({
   const homeTeamId = selectedFixtureData?.home_team?.__id__ || selectedFixtureData?.home_team_id;
   const awayTeamId = selectedFixtureData?.away_team?.__id__ || selectedFixtureData?.away_team_id;
 
-  // Use global match store
+  // Use match store as single source of truth for homeScore/awayScore
   const {
     fixtureId,
     homeScore,
@@ -117,19 +120,24 @@ const ScoreTabContainer = ({
       <ScoreTabGoalRecordingSection
         homeTeamName={homeTeamName}
         awayTeamName={awayTeamName}
-        onRecordGoal={handleRecordGoal}
+        onRecordGoal={onShowWizard}
         isDisabled={false}
       />
       <ScoreTabUnsavedChangesSection
         hasUnsavedChanges={hasUnsavedChanges}
         unsavedItemsCount={unsavedItemsCount}
-        onSave={handleSaveMatch}
+        onSave={async () => { await batchSave(); onSaveMatch(); }}
       />
       <ScoreTabMatchControlsSection
         isRunning={isRunning}
         onToggleTimer={onToggleTimer}
-        onSaveMatch={handleSaveMatch}
-        onResetMatch={handleResetMatch}
+        onSaveMatch={async () => { await batchSave(); onSaveMatch(); }}
+        onResetMatch={() => {
+          if (window.confirm("⚠️ RESET MATCH DATA\n\nThis will reset all local match data and the database.\n\nThis action CANNOT be undone!\n\nAre you sure you want to proceed?")) {
+            resetState();
+            onResetMatch();
+          }
+        }}
       />
     </div>
   );

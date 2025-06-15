@@ -1,9 +1,9 @@
-
 import React, { useState } from "react";
 import { ComponentPlayer } from "../../hooks/useRefereeState";
 import EnhancedScoreTabContainer from "./components/EnhancedScoreTabContainer";
 import ScoreTabWizard from "./components/ScoreTabWizard";
 import UnifiedMatchTimer from "../UnifiedMatchTimer";
+import { useMatchStore } from "@/stores/useMatchStore";
 
 interface ScoreTabProps {
   selectedFixtureData: any;
@@ -17,8 +17,6 @@ interface ScoreTabProps {
   onSaveMatch: () => void;
   onAssignGoal: (player: ComponentPlayer) => void;
   forceRefresh?: () => Promise<void>;
-  homeScore: number;
-  awayScore: number;
 }
 
 const ScoreTab = ({
@@ -33,15 +31,16 @@ const ScoreTab = ({
   onSaveMatch,
   onAssignGoal,
   forceRefresh,
-  homeScore,
-  awayScore
 }: ScoreTabProps) => {
   const [showWizard, setShowWizard] = useState(false);
 
-  // Calculate current phase for 7-a-side timer
-  const HALF_DURATION = 25 * 60; // 25 minutes in seconds
-  const currentPhase = matchTime <= HALF_DURATION ? 'first' : 
-                       matchTime <= HALF_DURATION * 2 ? 'second' : 'overtime';
+  // Use store for scores
+  const { homeScore, awayScore } = useMatchStore();
+
+  // HALF_DURATION and phase logic unchanged
+  const HALF_DURATION = 25 * 60;
+  const currentPhase = matchTime <= HALF_DURATION ? 'first' :
+    matchTime <= HALF_DURATION * 2 ? 'second' : 'overtime';
 
   const handleWizardGoalAssigned = (goalData: {
     player: ComponentPlayer;
@@ -72,7 +71,7 @@ const ScoreTab = ({
 
   return (
     <div className="space-y-6">
-      {/* Unified Match Timer - appears at top of all tabs */}
+      {/* Unified Match Timer */}
       <UnifiedMatchTimer
         selectedFixtureData={selectedFixtureData}
         homeScore={homeScore}
@@ -85,7 +84,7 @@ const ScoreTab = ({
         phase={currentPhase}
       />
 
-      {/* Enhanced Score Tab Content */}
+      {/* Score Tab Content */}
       <EnhancedScoreTabContainer
         selectedFixtureData={selectedFixtureData}
         isRunning={isRunning}
