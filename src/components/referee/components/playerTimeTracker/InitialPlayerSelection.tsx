@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -77,6 +76,16 @@ const InitialPlayerSelection = ({
   const getTeamName = (team: 'home' | 'away') => {
     if (team === 'home') return selectedFixtureData?.home_team?.name || 'Home Team';
     return selectedFixtureData?.away_team?.name || 'Away Team';
+  };
+
+  // Responsive start button text: short label on mobile, full label elsewhere
+  const getStartButtonLabel = () => {
+    if (typeof window !== "undefined") {
+      // Use window.matchMedia for client-side rendering
+      return window.matchMedia("(max-width: 375px)").matches ? "Start Match" : "Start Match Tracking";
+    }
+    // SSR fallback: show full label
+    return "Start Match Tracking";
   };
 
   return (
@@ -206,22 +215,31 @@ const InitialPlayerSelection = ({
               </div>
 
               {/* Action Buttons - Fixed at bottom */}
-              <div className="flex-shrink-0 pt-3 border-t bg-background">
-                <div className="flex gap-3">
+              <div
+                className="flex-shrink-0 pt-3 border-t bg-background"
+              >
+                {/* Responsive stack: vertical on xs (below 375px), horizontal otherwise */}
+                <div className="
+                  flex gap-2
+                  flex-col xs:flex-row
+                  [@media(max-width:375px)]:flex-col
+                ">
                   <Button
                     variant="outline"
                     onClick={() => setSelectedTeam(null)}
-                    className="flex-1"
+                    className="flex-1 w-full"
                   >
                     Back to Team Selection
                   </Button>
                   <Button
                     onClick={handleStartMatch}
                     disabled={!isValidSelection}
-                    className="flex-1"
+                    className="flex-1 w-full"
                   >
                     <Play className="h-4 w-4 mr-2" />
-                    Start Match Tracking
+                    {/* Short label on mobile, long on desktop */}
+                    <span className="block [@media(max-width:375px)]:hidden">Start Match Tracking</span>
+                    <span className="hidden [@media(max-width:375px)]:block">Start Match</span>
                   </Button>
                 </div>
               </div>
