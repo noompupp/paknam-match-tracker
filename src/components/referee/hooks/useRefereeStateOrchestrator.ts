@@ -7,7 +7,6 @@ import { useEffect, useRef } from "react";
 export const useRefereeStateOrchestrator = () => {
   const orchestrator = useRefereeStateIntegration();
 
-  // Get live store state and the setupMatch function directly from the store
   const {
     homeScore,
     awayScore,
@@ -19,14 +18,12 @@ export const useRefereeStateOrchestrator = () => {
     setupMatch
   } = useMatchStore();
 
-  // Keep a ref for last setup params to avoid excessive setupMatch runs
   const lastSetupParams = useRef<{
     fixtureId: number | null,
     homeTeamName: string,
     awayTeamName: string
   } | null>(null);
 
-  // Helper to resolve team names using fixture if store values are missing/empty
   function resolveTeamName(possible: string | undefined, fallback: string | undefined): string {
     if (typeof possible === "string" && possible.trim().length > 0) return possible.trim();
     if (typeof fallback === "string" && fallback.trim().length > 0) return fallback.trim();
@@ -37,17 +34,13 @@ export const useRefereeStateOrchestrator = () => {
     const { selectedFixtureData } = orchestrator.baseState;
     if (!selectedFixtureData) return;
 
-    // Pull team names and ids from fixture data
     const fixtureId = selectedFixtureData.id;
-
-    // Use correct fixture properties for team names
     const fixtureHome = selectedFixtureData.home_team?.name || "";
     const fixtureAway = selectedFixtureData.away_team?.name || "";
 
     const homeTeamName = resolveTeamName(storeHomeTeamName, fixtureHome);
     const awayTeamName = resolveTeamName(storeAwayTeamName, fixtureAway);
 
-    // Team IDs
     const homeTeamId = String(
       selectedFixtureData.home_team?.id ||
       selectedFixtureData.home_team?.__id__ ||
@@ -63,7 +56,6 @@ export const useRefereeStateOrchestrator = () => {
       ""
     );
 
-    // Defensive: only trigger on change
     const setupChanged =
       !lastSetupParams.current ||
       lastSetupParams.current.fixtureId !== fixtureId ||
@@ -76,7 +68,6 @@ export const useRefereeStateOrchestrator = () => {
       fixtureId &&
       setupChanged
     ) {
-      // Use setupMatch directly from the store
       setupMatch({
         fixtureId,
         homeTeamName,
@@ -89,35 +80,6 @@ export const useRefereeStateOrchestrator = () => {
         homeTeamName,
         awayTeamName,
       };
-
-      setTimeout(() => {
-        const storeState = useMatchStore.getState();
-        if (!storeState.homeTeamName || !storeState.awayTeamName) {
-          console.error("[Orchestrator WARNING] setupMatch left home/away team names EMPTY!", {
-            fixtureId,
-            providedHome: homeTeamName, providedAway: awayTeamName,
-            storeHome: storeState.homeTeamName, storeAway: storeState.awayTeamName,
-            fixtureHome, fixtureAway
-          });
-        } else {
-          console.log('[Orchestrator] Store after setupMatch:', {
-            fixtureId,
-            homeTeamName: storeState.homeTeamName,
-            awayTeamName: storeState.awayTeamName,
-            homeScore: storeState.homeScore,
-            awayScore: storeState.awayScore,
-            goals: storeState.goals,
-          });
-        }
-      }, 0);
-
-      console.log("[Orchestrator] setupMatch called due to fixture/team change", {
-        fixtureId,
-        homeTeamName,
-        awayTeamName,
-        homeTeamId,
-        awayTeamId,
-      });
     }
   }, [
     orchestrator.baseState.selectedFixtureData,
@@ -132,39 +94,11 @@ export const useRefereeStateOrchestrator = () => {
     // no-op, reserved for permission debug
   }, []);
 
-  // Always get enhanced handlers
   const enhancedHandlers = useRefereeEnhancedHandlers({
     baseState: orchestrator.baseState,
     scoreState: orchestrator.scoreState,
     matchState: orchestrator.matchState,
     playerData: orchestrator.playerData
-  });
-
-  // DEBUG: print store status
-  useEffect(() => {
-    if (!storeHomeTeamName || !storeAwayTeamName) {
-      console.warn("[Orchestrator] Team names missing in store! Scoring will not work unless setupMatch is triggered properly.", {
-        storeHomeTeamName, storeAwayTeamName
-      });
-    }
-  }, [storeHomeTeamName, storeAwayTeamName, lastUpdated]);
-
-  console.log('🎯 useRefereeStateOrchestrator Summary (Database-Driven Scores):', {
-    selectedFixture: orchestrator.baseState.selectedFixture,
-    hasSelectedFixtureData: !!orchestrator.baseState.selectedFixtureData,
-    totalMembers: orchestrator.baseState.members?.length || 0,
-    homePlayersCount: orchestrator.playerData.homeTeamPlayers.length,
-    awayPlayersCount: orchestrator.playerData.awayTeamPlayers.length,
-    totalPlayersCount: orchestrator.playerData.allPlayers.length,
-    enhancedDataValid: orchestrator.playerData.enhancedPlayersData.hasValidData,
-    dataIssues: orchestrator.playerData.enhancedPlayersData.dataIssues,
-    selectedGoalTeam: orchestrator.teamSelection.selectedGoalTeam,
-    selectedTimeTeam: orchestrator.teamSelection.selectedTimeTeam,
-    goalFilteredPlayersCount: orchestrator.teamSelection.getGoalFilteredPlayers().length,
-    timeFilteredPlayersCount: orchestrator.teamSelection.getTimeFilteredPlayers().length,
-    databaseDrivenScore: { homeScore: orchestrator.scoreState.homeScore, awayScore: orchestrator.scoreState.awayScore },
-    hasRealTimeSync: !!orchestrator.scoreState.forceRefresh,
-    storeHomeTeamName, storeAwayTeamName, lastUpdated
   });
 
   return {

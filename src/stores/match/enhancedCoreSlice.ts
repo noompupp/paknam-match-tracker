@@ -58,14 +58,6 @@ export const createEnhancedCoreSlice: StateCreator<
         next.awayTeamId
       );
 
-      console.log("[ENHANCED CORE] setupMatch called with:", {
-        fixtureId,
-        homeTeamName,
-        awayTeamName,
-        homeTeamId,
-        awayTeamId
-      });
-
       return {
         ...next,
         homeScore,
@@ -74,29 +66,15 @@ export const createEnhancedCoreSlice: StateCreator<
         lastUpdated: Date.now()
       };
     });
-
-    setTimeout(() => {
-      const s = get();
-      console.log("[ENHANCED CORE][POST] Store state after setupMatch:", {
-        fixtureId: s.fixtureId,
-        homeTeamName: s.homeTeamName,
-        awayTeamName: s.awayTeamName,
-        homeScore: s.homeScore,
-        awayScore: s.awayScore,
-        goals: s.goals,
-      });
-    }, 0);
   },
 
   setFixtureId: (fixtureId: number) => {
     set({ fixtureId, lastUpdated: Date.now() });
-    console.log("[ENHANCED CORE] Set fixtureId:", fixtureId);
   },
 
   updateScore: (homeScore: number, awayScore: number) => {
     set({ homeScore, awayScore, lastUpdated: Date.now() });
     
-    // Trigger auto-sync if enabled
     setTimeout(() => {
       const state = get();
       if (state.isAutoSyncEnabled && !state.isSyncing) {
@@ -114,12 +92,6 @@ export const createEnhancedCoreSlice: StateCreator<
       const updatedGoals = state.goals.map(goal => ({ ...goal, synced: true }));
       const updatedCards = state.cards.map(card => ({ ...card, synced: true }));
       const updatedPlayerTimes = state.playerTimes.map(time => ({ ...time, synced: true }));
-
-      console.log("[ENHANCED CORE] Marked as saved:", {
-        unsavedGoals: goalsBefore,
-        unsavedCards: cardsBefore,
-        unsavedPlayerTimes: timesBefore
-      });
 
       return {
         ...state,
@@ -142,7 +114,6 @@ export const createEnhancedCoreSlice: StateCreator<
       hasUnsavedChanges: false,
       lastUpdated: Date.now()
     });
-    console.log("[ENHANCED CORE] State reset for fixture");
   },
 
   getUnsavedItemsCount: () => {
@@ -161,13 +132,11 @@ export const createEnhancedCoreSlice: StateCreator<
     const state = get();
     
     if (!state.isAutoSyncEnabled) {
-      console.log('⏸️ Auto-sync disabled, skipping');
       return;
     }
 
     try {
       await state.syncToDatabase();
-      console.log('🔄 Auto-sync completed for scores');
     } catch (error) {
       console.error('❌ Auto-sync failed:', error);
     }
