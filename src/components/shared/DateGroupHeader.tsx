@@ -26,20 +26,18 @@ const DateGroupHeader = ({
     if (gameweekLabel) {
       return (
         <div className={`
-          px-3 py-1.5 rounded-lg font-bold text-sm
+          px-3 py-1.5 rounded-lg font-bold text-sm border-2
           ${isFinalGameweek 
-            ? 'bg-gradient-to-r from-amber-500/20 to-yellow-500/20 text-amber-600 border border-amber-300/30' 
-            : 'bg-primary/10 text-primary border border-primary/20'
+            ? 'bg-gradient-to-r from-yellow-400/30 to-amber-500/10 text-amber-700 border-amber-400 shadow-md'
+            : 'bg-primary/10 text-primary border-primary/50 shadow-sm'
           }
-          shadow-sm
         `}>
           {gameweekLabel}
         </div>
       );
     }
-    
     return (
-      <span className="text-sm text-muted-foreground font-medium px-2 py-1 bg-muted/50 rounded">
+      <span className="text-sm text-muted-foreground font-medium px-2 py-1 bg-muted/50 rounded border border-border">
         {fixtureCount} {fixtureCount === 1 ? 'match' : 'matches'}
       </span>
     );

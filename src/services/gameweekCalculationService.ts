@@ -9,11 +9,15 @@ export interface GameweekMapping {
   isFinal?: boolean;
 }
 
+/**
+ * Added: GameweekCalculationOutput now includes totalMatchdays for accurate final MD detection.
+ */
 export interface GameweekCalculationResult {
   gameweekMappings: Map<string, GameweekMapping>;
   totalGameweeks: number;
   earliestMatchDate: string | null;
   latestMatchDate: string | null;
+  totalMatchdays: number; // New: Maximum assigned matchday (for true "Final MD")
 }
 
 /**
@@ -30,7 +34,8 @@ export class GameweekCalculationService {
         gameweekMappings: new Map(),
         totalGameweeks: 0,
         earliestMatchDate: null,
-        latestMatchDate: null
+        latestMatchDate: null,
+        totalMatchdays: 0,
       };
     }
 
@@ -44,7 +49,8 @@ export class GameweekCalculationService {
         gameweekMappings: new Map(),
         totalGameweeks: 0,
         earliestMatchDate: null,
-        latestMatchDate: null
+        latestMatchDate: null,
+        totalMatchdays: 0,
       };
     }
 
@@ -62,11 +68,13 @@ export class GameweekCalculationService {
     // Create gameweek mappings
     const gameweekMappings = new Map<string, GameweekMapping>();
     const totalGameweeks = uniqueDates.length;
+    const totalMatchdays = totalGameweeks; // By design: 1 matchday per date (sorted); could be decoupled if multi-rounds
 
     uniqueDates.forEach((date, index) => {
       const gameweekNumber = index + 1;
       const fixturesOnDate = fixturesByDate.get(date) || [];
-      const isFinal = index === uniqueDates.length - 1 && totalGameweeks > 1;
+      // Only assign "Final MD" to last *actual* scheduled date
+      const isFinal = (gameweekNumber === totalMatchdays && totalMatchdays > 1);
       
       let displayLabel: string;
       if (isFinal) {
@@ -88,20 +96,15 @@ export class GameweekCalculationService {
       gameweekMappings,
       totalGameweeks,
       earliestMatchDate: uniqueDates[0],
-      latestMatchDate: uniqueDates[uniqueDates.length - 1]
+      latestMatchDate: uniqueDates[uniqueDates.length - 1],
+      totalMatchdays
     };
   }
 
-  /**
-   * Get gameweek info for a specific date
-   */
   static getGameweekForDate(date: string, gameweekMappings: Map<string, GameweekMapping>): GameweekMapping | null {
     return gameweekMappings.get(date) || null;
   }
 
-  /**
-   * Get display label for gameweek
-   */
   static getGameweekDisplayLabel(date: string, gameweekMappings: Map<string, GameweekMapping>): string {
     const mapping = gameweekMappings.get(date);
     return mapping?.displayLabel || '';

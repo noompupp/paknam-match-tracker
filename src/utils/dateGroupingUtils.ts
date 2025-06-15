@@ -1,4 +1,3 @@
-
 import { formatDateDisplay } from "@/utils/timeUtils";
 import { GameweekCalculationService, GameweekMapping } from "@/services/gameweekCalculationService";
 
@@ -11,25 +10,28 @@ export interface GroupedFixtures {
   isFinalGameweek?: boolean;
 }
 
-// Global gameweek mappings cache
+// Global gameweek mappings cache with total matchdays
 let gameweekMappingsCache: Map<string, GameweekMapping> | null = null;
+let totalMatchdaysCache: number = 0;
 
 /**
- * Initialize gameweek mappings from fixtures
+ * Initialize gameweek mappings from fixtures. Store totalMatchdays globally as well.
  */
 export const initializeGameweekMappings = (allFixtures: any[]) => {
   const result = GameweekCalculationService.calculateGameweeks(allFixtures);
   gameweekMappingsCache = result.gameweekMappings;
+  totalMatchdaysCache = result.totalMatchdays || 0;
   console.log('🎯 Gameweek mappings initialized:', {
     totalGameweeks: result.totalGameweeks,
     earliestDate: result.earliestMatchDate,
     latestDate: result.latestMatchDate,
+    totalMatchdays: totalMatchdaysCache,
     mappings: Array.from(result.gameweekMappings.entries())
   });
 };
 
 /**
- * Get gameweek information for a date
+ * Get gameweek information for a date, including final matchday check.
  */
 export const getGameweekInfo = (dateString: string) => {
   if (!gameweekMappingsCache) {
@@ -37,6 +39,18 @@ export const getGameweekInfo = (dateString: string) => {
   }
 
   const mapping = GameweekCalculationService.getGameweekForDate(dateString, gameweekMappingsCache);
+
+  // "Final MD" is only for the actual final scheduled matchday (highest assigned matchday)
+  let isFinalGameweek = false;
+  if (
+    mapping && 
+    typeof mapping.gameweek === "number" && 
+    totalMatchdaysCache > 0 &&
+    mapping.gameweek === totalMatchdaysCache
+  ) {
+    isFinalGameweek = true;
+  }
+
   if (!mapping) {
     return { gameweek: undefined, gameweekLabel: undefined, isFinalGameweek: false };
   }
@@ -44,7 +58,7 @@ export const getGameweekInfo = (dateString: string) => {
   return {
     gameweek: mapping.gameweek,
     gameweekLabel: mapping.displayLabel,
-    isFinalGameweek: mapping.isFinal || false
+    isFinalGameweek
   };
 };
 

@@ -44,8 +44,10 @@ const RecentResultsSection = ({
   return (
     <div id="recent-results" className="scroll-mt-20 mb-8">
       <div className="flex items-center gap-2 mb-6">
-        <Trophy className="h-6 w-6 text-white" />
-        <h2 className="text-2xl font-bold text-white">All Results</h2>
+        <Trophy className="h-6 w-6 text-primary" />
+        <h2 className="text-2xl font-bold text-foreground py-1 px-3 rounded-lg bg-gradient-to-r from-muted via-background to-muted/60 shadow-sm">
+          All Results
+        </h2>
       </div>
       
       <div className="space-y-4">
