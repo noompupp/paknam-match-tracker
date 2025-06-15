@@ -168,6 +168,25 @@ const translations = {
     'referee.chooseMatchPlaceholder': 'Choose a match to manage...',
     'referee.selectFixture': 'Select Fixture',
     'referee.matchSelectionTitle': 'Match Selection',
+    
+    // 7-a-side validation & alerts
+    'referee.rulesClear': '7-a-Side Rules: All Clear',
+    'referee.onField': '{count}/{limit} on field',
+    'referee.currentHalf': 'Half {half} - {time}',
+    'referee.playersOnField': 'Players on Field',
+    'referee.totalTracked': 'Total Tracked',
+    'referee.criticalViolations': 'CRITICAL RULE VIOLATIONS DETECTED',
+    'referee.immediateAction': 'IMMEDIATE ACTION REQUIRED',
+    'referee.exceededLimit': 'LIMIT EXCEEDED',
+    'referee.approachingLimit': 'APPROACHING LIMIT',
+    'referee.needsMoreTime': 'NEEDS MORE TIME',
+    'referee.allClear': 'All Clear',
+    'referee.substituteNow': 'MUST SUBSTITUTE NOW',
+    'referee.mustSubstitute': 'S-Class players are limited to 20 minutes per half - MUST SUBSTITUTE NOW',
+    'referee.needsMoreToReachMinimum': 'Needs {time} more to reach minimum',
+    'referee.playersOnFieldLabel': 'Players on Field',
+    'referee.totalTrackedLabel': 'Total Tracked',
+    'referee.time': '{time}',
   },
   th: {
     // Navigation
@@ -321,6 +340,25 @@ const translations = {
     'referee.chooseMatchPlaceholder': 'เลือกแมตช์ที่ต้องการจัดการ...',
     'referee.selectFixture': 'เลือกแมตช์',
     'referee.matchSelectionTitle': 'เลือกแมตช์',
+    
+    // 7-a-side validation & alerts
+    'referee.rulesClear': 'กฎ 7 คน: ปลอดภัยทุกประการ',
+    'referee.onField': '{count}/{limit} ในสนาม',
+    'referee.currentHalf': 'ครึ่งที่ {half} - {time}',
+    'referee.playersOnField': 'ผู้เล่นในสนาม',
+    'referee.totalTracked': 'ติดตามทั้งหมด',
+    'referee.criticalViolations': 'ตรวจพบการละเมิดกฎร้ายแรง',
+    'referee.immediateAction': 'ต้องดำเนินการทันที',
+    'referee.exceededLimit': 'เกินขีดจำกัด',
+    'referee.approachingLimit': 'ใกล้ถึงขีดจำกัด',
+    'referee.needsMoreTime': 'ต้องการเวลาเพิ่ม',
+    'referee.allClear': 'ปลอดภัย',
+    'referee.substituteNow': 'ต้องเปลี่ยนตัวทันที',
+    'referee.mustSubstitute': 'ผู้เล่น S-Class จำกัดไม่เกิน 20 นาทีต่อครึ่งเวลา - ต้องเปลี่ยนตัว',
+    'referee.needsMoreToReachMinimum': 'ต้องการอีก {time} เพื่อครบขั้นต่ำ',
+    'referee.playersOnFieldLabel': 'ในสนาม',
+    'referee.totalTrackedLabel': 'ติดตาม',
+    'referee.time': '{time}',
   }
 };
 

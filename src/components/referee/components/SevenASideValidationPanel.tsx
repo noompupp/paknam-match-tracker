@@ -1,10 +1,10 @@
-
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { AlertTriangle, Clock, Users, Shield, Target } from "lucide-react"
 import { ComponentPlayer } from "../hooks/useRefereeState"
 import PlayerRoleBadge from "@/components/ui/player-role-badge"
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface SevenASideValidationPanelProps {
   trackedPlayers: any[]
@@ -19,6 +19,7 @@ const SevenASideValidationPanel = ({
   matchTime, 
   formatTime 
 }: SevenASideValidationPanelProps) => {
+  const { t, language } = useTranslation();
   const SEVEN_PLAYER_LIMIT = 7
   const S_CLASS_HALF_LIMIT = 20 * 60 // 20 minutes in seconds
   const S_CLASS_WARNING_THRESHOLD = 16 * 60 // 16 minutes warning
@@ -79,18 +80,28 @@ const SevenASideValidationPanel = ({
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-green-800 dark:text-green-200">
             <Shield className="h-4 w-4" />
-            7-a-Side Rules: All Clear
+            {t('referee.rulesClear')}
           </CardTitle>
         </CardHeader>
         <CardContent className="pt-0">
           <div className="flex items-center gap-4 text-sm text-green-700 dark:text-green-300">
             <div className="flex items-center gap-1">
               <Users className="h-3 w-3" />
-              <span>{activePlayers.length}/{SEVEN_PLAYER_LIMIT} on field</span>
+              <span>
+                {t('referee.onField')
+                  .replace('{count}', activePlayers.length.toString())
+                  .replace('{limit}', SEVEN_PLAYER_LIMIT.toString())
+                }
+              </span>
             </div>
             <div className="flex items-center gap-1">
               <Clock className="h-3 w-3" />
-              <span>Half {currentHalf} - {formatTime(currentHalfTime)}</span>
+              <span>
+                {t('referee.currentHalf')
+                  .replace('{half}', currentHalf.toString())
+                  .replace('{time}', formatTime(currentHalfTime))
+                }
+              </span>
             </div>
           </div>
         </CardContent>
@@ -106,9 +117,9 @@ const SevenASideValidationPanel = ({
           <AlertTriangle className="h-4 w-4" />
           <AlertDescription>
             <div className="flex items-center justify-between">
-              <span className="font-bold">CRITICAL RULE VIOLATIONS DETECTED</span>
+              <span className="font-bold">{t('referee.criticalViolations')}</span>
               <Badge variant="destructive" className="animate-bounce">
-                IMMEDIATE ACTION REQUIRED
+                {t('referee.immediateAction')}
               </Badge>
             </div>
           </AlertDescription>
@@ -122,8 +133,13 @@ const SevenASideValidationPanel = ({
           <AlertDescription>
             <div className="flex items-center justify-between">
               <div>
-                <span className="font-bold text-lg">7-PLAYER LIMIT EXCEEDED!</span>
-                <p className="text-sm mt-1">Currently {activePlayers.length} players on field. Must substitute immediately.</p>
+                <span className="font-bold text-lg">
+                  {t('referee.sevenPlayerLimitExceeded')}
+                </span>
+                <p className="text-sm mt-1">
+                  {t('referee.currentPlayersOnField')
+                    .replace('{count}', activePlayers.length.toString())}
+                </p>
               </div>
               <Badge variant="destructive" className="text-lg px-3 py-1">
                 {activePlayers.length}/{SEVEN_PLAYER_LIMIT}
@@ -148,20 +164,25 @@ const SevenASideValidationPanel = ({
                 <div>
                   <span className="font-bold">{issue.player.name}</span>
                   <p className="text-sm">
-                    Half {currentHalf} time: <span className="font-mono">{formatTime(issue.halfTime)}</span> / {formatTime(S_CLASS_HALF_LIMIT)}
+                    {t('referee.currentHalf')
+                      .replace('{half}', currentHalf.toString())
+                      .replace('{time}', formatTime(issue.halfTime))}
+                    {" / "}{formatTime(S_CLASS_HALF_LIMIT)}
                   </p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <Clock className="h-4 w-4" />
+                <Clock className="h-3 w-3" />
                 <Badge variant={issue.severity === 'critical' ? 'destructive' : 'secondary'}>
-                  {issue.type === 'exceeded' ? 'LIMIT EXCEEDED' : 'APPROACHING LIMIT'}
+                  {issue.type === 'exceeded'
+                    ? t('referee.exceededLimit')
+                    : t('referee.approachingLimit')}
                 </Badge>
               </div>
             </div>
             {issue.type === 'exceeded' && (
               <p className="text-sm mt-2 font-medium">
-                ⚠️ S-Class players are limited to 20 minutes per half - MUST SUBSTITUTE NOW
+                ⚠️ {t('referee.mustSubstitute')}
               </p>
             )}
           </AlertDescription>
@@ -179,12 +200,13 @@ const SevenASideValidationPanel = ({
                 <div>
                   <span className="font-bold">{issue.player.name}</span>
                   <p className="text-sm">
-                    Needs <span className="font-mono">{formatTime(issue.neededTime)}</span> more to reach minimum
+                    {t('referee.needsMoreToReachMinimum', 'Needs {time} more to reach minimum')
+                      .replace('{time}', formatTime(issue.neededTime))}
                   </p>
                 </div>
               </div>
               <Badge variant="outline" className="text-blue-700 border-blue-300">
-                NEEDS MORE TIME
+                {t('referee.needsMoreTime')}
               </Badge>
             </div>
           </AlertDescription>
@@ -197,15 +219,20 @@ const SevenASideValidationPanel = ({
           <div className="grid grid-cols-3 gap-4 text-center">
             <div>
               <div className="text-2xl font-bold">{activePlayers.length}</div>
-              <div className="text-xs text-muted-foreground">Players on Field</div>
+              <div className="text-xs text-muted-foreground">
+                {t('referee.playersOnFieldLabel')}
+              </div>
             </div>
             <div>
-              <div className="text-2xl font-bold">Half {currentHalf}</div>
-              <div className="text-xs text-muted-foreground">{formatTime(currentHalfTime)}</div>
+              <div className="text-2xl font-bold">
+                {t('referee.currentHalf').replace('{half}', currentHalf.toString()).replace('{time}', formatTime(currentHalfTime))}
+              </div>
             </div>
             <div>
               <div className="text-2xl font-bold">{trackedPlayers.length}</div>
-              <div className="text-xs text-muted-foreground">Total Tracked</div>
+              <div className="text-xs text-muted-foreground">
+                {t('referee.totalTrackedLabel')}
+              </div>
             </div>
           </div>
         </CardContent>
