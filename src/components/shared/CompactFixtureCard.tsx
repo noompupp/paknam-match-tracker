@@ -54,6 +54,25 @@ const CompactFixtureCard = ({
     return 'Tap for Match Preview';
   };
 
+  // Restore getScoreOrTime for desktop view
+  const getScoreOrTime = () => {
+    if (fixture.status === 'completed' || fixture.status === 'live') {
+      return (
+        <div className="flex items-center gap-2 text-2xl font-extrabold text-foreground">
+          <span>{fixture.home_score ?? 0}</span>
+          <span className="mx-1 text-xl text-muted-foreground">–</span>
+          <span>{fixture.away_score ?? 0}</span>
+        </div>
+      );
+    }
+    return (
+      <div className="flex items-center gap-1 text-sm text-muted-foreground">
+        <Clock className="h-3 w-3" />
+        <span>{formatCombinedDateTime(fixture.match_date, fixture.match_time)}</span>
+      </div>
+    );
+  };
+
   // Use compact layout for mobile portrait
   if (isMobilePortrait) {
     return (
