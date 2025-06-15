@@ -1,3 +1,4 @@
+
 import React from "react";
 import { ComponentPlayer } from "../../../hooks/useRefereeState";
 import { useMatchStore } from "@/stores/useMatchStore";
@@ -38,7 +39,7 @@ const ScoreTabContainer = ({
   forceRefresh,
   onShowWizard
 }: ScoreTabContainerProps) => {
-  // Use match store as single source of truth for homeScore/awayScore
+  // Use match store as single source of truth for homeScore/awayScore and team info
   const {
     fixtureId,
     homeScore,
@@ -50,16 +51,21 @@ const ScoreTabContainer = ({
     addGoal,
     addAssist,
     addEvent,
-    resetState
+    resetState,
+    homeTeamName,
+    awayTeamName,
+    homeTeamId,
+    awayTeamId
   } = useMatchStore();
 
   // Set fixture ID and team names when component mounts or fixture changes
   React.useEffect(() => {
-    if (selectedFixtureData?.id && (
-          fixtureId !== selectedFixtureData.id ||
-          homeTeamName !== (useMatchStore.getState().homeTeamName) ||
-          awayTeamName !== (useMatchStore.getState().awayTeamName)
-       )
+    if (
+      selectedFixtureData?.id && (
+        fixtureId !== selectedFixtureData.id ||
+        homeTeamName !== useMatchStore.getState().homeTeamName ||
+        awayTeamName !== useMatchStore.getState().awayTeamName
+      )
     ) {
       setupMatch({
         fixtureId: selectedFixtureData.id,
@@ -176,3 +182,4 @@ const ScoreTabContainer = ({
 };
 
 export default ScoreTabContainer;
+
