@@ -42,6 +42,15 @@ const UnsavedChangesIndicator = ({
     unsavedItemsCount.cards > 0 ||
     unsavedItemsCount.playerTimes > 0;
 
+  console.log('[UnsavedChangesIndicator] Render', {
+    hasUnsavedChanges,
+    unsavedItemsCount,
+    totalUnsaved,
+    goalsOnlyUnsaved,
+    anyNonGoalUnsaved,
+    showSaveGoalsBtn: goalsOnlyUnsaved && typeof onSaveGoals === 'function'
+  });
+
   // If there are NO unsaved changes, message only!
   if (!hasUnsavedChanges || totalUnsaved === 0) {
     return (

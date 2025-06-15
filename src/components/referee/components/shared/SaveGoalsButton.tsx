@@ -19,6 +19,7 @@ const SaveGoalsButton = ({
   children
 }: SaveGoalsButtonProps) => {
   const handleClick = async () => {
+    console.log('[SaveGoalsButton] Save button clicked!');
     await onSaveGoals();
   };
 

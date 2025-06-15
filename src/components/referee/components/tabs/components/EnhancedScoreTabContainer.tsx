@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { ComponentPlayer } from "../../../hooks/useRefereeState";
 import { useMatchStore } from "@/stores/useMatchStore";
@@ -54,8 +55,28 @@ const EnhancedScoreTabContainer = ({
     addGoal,
     resetState,
     removeGoal,
-    undoGoal
+    undoGoal,
+    getUnsavedGoalsCount,
+    getUnsavedItemsCount
   } = useMatchStore();
+
+  // Add debug log for unsaved goals detection
+  const unsavedGoalsCount = typeof getUnsavedGoalsCount === 'function' ? getUnsavedGoalsCount() : 0;
+  const unsavedItemsCount = typeof getUnsavedItemsCount === 'function'
+    ? getUnsavedItemsCount()
+    : { goals: unsavedGoalsCount, cards: 0, playerTimes: 0 };
+
+  console.log('[EnhancedScoreTabContainer] Setup', {
+    fixtureId,
+    homeScore,
+    awayScore,
+    goalsCount: goals.length,
+    hasUnsavedChanges,
+    unsavedGoalsCount,
+    unsavedItemsCount,
+    getUnsavedGoalsCountFnExists: typeof getUnsavedGoalsCount === "function",
+    getUnsavedItemsCountFnExists: typeof getUnsavedItemsCount === "function"
+  });
 
   // Set fixture ID when component mounts or fixture changes
   React.useEffect(() => {
@@ -65,7 +86,7 @@ const EnhancedScoreTabContainer = ({
   }, [selectedFixtureData?.id, fixtureId, setFixtureId]);
 
   // Global batch save manager
-  const { batchSave, unsavedItemsCount, isSaving } = useGlobalBatchSaveManager({
+  const { batchSave, unsavedItemsCount: batchUnsavedItemsCount, isSaving } = useGlobalBatchSaveManager({
     homeTeamData: { id: homeTeamId, name: homeTeamName },
     awayTeamData: { id: awayTeamId, name: awayTeamName }
   });
@@ -88,20 +109,12 @@ const EnhancedScoreTabContainer = ({
   const handleSaveGoalsWrapper = async () => {
     setIsGoalsSaving(true);
     try {
+      console.log('[EnhancedScoreTabContainer] SaveGoals wrapper triggered');
       await handleSaveGoals();
     } finally {
       setIsGoalsSaving(false);
     }
   };
-
-  console.log('📊 Enhanced ScoreTabContainer: Advanced workflow with autosave:', { 
-    fixtureId,
-    homeScore, 
-    awayScore, 
-    goalsCount: goals.length,
-    hasUnsavedChanges,
-    unsavedItemsCount
-  });
 
   const handleRecordGoal = () => {
     console.log('🎯 Enhanced ScoreTabContainer: Opening goal entry wizard');
@@ -128,13 +141,16 @@ const EnhancedScoreTabContainer = ({
     }
   };
 
+  // Log removeGoal/undoGoal triggers
   const handleRemoveGoal = (goalId: string) => {
+    console.log('[EnhancedScoreTabContainer] removeGoal triggered', { goalId });
     if (removeGoal) {
       removeGoal(goalId);
     }
   };
 
   const handleUndoGoal = (goalId: string) => {
+    console.log('[EnhancedScoreTabContainer] undoGoal triggered', { goalId });
     if (undoGoal) {
       undoGoal(goalId);
     }

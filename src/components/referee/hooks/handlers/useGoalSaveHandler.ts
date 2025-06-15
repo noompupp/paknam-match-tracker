@@ -14,6 +14,7 @@ export const useGoalSaveHandler = ({ fixtureId, refreshScore }: UseGoalSaveHandl
   const syncGoalsToDatabase = useMatchStore(s => s.syncGoalsToDatabase);
 
   const handleSaveGoals = async () => {
+    console.log('[useGoalSaveHandler] Triggered with fixtureId:', fixtureId);
     if (!fixtureId) {
       toast({
         title: "No Fixture Selected",
@@ -29,15 +30,17 @@ export const useGoalSaveHandler = ({ fixtureId, refreshScore }: UseGoalSaveHandl
     });
 
     try {
+      console.log('[useGoalSaveHandler] About to call syncGoalsToDatabase');
       await syncGoalsToDatabase(fixtureId);
+      console.log('[useGoalSaveHandler] syncGoalsToDatabase completed.');
 
       // Refresh the score AFTER syncing to database
       if (refreshScore) {
-        console.log('[GOALS SAVE HANDLER] Awaiting post-save refreshScore callback...');
+        console.log('[useGoalSaveHandler] Awaiting post-save refreshScore callback...');
         await refreshScore();
-        console.log('[GOALS SAVE HANDLER] refreshScore completed.');
+        console.log('[useGoalSaveHandler] refreshScore completed.');
       } else {
-        console.log('[GOALS SAVE HANDLER] No refreshScore callback provided.');
+        console.log('[useGoalSaveHandler] No refreshScore callback provided.');
       }
 
       toast({
@@ -50,10 +53,10 @@ export const useGoalSaveHandler = ({ fixtureId, refreshScore }: UseGoalSaveHandl
         description: err?.message || "There was an error saving the goals. Please try again.",
         variant: "destructive"
       });
+      console.error('[useGoalSaveHandler] Error:', err);
       throw err; // Let parent component catch if needed
     }
   };
 
   return { handleSaveGoals };
 };
-

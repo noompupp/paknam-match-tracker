@@ -9,7 +9,7 @@ import { createEnhancedCardSlice, EnhancedCardSlice } from './enhancedCardSlice'
 import { createEnhancedPlayerTimeSlice, EnhancedPlayerTimeSlice } from './enhancedPlayerTimeSlice';
 import { createPlayerTimeSlice, PlayerTimeSlice } from './playerTimeSlice';
 import { createCoreSlice, CoreSlice } from './coreSlice';
-import { createGoalSlice, GoalSlice } from './goalSlice';
+// import { createGoalSlice, GoalSlice } from './goalSlice'; // REMOVE this import!
 import { createOptimizedPlayerTimeSlice, OptimizedPlayerTimeSlice } from './optimizedPlayerTimeSlice';
 
 type MatchStore = MatchState & MatchActions;
@@ -21,7 +21,7 @@ export const useMatchStore = create<MatchStore>()(
     
     // Combine all slices
     ...createEnhancedGoalSlice(set, get, api),
-    ...createGoalSlice(set, get, api),
+    // ...createGoalSlice(set, get, api), // REMOVE standard goal slice!
     ...createEnhancedCardSlice(set, get, api),
     ...createEnhancedPlayerTimeSlice(set, get, api),
     ...createPlayerTimeSlice(set, get, api),
