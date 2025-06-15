@@ -454,7 +454,7 @@ const referee: LocaleModule = {
     "referee.toast.playerRemovedTitle": "ลบผู้เล่นแล้ว",
     "referee.toast.playerRemovedDesc": "ลบ {name} ออกจากการติดตามเวลา",
     "referee.toast.substitutionReadyTitle": "เตรียมเปลี่ยนตัว",
-    "referee.toast.substitutionReadyDesc": '{name} พร้อมเปลี่ยนเข้า กด "เปลี่ยนออก" ที่นักเตะอีกคนเพื่อเสร็จสิ้น',
+    "referee.toast.substitutionReadyDesc": "{name} พร้อมเปลี่ยนเข้า กด \"เปลี่ยนออก\" ที่นักเตะอีกคนเพื่อเสร็จสิ้น",
     "referee.toast.substitutionCompleteTitle": "เปลี่ยนตัวเสร็จสิ้น",
     "referee.toast.substitutionCompleteDesc": "{inName} แทนที่ {outName}",
     "referee.toast.playerSubOutTitle": "เปลี่ยนตัวออก",

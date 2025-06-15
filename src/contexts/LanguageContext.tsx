@@ -30,7 +30,12 @@ interface LanguageProviderProps {
  * Helper for replacing {params} in a string.
  */
 function interpolate(template: string, params?: TranslationParams): string {
+  // ADDED DEBUGGING!
+  if (params && Object.keys(params).length) {
+    console.log("[i18n-interpolate] Template:", template, "Params:", params);
+  }
   if (!params) return template;
+  // Single curly braces: {param}
   return template.replace(/{([^}]+)}/g, (match, p1) =>
     params[p1] !== undefined ? String(params[p1]) : match
   );
