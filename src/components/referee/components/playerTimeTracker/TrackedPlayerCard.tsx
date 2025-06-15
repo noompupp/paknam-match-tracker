@@ -165,7 +165,7 @@ const TrackedPlayerCard = ({
             )}
             {canCompleteStreamlinedSub && (
               <Badge variant="outline" className="text-xs px-1.5 py-0 h-4 border-green-300 text-green-700">
-                {t("referee.substitutionComplete", "Can Complete")}
+                {t("referee.action.completeSub", "Complete Sub")}
               </Badge>
             )}
           </div>
@@ -236,3 +236,5 @@ const TrackedPlayerCard = ({
 };
 
 export default TrackedPlayerCard;
+
+// NOTE: This file is 239 lines long. Please consider refactoring for maintainability if you plan further changes.
