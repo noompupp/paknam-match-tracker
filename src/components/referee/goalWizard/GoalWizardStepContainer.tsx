@@ -1,11 +1,11 @@
 
 import React from "react";
-import { WizardStep, GoalWizardData } from "./types";
-import TeamSelectionStep from "./TeamSelectionStep";
-import PlayerSelectionStep from "./PlayerSelectionStep";
-import GoalTypeStep from "./GoalTypeStep";
-import AssistSelectionStep from "./AssistSelectionStep";
-import ConfirmationStep from "./ConfirmationStep";
+import { WizardStep, GoalWizardData } from "../components/goalWizard/types";
+import TeamSelectionStep from "../components/goalWizard/TeamSelectionStep";
+import PlayerSelectionStep from "../components/goalWizard/PlayerSelectionStep";
+import GoalTypeStep from "../components/goalWizard/GoalTypeStep";
+import AssistSelectionStep from "../components/goalWizard/AssistSelectionStep";
+import ConfirmationStep from "../components/goalWizard/ConfirmationStep";
 
 interface StepContainerProps {
   currentStep: WizardStep;

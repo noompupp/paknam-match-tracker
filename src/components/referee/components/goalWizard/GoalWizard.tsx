@@ -127,6 +127,24 @@ const GoalWizard = ({
     }
   };
 
+  // Helper function for the step title
+  function getStepTitle() {
+    switch (currentStep) {
+      case "team":
+        return t("Which team scored?") || "Which team scored?";
+      case "player":
+        return t("Select Goal Scorer") || "Select Goal Scorer";
+      case "goal-type":
+        return t("Confirm Goal Type") || "Confirm Goal Type";
+      case "assist":
+        return t("Was there an assist?") || "Was there an assist?";
+      case "confirm":
+        return t("Confirm Goal Assignment") || "Confirm Goal Assignment";
+      default:
+        return "";
+    }
+  }
+
   // ---- Updated handleConfirm logic ----
   const handleConfirm = async () => {
     if (debounceRef.current) return; // Prevent rapid-fire
