@@ -1,15 +1,17 @@
+
 import React from 'react';
 import { Button } from "@/components/ui/button";
-import { Save, Loader2 } from "lucide-react";
+import { Save, Loader2, AlertTriangle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface SaveNowButtonProps {
   onSave: () => void | Promise<void>;
   isLoading?: boolean;
   disabled?: boolean;
-  variant?: 'default' | 'outline' | 'secondary';
+  variant?: 'default' | 'outline' | 'secondary' | 'destructive';
   size?: 'sm' | 'default' | 'lg';
   children?: React.ReactNode;
+  hasUnsaved?: boolean;
 }
 
 const SaveNowButton = ({ 
@@ -18,7 +20,8 @@ const SaveNowButton = ({
   disabled = false,
   variant = 'default',
   size = 'default',
-  children
+  children,
+  hasUnsaved = false
 }: SaveNowButtonProps) => {
   const { toast } = useToast();
   const handleSave = async () => {
@@ -45,7 +48,7 @@ const SaveNowButton = ({
       disabled={disabled || isLoading}
       variant={variant}
       size={size}
-      className="flex items-center gap-2"
+      className={`flex items-center gap-2 relative ${hasUnsaved ? "ring-2 ring-red-400 animate-pulse" : ""}`}
     >
       {isLoading ? (
         <Loader2 className="h-4 w-4 animate-spin" />
@@ -53,6 +56,9 @@ const SaveNowButton = ({
         <Save className="h-4 w-4" />
       )}
       {children || (isLoading ? 'Saving...' : 'Save Now')}
+      {hasUnsaved && (
+        <AlertTriangle className="h-4 w-4 text-red-600 absolute right-2" title="Unsaved changes" />
+      )}
     </Button>
   );
 };
