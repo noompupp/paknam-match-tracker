@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useMatchStore } from "@/stores/useMatchStore";
 
+// Add homeScore/awayScore as optional props
 interface UnifiedMatchTimerProps {
   selectedFixtureData: any;
   matchTime: number;
@@ -17,6 +18,8 @@ interface UnifiedMatchTimerProps {
   onToggleTimer: () => void;
   onResetMatch: () => void;
   phase?: 'first' | 'second' | 'overtime';
+  homeScore?: number;
+  awayScore?: number;
 }
 
 const UnifiedMatchTimer = ({
@@ -26,15 +29,17 @@ const UnifiedMatchTimer = ({
   formatTime,
   onToggleTimer,
   onResetMatch,
-  phase = 'first'
+  phase = 'first',
+  homeScore: propHomeScore,
+  awayScore: propAwayScore,
 }: UnifiedMatchTimerProps) => {
   const isMobile = useIsMobile();
   const { t, language } = useTranslation();
 
   // ALWAYS subscribe directly to the live store for scores/team names/etc.
   const {
-    homeScore,
-    awayScore,
+    homeScore: storeHomeScore,
+    awayScore: storeAwayScore,
     homeTeamName,
     awayTeamName,
     goals,
@@ -45,10 +50,21 @@ const UnifiedMatchTimer = ({
   // Always re-render on lastUpdated
   React.useEffect(() => { /* pointless effect so batching never skips updates */ }, [lastUpdated]);
 
-  // Debug every render with team names and scores
+  // Debug for every render with team names and scores
   console.log('[UnifiedMatchTimer v2] Current ZUSTAND STATE:', {
-    homeScore, awayScore, homeTeamName, awayTeamName, goals, hasUnsavedChanges, lastUpdated, matchTime
+    homeScore: storeHomeScore, 
+    awayScore: storeAwayScore, 
+    homeTeamName, 
+    awayTeamName, 
+    goals, 
+    hasUnsavedChanges, 
+    lastUpdated, 
+    matchTime
   });
+
+  // Select source for correct display: prefer props if given, fallback to store.
+  const homeScore = typeof propHomeScore === "number" ? propHomeScore : storeHomeScore;
+  const awayScore = typeof propAwayScore === "number" ? propAwayScore : storeAwayScore;
 
   if (selectedFixtureData) {
     console.log('[UnifiedMatchTimer] 🔎 Fixture data team names:', {
@@ -106,7 +122,6 @@ const UnifiedMatchTimer = ({
               {dateFormatter(selectedFixtureData.match_date)} • {selectedFixtureData.match_time}
             </div>
             <div className="text-xs text-muted-foreground">
-              {/* Always use live store team names */}
               {(homeTeamName || selectedFixtureData.home_team?.name || t("referee.homeTeam"))} {t("referee.matchTeamsVs.connector", "vs")} {(awayTeamName || selectedFixtureData.away_team?.name || t("referee.awayTeam"))}
             </div>
           </div>

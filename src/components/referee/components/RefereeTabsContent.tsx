@@ -1,4 +1,3 @@
-
 import { TabsContent } from "@/components/ui/tabs";
 import { ComponentPlayer } from "../hooks/useRefereeState";
 import ScoreTab from "./tabs/ScoreTab";
@@ -9,6 +8,7 @@ import SummaryTab from "./tabs/SummaryTab";
 import SaveNowButton from "./shared/SaveNowButton";
 import { ProcessedPlayer } from "@/utils/refereeDataProcessor";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useMatchStore } from "@/stores/useMatchStore";
 
 interface RefereeTabsContentProps {
   selectedFixtureData: any;
@@ -57,8 +57,11 @@ interface RefereeTabsContentProps {
   // Removed: homeScore and awayScore
 }
 
-const RefereeTabsContent = (props: RefereeTabsContentProps) => {
+const RefereeTabsContent = (props: any) => {
   const { t } = useTranslation();
+
+  // Get live up-to-date scores directly from the store
+  const { homeScore, awayScore } = useMatchStore();
 
   return (
     <>
@@ -161,11 +164,12 @@ const RefereeTabsContent = (props: RefereeTabsContentProps) => {
           formatTime={props.formatTime}
           onToggleTimer={props.onToggleTimer}
           onResetMatch={props.onResetMatch}
+          // Main fix: pass the correct live scores explicitly
+          homeScore={homeScore}
+          awayScore={awayScore}
         />
         <SummaryTab
           selectedFixtureData={props.selectedFixtureData}
-          // homeScore={props.homeScore}  <-- REMOVED
-          // awayScore={props.awayScore}  <-- REMOVED
           matchTime={props.matchTime}
           goals={props.goals}
           cards={props.cards}
@@ -174,6 +178,7 @@ const RefereeTabsContent = (props: RefereeTabsContentProps) => {
           allPlayers={props.allPlayers}
           formatTime={props.formatTime}
           onExportSummary={props.onExportSummary}
+          // No need for homeScore/awayScore here as EnhancedMatchSummary uses the live store already.
         />
       </TabsContent>
     </>
