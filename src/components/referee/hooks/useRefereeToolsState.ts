@@ -72,11 +72,16 @@ export const useRefereeToolsState = () => {
     // STEP 1: If pending changes, flush and wait for sync
     if (pendingChanges > 0 || syncStatus.isSyncing) {
       const result = await flushAndWait(20000); // 20s timeout
+
       if (!result.success) {
-        setFinishError(result.error || "Unable to save match data. Please retry.");
+        // Safely get the error string if present
+        const errorMsg = 'error' in result && result.error
+          ? result.error
+          : "Unable to save match data. Please retry.";
+        setFinishError(errorMsg);
         toast({
           title: "Sync Required",
-          description: result.error || "There are still unsynced changes. Please try again.",
+          description: errorMsg,
           variant: "destructive"
         });
         setFinishLoading(false);
