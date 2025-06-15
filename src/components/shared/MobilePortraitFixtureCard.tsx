@@ -1,182 +1,109 @@
-import { Badge } from "@/components/ui/badge";
-import { Eye } from "lucide-react";
-import { Fixture } from "@/types/database";
-import { formatDateDisplay, formatTimeDisplay } from "@/utils/timeUtils";
-import TeamLogo from "../teams/TeamLogo";
-import { getNeutralScoreStyle } from "@/utils/scoreColorUtils";
-import { useDeviceOrientation } from "@/hooks/useDeviceOrientation";
 
-interface MobilePortraitFixtureCardProps {
+import { Card, CardContent } from "@/components/ui/card";
+import TeamLogo from "../teams/TeamLogo";
+import FixtureStatusBadge from "./FixtureStatusBadge";
+import { formatCombinedDateTime } from "@/utils/dateTimeUtils";
+import { Fixture } from "@/types/database";
+import { cn } from "@/lib/utils";
+
+interface Props {
   fixture: Fixture;
-  onClick?: (fixture: Fixture) => void;
-  showDate?: boolean;
+  onFixtureClick?: (fixture: Fixture) => void;
+  onPreviewClick?: (fixture: Fixture) => void;
   className?: string;
 }
 
 const MobilePortraitFixtureCard = ({
   fixture,
-  onClick,
-  showDate = true,
+  onFixtureClick,
+  onPreviewClick,
   className = "",
-}: MobilePortraitFixtureCardProps) => {
-  const { isMobile, isPortrait } = useDeviceOrientation();
-  const isMobilePortrait = isMobile && isPortrait;
-
-  const handleClick = () => {
-    if (onClick && fixture.status === "completed") {
-      onClick(fixture);
+}: Props) => {
+  const handleCardClick = () => {
+    if (fixture.status === "completed" && onFixtureClick) {
+      onFixtureClick(fixture);
+    } else if (onPreviewClick) {
+      onPreviewClick(fixture);
     }
   };
 
-  // Format date and time consistently with Upcoming Fixtures
-  const formatDateTimeDisplay = (dateString: string, timeString: string) => {
-    const dateFormatted = formatDateDisplay(dateString);
-    const timeFormatted = formatTimeDisplay(timeString);
-    return `${dateFormatted} • ${timeFormatted}`;
+  const getActionText = () => {
+    if (fixture.status === "completed") {
+      return "Tap for Match Summary";
+    }
+    return "Tap for Match Preview";
   };
 
-  // Enhanced horizontal flex for completed mobile portrait
-  const useHorizontalLayout =
-    isMobilePortrait && fixture.status === "completed";
-
   return (
-    <div
-      className={`relative p-4 rounded-lg bg-muted/20 hover:bg-muted/40 transition-all duration-200 ${
-        fixture.status === "completed"
-          ? "cursor-pointer group hover:shadow-md border border-transparent hover:border-muted-foreground/20"
-          : ""
-      } ${className}`}
-      onClick={handleClick}
+    <Card
+      className={cn(
+        "cursor-pointer transition-all duration-200 hover:shadow-md border-l-4 border-l-primary/20",
+        className
+      )}
+      onClick={handleCardClick}
     >
-      {/* Match date and time - top right */}
-      {showDate && (
-        <div className="absolute top-2 right-2 text-xs text-muted-foreground max-w-[140px] text-right leading-tight">
-          {formatDateTimeDisplay(fixture.match_date, fixture.match_time || "")}
-        </div>
-      )}
-
-      {/* Eye icon - top right, appears on hover for completed matches */}
-      {fixture.status === "completed" && (
-        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
-          <Eye className="h-3 w-3 text-muted-foreground" />
-        </div>
-      )}
-
-      {/* Horizontal Flex Layout for Mobile Portrait & Completed Fixtures */}
-      {useHorizontalLayout ? (
-        <div className="flex items-center justify-between px-2 min-h-[74px]">
-          {/* Left: Team Logos and Names in column */}
-          <div className="flex items-center gap-3 min-w-0">
-            {/* Logos */}
-            <div className="flex flex-col items-center gap-1">
-              <TeamLogo team={fixture.home_team} size="small" />
-              <TeamLogo team={fixture.away_team} size="small" />
-            </div>
-            {/* Names */}
-            <div className="flex flex-col justify-center min-w-0">
-              <div className="text-xs font-medium text-muted-foreground leading-tight max-w-[80px] truncate">
-                {fixture.home_team?.name || "TBD"}
-              </div>
-              <div className="text-xs font-medium text-muted-foreground leading-tight max-w-[80px] truncate">
-                {fixture.away_team?.name || "TBD"}
-              </div>
-            </div>
+      <CardContent className="p-3">
+        {/* Header with kickoff date + time (left) and status (right) */}
+        <div className="flex justify-between items-center mb-3">
+          <div className="flex items-center gap-1 text-sm text-muted-foreground">
+            <span>
+              {formatCombinedDateTime(fixture.match_date, fixture.match_time)}
+            </span>
           </div>
-          {/* Right: Status and Score, vertically stacked and centered, slightly inset */}
-          <div
-            className="flex flex-col items-center justify-center w-[86px] mx-auto"
-            style={{ marginRight: '8px' }} // slightly inside from the far right
-          >
-            <Badge
-              variant="default"
-              className="text-xs px-2 py-1 font-bold mb-1 w-[72px] text-center"
-              style={{ borderRadius: 16 }}
-            >
-              FT
-            </Badge>
-            <div
-              className="text-xl font-bold mt-1 w-[72px] text-center"
-              style={getNeutralScoreStyle(true)}
-            >
-              {fixture.home_score || 0} - {fixture.away_score || 0}
-            </div>
-          </div>
+          <FixtureStatusBadge status={fixture.status} />
         </div>
-      ) : (
-        // Original Grid Layout for all other cases
-        <div className="grid grid-cols-3 gap-3 items-center min-h-[120px] mt-6">
-          {/* Column 1: Home Team */}
-          <div className="flex flex-col items-center justify-center space-y-2">
-            <TeamLogo team={fixture.home_team} size="small" />
-            <div className="text-center w-full">
-              <div className="text-xs font-medium text-muted-foreground mb-1 leading-tight max-w-[80px] mx-auto">
-                <span
-                  className="block truncate"
-                  title={fixture.home_team?.name || "TBD"}
-                >
+
+        {/* Teams displayed vertically */}
+        <div className="space-y-2">
+          {/* Home team (top) */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3 flex-1 min-w-0">
+              <div className="w-6 h-6 flex-shrink-0">
+                <TeamLogo team={fixture.home_team} size="small" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <span className="font-medium text-sm truncate">
                   {fixture.home_team?.name || "TBD"}
                 </span>
               </div>
-              <div
-                className="text-2xl font-bold leading-none mobile-score-enhanced"
-                style={getNeutralScoreStyle(true)}
-              >
+            </div>
+            {(fixture.status === "completed" || fixture.status === "live") && (
+              <div className="text-lg font-bold">
                 {fixture.home_score || 0}
               </div>
-            </div>
-          </div>
-
-          {/* Column 2: Match Info */}
-          <div className="flex flex-col items-center justify-center space-y-2">
-            <Badge
-              variant={
-                fixture.status === "completed" ? "default" : "outline"
-              }
-              className="text-xs px-2 py-1 font-bold"
-            >
-              {fixture.status === "completed"
-                ? "FT"
-                : fixture.status?.toUpperCase() || "MATCH"}
-            </Badge>
-
-            <div className="text-lg font-light text-muted-foreground">VS</div>
-
-            {/* Match result indicator */}
-            {fixture.status === "completed" && (
-              <div className="w-2 h-2 rounded-full bg-primary/60"></div>
             )}
           </div>
 
-          {/* Column 3: Away Team */}
-          <div className="flex flex-col items-center justify-center space-y-2">
-            <TeamLogo team={fixture.away_team} size="small" />
-            <div className="text-center w-full">
-              <div className="text-xs font-medium text-muted-foreground mb-1 leading-tight max-w-[80px] mx-auto">
-                <span
-                  className="block truncate"
-                  title={fixture.away_team?.name || "TBD"}
-                >
+          {/* Away team (bottom) */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3 flex-1 min-w-0">
+              <div className="w-6 h-6 flex-shrink-0">
+                <TeamLogo team={fixture.away_team} size="small" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <span className="font-medium text-sm truncate">
                   {fixture.away_team?.name || "TBD"}
                 </span>
               </div>
-              <div
-                className="text-2xl font-bold leading-none mobile-score-enhanced"
-                style={getNeutralScoreStyle(true)}
-              >
+            </div>
+            {(fixture.status === "completed" || fixture.status === "live") && (
+              <div className="text-lg font-bold">
                 {fixture.away_score || 0}
               </div>
-            </div>
+            )}
           </div>
         </div>
-      )}
 
-      {/* Click hint for completed matches */}
-      {fixture.status === "completed" && (
-        <div className="text-center text-xs text-muted-foreground mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
-          Tap to view match summary
+        {/* Footer with action text only */}
+        <div className="mt-3 pt-2 border-t">
+          <div className="text-center">
+            <span className="text-xs text-muted-foreground/70">
+              {getActionText()}
+            </span>
+          </div>
         </div>
-      )}
-    </div>
+      </CardContent>
+    </Card>
   );
 };
 

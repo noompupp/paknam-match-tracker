@@ -1,12 +1,14 @@
+
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, MapPin } from "lucide-react";
+import { Calendar, MapPin } from "lucide-react";
 import { Fixture } from "@/types/database";
-import { formatCombinedDateTime, formatMobileDateDisplay } from "@/utils/dateTimeUtils";
-import { formatTimeDisplay } from "@/utils/timeUtils";
+import { formatCombinedDateTime } from "@/utils/dateTimeUtils";
 import { useDeviceOrientation } from "@/hooks/useDeviceOrientation";
 import TeamLogo from "../teams/TeamLogo";
 import { cn } from "@/lib/utils";
+import MobilePortraitFixtureCard from "./MobilePortraitFixtureCard";
+import FixtureScoreOrTime from "./FixtureScoreOrTime";
+import FixtureStatusBadge from "./FixtureStatusBadge";
 
 interface CompactFixtureCardProps {
   fixture: Fixture;
@@ -17,133 +19,47 @@ interface CompactFixtureCardProps {
   className?: string;
 }
 
-const CompactFixtureCard = ({ 
-  fixture, 
+const CompactFixtureCard = ({
+  fixture,
   onFixtureClick,
   onPreviewClick,
   showDate = true,
   showVenue = false,
-  className = ""
+  className = "",
 }: CompactFixtureCardProps) => {
   const { isMobile, isPortrait } = useDeviceOrientation();
   const isMobilePortrait = isMobile && isPortrait;
 
   const handleCardClick = () => {
-    if (fixture.status === 'completed' && onFixtureClick) {
+    if (fixture.status === "completed" && onFixtureClick) {
       onFixtureClick(fixture);
     } else if (onPreviewClick) {
       onPreviewClick(fixture);
     }
   };
 
-  const getStatusBadge = () => {
-    switch (fixture.status) {
-      case 'completed':
-        return <Badge variant="default" className="text-xs px-2 py-1">Full Time</Badge>;
-      case 'live':
-        return <Badge variant="destructive" className="text-xs px-2 py-1 animate-pulse">LIVE</Badge>;
-      default:
-        return <Badge variant="outline" className="text-xs px-2 py-1">Scheduled</Badge>;
-    }
-  };
-
   const getActionText = () => {
-    if (fixture.status === 'completed') {
-      return 'Tap for Match Summary';
+    if (fixture.status === "completed") {
+      return "Tap for Match Summary";
     }
-    return 'Tap for Match Preview';
+    return "Tap for Match Preview";
   };
 
-  const getScoreOrTime = () => {
-    if (fixture.status === 'completed' || fixture.status === 'live') {
-      return (
-        <div className="flex items-center gap-1 text-lg font-bold">
-          <span>{fixture.home_score || 0}</span>
-          <span className="text-muted-foreground">-</span>
-          <span>{fixture.away_score || 0}</span>
-        </div>
-      );
-    }
-    return (
-      <div className="flex items-center gap-1 text-sm text-muted-foreground">
-        <Clock className="h-3 w-3" />
-        <span>{formatCombinedDateTime(fixture.match_date, fixture.match_time)}</span>
-      </div>
-    );
-  };
-
-  // Use compact layout for mobile portrait
+  // Mobile Portrait layout
   if (isMobilePortrait) {
     return (
-      <Card 
-        className={cn(
-          "cursor-pointer transition-all duration-200 hover:shadow-md border-l-4 border-l-primary/20",
-          className
-        )}
-        onClick={handleCardClick}
-      >
-        <CardContent className="p-3">
-          {/* Header with kickoff date + time (left) and status (right) */}
-          <div className="flex justify-between items-center mb-3">
-            <div className="flex items-center gap-1 text-sm text-muted-foreground">
-              <Clock className="h-3 w-3" />
-              {/* Updated: Show full date + time string */}
-              <span>{formatCombinedDateTime(fixture.match_date, fixture.match_time)}</span>
-            </div>
-            {getStatusBadge()}
-          </div>
-
-          {/* Teams displayed vertically */}
-          <div className="space-y-2">
-            {/* Home team (top) */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3 flex-1 min-w-0">
-                <div className="w-6 h-6 flex-shrink-0">
-                  <TeamLogo team={fixture.home_team} size="small" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <span className="font-medium text-sm truncate">
-                    {fixture.home_team?.name || 'TBD'}
-                  </span>
-                </div>
-              </div>
-              {fixture.status === 'completed' || fixture.status === 'live' ? (
-                <div className="text-lg font-bold">{fixture.home_score || 0}</div>
-              ) : null}
-            </div>
-
-            {/* Away team (bottom) */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3 flex-1 min-w-0">
-                <div className="w-6 h-6 flex-shrink-0">
-                  <TeamLogo team={fixture.away_team} size="small" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <span className="font-medium text-sm truncate">
-                    {fixture.away_team?.name || 'TBD'}
-                  </span>
-                </div>
-              </div>
-              {fixture.status === 'completed' || fixture.status === 'live' ? (
-                <div className="text-lg font-bold">{fixture.away_score || 0}</div>
-              ) : null}
-            </div>
-          </div>
-
-          {/* Footer with action text only */}
-          <div className="mt-3 pt-2 border-t">
-            <div className="text-center">
-              <span className="text-xs text-muted-foreground/70">{getActionText()}</span>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      <MobilePortraitFixtureCard
+        fixture={fixture}
+        onFixtureClick={onFixtureClick}
+        onPreviewClick={onPreviewClick}
+        className={className}
+      />
     );
   }
 
   // Default layout for larger screens
   return (
-    <Card 
+    <Card
       className={cn(
         "cursor-pointer transition-all duration-200 hover:shadow-md",
         className
@@ -155,10 +71,12 @@ const CompactFixtureCard = ({
           {showDate && (
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Calendar className="h-4 w-4" />
-              <span>{formatCombinedDateTime(fixture.match_date, fixture.match_time)}</span>
+              <span>
+                {formatCombinedDateTime(fixture.match_date, fixture.match_time)}
+              </span>
             </div>
           )}
-          {getStatusBadge()}
+          <FixtureStatusBadge status={fixture.status} />
         </div>
 
         <div className="flex items-center justify-between">
@@ -166,19 +84,23 @@ const CompactFixtureCard = ({
           <div className="flex items-center gap-3 flex-1 min-w-0">
             <TeamLogo team={fixture.home_team} size="small" />
             <div>
-              <p className="font-semibold text-sm">{fixture.home_team?.name || 'TBD'}</p>
+              <p className="font-semibold text-sm">
+                {fixture.home_team?.name || "TBD"}
+              </p>
             </div>
           </div>
 
           {/* Center - score or time */}
           <div className="mx-4">
-            {getScoreOrTime()}
+            <FixtureScoreOrTime fixture={fixture} />
           </div>
 
           {/* Away team */}
           <div className="flex items-center gap-3 flex-1 min-w-0 justify-end">
             <div className="text-right">
-              <p className="font-semibold text-sm">{fixture.away_team?.name || 'TBD'}</p>
+              <p className="font-semibold text-sm">
+                {fixture.away_team?.name || "TBD"}
+              </p>
             </div>
             <TeamLogo team={fixture.away_team} size="small" />
           </div>
@@ -186,7 +108,7 @@ const CompactFixtureCard = ({
 
         {/* Footer */}
         <div className="mt-3 pt-2 border-t space-y-1">
-          {showVenue && fixture.venue && fixture.venue !== 'TBD' && (
+          {showVenue && fixture.venue && fixture.venue !== "TBD" && (
             <div className="flex items-center gap-2 justify-center text-sm text-muted-foreground">
               <MapPin className="h-3 w-3" />
               <span>{fixture.venue}</span>
