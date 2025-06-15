@@ -8,6 +8,8 @@ import { cn } from "@/lib/utils";
 // Translation
 import { useTranslation } from "@/hooks/useTranslation";
 import { useMatchStore } from "@/stores/useMatchStore";
+// Add:
+import { calculateMatchScore } from "@/utils/calculateMatchScore";
 
 // Add homeScore/awayScore as optional props
 interface UnifiedMatchTimerProps {
@@ -36,7 +38,7 @@ const UnifiedMatchTimer = ({
   const isMobile = useIsMobile();
   const { t, language } = useTranslation();
 
-  // ALWAYS subscribe directly to the live store for scores/team names/etc.
+  // Get live up-to-date store data
   const {
     homeScore: storeHomeScore,
     awayScore: storeAwayScore,
@@ -46,6 +48,72 @@ const UnifiedMatchTimer = ({
     hasUnsavedChanges,
     lastUpdated
   } = useMatchStore();
+
+  // Always re-render on lastUpdated
+  React.useEffect(() => { }, [lastUpdated]);
+
+  // Get fixture team IDs for robust score calculation
+  const homeTeamId =
+    selectedFixtureData?.home_team?.id ||
+    selectedFixtureData?.home_team?.__id__ ||
+    selectedFixtureData?.home_team_id ||
+    "";
+  const awayTeamId =
+    selectedFixtureData?.away_team?.id ||
+    selectedFixtureData?.away_team?.__id__ ||
+    selectedFixtureData?.away_team_id ||
+    "";
+
+  // Robust goal-driven score calculation (by teamId fallback to teamName)
+  const { homeScore: computedHomeScore, awayScore: computedAwayScore } = calculateMatchScore({
+    goals,
+    homeTeamId,
+    awayTeamId,
+    homeTeamName: homeTeamName || selectedFixtureData?.home_team?.name,
+    awayTeamName: awayTeamName || selectedFixtureData?.away_team?.name
+  });
+
+  // Select score source: Prefer computed (goal-driven), fallback to store then props
+  let homeScore = computedHomeScore;
+  let awayScore = computedAwayScore;
+
+  // If mismatch detected, warn and allow user to debug
+  React.useEffect(() => {
+    if (
+      typeof storeHomeScore === "number" &&
+      typeof storeAwayScore === "number" &&
+      (storeHomeScore !== computedHomeScore || storeAwayScore !== computedAwayScore)
+    ) {
+      console.warn(
+        "[UnifiedMatchTimer] Score mismatch! (store vs computed)",
+        {
+          storeHomeScore, storeAwayScore,
+          computedHomeScore, computedAwayScore,
+          goals,
+          homeTeamId, awayTeamId,
+          homeTeamName, awayTeamName,
+          selectedFixtureData
+        }
+      );
+    }
+  }, [storeHomeScore, storeAwayScore, computedHomeScore, computedAwayScore, goals, homeTeamId, awayTeamId, homeTeamName, awayTeamName, selectedFixtureData]);
+
+  // Last-resort fallback: use store scores if goal-based calculation fails
+  if (
+    typeof homeScore !== "number" ||
+    typeof awayScore !== "number" ||
+    (computedHomeScore === 0 && goals?.length > 0 && storeHomeScore > 0)
+  ) {
+    homeScore = storeHomeScore;
+    awayScore = storeAwayScore;
+  }
+  if (
+    typeof homeScore !== "number" ||
+    typeof awayScore !== "number"
+  ) {
+    homeScore = typeof propHomeScore === "number" ? propHomeScore : 0;
+    awayScore = typeof propAwayScore === "number" ? propAwayScore : 0;
+  }
 
   // Always re-render on lastUpdated
   React.useEffect(() => { /* pointless effect so batching never skips updates */ }, [lastUpdated]);
@@ -61,10 +129,6 @@ const UnifiedMatchTimer = ({
     lastUpdated, 
     matchTime
   });
-
-  // Select source for correct display: prefer props if given, fallback to store.
-  const homeScore = typeof propHomeScore === "number" ? propHomeScore : storeHomeScore;
-  const awayScore = typeof propAwayScore === "number" ? propAwayScore : storeAwayScore;
 
   if (selectedFixtureData) {
     console.log('[UnifiedMatchTimer] 🔎 Fixture data team names:', {
