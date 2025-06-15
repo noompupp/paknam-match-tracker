@@ -55,14 +55,13 @@ const CompactFixtureCard = ({
     return 'Tap for Match Preview';
   };
 
-  // Restore getScoreOrTime for desktop view
   const getScoreOrTime = () => {
     if (fixture.status === 'completed' || fixture.status === 'live') {
       return (
-        <div className="flex items-center gap-2 text-2xl font-extrabold text-foreground">
-          <span>{fixture.home_score ?? 0}</span>
-          <span className="mx-1 text-xl text-muted-foreground">–</span>
-          <span>{fixture.away_score ?? 0}</span>
+        <div className="flex items-center gap-1 text-lg font-bold">
+          <span>{fixture.home_score || 0}</span>
+          <span className="text-muted-foreground">-</span>
+          <span>{fixture.away_score || 0}</span>
         </div>
       );
     }
@@ -85,58 +84,49 @@ const CompactFixtureCard = ({
         onClick={handleCardClick}
       >
         <CardContent className="p-3">
-          {/* Header with kickoff time (left), only for non-completed/live matches */}
-          <div className="flex justify-between items-center mb-2">
+          {/* Header with kickoff time (left) and status (right) */}
+          <div className="flex justify-between items-center mb-3">
             <div className="flex items-center gap-1 text-sm text-muted-foreground">
               <Clock className="h-3 w-3" />
               <span>{formatTimeDisplay(fixture.match_time)}</span>
             </div>
-            {/* Empty for badge in main stack */}
+            {getStatusBadge()}
           </div>
-
-          {/* Centered stack of badge + score for completed/live */}
-          {(fixture.status === 'completed' || fixture.status === 'live') && (
-            <div className="flex flex-col items-center justify-center my-2">
-              {getStatusBadge()}
-              <div className="flex items-center gap-2 text-2xl font-extrabold text-foreground mt-1">
-                <span>{fixture.home_score ?? 0}</span>
-                <span className="mx-1 text-xl text-muted-foreground">–</span>
-                <span>{fixture.away_score ?? 0}</span>
-              </div>
-            </div>
-          )}
-
-          {/* Status badge for scheduled matches only, shown inline */}
-          {fixture.status === 'scheduled' && (
-            <div className="flex justify-end mb-2">
-              {getStatusBadge()}
-            </div>
-          )}
 
           {/* Teams displayed vertically */}
           <div className="space-y-2">
             {/* Home team (top) */}
-            <div className="flex items-center gap-3 flex-1 min-w-0">
-              <div className="w-6 h-6 flex-shrink-0">
-                <TeamLogo team={fixture.home_team} size="small" />
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3 flex-1 min-w-0">
+                <div className="w-6 h-6 flex-shrink-0">
+                  <TeamLogo team={fixture.home_team} size="small" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <span className="font-medium text-sm truncate">
+                    {fixture.home_team?.name || 'TBD'}
+                  </span>
+                </div>
               </div>
-              <div className="flex-1 min-w-0">
-                <span className="font-medium text-sm truncate">
-                  {fixture.home_team?.name || 'TBD'}
-                </span>
-              </div>
+              {fixture.status === 'completed' || fixture.status === 'live' ? (
+                <div className="text-lg font-bold">{fixture.home_score || 0}</div>
+              ) : null}
             </div>
 
             {/* Away team (bottom) */}
-            <div className="flex items-center gap-3 flex-1 min-w-0">
-              <div className="w-6 h-6 flex-shrink-0">
-                <TeamLogo team={fixture.away_team} size="small" />
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3 flex-1 min-w-0">
+                <div className="w-6 h-6 flex-shrink-0">
+                  <TeamLogo team={fixture.away_team} size="small" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <span className="font-medium text-sm truncate">
+                    {fixture.away_team?.name || 'TBD'}
+                  </span>
+                </div>
               </div>
-              <div className="flex-1 min-w-0">
-                <span className="font-medium text-sm truncate">
-                  {fixture.away_team?.name || 'TBD'}
-                </span>
-              </div>
+              {fixture.status === 'completed' || fixture.status === 'live' ? (
+                <div className="text-lg font-bold">{fixture.away_score || 0}</div>
+              ) : null}
             </div>
           </div>
 
@@ -212,4 +202,3 @@ const CompactFixtureCard = ({
 };
 
 export default CompactFixtureCard;
-
