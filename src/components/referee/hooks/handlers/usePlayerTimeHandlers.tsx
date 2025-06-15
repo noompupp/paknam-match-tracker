@@ -51,7 +51,6 @@ export const usePlayerTimeHandlers = (props: UsePlayerTimeHandlersProps) => {
 
         // Complete substitution if pending
         if (substitutionManager.hasPendingSubstitution) {
-          // Construct a "ProcessedPlayer" with dummy fields if necessary for the API call
           const processedPlayer: ProcessedPlayer = {
             id: player.id,
             name: player.name,
@@ -64,10 +63,14 @@ export const usePlayerTimeHandlers = (props: UsePlayerTimeHandlersProps) => {
 
           const substitution = substitutionManager.completePendingSubstitution(processedPlayer);
 
-          // DEBUG LOG: Log substitution data before notification
-          console.log("[PlayerTimeHandlers] Sub Complete Attempt:", {
+          // DEBUG LOG: Log substitution data before notification (add inName/outName computed values)
+          let inName = processedPlayer && processedPlayer.name ? processedPlayer.name : "(no name: processedPlayer)";
+          let outName = substitution?.outgoing?.outgoingPlayerName || "(no name: outgoingPlayerName)";
+          console.info("[PlayerTimeHandlers] Sub Complete Attempt (handleAddPlayer)", {
             processedPlayer,
-            substitution
+            substitution,
+            inName,
+            outName
           });
 
           if (
@@ -82,7 +85,6 @@ export const usePlayerTimeHandlers = (props: UsePlayerTimeHandlersProps) => {
               (p) => p.id === substitution.incoming.id
             ) || null;
 
-            // SELECT DATA AND FALLBACKS FOR NOTIFY
             const incomingForNotify = processedPlayer && processedPlayer.name ? processedPlayer : {
               ...processedPlayer,
               name: processedPlayer.name || "(no name: processedPlayer)"
@@ -90,7 +92,8 @@ export const usePlayerTimeHandlers = (props: UsePlayerTimeHandlersProps) => {
             const outgoingNameForNotify =
               substitution.outgoing.outgoingPlayerName || "(no name: outgoingPlayerName)";
 
-            console.log("[PlayerTimeHandlers - Calling notifySubstitutionComplete]", {
+            // LOG values passed to notification
+            console.info("[PlayerTimeHandlers - Calling notifySubstitutionComplete (handleAddPlayer)]", {
               incomingForNotify,
               outgoingNameForNotify,
               playerTimeOrFallback: playerTime || (player as any),
@@ -105,7 +108,6 @@ export const usePlayerTimeHandlers = (props: UsePlayerTimeHandlersProps) => {
               addEvent: props.addEvent,
             });
           } else {
-            // WARN IF data missing
             console.warn("[PlayerTimeHandlers] Skipping notifySubstitutionComplete due to undefined name(s):", {
               substitution,
               processedPlayer
@@ -117,8 +119,6 @@ export const usePlayerTimeHandlers = (props: UsePlayerTimeHandlersProps) => {
         if (playerTime) {
           await props.addPlayer(playerTime, props.matchTime);
         } else {
-          // As a fallback, construct a PlayerTime from ComponentPlayer
-          // (All required fields must be provided to avoid runtime errors)
           const fallbackPlayerTime: PlayerTime = {
             id: player.id,
             name: player.name,
@@ -185,7 +185,6 @@ export const usePlayerTimeHandlers = (props: UsePlayerTimeHandlersProps) => {
 
           const pendingSub = substitutionManager.pendingSubstitution;
           if (pendingSub) {
-            // Find the full PlayerTime for the incoming player (outgoingPlayerId means the one who initiated sub in)
             const incomingPlayer = props.playersForTimeTracker.find(
               (p) => p.id === pendingSub.outgoingPlayerId
             );
@@ -194,7 +193,6 @@ export const usePlayerTimeHandlers = (props: UsePlayerTimeHandlersProps) => {
             }
             substitutionManager.cancelPendingSubstitution();
 
-            // Build compatible ProcessedPlayer for notification
             const processedIncomingPlayer: ProcessedPlayer = incomingPlayer
               ? {
                   id: incomingPlayer.id,
@@ -218,10 +216,15 @@ export const usePlayerTimeHandlers = (props: UsePlayerTimeHandlersProps) => {
             const outgoingNameForNotify =
               player.name || "(no name: player.name)";
 
-            // Debug print for notification arguments
-            console.log("[PlayerTimeHandlers - notifySubstitutionComplete from COMPLETE_SUBSTITUTION]", {
+            // LOG debugging info for outgoing/incoming names and all translation values
+            let inName = processedIncomingPlayer && processedIncomingPlayer.name ? processedIncomingPlayer.name : "(no name: processedIncomingPlayer)";
+            let outName = outgoingNameForNotify;
+
+            console.info("[PlayerTimeHandlers - notifySubstitutionComplete from COMPLETE_SUBSTITUTION]", {
               processedIncomingPlayer,
               outgoingNameForNotify,
+              inName,
+              outName,
               player: incomingPlayer || player,
               matchTime: props.matchTime,
             });
