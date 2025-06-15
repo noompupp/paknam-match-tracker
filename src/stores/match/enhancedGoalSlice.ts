@@ -1,4 +1,3 @@
-
 import { StateCreator } from 'zustand';
 import { MatchState } from './types';
 import { MatchActions } from './actions';
@@ -12,6 +11,9 @@ export interface EnhancedGoalSlice {
   getUnsavedGoalsCount: MatchActions['getUnsavedGoalsCount'];
   syncGoalsToDatabase: (fixtureId: number) => Promise<void>;
   undoGoal: (goalId: string) => void; // Add to interface
+  addAssist: (assistData: any) => void;
+  getUnassignedGoalsCount: () => void;
+  getUnassignedGoals: () => void;
 }
 
 export const createEnhancedGoalSlice: StateCreator<
@@ -117,4 +119,48 @@ export const createEnhancedGoalSlice: StateCreator<
       };
     });
   },
+
+  // Implementation for addAssist (required by MatchActions)
+  addAssist: (assistData) => {
+    const newAssist = {
+      ...assistData,
+      type: 'assist' as const,
+      id: generateId(),
+      timestamp: Date.now(),
+      synced: false
+    };
+
+    set((state) => ({
+      goals: [...state.goals, newAssist],
+      hasUnsavedChanges: true,
+      lastUpdated: Date.now()
+      // No score increment for assists
+    }));
+    console.log('⚽ Enhanced Goal Store: Assist added:', newAssist);
+    return newAssist;
+  },
+
+  // Implementation for getUnassignedGoalsCount (required by MatchActions)
+  getUnassignedGoalsCount: () => {
+    const unassignedCount = get().goals.filter(g => 
+      g.playerName === 'Quick Goal' || 
+      g.playerName === 'Unknown Player' ||
+      (!g.playerId && g.type === 'goal')
+    ).length;
+
+    console.log('[ENHANCED GOAL SLICE] getUnassignedGoalsCount (compat):', unassignedCount);
+    return unassignedCount;
+  },
+
+  // Implementation for getUnassignedGoals (required by MatchActions)
+  getUnassignedGoals: () => {
+    const unassignedGoals = get().goals.filter(g => 
+      g.playerName === 'Quick Goal' || 
+      g.playerName === 'Unknown Player' ||
+      (!g.playerId && g.type === 'goal')
+    );
+
+    console.log('[ENHANCED GOAL SLICE] getUnassignedGoals (compat):', unassignedGoals);
+    return unassignedGoals;
+  }
 });
