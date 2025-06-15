@@ -7,6 +7,7 @@ import { useResetState } from "@/hooks/useResetState";
 import { useMatchSaveStatus } from "../useMatchSaveStatus";
 import React from "react";
 import ResetMatchConfirmationDialog from "@/components/referee/components/ResetMatchConfirmationDialog";
+import { formatMatchSaveSuccessMessage } from "./formatMatchSaveSuccessMessage";
 
 interface UseMatchDataHandlersProps {
   selectedFixtureData: any;
@@ -115,14 +116,26 @@ export const useMatchDataHandlers = (props: UseMatchDataHandlersProps) => {
         setTimeout(resetSaveStatus, 1500);
         
         toast({
-          title: "✅ Match Saved Successfully!",
-          description: result.message,
+          title: "✅ Match Saved!",
+          description: formatMatchSaveSuccessMessage(
+            result,
+            props.selectedFixtureData.home_team?.name ?? "Home",
+            props.homeScore,
+            props.selectedFixtureData.away_team?.name ?? "Away",
+            props.awayScore
+          ),
         });
       } else {
         setPhase("error", { statusMessage: "Save completed with errors", errorMessage: (result.errors && result.errors[0]) || "Unknown error", progress: 100 });
         toast({
           title: "Save Completed with Issues",
-          description: `${result.message}\n\nErrors: ${result.errors.join(', ')}`,
+          description: formatMatchSaveSuccessMessage(
+            result,
+            props.selectedFixtureData.home_team?.name ?? "Home",
+            props.homeScore,
+            props.selectedFixtureData.away_team?.name ?? "Away",
+            props.awayScore
+          ),
           variant: "destructive"
         });
       }
