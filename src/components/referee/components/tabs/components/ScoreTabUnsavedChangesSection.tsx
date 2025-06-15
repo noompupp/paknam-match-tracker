@@ -2,9 +2,15 @@
 import React from "react";
 import UnsavedChangesIndicator from "./UnsavedChangesIndicator";
 
+interface UnsavedItemsCount {
+  goals: number;
+  cards: number;
+  playerTimes: number;
+}
+
 interface Props {
   hasUnsavedChanges: boolean;
-  unsavedItemsCount: number;
+  unsavedItemsCount: UnsavedItemsCount;
   onSave: () => void;
 }
 
