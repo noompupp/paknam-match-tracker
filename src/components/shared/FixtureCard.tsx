@@ -1,4 +1,3 @@
-
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Eye } from "lucide-react";
@@ -26,7 +25,7 @@ const FixtureCard = ({ fixture, onClick, showDate = true, className = "" }: Fixt
     return (
       <MobilePortraitFixtureCard 
         fixture={fixture}
-        onClick={onClick}
+        onFixtureClick={onClick}
         showDate={showDate}
         className={className}
       />

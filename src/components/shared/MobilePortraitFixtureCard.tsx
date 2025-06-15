@@ -10,6 +10,7 @@ interface Props {
   fixture: Fixture;
   onFixtureClick?: (fixture: Fixture) => void;
   onPreviewClick?: (fixture: Fixture) => void;
+  showDate?: boolean;
   className?: string;
 }
 
@@ -17,6 +18,7 @@ const MobilePortraitFixtureCard = ({
   fixture,
   onFixtureClick,
   onPreviewClick,
+  showDate = true,
   className = "",
 }: Props) => {
   const handleCardClick = () => {
@@ -46,9 +48,11 @@ const MobilePortraitFixtureCard = ({
         {/* Header with kickoff date + time (left) and status (right) */}
         <div className="flex justify-between items-center mb-3">
           <div className="flex items-center gap-1 text-sm text-muted-foreground">
-            <span>
-              {formatCombinedDateTime(fixture.match_date, fixture.match_time)}
-            </span>
+            {showDate && (
+              <span>
+                {formatCombinedDateTime(fixture.match_date, fixture.match_time)}
+              </span>
+            )}
           </div>
           <FixtureStatusBadge status={fixture.status} />
         </div>
