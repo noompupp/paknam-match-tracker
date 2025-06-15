@@ -177,8 +177,7 @@ const referee: LocaleModule = {
     'referee.selectStartingSquadLabel': 'Select Starting Squad (7 players)',
 
     // --- NEW BUTTON ACTION KEY ---
-    'referee.action.completeSub': 'Complete Sub', // <-- added for streamlined substitution button
-
+    'referee.action.completeSub': 'Complete Sub', // <-- ensures presence in EN
     // Misc
     'referee.playerNotFound': 'Player not found',
     'referee.teamLockMultipleTeams': 'Warning: Players from multiple teams detected. Team lock disabled.',
@@ -421,8 +420,7 @@ const referee: LocaleModule = {
     'referee.selectStartingSquadLabel': 'เลือกตัวจริง (7 คน)',
 
     // --- NEW BUTTON ACTION KEY ---
-    'referee.action.completeSub': 'เปลี่ยนตัวเสร็จสิ้น', // <-- added for streamlined substitution button
-
+    'referee.action.completeSub': 'เปลี่ยนตัวเสร็จสิ้น', // <-- ensures presence in TH
     // Misc
     'referee.playerNotFound': 'ไม่พบนักเตะ',
     'referee.teamLockMultipleTeams': 'มีนักเตะหลายทีม (ระบบล็อกทีมถูกปิดชั่วคราว)',
