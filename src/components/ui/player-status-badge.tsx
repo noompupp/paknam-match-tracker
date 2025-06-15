@@ -1,4 +1,3 @@
-
 import { Badge } from "@/components/ui/badge";
 import { Clock, AlertTriangle, CheckCircle, Timer } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -21,7 +20,7 @@ const PlayerStatusBadge = ({
   matchTime,
   className
 }: PlayerStatusBadgeProps) => {
-  const { t, lang } = useTranslation();
+  const { t, language } = useTranslation();
   const getStatusInfo = () => {
     const roleNormalized = role.toLowerCase();
 
@@ -116,4 +115,3 @@ const PlayerStatusBadge = ({
 };
 
 export default PlayerStatusBadge;
-
