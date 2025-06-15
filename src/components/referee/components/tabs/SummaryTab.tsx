@@ -1,8 +1,10 @@
+
 import EnhancedMatchSummary from "../../EnhancedMatchSummary";
 import MatchEvents from "../../MatchEvents";
 import { ComponentPlayer } from "../../hooks/useRefereeState";
 import { useDataValidation } from "@/hooks/useDataValidation";
-import UnifiedMatchTimer from "../../UnifiedMatchTimer";
+// FIXED: Correct import path for UnifiedMatchTimer
+import UnifiedMatchTimer from "../UnifiedMatchTimer";
 
 interface SummaryTabProps {
   selectedFixtureData: any;
@@ -81,3 +83,4 @@ const SummaryTab = ({
 };
 
 export default SummaryTab;
+
