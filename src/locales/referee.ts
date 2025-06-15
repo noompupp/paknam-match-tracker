@@ -180,6 +180,16 @@ const referee: LocaleModule = {
     'referee.playerNotFound': 'Player not found',
     'referee.teamLockMultipleTeams': 'Warning: Players from multiple teams detected. Team lock disabled.',
     'referee.teamLockNone': 'No team lock active. You can track players from any team.',
+
+    // --- ADDITIONS/NEW KEYS FOR PLAYER TIME TRACKING BADGES ---
+    'referee.status.inProgress': 'IN PROGRESS',
+    'referee.status.noLimits': 'NO LIMITS',
+    'referee.status.unlimitedPlaytime': 'Unlimited playtime',
+    'referee.status.withinLimit': 'WITHIN LIMIT',
+    'referee.action.stop': 'Stop',
+    'referee.action.start': 'Start',
+    'referee.action.subIn': 'Sub In',
+    'referee.action.subOut': 'Sub Out',
   },
   th: {
     'page.referee': 'เครื่องมือผู้ตัดสิน',
@@ -347,6 +357,16 @@ const referee: LocaleModule = {
     'referee.playerNotFound': 'ไม่พบนักเตะ',
     'referee.teamLockMultipleTeams': 'มีนักเตะหลายทีม (ระบบล็อกทีมถูกปิดชั่วคราว)',
     'referee.teamLockNone': 'ยังไม่ล็อกทีม สามารถติดตามได้ทุกทีม',
+
+    // --- ADDITIONS/NEW KEYS FOR PLAYER TIME TRACKING BADGES ---
+    'referee.status.inProgress': 'กำลังดำเนินการ',
+    'referee.status.noLimits': 'ไม่จำกัด',
+    'referee.status.unlimitedPlaytime': 'เล่นได้ไม่จำกัดเวลา',
+    'referee.status.withinLimit': 'ในขีดจำกัด',
+    'referee.action.stop': 'หยุด',
+    'referee.action.start': 'เริ่ม',
+    'referee.action.subIn': 'เปลี่ยนเข้า',
+    'referee.action.subOut': 'เปลี่ยนออก',
   }
 };
 

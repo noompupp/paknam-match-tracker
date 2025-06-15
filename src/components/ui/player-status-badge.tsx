@@ -2,6 +2,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Clock, AlertTriangle, CheckCircle, Timer } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface PlayerStatusBadgeProps {
   role: string;
@@ -20,77 +21,88 @@ const PlayerStatusBadge = ({
   matchTime,
   className
 }: PlayerStatusBadgeProps) => {
+  const { t } = useTranslation();
   const getStatusInfo = () => {
     const roleNormalized = role.toLowerCase();
-    
+
     // S-class players: 20 minutes per half limit
     if (roleNormalized === 's-class') {
       const limitSeconds = 20 * 60; // 20 minutes
       const warningThreshold = 18 * 60; // 18 minutes
-      
+
       if (currentHalfTime >= limitSeconds) {
         return {
-          label: "LIMIT REACHED",
+          label: t("referee.limit", t("referee.limit")), // fallback for history
           variant: "destructive" as const,
           icon: AlertTriangle,
-          description: "20min limit reached"
+          description: t("referee.sClassHalfLimit", "20min limit reached")
         };
       }
-      
+
       if (currentHalfTime >= warningThreshold) {
         return {
-          label: "APPROACHING LIMIT",
+          label: t("referee.approachingLimit", t("referee.status.inProgress")),
           variant: "secondary" as const,
           icon: Timer,
-          description: `${Math.floor((limitSeconds - currentHalfTime) / 60)}min left`
+          description: t("referee.status.withinLimit", "{min}min left", {
+            min: Math.floor((limitSeconds - currentHalfTime) / 60)
+          })
         };
       }
-      
+
       return {
-        label: "WITHIN LIMIT",
+        label: t("referee.status.withinLimit", "WITHIN LIMIT"),
         variant: "default" as const,
         icon: CheckCircle,
-        description: `${Math.floor(currentHalfTime / 60)}/20min`
+        description: t("referee.status.inProgress", "{current}/20min", {
+          current: Math.floor(currentHalfTime / 60)
+        })
       };
     }
-    
+
     // Starter players: 10 minutes minimum total
     if (roleNormalized === 'starter') {
       const minTotal = 10 * 60; // 10 minutes
       const remainingMatchTime = (50 * 60) - matchTime; // 50 min total match
-      
+
       if (totalTime >= minTotal) {
         return {
-          label: "MIN MET",
+          label: t("referee.status.minMet", "MIN MET"),
           variant: "default" as const,
           icon: CheckCircle,
-          description: `${Math.floor(totalTime / 60)}min played`
+          description: t("referee.status.inProgress", "{total}min played", {
+            total: Math.floor(totalTime / 60)
+          })
         };
       }
-      
+
       if (remainingMatchTime < 300 && totalTime < minTotal) { // 5 minutes remaining
         return {
-          label: "NEEDS TIME",
+          label: t("referee.status.needsTime", "NEEDS TIME"),
           variant: "secondary" as const,
           icon: AlertTriangle,
-          description: `Need ${Math.floor((minTotal - totalTime) / 60)}min more`
+          description: t("referee.status.inProgress", "Need {min}min more", {
+            min: Math.floor((minTotal - totalTime) / 60)
+          })
         };
       }
-      
+
       return {
-        label: "IN PROGRESS",
+        label: t("referee.status.inProgress", "IN PROGRESS"),
         variant: "outline" as const,
         icon: Clock,
-        description: `${Math.floor(totalTime / 60)}/10min min`
+        description: t("referee.status.inProgress", "{time}/10min min", {
+          time: Math.floor(totalTime / 60)
+        })
       };
     }
-    
+
     // Captain players: no limits
     return {
-      label: "NO LIMITS",
+      label: t("referee.status.noLimits", "NO LIMITS"),
       variant: "outline" as const,
       icon: CheckCircle,
-      description: "Unlimited playtime"
+      description: t("referee.status.unlimitedPlaytime", "Unlimited playtime")
     };
   };
 

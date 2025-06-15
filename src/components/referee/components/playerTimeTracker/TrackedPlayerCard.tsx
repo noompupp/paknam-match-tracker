@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRightLeft } from "lucide-react";
@@ -7,6 +8,7 @@ import PlayerRoleBadge from "@/components/ui/player-role-badge";
 import PlayerStatusBadge from "@/components/ui/player-status-badge";
 import { canRemovePlayer } from "./playerValidationUtils";
 import { isSecondHalf, getCurrentHalfTime } from "@/utils/timeUtils";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface TrackedPlayerCardProps {
   player: PlayerTime;
@@ -33,24 +35,25 @@ const TrackedPlayerCard = ({
   isPendingSubstitution = false,
   substitutionManager
 }: TrackedPlayerCardProps) => {
+  const { t } = useTranslation();
   const role = playerInfo?.role || 'Starter';
-  
+
   // Check if player can be removed
   const removal = canRemovePlayer(player.id, trackedPlayers);
-  
+
   // Calculate current half time for status badge
   const currentHalfTime = getCurrentHalfTime(matchTime);
-  
+
   // Check if this is a player who has played before (potential substitution candidate)
   const hasPlayedBefore = player.totalTime > 0;
   const isSubstitutionCandidate = hasPlayedBefore;
-  
+
   // Check if there's a pending streamlined substitution that this player can complete
   const canCompleteStreamlinedSub = substitutionManager?.hasPendingSubstitution && 
                                    !substitutionManager?.isSubOutInitiated && 
                                    player.isPlaying && 
                                    player.id !== substitutionManager?.pendingSubstitution?.outgoingPlayerId;
-  
+
   console.log('👤 Rendering tracked player with dual-behavior substitution status:', {
     name: player.name,
     role,
@@ -70,55 +73,55 @@ const TrackedPlayerCard = ({
     if (isPendingSubstitution) {
       if (substitutionManager?.isSubOutInitiated) {
         return {
-          text: "Substituted Out" as const,
+          text: t("referee.action.subOut", "Substituted Out"),
           variant: "outline" as const,
           icon: <ArrowRightLeft className="h-3 w-3" />
         };
       } else {
         return {
-          text: "Pending Sub In" as const,
+          text: t("referee.action.subIn", "Pending Sub In"),
           variant: "outline" as const,
           icon: <ArrowRightLeft className="h-3 w-3" />
         };
       }
     }
-    
+
     // Show completion indicator for streamlined substitutions
     if (canCompleteStreamlinedSub) {
       return {
-        text: "Complete Sub" as const,
+        text: t("referee.substitutionComplete", "Complete Sub"),
         variant: "destructive" as const,
         icon: <ArrowRightLeft className="h-3 w-3" />
       };
     }
-    
+
     // Show substitution buttons for players who have played before
     if (isSubstitutionCandidate) {
       if (player.isPlaying) {
         return {
-          text: "Sub Out" as const,
+          text: t("referee.action.subOut", "Sub Out"),
           variant: "destructive" as const,
           icon: <ArrowRightLeft className="h-3 w-3" />
         };
       } else {
         return {
-          text: "Sub In" as const,
+          text: t("referee.action.subIn", "Sub In"),
           variant: "default" as const,
           icon: <ArrowRightLeft className="h-3 w-3" />
         };
       }
     }
-    
+
     // For new players (no previous time), show Start/Stop
     if (player.isPlaying) {
       return {
-        text: "Stop" as const,
+        text: t("referee.action.stop", "Stop"),
         variant: "destructive" as const,
         icon: null
       };
     } else {
       return {
-        text: "Start" as const,
+        text: t("referee.action.start", "Start"),
         variant: "default" as const,
         icon: null
       };
@@ -158,12 +161,12 @@ const TrackedPlayerCard = ({
             <PlayerRoleBadge role={role} size="sm" />
             {isPendingSubstitution && (
               <Badge variant="outline" className="text-xs px-1.5 py-0 h-4 border-orange-300 text-orange-700">
-                {substitutionManager?.isSubOutInitiated ? 'Out' : 'Pending In'}
+                {substitutionManager?.isSubOutInitiated ? t("referee.action.subOut", "Out") : t("referee.action.subIn", "Pending In")}
               </Badge>
             )}
             {canCompleteStreamlinedSub && (
               <Badge variant="outline" className="text-xs px-1.5 py-0 h-4 border-green-300 text-green-700">
-                Can Complete
+                {t("referee.substitutionComplete", "Can Complete")}
               </Badge>
             )}
           </div>
