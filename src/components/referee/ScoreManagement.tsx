@@ -5,6 +5,8 @@ import { Plus, Minus, Play, Square, RotateCcw, Save, CheckCircle, AlertTriangle,
 import { Fixture } from "@/types/database";
 import { validateMatchData, formatMatchResult } from "@/utils/matchValidation";
 import { useMatchStore } from "@/stores/useMatchStore"; // Import match store
+import PulseDotBadge from "@/components/ui/PulseDotBadge";
+import { useGlobalBatchSaveManager } from "@/hooks/useGlobalBatchSaveManager";
 
 interface ScoreManagementProps {
   selectedFixtureData: Fixture;
@@ -56,6 +58,19 @@ const ScoreManagement = ({
   // Validate match data
   const validation = validateMatchData(selectedFixtureData, homeScore, awayScore, 0);
   
+  // Add batch save context to track unsaved items count
+  const {
+    hasUnsavedChanges,
+    unsavedItemsCount,
+    batchSave
+  } = useGlobalBatchSaveManager({
+    homeTeamData: { id: selectedFixtureData?.home_team?.__id__ || selectedFixtureData?.home_team_id, name: selectedFixtureData?.home_team?.name },
+    awayTeamData: { id: selectedFixtureData?.away_team?.__id__ || selectedFixtureData?.away_team_id, name: selectedFixtureData?.away_team?.name }
+  });
+
+  // Enhanced visual state for save button
+  const hasUnsaved = hasUnsavedChanges && (unsavedItemsCount.goals > 0 || unsavedItemsCount.cards > 0 || unsavedItemsCount.playerTimes > 0);
+  
   // Determine save button state
   const getSaveButtonConfig = () => {
     if (isPending) {
@@ -88,13 +103,20 @@ const ScoreManagement = ({
       };
     }
     
-    if (hasScoreChange || !isMatchComplete) {
+    if (hasScoreChange || !isMatchComplete || hasUnsaved) {
+      // Highlight unsaved state!
       return {
         disabled: false,
-        variant: "default" as const,
+        variant: hasUnsaved ? "destructive" as const : "default" as const,
         icon: Save,
-        text: hasScoreChange ? "Save Changes" : "Save Match Result",
-        className: "bg-green-600 hover:bg-green-700"
+        text: hasUnsaved
+          ? `Save Now (${unsavedItemsCount.goals + unsavedItemsCount.cards + unsavedItemsCount.playerTimes})`
+          : hasScoreChange
+          ? "Save Changes"
+          : "Save Match Result",
+        className: hasUnsaved
+          ? "bg-red-600 hover:bg-red-700 ring-2 ring-red-300 animate-pulse" // Animate + strong color for unsaved
+          : "bg-green-600 hover:bg-green-700"
       };
     }
     
@@ -248,13 +270,22 @@ const ScoreManagement = ({
         </div>
         
         <Button 
-          onClick={onSaveMatch} 
-          className={`w-full ${saveConfig.className}`}
+          onClick={() => {
+            // Always use enhanced batchSave
+            batchSave();
+            onSaveMatch();
+          }}
+          className={`w-full relative ${saveConfig.className}`}
           disabled={saveConfig.disabled}
           variant={saveConfig.variant}
         >
           <saveConfig.icon className="h-4 w-4 mr-2" />
           {saveConfig.text}
+          {hasUnsaved && (
+            <span className="ml-2">
+              <PulseDotBadge />
+            </span>
+          )}
         </Button>
 
         {hasScoreChange && (

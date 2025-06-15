@@ -12,6 +12,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { useToast } from "@/hooks/use-toast";
 import GoalWizardSyncStatus from "./GoalWizardSyncStatus";
 import { useGlobalBatchSaveManager } from "@/hooks/useGlobalBatchSaveManager";
+import PulseDotBadge from "@/components/ui/PulseDotBadge";
 
 interface GoalWizardProps {
   isOpen: boolean;
@@ -301,6 +302,11 @@ const GoalWizard = ({
 
   // ---- Next/DB save button in confirm step ----
   const isConfirmStep = currentStep === "confirm";
+  const hasUnsaved = batchSaveManager.hasUnsavedChanges && (
+    batchSaveManager.unsavedItemsCount.goals > 0 ||
+    batchSaveManager.unsavedItemsCount.cards > 0 ||
+    batchSaveManager.unsavedItemsCount.playerTimes > 0
+  );
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
@@ -313,7 +319,6 @@ const GoalWizard = ({
         <div className="mt-4">
           {renderCurrentStep()}
         </div>
-
         {/* Confirmation Step: Save Button (add DB save now) */}
         {isConfirmStep && (
           <div className="mt-4 flex flex-col gap-2">
@@ -328,12 +333,20 @@ const GoalWizard = ({
               {syncStatus === "saving" ? (
                 <span className="animate-spin h-4 w-4 mr-2 border-2 border-white border-t-transparent rounded-full" />
               ) : (
-                <span>Save Goal (Local)</span>
+                <span>
+                  Save Goal (Local)
+                  {hasUnsaved && <span className="ml-2 align-middle"><PulseDotBadge /></span>}
+                </span>
               )}
             </button>
             {/* Save & Sync button (save all changes, batchSave) */}
             <button
-              className="w-full bg-green-600 text-white py-2 rounded disabled:opacity-60 flex items-center justify-center gap-2 font-semibold"
+              className={`w-full flex items-center justify-center gap-2 font-semibold py-2 rounded transition-colors ${syncStatus === "saving" || syncStatus === "synced"
+                ? "bg-green-300 text-white"
+                : hasUnsaved
+                ? "bg-red-600 text-white animate-pulse"
+                : "bg-green-600 text-white"
+              }`}
               onClick={handleSaveNow}
               disabled={
                 syncStatus === "saving" ||
@@ -345,13 +358,16 @@ const GoalWizard = ({
               {syncStatus === "saving" ? (
                 <span className="animate-spin h-4 w-4 mr-2 border-2 border-white border-t-transparent rounded-full" />
               ) : (
-                <span>
-                  {syncStatus === "synced"
-                    ? "Saved"
-                    : batchSaveManager.hasUnsavedChanges
-                    ? "Save & Sync Now"
-                    : "No Unsaved Changes"}
-                </span>
+                <>
+                  <span>
+                    {syncStatus === "synced"
+                      ? "Saved"
+                      : batchSaveManager.hasUnsavedChanges
+                      ? "Save & Sync Now"
+                      : "No Unsaved Changes"}
+                  </span>
+                  {hasUnsaved && <span className="ml-2 align-middle"><PulseDotBadge /></span>}
+                </>
               )}
             </button>
             {/* Visual status & database indicator */}
@@ -360,6 +376,12 @@ const GoalWizard = ({
             {batchSaveManager.hasUnsavedChanges && (
               <div className="text-xs text-gray-500 mt-1">
                 Unsaved: {batchSaveManager.unsavedItemsCount.goals} goals, {batchSaveManager.unsavedItemsCount.cards} cards, {batchSaveManager.unsavedItemsCount.playerTimes} pl. times
+              </div>
+            )}
+            {/* Big warning if unsaved */}
+            {hasUnsaved && (
+              <div className="w-full text-xs text-center text-red-700 bg-red-50 rounded border border-red-200 mt-2 p-1 font-semibold animate-pulse">
+                Unsaved changes! Be sure to sync to database for safe keeping.
               </div>
             )}
           </div>

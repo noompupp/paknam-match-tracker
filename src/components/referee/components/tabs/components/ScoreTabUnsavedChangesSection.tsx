@@ -25,12 +25,18 @@ const ScoreTabUnsavedChangesSection = ({
   React.useEffect(() => {
     if (hasUnsavedChanges && (unsavedItemsCount.goals > 0 || unsavedItemsCount.cards > 0 || unsavedItemsCount.playerTimes > 0)) {
       toast({
-        title: "Attention",
-        description: "You have unsaved changes. Click “Save Now” to write them to the database!",
+        title: "Unsaved Changes ⚠️",
+        description: `You have ${unsavedItemsCount.goals} unsaved goal(s), ${unsavedItemsCount.cards} card(s), and ${unsavedItemsCount.playerTimes} player time(s). Please save your work!`,
         variant: "destructive"
       });
     }
-  }, [hasUnsavedChanges, unsavedItemsCount, toast]);
+  }, [
+    hasUnsavedChanges,
+    unsavedItemsCount.goals,
+    unsavedItemsCount.cards,
+    unsavedItemsCount.playerTimes,
+    toast
+  ]);
 
   return (
     <UnsavedChangesIndicator
