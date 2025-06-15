@@ -59,6 +59,7 @@ const EnhancedPlayerTimeTracker = (props: EnhancedPlayerTimeTrackerProps) => {
         substitutionManager={{
           ...state.substitutionManager,
           handleAddPlayer: state.handleAddPlayer,
+          handleUndoSubOut: state.handleUndoSubOut,
         }}
         showInitialSelection={state.showInitialSelection}
         setShowInitialSelection={state.setShowInitialSelection}
@@ -76,3 +77,4 @@ const EnhancedPlayerTimeTracker = (props: EnhancedPlayerTimeTrackerProps) => {
 export default EnhancedPlayerTimeTracker;
 
 // NOTE: This file was refactored. Consider also refactoring other large files for maintainability.
+

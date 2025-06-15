@@ -1,4 +1,3 @@
-
 import { Card, CardContent } from "@/components/ui/card";
 import TimeTrackerHeader from "./TimeTrackerHeader";
 import TrackedPlayersList from "./TrackedPlayersList";
@@ -87,6 +86,7 @@ const PlayerTimeTrackerContent = ({
         console.log('✅ Dual-behavior substitution completed successfully');
       }}
       substitutionManager={substitutionManager}
+      onUndoSubOut={substitutionManager.handleUndoSubOut}
     />
   </Card>
 );

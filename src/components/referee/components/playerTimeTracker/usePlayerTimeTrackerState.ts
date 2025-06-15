@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { PlayerTime } from "@/types/database";
 import { ProcessedPlayer } from "@/utils/refereeDataProcessor";
@@ -76,6 +75,7 @@ export const usePlayerTimeTrackerState = ({
     handleAddPlayer, 
     handleRemovePlayer, 
     handleTogglePlayerTime,
+    handleUndoSubOut,
     substitutionManager 
   } = usePlayerTimeHandlers(handlersProps);
 
@@ -118,6 +118,7 @@ export const usePlayerTimeTrackerState = ({
     handleAddPlayer,
     handleRemovePlayer,
     handleTogglePlayerTime,
+    handleUndoSubOut,
     playerCountValidation,
     teamLockValidation,
     substitutionManager,
