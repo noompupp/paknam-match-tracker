@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -147,31 +146,42 @@ export const SecureAuthProvider = ({ children }: SecureAuthProviderProps) => {
     }
   };
 
+  /**
+   * Enhanced hasRole:
+   * Allows "admin" to access anything.
+   * Allows "referee_rater" to access both "referee" and "rater" protected areas.
+   * NOTE: role comparison is case sensitive; expects lowercase.
+   */
   const hasRole = async (role: string): Promise<boolean> => {
     if (!user) return false;
-    
+
     try {
       const { data, error } = await supabase.rpc('get_user_role', {
         user_uuid: user.id
       });
-
       if (error) {
         console.error('❌ Role check error:', error);
         return false;
       }
 
-      // The function returns the user's role as a string, so we check if it matches
-      const userRole = data as string;
-      return userRole === role || userRole === 'admin'; // Admin has access to everything
+      const userRole = (data as string) || '';
+      // Always let admin access everything
+      if (userRole === 'admin') return true;
+
+      // "referee_rater" behaves as both referee and rater
+      if (userRole === 'referee_rater') {
+        return role === 'referee' || role === 'rater' || role === 'referee_rater';
+      }
+
+      // Normal equality check for other roles
+      return userRole === role;
     } catch (error) {
       console.error('❌ Role check error:', error);
       return false;
     }
   };
 
-  const isAuthenticated = (): boolean => {
-    return !!user && !!session;
-  };
+  const isAuthenticated = (): boolean => !!user && !!session;
 
   return (
     <SecureAuthContext.Provider value={{
