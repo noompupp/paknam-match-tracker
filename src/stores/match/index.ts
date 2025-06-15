@@ -12,6 +12,7 @@ import { createPlayerTimeSlice } from './playerTimeSlice';
 import { createCoreSlice } from './coreSlice';
 import { createGoalSlice } from './goalSlice';
 import { createOptimizedPlayerTimeSlice } from './optimizedPlayerTimeSlice';
+import { createUtilitySlice } from './utilitySlice';
 
 // Compose the store by spreading all the necessary slices and initial state
 type MatchStore = MatchState & MatchActions;
@@ -25,7 +26,8 @@ export const useMatchStore = create<MatchStore>()(
     ...createEnhancedPlayerTimeSlice(set, get, api),
     ...createPlayerTimeSlice(set, get, api),
     ...createCoreSlice(set, get, api),
-    ...createOptimizedPlayerTimeSlice(set, get, api)
+    ...createOptimizedPlayerTimeSlice(set, get, api),
+    ...createUtilitySlice(set, get, api),  // <-- supplies missing MatchActions
   }))
 );
 
