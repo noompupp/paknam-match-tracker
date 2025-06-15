@@ -3,14 +3,12 @@ import { Play, Pause, RotateCcw, Save } from "lucide-react";
 import RefereeCard from "../../../shared/RefereeCard";
 import RefereeButton from "../../../shared/RefereeButton";
 import RefereeLayoutGrid from "../../../shared/RefereeLayoutGrid";
-import { Button } from "@/components/ui/button";
 
 interface MatchControlsSectionProps {
   isRunning: boolean;
   onToggleTimer: () => void;
   onSaveMatch: () => void;
   onResetMatch: () => void;
-  onFinishMatch?: () => void;
   isSaving?: boolean;
 }
 
@@ -19,7 +17,6 @@ const MatchControlsSection = ({
   onToggleTimer,
   onSaveMatch,
   onResetMatch,
-  onFinishMatch,
   isSaving = false
 }: MatchControlsSectionProps) => {
   return (
@@ -27,7 +24,7 @@ const MatchControlsSection = ({
       title="Match Controls"
       subtitle="Timer and match management"
     >
-      <RefereeLayoutGrid columns={4} gap="sm">
+      <RefereeLayoutGrid columns={3} gap="sm">
         <RefereeButton
           onClick={onToggleTimer}
           variant={isRunning ? "destructive" : "default"}
@@ -48,28 +45,6 @@ const MatchControlsSection = ({
         >
           Save
         </RefereeButton>
-
-        {/* --- Finish & Exit Button --- */}
-        <Button
-          onClick={() => {
-            console.log("🟢 Finish & Exit pressed");
-            if (onFinishMatch) {
-              onFinishMatch();
-            }
-          }}
-          variant="default"
-          size="lg"
-          className="w-full flex items-center justify-center gap-2 font-semibold ring-2 ring-primary/10"
-          type="button"
-        >
-          <span>
-            <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2l4 -4" />
-              <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth={2} fill="none" />
-            </svg>
-          </span>
-          Finish & Exit
-        </Button>
 
         <RefereeButton
           onClick={onResetMatch}

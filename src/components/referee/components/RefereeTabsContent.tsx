@@ -58,8 +58,7 @@ interface RefereeTabsContentProps {
   onRemovePlayer: (playerId: number) => void;
   onTogglePlayerTime: (playerId: number) => void;
   onExportSummary: () => void;
-  onFinishMatch?: () => void; // <--- Added
-  forceRefresh?: () => Promise<void>; // <-- Add this!
+  // Removed: workflowConfig: WorkflowModeConfig;
 }
 
 const RefereeTabsContent = (props: RefereeTabsContentProps) => {
@@ -83,8 +82,6 @@ const RefereeTabsContent = (props: RefereeTabsContentProps) => {
           onResetMatch={props.onResetMatch}
           onSaveMatch={props.onSaveMatch}
           onAssignGoal={props.onAssignGoal}
-          forceRefresh={props.forceRefresh}
-          onFinishMatch={props.onFinishMatch} // <--- Pass down
         />
       </TabsContent>
 

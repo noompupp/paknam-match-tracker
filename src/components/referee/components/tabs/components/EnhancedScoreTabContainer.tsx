@@ -1,17 +1,11 @@
 import React from "react";
 import { ComponentPlayer } from "../../../hooks/useRefereeState";
-import ScoreTabGoalsSummarySection from "./ScoreTabGoalsSummarySection";
-import ScoreTabGoalRecordingSection from "./ScoreTabGoalRecordingSection";
-import ScoreTabUnsavedChangesSection from "./ScoreTabUnsavedChangesSection";
-import ScoreTabMatchControlsSection from "./ScoreTabMatchControlsSection";
-import { useQuery } from "@tanstack/react-query";
-import { enhancedMatchSummaryService } from "@/services/fixtures/enhancedMatchSummaryService";
-
-interface UnsavedItemsCount {
-  goals: number;
-  cards: number;
-  playerTimes: number;
-}
+import { useMatchStore } from "@/stores/useMatchStore";
+import { useGlobalBatchSaveManager } from "@/hooks/useGlobalBatchSaveManager";
+import { useEnhancedAutoSave } from "@/hooks/useEnhancedAutoSave";
+import UnsavedChangesIndicator from "./UnsavedChangesIndicator";
+import SimplifiedGoalRecording from "./SimplifiedGoalRecording";
+import EnhancedGoalsSummary from "./EnhancedGoalsSummary";
 
 interface EnhancedScoreTabContainerProps {
   selectedFixtureData: any;
@@ -26,7 +20,6 @@ interface EnhancedScoreTabContainerProps {
   onAssignGoal: (player: ComponentPlayer) => void;
   forceRefresh?: () => Promise<void>;
   onShowWizard: () => void;
-  onFinishMatch?: () => void;
 }
 
 const EnhancedScoreTabContainer = ({
@@ -41,70 +34,122 @@ const EnhancedScoreTabContainer = ({
   onSaveMatch,
   onAssignGoal,
   forceRefresh,
-  onShowWizard,
-  onFinishMatch
+  onShowWizard
 }: EnhancedScoreTabContainerProps) => {
   const homeTeamName = selectedFixtureData?.home_team?.name || 'Home Team';
   const awayTeamName = selectedFixtureData?.away_team?.name || 'Away Team';
   const homeTeamId = selectedFixtureData?.home_team?.__id__ || selectedFixtureData?.home_team_id;
   const awayTeamId = selectedFixtureData?.away_team?.__id__ || selectedFixtureData?.away_team_id;
 
-  // --- NEW: Fetch goals/cards etc from database (Supabase) using enhanced summary ---
-  const fixtureId = selectedFixtureData?.id;
-  const { data: enhancedData } = useQuery({
-    queryKey: ['enhancedGoalsSummary', fixtureId],
-    queryFn: () => enhancedMatchSummaryService.getEnhancedMatchSummary(fixtureId!),
-    enabled: !!fixtureId,
-    staleTime: 30 * 1000
+  // Use global match store
+  const {
+    fixtureId,
+    homeScore,
+    awayScore,
+    goals,
+    hasUnsavedChanges,
+    setFixtureId,
+    addGoal,
+    resetState,
+    removeGoal,
+    undoGoal
+  } = useMatchStore();
+
+  // Set fixture ID when component mounts or fixture changes
+  React.useEffect(() => {
+    if (selectedFixtureData?.id && fixtureId !== selectedFixtureData.id) {
+      setFixtureId(selectedFixtureData.id);
+    }
+  }, [selectedFixtureData?.id, fixtureId, setFixtureId]);
+
+  // Global batch save manager
+  const { batchSave, unsavedItemsCount } = useGlobalBatchSaveManager({
+    homeTeamData: { id: homeTeamId, name: homeTeamName },
+    awayTeamData: { id: awayTeamId, name: awayTeamName }
   });
 
-  const syncedGoals = enhancedData?.goals || [];
+  // Enhanced auto-save functionality (5 minutes)
+  useEnhancedAutoSave({
+    enabled: true,
+    onAutoSave: async () => {
+      await batchSave();
+    },
+    interval: 5 * 60 * 1000, // 5 minutes
+    hasUnsavedChanges,
+    tabName: 'Score'
+  });
 
-  // Local unsaved state for UI indication (keep logic)
-  const [hasUnsavedChanges, setHasUnsavedChanges] = React.useState(false);
-  const [unsavedItemsCount, setUnsavedItemsCount] = React.useState<UnsavedItemsCount>({ goals: 0, cards: 0, playerTimes: 0 });
-
-  console.log('📊 EnhancedScoreTabContainer: Simplified workflow active:', { 
-    homeTeamName,
-    awayTeamName,
+  console.log('📊 Enhanced ScoreTabContainer: Advanced workflow with autosave:', { 
+    fixtureId,
+    homeScore, 
+    awayScore, 
+    goalsCount: goals.length,
     hasUnsavedChanges,
     unsavedItemsCount
   });
 
   const handleRecordGoal = () => {
-    console.log('🎯 EnhancedScoreTabContainer: Opening goal entry wizard');
+    console.log('🎯 Enhanced ScoreTabContainer: Opening goal entry wizard');
     onShowWizard();
   };
 
   const handleSaveMatch = async () => {
-    console.log('💾 EnhancedScoreTabContainer: Save match triggered');
+    console.log('💾 Enhanced ScoreTabContainer: Save match triggered');
+    await batchSave();
     onSaveMatch();
-    setHasUnsavedChanges(false);
-    setUnsavedItemsCount({ goals: 0, cards: 0, playerTimes: 0 });
+  };
+
+  const handleResetMatch = () => {
+    const confirmed = window.confirm(
+      '⚠️ RESET MATCH DATA\n\n' +
+      'This will reset all local match data and the database.\n\n' +
+      'This action CANNOT be undone!\n\n' +
+      'Are you sure you want to proceed?'
+    );
+
+    if (confirmed) {
+      resetState();
+      onResetMatch();
+    }
+  };
+
+  const handleRemoveGoal = (goalId: string) => {
+    if (removeGoal) {
+      removeGoal(goalId);
+    }
+  };
+
+  const handleUndoGoal = (goalId: string) => {
+    if (undoGoal) {
+      undoGoal(goalId);
+    }
   };
 
   return (
     <div className="space-y-6">
-      {/* Updated: display database-synced goals first */}
-      <ScoreTabGoalsSummarySection goals={syncedGoals} formatTime={formatTime} />
-      <ScoreTabGoalRecordingSection
+      {goals.length > 0 && (
+        <EnhancedGoalsSummary 
+          goals={goals} 
+          formatTime={formatTime}
+          onRemoveGoal={handleRemoveGoal}
+          onUndoGoal={handleUndoGoal}
+        />
+      )}
+
+      <SimplifiedGoalRecording
         homeTeamName={homeTeamName}
         awayTeamName={awayTeamName}
         onRecordGoal={handleRecordGoal}
         isDisabled={false}
       />
-      <ScoreTabUnsavedChangesSection
+
+      <UnsavedChangesIndicator
         hasUnsavedChanges={hasUnsavedChanges}
         unsavedItemsCount={unsavedItemsCount}
         onSave={handleSaveMatch}
       />
-      <ScoreTabMatchControlsSection
-        isRunning={isRunning}
-        onToggleTimer={onToggleTimer}
-        onSaveMatch={handleSaveMatch}
-        onResetMatch={onResetMatch}
-        onFinishMatch={onFinishMatch}
-      />
+
+      {/* Note: Match Controls section removed as per plan */}
     </div>
   );
 };

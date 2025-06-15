@@ -5,7 +5,6 @@ import RefereeTabsContent from "./RefereeTabsContent";
 import RefereeMatchHeader from "./RefereeMatchHeader";
 import { ComponentPlayer } from "../hooks/useRefereeState";
 
-// Extended props to accept onFinishMatch
 interface RefereeMainContentProps {
   selectedFixtureData: any;
   homeScore: number;
@@ -46,10 +45,9 @@ interface RefereeMainContentProps {
   onSaveMatch: () => void;
   onResetMatch: () => void;
   onDataRefresh: () => void;
-  onFinishMatch?: () => void; // <--- Add this
 }
 
-const RefereeMainContent = (props: RefereeMainContentProps) => {
+const RefereeMainContent = (props: any) => {
   // Remove all workflowConfig and coordination logic.
   const handleAddGoal = (team: 'home' | 'away') => {
     console.log('🎯 Adding goal for team:', team);
@@ -124,7 +122,6 @@ const RefereeMainContent = (props: RefereeMainContentProps) => {
           onRemovePlayer={props.removePlayer}
           onTogglePlayerTime={props.togglePlayerTime}
           onExportSummary={handleExportSummary}
-          onFinishMatch={props.onFinishMatch} // <--- New/proper pass
         />
       </Tabs>
     </div>

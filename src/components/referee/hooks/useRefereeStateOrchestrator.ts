@@ -1,3 +1,4 @@
+
 import { useRefereeStateIntegration } from "./useRefereeStateIntegration";
 import { useRefereeEnhancedHandlers } from "./useRefereeEnhancedHandlers";
 
@@ -70,10 +71,7 @@ export const useRefereeStateOrchestrator = () => {
     // Database-driven score with real-time sync
     homeScore: scoreState.homeScore,
     awayScore: scoreState.awayScore,
-
-    // Expose score resetters for match data handlers
-    resetScore: scoreState.resetScore,
-
+    
     // Goals
     goals: matchState.goals,
     selectedGoalPlayer: matchState.selectedGoalPlayer,
@@ -116,13 +114,6 @@ export const useRefereeStateOrchestrator = () => {
     addPlayer: matchState.addPlayer,
     forceRefresh: scoreState.forceRefresh, // Expose immediate refresh for components
     resetState: enhancedHandlers.resetState, // Expose reset state for components
-    handleManualRefresh, // Add the manual refresh handler
-
-    // --- Add these so RefereeToolsContainer can destructure/use them ---
-    resetEvents: matchState.resetEvents,
-    resetCards: matchState.resetCards,
-    resetTracking: matchState.resetTracking,
-    resetGoals: matchState.resetGoals,
-    addEvent: matchState.addEvent,
+    handleManualRefresh // Add the manual refresh handler
   };
 };

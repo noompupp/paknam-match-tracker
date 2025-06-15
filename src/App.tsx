@@ -14,7 +14,6 @@ import Teams from "@/components/Teams";
 import Fixtures from "@/components/Fixtures";
 import Results from "@/components/Results";
 import RefereeToolsContainer from "@/components/referee/RefereeToolsContainer";
-import { BrowserRouter } from "react-router-dom"; // <-- Add this
 
 // Create a client
 const queryClient = new QueryClient({
@@ -91,23 +90,21 @@ const AppContent = () => {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <LanguageProvider>
-            <SecureAuthProvider>
-              <AuthProvider>
-                <AppContent />
-                <Toaster />
-              </AuthProvider>
-            </SecureAuthProvider>
-          </LanguageProvider>
-        </ThemeProvider>
-      </BrowserRouter>
+      <ThemeProvider
+        attribute="class"
+        defaultTheme="system"
+        enableSystem
+        disableTransitionOnChange
+      >
+        <LanguageProvider>
+          <SecureAuthProvider>
+            <AuthProvider>
+              <AppContent />
+              <Toaster />
+            </AuthProvider>
+          </SecureAuthProvider>
+        </LanguageProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }

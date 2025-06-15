@@ -1,4 +1,3 @@
-
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -15,12 +14,7 @@ interface UnifiedMatchTimerProps {
   formatTime: (seconds: number) => string;
   onToggleTimer: () => void;
   onResetMatch: () => void;
-  onFinishMatch?: () => void;
   phase?: 'first' | 'second' | 'overtime';
-  // Add for finish state/disabled
-  finishDisabled?: boolean;
-  finishSyncing?: boolean;
-  finishError?: string | null;
 }
 
 const UnifiedMatchTimer = ({
@@ -32,11 +26,7 @@ const UnifiedMatchTimer = ({
   formatTime,
   onToggleTimer,
   onResetMatch,
-  onFinishMatch,
-  phase = 'first',
-  finishDisabled,
-  finishSyncing,
-  finishError
+  phase = 'first'
 }: UnifiedMatchTimerProps) => {
   const isMobile = useIsMobile();
 
@@ -69,13 +59,6 @@ const UnifiedMatchTimer = ({
     timerButtonLabel = "Start Timer";
   } else {
     timerButtonLabel = "Resume Timer";
-  }
-
-  let finishButtonLabel = "Finish & Exit";
-  if (finishSyncing) {
-    finishButtonLabel = "Syncing...";
-  } else if (finishError) {
-    finishButtonLabel = "Retry Sync";
   }
 
   return (
@@ -157,30 +140,6 @@ const UnifiedMatchTimer = ({
             {timerButtonLabel}
           </Button>
           
-          {/* --- Finish & Exit Button --- */}
-          <Button
-            onClick={onFinishMatch}
-            className={cn(
-              isMobile ? "w-full" : "",
-              "flex items-center gap-2 font-semibold ring-2 ring-primary/10"
-            )}
-            size={isMobile ? "lg" : "default"}
-            variant="default"
-            disabled={!!finishDisabled}
-            type="button"
-          >
-            {finishSyncing && (
-              <span className="animate-spin rounded-full border-2 border-primary border-t-transparent w-4 h-4 mr-1" />
-            )}
-            <span>
-              <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2l4 -4" />
-                <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth={2} fill="none" />
-              </svg>
-            </span>
-            {finishButtonLabel}
-          </Button>
-          
           <Button
             onClick={onResetMatch}
             variant="outline"
@@ -194,12 +153,6 @@ const UnifiedMatchTimer = ({
             Reset Match
           </Button>
         </div>
-        {/* Error feedback for finish button */}
-        {finishError && (
-          <div className="text-center text-red-700 dark:text-red-300 mt-2 text-xs">
-            {finishError}
-          </div>
-        )}
       </CardContent>
     </Card>
   );

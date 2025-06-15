@@ -8,7 +8,6 @@ export interface SyncStatus {
   lastError: string | null;
   lastSuccess: number | null;
   pendingChanges: number;
-  forcedSyncing?: boolean; // NEW for finish flow UI
 }
 
 export const useIntelligentSyncManager = () => {
@@ -17,8 +16,7 @@ export const useIntelligentSyncManager = () => {
     isSyncing: false,
     lastError: null,
     lastSuccess: null,
-    pendingChanges: 0,
-    forcedSyncing: false,
+    pendingChanges: 0
   });
   const debounceTimer = useRef<NodeJS.Timeout>();
   const maxIntervalTimer = useRef<NodeJS.Timeout>();
@@ -50,21 +48,20 @@ export const useIntelligentSyncManager = () => {
         isSyncing: false,
         lastError: null,
         lastSuccess: Date.now(),
-        pendingChanges: 0,
+        pendingChanges: 0
       }));
       toast({ title: "Match Data Synced", description: "All changes saved!" });
     } catch (error: any) {
       setStatus(s => ({
         ...s,
         isSyncing: false,
-        lastError: error?.message || "Sync failed",
+        lastError: error?.message || "Sync failed"
       }));
       toast({
         title: "Sync Failed",
         description: error?.message ?? "Unknown sync error",
         variant: "destructive"
       });
-      throw error; // Propagate so flushAndWait can catch
     }
   }, [fixtureId, syncAllToDatabase, toast]);
 
@@ -116,72 +113,9 @@ export const useIntelligentSyncManager = () => {
     await executeSync();
   };
 
-  // ---- New: flushAndWait() ----
-  /**
-   * Ensures all pending changes are saved before proceeding.
-   * Waits for sync to complete or times out. Returns result (success or error).
-   * Used in match finish flow.
-   */
-  const flushAndWait = async (timeoutMs = 15000) => {
-    if (!fixtureId || getTotalPendingChanges() === 0) {
-      setStatus(s => ({ ...s, forcedSyncing: false }));
-      return { success: true };
-    }
-    setStatus(s => ({ ...s, forcedSyncing: true, lastError: null }));
-    let timeout: NodeJS.Timeout;
-    let syncError: string | null = null;
-    let resolved = false;
-    // Clear timers, force sync immediately
-    if (debounceTimer.current) clearTimeout(debounceTimer.current);
-    if (maxIntervalTimer.current) clearTimeout(maxIntervalTimer.current);
-    // Launch sync
-    const syncPromise = (async () => {
-      try {
-        await executeSync();
-        resolved = true;
-        setStatus(s => ({ ...s, forcedSyncing: false })); // Done!
-        return { success: true };
-      } catch (err: any) {
-        resolved = true;
-        syncError = err?.message || "Unknown error";
-        setStatus(s => ({
-          ...s,
-          forcedSyncing: false,
-          lastError: syncError,
-        }));
-        return { success: false, error: syncError };
-      }
-    })();
-
-    // Timeout guard to avoid hanging forever
-    const timeoutPromise = new Promise<{ success: false; error: string }>((resolve) => {
-      timeout = setTimeout(() => {
-        if (!resolved) {
-          setStatus(s => ({
-            ...s,
-            forcedSyncing: false,
-            lastError: 'Sync timed out.',
-          }));
-          resolve({ success: false, error: 'Sync timed out.' });
-        }
-      }, timeoutMs);
-    });
-
-    // Wait for whichever finishes first
-    const result = await Promise.race([syncPromise, timeoutPromise]);
-    clearTimeout(timeout); // Clean up timer
-    return result;
-  };
-
-  const clearSyncError = () => {
-    setStatus(s => ({ ...s, lastError: null, forcedSyncing: false }));
-  };
-
   return {
     syncStatus: status,
     forceSync,
-    flushAndWait,
-    clearSyncError,
-    pendingChanges: status.pendingChanges,
+    pendingChanges: status.pendingChanges
   };
 };
