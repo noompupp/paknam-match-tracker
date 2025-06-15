@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,7 +9,7 @@ import { useMatchStore } from '@/stores/useMatchStore';
 import MatchDataOverview from './tabs/components/MatchDataOverview';
 import PlayerTimeIntegrationPanel from './PlayerTimeIntegrationPanel';
 import MatchRecoveryPanel from './MatchRecoveryPanel';
-// Removed unnecessary import of MatchSaveStatusProvider and MatchSaveStatusOverlay
+import { useIntelligentSyncManager } from '../hooks/useIntelligentSyncManager';
 
 interface MatchEditReviewPanelProps {
   selectedFixtureData: any;
@@ -138,8 +137,10 @@ const MatchEditReviewPanel = ({
     setActiveTab('overview');
   };
 
+  // New: Add smart sync manager for direct save/feedback
+  const { syncStatus, forceSync, pendingChanges } = useIntelligentSyncManager();
+
   return (
-    // REMOVED: <MatchSaveStatusProvider> and <MatchSaveStatusOverlay />
     <Card className="h-full">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
@@ -335,10 +336,31 @@ const MatchEditReviewPanel = ({
             View Summary
           </Button>
         </div>
+
+        {/* New: atomic sync banners */}
+        {syncStatus.isSyncing && (
+          <div className="flex items-center gap-2 py-2 px-4 bg-blue-50 border border-blue-200 rounded-lg text-blue-800 dark:bg-blue-900/10 dark:border-blue-800">
+            <span className="animate-spin mr-2 w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full" />
+            Saving changes...
+          </div>
+        )}
+        {!!syncStatus.lastError && (
+          <div className="flex items-center gap-2 py-2 px-4 bg-red-50 border border-red-200 rounded-lg text-red-800 dark:bg-red-900/10 dark:border-red-800">
+            <span className="mr-2">⚠️</span> Sync Error: {syncStatus.lastError}
+            <button className="ml-4 text-blue-700 underline" onClick={forceSync}>
+               Retry Now
+            </button>
+          </div>
+        )}
+        {pendingChanges > 0 && !syncStatus.isSyncing && !syncStatus.lastError && (
+          <div className="flex items-center gap-2 py-1 px-3 bg-yellow-50 text-yellow-800 border border-yellow-200 rounded text-xs">
+            {pendingChanges} unsaved changes. Saving soon...
+            <button className="ml-3 underline text-blue-600" onClick={forceSync}>Sync Now</button>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
 };
 
 export default MatchEditReviewPanel;
-

@@ -7,48 +7,36 @@ import EnhancedWorkflowModeManager from "./workflows/EnhancedWorkflowModeManager
 import { useRefereeStateOrchestrator } from "./hooks/useRefereeStateOrchestrator";
 import { useState } from "react";
 import { WorkflowModeConfig } from "./workflows/types";
+import { useIntelligentSyncManager } from "./hooks/useIntelligentSyncManager";
 
 // Split hook-using logic to a sub component!
 const RefereeToolsContent = () => {
   const [workflowConfig, setWorkflowConfig] = useState<WorkflowModeConfig | null>(null);
 
   const {
-    // Base state
     fixtures,
     fixturesLoading,
     selectedFixture,
     setSelectedFixture,
     selectedFixtureData,
     enhancedPlayersData,
-    
-    // Player data
     allPlayers,
     homeTeamPlayers,
     awayTeamPlayers,
-    
-    // Team selections
     selectedGoalTeam,
     setSelectedGoalTeam,
     selectedTimeTeam,
     setSelectedTimeTeam,
-    
-    // Timer
     matchTime,
     isRunning,
     formatTime,
-    
-    // Score - now manual only
     homeScore,
     awayScore,
-    
-    // Goals
     goals,
     selectedGoalPlayer,
     selectedGoalType,
     setSelectedGoalPlayer,
     setSelectedGoalType,
-    
-    // Cards
     cards,
     selectedPlayer,
     selectedTeam,
@@ -56,19 +44,11 @@ const RefereeToolsContent = () => {
     setSelectedPlayer,
     setSelectedTeam,
     setSelectedCardType,
-    
-    // Time tracking
     trackedPlayers,
     selectedTimePlayer,
     setSelectedTimePlayer,
-    
-    // Events
     events,
-    
-    // Save attempts
     saveAttempts,
-    
-    // Handlers
     handleSaveMatch,
     handleResetMatch,
     handleAssignGoal,
@@ -80,15 +60,14 @@ const RefereeToolsContent = () => {
     assignGoal,
     removePlayer,
     addPlayer,
-    
-    // Manual data management
     handleManualRefresh
   } = useRefereeStateOrchestrator();
 
+  // --- NEW: Improve batch sync/atomicity/minimal REST feedback ---
+  const { syncStatus, forceSync, pendingChanges } = useIntelligentSyncManager();
+
   const handleWorkflowConfigured = (config: any) => {
     console.log('🎯 Enhanced workflow configured in container:', config);
-    
-    // Convert the enhanced config to the expected WorkflowModeConfig format
     const workflowModeConfig: WorkflowModeConfig = {
       mode: config.mode,
       fixtureId: config.fixtureId,
@@ -97,7 +76,6 @@ const RefereeToolsContent = () => {
       createdAt: config.createdAt || new Date().toISOString(),
       updatedAt: config.updatedAt || new Date().toISOString()
     };
-    
     setWorkflowConfig(workflowModeConfig);
   };
 
@@ -135,8 +113,29 @@ const RefereeToolsContent = () => {
         title="Referee Tools"
         showLanguageToggle={true}
       />
-      
       <main className="container mx-auto px-4 py-6 space-y-6 min-h-screen">
+        {/* --- New: Show loading/sync/error banner as needed --- */}
+        {syncStatus.isSyncing && (
+          <div className="flex items-center gap-2 py-2 px-4 bg-blue-50 border border-blue-200 rounded-lg text-blue-800 dark:bg-blue-900/10 dark:border-blue-800 mb-4">
+            <span className="animate-spin mr-2 w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full" />
+            Saving changes to server...
+          </div>
+        )}
+        {!!syncStatus.lastError && (
+          <div className="flex items-center gap-2 py-2 px-4 bg-red-50 border border-red-200 rounded-lg text-red-800 dark:bg-red-900/10 dark:border-red-800 mb-4">
+            <span className="mr-2">⚠️</span> Sync Error: {syncStatus.lastError} 
+            <button className="ml-4 text-blue-700 underline" onClick={forceSync}>
+               Retry Now
+            </button>
+          </div>
+        )}
+        {pendingChanges > 0 && !syncStatus.isSyncing && !syncStatus.lastError && (
+          <div className="flex items-center gap-2 py-1 px-3 bg-yellow-50 text-yellow-800 border border-yellow-200 rounded mb-4 text-xs">
+            {pendingChanges} unsaved changes. Saving shortly...
+            <button className="ml-3 underline text-blue-600" onClick={forceSync}>Sync Now</button>
+          </div>
+        )}
+
         <RefereeToolsHeader
           fixtures={fixtures || []}
           selectedFixture={selectedFixture}
@@ -187,7 +186,7 @@ const RefereeToolsContent = () => {
             resetTimer={resetTimer}
             assignGoal={handleAssignGoal}
             addPlayer={handleAddPlayer}
-            removePlayer={removePlayer}
+            removePlayer={handleRemovePlayer}
             togglePlayerTime={handleTogglePlayerTime}
             onSaveMatch={handleSaveMatch}
             onResetMatch={handleResetMatch}
