@@ -1,4 +1,3 @@
-
 import React, { useRef, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { ComponentPlayer } from "../useRefereeState";
@@ -13,7 +12,7 @@ interface UsePlayerTimeHandlersProps {
   selectedFixtureData: any;
   matchTime: number;
   playersForTimeTracker: PlayerTime[];
-  addPlayer: (player: ComponentPlayer, matchTime: number) => any;
+  addPlayer: (player: PlayerTime, matchTime: number) => any; // <-- FIXED TYPE HERE
   removePlayer: (playerId: number) => void;
   togglePlayerTime: (playerId: number, matchTime: number) => any;
   addEvent: (type: string, description: string, time: number) => void;
@@ -47,11 +46,11 @@ export const usePlayerTimeHandlers = (props: UsePlayerTimeHandlersProps) => {
         return;
       }
       try {
+        // IMPORTANT: Always try to find the full PlayerTime object
+        const playerTime = props.playersForTimeTracker.find(p => p.id === player.id) as PlayerTime | undefined;
+
         // Complete substitution if pending
         if (substitutionManager.hasPendingSubstitution) {
-          // Find the full PlayerTime object for this player
-          const playerTime = props.playersForTimeTracker.find(p => p.id === player.id);
-          
           // Construct a "ProcessedPlayer" with dummy fields if necessary for the API call
           const processedPlayer: ProcessedPlayer = {
             id: player.id,
@@ -80,15 +79,36 @@ export const usePlayerTimeHandlers = (props: UsePlayerTimeHandlersProps) => {
             notifications.notifySubstitutionComplete({
               incoming: processedPlayer,
               outgoingName: substitution.outgoing.outgoingPlayerName,
-              player: playerTime || (player as any), // Fallback to the available object
+              player: playerTime || (player as any),
               matchTime: props.matchTime,
               addEvent: props.addEvent,
             });
           }
         }
-        await props.addPlayer(player, props.matchTime);
+
+        // FIX: Always use the PlayerTime object for addPlayer
+        if (playerTime) {
+          await props.addPlayer(playerTime, props.matchTime);
+        } else {
+          // As a fallback, construct a PlayerTime from ComponentPlayer
+          // (All required fields must be provided to avoid runtime errors)
+          const fallbackPlayerTime: PlayerTime = {
+            id: player.id,
+            name: player.name,
+            team: (player as any).team || "",
+            totalTime: 0,
+            isPlaying: false,
+            startTime: null,
+          };
+          await props.addPlayer(fallbackPlayerTime, props.matchTime);
+        }
+
         if (!substitutionManager.hasPendingSubstitution) {
-          notifications.notifyAddPlayer({ player, matchTime: props.matchTime, addEvent: props.addEvent });
+          notifications.notifyAddPlayer({
+            player: playerTime || (player as any),
+            matchTime: props.matchTime,
+            addEvent: props.addEvent
+          });
         }
       } catch (error) {
         useToast().toast({
