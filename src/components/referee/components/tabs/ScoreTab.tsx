@@ -19,6 +19,7 @@ interface ScoreTabProps {
   forceRefresh?: () => Promise<void>;
   homeScore: number;
   awayScore: number;
+  onFinishMatch?: () => void; // <--- added
 }
 
 const ScoreTab = ({
@@ -34,7 +35,8 @@ const ScoreTab = ({
   onAssignGoal,
   forceRefresh,
   homeScore,
-  awayScore
+  awayScore,
+  onFinishMatch // <--- added
 }: ScoreTabProps) => {
   const [showWizard, setShowWizard] = useState(false);
 
@@ -83,6 +85,7 @@ const ScoreTab = ({
         onToggleTimer={onToggleTimer}
         onResetMatch={onResetMatch}
         phase={currentPhase}
+        onFinishMatch={onFinishMatch} // <--- added
       />
 
       {/* Enhanced Score Tab Content */}
@@ -99,6 +102,7 @@ const ScoreTab = ({
         onAssignGoal={onAssignGoal}
         forceRefresh={forceRefresh}
         onShowWizard={() => setShowWizard(true)}
+        onFinishMatch={onFinishMatch} // <--- pass to container for controls
       />
     </div>
   );

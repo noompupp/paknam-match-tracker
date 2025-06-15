@@ -1,4 +1,3 @@
-
 import React from "react";
 import MatchControlsSection from "./MatchControlsSection";
 
@@ -7,7 +6,7 @@ interface Props {
   onToggleTimer: () => void;
   onSaveMatch: () => void;
   onResetMatch: () => void;
-  onFinishMatch?: () => void;
+  onFinishMatch?: () => void; // <--- ADD
   isSaving?: boolean;
 }
 
@@ -16,7 +15,7 @@ const ScoreTabMatchControlsSection = ({
   onToggleTimer,
   onSaveMatch,
   onResetMatch,
-  onFinishMatch,
+  onFinishMatch, // <--- pass
   isSaving
 }: Props) => (
   <MatchControlsSection
@@ -24,7 +23,7 @@ const ScoreTabMatchControlsSection = ({
     onToggleTimer={onToggleTimer}
     onSaveMatch={onSaveMatch}
     onResetMatch={onResetMatch}
-    onFinishMatch={onFinishMatch}
+    onFinishMatch={onFinishMatch} // <--- pass
     isSaving={isSaving}
   />
 );
