@@ -1,4 +1,3 @@
-
 import { StateCreator } from 'zustand';
 import { MatchState } from './types';
 import { MatchActions } from './actions';
@@ -34,7 +33,7 @@ export interface CoreSlice {
 export const createCoreSlice = (set: any, get: any, api: any): CoreSlice => ({
   setupMatch: ({ fixtureId, homeTeamName, awayTeamName, homeTeamId, awayTeamId }) => {
     set((prevState: any) => {
-      // Defensive fallback
+      // Defensive fallback, but always use new team names if present
       const next = {
         ...prevState,
         fixtureId,
@@ -44,10 +43,11 @@ export const createCoreSlice = (set: any, get: any, api: any): CoreSlice => ({
         awayTeamId: awayTeamId || prevState.awayTeamId || "",
       };
 
-      // Defensive: recalculate scores from goals based on new team names
-      const { homeScore, awayScore } = recalculateScores(prevState.goals || [], next.homeTeamName, next.awayTeamName);
+      const oldGoals = prevState.goals || [];
+      // Always recalculate scores from current goals, using up-to-date (possibly fixture) team names
+      const { homeScore, awayScore } = recalculateScores(oldGoals, next.homeTeamName, next.awayTeamName);
 
-      // Logging for diagnosis
+      // Logging for tracing cause of any reactivity bugs
       console.log("[MATCH SETUP] setupMatch called with:", {
         fixtureId,
         homeTeamName,
@@ -56,25 +56,22 @@ export const createCoreSlice = (set: any, get: any, api: any): CoreSlice => ({
         awayTeamId
       });
       console.log("[MATCH SETUP] Previous state before update:", prevState);
-
-      // Defensive: warn if missing team names
       if (!next.homeTeamName || !next.awayTeamName)
         console.warn("[MATCH SETUP] Warning: Missing team names after setupMatch!", next);
 
-      // Provide recomputed score and avoid undefined fields
       return {
         ...next,
         homeScore,
         awayScore,
         hasUnsavedChanges: false,
-        lastUpdated: Date.now()  // <-- always updated
+        lastUpdated: Date.now()
       };
     });
 
-    // Log actual new state after tick
+    // Log after update so we know the source-of-truth in orchestrator and UI
     setTimeout(() => {
       const s = get();
-      console.log("[MATCH SETUP] 🏷️ Store state after setupMatch:", {
+      console.log("[MATCH SETUP][POST] 🏷️ Store state after setupMatch:", {
         fixtureId: s.fixtureId,
         homeTeamName: s.homeTeamName,
         awayTeamName: s.awayTeamName,
