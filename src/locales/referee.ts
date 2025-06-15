@@ -186,7 +186,7 @@ const referee: LocaleModule = {
     // --- ADDITIONS/NEW KEYS FOR PLAYER TIME TRACKING BADGES ---
     'referee.status.inProgress': 'IN PROGRESS',
     'referee.status.noLimits': 'NO LIMITS',
-    'referee.status.unlimitedPlaytime': 'Unlimited playtime',
+    'referee.status.unlimitedPlaytime': 'Unlimited playtime', // Confirmed exists here
     'referee.status.withinLimit': 'WITHIN LIMIT',
     'referee.action.stop': 'Stop',
     'referee.action.start': 'Start',
@@ -429,7 +429,7 @@ const referee: LocaleModule = {
     // --- ADDITIONS/NEW KEYS FOR PLAYER TIME TRACKING BADGES ---
     'referee.status.inProgress': 'กำลังดำเนินการ',
     'referee.status.noLimits': 'ไม่จำกัด',
-    'referee.status.unlimitedPlaytime': 'เล่นได้ไม่จำกัดเวลา',
+    'referee.status.unlimitedPlaytime': 'เล่นได้ไม่จำกัดเวลา', // Confirmed exists here
     'referee.status.withinLimit': 'ในขีดจำกัด',
     'referee.action.stop': 'หยุด',
     'referee.action.start': 'เริ่ม',

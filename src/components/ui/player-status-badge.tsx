@@ -21,7 +21,7 @@ const PlayerStatusBadge = ({
   matchTime,
   className
 }: PlayerStatusBadgeProps) => {
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
   const getStatusInfo = () => {
     const roleNormalized = role.toLowerCase();
 
@@ -30,12 +30,14 @@ const PlayerStatusBadge = ({
       const limitSeconds = 20 * 60; // 20 minutes
       const warningThreshold = 18 * 60; // 18 minutes
 
+      const currentHalfMin = Math.floor(currentHalfTime / 60);
+
       if (currentHalfTime >= limitSeconds) {
         return {
           label: t("referee.limit", t("referee.limit")), // fallback for history
           variant: "destructive" as const,
           icon: AlertTriangle,
-          description: t("referee.sClassHalfLimit", "20min limit reached")
+          description: `20/20min`
         };
       }
 
@@ -44,9 +46,7 @@ const PlayerStatusBadge = ({
           label: t("referee.approachingLimit", t("referee.status.inProgress")),
           variant: "secondary" as const,
           icon: Timer,
-          description: t("referee.status.withinLimit", "{min}min left", {
-            min: Math.floor((limitSeconds - currentHalfTime) / 60)
-          })
+          description: `${currentHalfMin}/20min`
         };
       }
 
@@ -54,15 +54,14 @@ const PlayerStatusBadge = ({
         label: t("referee.status.withinLimit", "WITHIN LIMIT"),
         variant: "default" as const,
         icon: CheckCircle,
-        description: t("referee.status.inProgress", "{current}/20min", {
-          current: Math.floor(currentHalfTime / 60)
-        })
+        description: `${currentHalfMin}/20min`
       };
     }
 
     // Starter players: 10 minutes minimum total
     if (roleNormalized === 'starter') {
       const minTotal = 10 * 60; // 10 minutes
+      const totalMin = Math.floor(totalTime / 60);
       const remainingMatchTime = (50 * 60) - matchTime; // 50 min total match
 
       if (totalTime >= minTotal) {
@@ -70,9 +69,7 @@ const PlayerStatusBadge = ({
           label: t("referee.status.minMet", "MIN MET"),
           variant: "default" as const,
           icon: CheckCircle,
-          description: t("referee.status.inProgress", "{total}min played", {
-            total: Math.floor(totalTime / 60)
-          })
+          description: `${totalMin}/10min`
         };
       }
 
@@ -81,9 +78,7 @@ const PlayerStatusBadge = ({
           label: t("referee.status.needsTime", "NEEDS TIME"),
           variant: "secondary" as const,
           icon: AlertTriangle,
-          description: t("referee.status.inProgress", "Need {min}min more", {
-            min: Math.floor((minTotal - totalTime) / 60)
-          })
+          description: `${totalMin}/10min`
         };
       }
 
@@ -91,13 +86,11 @@ const PlayerStatusBadge = ({
         label: t("referee.status.inProgress", "IN PROGRESS"),
         variant: "outline" as const,
         icon: Clock,
-        description: t("referee.status.inProgress", "{time}/10min min", {
-          time: Math.floor(totalTime / 60)
-        })
+        description: `${totalMin}/10min`
       };
     }
 
-    // Captain players: no limits
+    // Captain players: no limits (show "Unlimited playtime" from translation)
     return {
       label: t("referee.status.noLimits", "NO LIMITS"),
       variant: "outline" as const,
@@ -123,3 +116,4 @@ const PlayerStatusBadge = ({
 };
 
 export default PlayerStatusBadge;
+
