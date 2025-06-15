@@ -1,4 +1,5 @@
-import React from "react";
+
+import React, { useState } from "react";
 import { ComponentPlayer } from "../../../hooks/useRefereeState";
 import { useMatchStore } from "@/stores/useMatchStore";
 import { useGlobalBatchSaveManager } from "@/hooks/useGlobalBatchSaveManager";
@@ -6,6 +7,8 @@ import { useEnhancedAutoSave } from "@/hooks/useEnhancedAutoSave";
 import UnsavedChangesIndicator from "./UnsavedChangesIndicator";
 import SimplifiedGoalRecording from "./SimplifiedGoalRecording";
 import EnhancedGoalsSummary from "./EnhancedGoalsSummary";
+import { useGoalSaveHandler } from "../../../hooks/handlers/useGoalSaveHandler";
+import ScoreTabUnsavedChangesSection from "./ScoreTabUnsavedChangesSection";
 
 interface EnhancedScoreTabContainerProps {
   selectedFixtureData: any;
@@ -63,7 +66,7 @@ const EnhancedScoreTabContainer = ({
   }, [selectedFixtureData?.id, fixtureId, setFixtureId]);
 
   // Global batch save manager
-  const { batchSave, unsavedItemsCount } = useGlobalBatchSaveManager({
+  const { batchSave, unsavedItemsCount, isSaving } = useGlobalBatchSaveManager({
     homeTeamData: { id: homeTeamId, name: homeTeamName },
     awayTeamData: { id: awayTeamId, name: awayTeamName }
   });
@@ -78,6 +81,19 @@ const EnhancedScoreTabContainer = ({
     hasUnsavedChanges,
     tabName: 'Score'
   });
+
+  // Goals-only save handler
+  const [isGoalsSaving, setIsGoalsSaving] = useState(false);
+  const { handleSaveGoals } = useGoalSaveHandler({ fixtureId: selectedFixtureData?.id });
+
+  const handleSaveGoalsWrapper = async () => {
+    setIsGoalsSaving(true);
+    try {
+      await handleSaveGoals();
+    } finally {
+      setIsGoalsSaving(false);
+    }
+  };
 
   console.log('📊 Enhanced ScoreTabContainer: Advanced workflow with autosave:', { 
     fixtureId,
@@ -143,10 +159,13 @@ const EnhancedScoreTabContainer = ({
         isDisabled={false}
       />
 
-      <UnsavedChangesIndicator
+      <ScoreTabUnsavedChangesSection
         hasUnsavedChanges={hasUnsavedChanges}
         unsavedItemsCount={unsavedItemsCount}
         onSave={handleSaveMatch}
+        onSaveGoals={handleSaveGoalsWrapper}
+        isSaving={isSaving}
+        isGoalsSaving={isGoalsSaving}
       />
 
       {/* Note: Match Controls section removed as per plan */}
