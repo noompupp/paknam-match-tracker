@@ -158,7 +158,7 @@ const RefereeHomeActionMenu = ({
               <div className="text-sm font-medium">{t('referee.matchData')}</div>
               {hasUnsavedChanges && (
                 <Badge variant="destructive" className="text-xs">
-                  {t('referee.unsaved', { count: totalUnsavedChanges })}
+                  {t('referee.unsaved').replace('{count}', String(totalUnsavedChanges))}
                 </Badge>
               )}
             </div>
@@ -200,19 +200,25 @@ const RefereeHomeActionMenu = ({
             {unsavedChanges.goals > 0 && (
               <div className="flex items-center gap-2 text-sm">
                 <Target className="h-3 w-3" />
-                <span>{t(`referee.goals`, { count: unsavedChanges.goals })}</span>
+                <span>
+                  {t('referee.goals').replace('{count}', String(unsavedChanges.goals))}
+                </span>
               </div>
             )}
             {unsavedChanges.cards > 0 && (
               <div className="flex items-center gap-2 text-sm">
                 <AlertTriangle className="h-3 w-3" />
-                <span>{t(`referee.cards`, { count: unsavedChanges.cards })}</span>
+                <span>
+                  {t('referee.cards').replace('{count}', String(unsavedChanges.cards))}
+                </span>
               </div>
             )}
             {unsavedChanges.playerTimes > 0 && (
               <div className="flex items-center gap-2 text-sm">
                 <Users className="h-3 w-3" />
-                <span>{t(`referee.playerTimes`, { count: unsavedChanges.playerTimes })}</span>
+                <span>
+                  {t('referee.playerTimes').replace('{count}', String(unsavedChanges.playerTimes))}
+                </span>
               </div>
             )}
           </CardContent>
