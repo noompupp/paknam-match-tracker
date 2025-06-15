@@ -1,4 +1,3 @@
-
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, Clock, MapPin } from "lucide-react";
@@ -72,7 +71,6 @@ const CompactFixtureCard = ({
               <Calendar className="h-3 w-3" />
               <span className="font-medium">{formatCombinedDateTime(fixture.match_date, fixture.match_time)}</span>
             </div>
-            {/* Empty right slot in this design for a clean left alignment */}
           </div>
 
           {/* Center-aligned badge & score */}
@@ -89,7 +87,7 @@ const CompactFixtureCard = ({
 
           {/* Teams displayed vertically */}
           <div className="space-y-2">
-            {/* Home team (top) */}
+            {/* Home team (top row) */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3 flex-1 min-w-0">
                 <div className="w-6 h-6 flex-shrink-0">
@@ -101,8 +99,8 @@ const CompactFixtureCard = ({
                   </span>
                 </div>
               </div>
+              {/* For not completed/live: show kickoff time on right */}
               {(fixture.status !== 'completed' && fixture.status !== 'live') && (
-                // Only for not completed/live: show kickoff time right-aligned with home team row
                 <div className="flex items-center gap-1 text-xs text-muted-foreground font-medium">
                   <Clock className="h-3 w-3" />
                   <span>{formatTimeDisplay(fixture.match_time)}</span>
@@ -110,7 +108,7 @@ const CompactFixtureCard = ({
               )}
             </div>
 
-            {/* Away team (bottom) */}
+            {/* Away team (bottom row) */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3 flex-1 min-w-0">
                 <div className="w-6 h-6 flex-shrink-0">
@@ -122,13 +120,12 @@ const CompactFixtureCard = ({
                   </span>
                 </div>
               </div>
-              {fixture.status === 'completed' || fixture.status === 'live' ? (
-                <div className="text-lg font-bold">{fixture.away_score || 0}</div>
-              ) : null}
+              {/* No score here for live/completed OR scheduled */}
+              {/* Keeping right side blank for away team */}
             </div>
           </div>
 
-          {/* Footer with action text only */}
+          {/* Footer with venue and action */}
           <div className="mt-3 pt-2 border-t">
             {showVenue && fixture.venue && fixture.venue !== 'TBD' && (
               <div className="flex items-center gap-2 justify-center text-xs text-muted-foreground mb-1">
@@ -217,4 +214,3 @@ const CompactFixtureCard = ({
 };
 
 export default CompactFixtureCard;
-
