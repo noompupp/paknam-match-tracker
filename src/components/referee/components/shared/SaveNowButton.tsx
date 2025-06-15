@@ -10,6 +10,8 @@ interface SaveNowButtonProps {
   variant?: 'default' | 'outline' | 'secondary';
   size?: 'sm' | 'default' | 'lg';
   children?: React.ReactNode;
+  label?: string; // New optional label for button text
+  disclaimer?: string; // New optional disclaimer message
 }
 
 const SaveNowButton = ({ 
@@ -18,7 +20,9 @@ const SaveNowButton = ({
   disabled = false,
   variant = 'default',
   size = 'default',
-  children
+  children,
+  label = undefined,
+  disclaimer = undefined
 }: SaveNowButtonProps) => {
   const handleSave = async () => {
     try {
@@ -29,20 +33,25 @@ const SaveNowButton = ({
   };
 
   return (
-    <Button
-      onClick={handleSave}
-      disabled={disabled || isLoading}
-      variant={variant}
-      size={size}
-      className="flex items-center gap-2"
-    >
-      {isLoading ? (
-        <Loader2 className="h-4 w-4 animate-spin" />
-      ) : (
-        <Save className="h-4 w-4" />
+    <div className="flex flex-col items-center gap-1 w-full">
+      <Button
+        onClick={handleSave}
+        disabled={disabled || isLoading}
+        variant={variant}
+        size={size}
+        className="flex items-center gap-2"
+      >
+        {isLoading ? (
+          <Loader2 className="h-4 w-4 animate-spin" />
+        ) : (
+          <Save className="h-4 w-4" />
+        )}
+        {children || label || (isLoading ? 'Saving...' : 'Save Now')}
+      </Button>
+      {disclaimer && (
+        <p className="text-xs text-orange-600 mt-1 italic">{disclaimer}</p>
       )}
-      {children || (isLoading ? 'Saving...' : 'Save Now')}
-    </Button>
+    </div>
   );
 };
 
