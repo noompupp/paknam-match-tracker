@@ -2,8 +2,14 @@
 import { useToast } from "@/hooks/use-toast";
 import { useMatchStore } from "@/stores/useMatchStore";
 
-// This hook only syncs local goals to DB.
-export const useGoalSaveHandler = ({ fixtureId }: { fixtureId?: number }) => {
+// Add an optional refreshScore callback prop.
+interface UseGoalSaveHandlerProps {
+  fixtureId?: number;
+  refreshScore?: () => Promise<void> | void;
+}
+
+// This hook only syncs local goals to DB and will now support UI score refresh on success.
+export const useGoalSaveHandler = ({ fixtureId, refreshScore }: UseGoalSaveHandlerProps) => {
   const { toast } = useToast();
   const syncGoalsToDatabase = useMatchStore(s => s.syncGoalsToDatabase);
 
@@ -24,9 +30,15 @@ export const useGoalSaveHandler = ({ fixtureId }: { fixtureId?: number }) => {
 
     try {
       await syncGoalsToDatabase(fixtureId);
+
+      // Refresh the score AFTER syncing to database
+      if (refreshScore) {
+        await refreshScore();
+      }
+
       toast({
         title: "✅ Goals Saved",
-        description: "All goals are now saved to the server.",
+        description: "All goals are now saved to the server and score is refreshed.",
       });
     } catch (err: any) {
       toast({

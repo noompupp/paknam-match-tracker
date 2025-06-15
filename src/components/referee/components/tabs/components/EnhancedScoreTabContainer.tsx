@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { ComponentPlayer } from "../../../hooks/useRefereeState";
 import { useMatchStore } from "@/stores/useMatchStore";
@@ -82,9 +81,9 @@ const EnhancedScoreTabContainer = ({
     tabName: 'Score'
   });
 
-  // Goals-only save handler
+  // Goals-only save handler -- now passes forceRefresh as the refreshScore callback:
   const [isGoalsSaving, setIsGoalsSaving] = useState(false);
-  const { handleSaveGoals } = useGoalSaveHandler({ fixtureId: selectedFixtureData?.id });
+  const { handleSaveGoals } = useGoalSaveHandler({ fixtureId: selectedFixtureData?.id, refreshScore: forceRefresh });
 
   const handleSaveGoalsWrapper = async () => {
     setIsGoalsSaving(true);
