@@ -97,6 +97,17 @@ export const enhancedMatchDataService = {
       const homeSquad = members?.filter(m => m.team_id === fixture.home_team_id) || [];
       const awaySquad = members?.filter(m => m.team_id === fixture.away_team_id) || [];
 
+      // Defensive: gather all team id => team object for fast lookup
+      const teamMap: Record<string, Team> = {
+        [homeTeam.__id__!]: homeTeam,
+        [awayTeam.__id__!]: awayTeam,
+      };
+      for (const t of allTeams || []) {
+        if (t.__id__ && !teamMap[t.__id__]) {
+          teamMap[t.__id__] = { ...t, created_at: new Date().toISOString(), updated_at: new Date().toISOString() };
+        }
+      }
+
       // Get recent form (last 5 matches for each team)
       // FIX: Only include matches that have both home_score and away_score set (= completed matches with real scores)
       const { data: recentMatches, error: recentError } = await supabase
@@ -123,12 +134,19 @@ export const enhancedMatchDataService = {
         typeof m.away_score === 'number'
       );
 
-      // Transform fixture data to match Fixture interface
+      // Transform fixture data to match Fixture interface and inject full team objects
       const transformFixture = (fixtureData: any): Fixture => ({
         ...fixtureData,
-        match_time: fixtureData.time || '18:00:00'
+        match_time: fixtureData.time || '18:00:00',
+        home_team: fixtureData.home_team
+          ? fixtureData.home_team
+          : teamMap[fixtureData.home_team_id],
+        away_team: fixtureData.away_team
+          ? fixtureData.away_team
+          : teamMap[fixtureData.away_team_id]
       });
 
+      // Prepare home and away recent form with hydrated home_team/away_team objects
       const homeRecentFormRaw = validMatches.filter(
         m => m.home_team_id === fixture.home_team_id || m.away_team_id === fixture.home_team_id
       );
@@ -136,19 +154,18 @@ export const enhancedMatchDataService = {
         m => m.home_team_id === fixture.away_team_id || m.away_team_id === fixture.away_team_id
       );
 
-      const homeRecentForm = homeRecentFormRaw.slice(0, 5).map(transformFixture);
-      const awayRecentForm = awayRecentFormRaw.slice(0, 5).map(transformFixture);
+      // Inject teams into every fixture for recent form sections
+      const hydrateFormMatch = (m: any): Fixture => {
+        // Don't break if original data is malformed
+        return transformFixture({
+          ...m,
+          home_team: teamMap[m.home_team_id],
+          away_team: teamMap[m.away_team_id],
+        });
+      };
 
-      // Extra debug for data quality
-      console.debug("[EnhancedMatchData] Recent matches fetched/valid:", {
-        fixture: fixtureId,
-        totalFetched: recentMatches?.length || 0,
-        totalValid: validMatches.length,
-        homeTeam: homeTeam.name,
-        homeRecentFormCount: homeRecentForm.length,
-        awayTeam: awayTeam.name,
-        awayRecentFormCount: awayRecentForm.length
-      });
+      const homeRecentForm = homeRecentFormRaw.slice(0, 5).map(hydrateFormMatch);
+      const awayRecentForm = awayRecentFormRaw.slice(0, 5).map(hydrateFormMatch);
 
       // Get head-to-head history
       const { data: headToHead, error: h2hError } = await supabase

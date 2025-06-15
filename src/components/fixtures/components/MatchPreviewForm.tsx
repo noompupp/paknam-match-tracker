@@ -180,7 +180,17 @@ const MatchPreviewForm = ({ homeTeam, awayTeam, recentForm }: MatchPreviewFormPr
                   const isHome = match.home_team_id === team.__id__;
                   const teamScore = isHome ? match.home_score : match.away_score;
                   const oppScore = isHome ? match.away_score : match.home_score;
-                  const opponent = isHome ? match.away_team?.name : match.home_team?.name;
+                  // Defensive: full fallback to resolve opponent name
+                  let opponent =
+                    isHome
+                      ? match.away_team?.name
+                      : match.home_team?.name;
+                  if (!opponent || typeof opponent !== 'string') {
+                    // Fallback: try to extract from IDs if possible
+                    if (isHome && match.away_team_id === awayTeam.__id__) opponent = awayTeam.name;
+                    else if (!isHome && match.home_team_id === homeTeam.__id__) opponent = homeTeam.name;
+                    else opponent = "Unknown";
+                  }
                   
                   return (
                     <div key={match.id} className="flex items-center justify-between p-2 rounded bg-muted/30 border border-border/50">
@@ -270,7 +280,8 @@ const MatchPreviewForm = ({ homeTeam, awayTeam, recentForm }: MatchPreviewFormPr
             
             <div className="text-center space-y-2">
               <h4 className="font-semibold">{awayTeam.name}</h4>
-              <div className="text-3xl font-bold text-secondary">
+              {/* FIX: Make Form Rating color match home team */}
+              <div className="text-3xl font-bold text-primary">
                 {recentForm.awayTeam.length > 0 
                   ? `${getFormPercentage(recentForm.awayTeam, awayTeam.__id__!).toFixed(0)}%`
                   : 'N/A'
