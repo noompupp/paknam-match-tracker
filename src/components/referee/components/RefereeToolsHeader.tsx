@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Timer, AlertTriangle, CheckCircle2 } from "lucide-react";
 import ImprovedMatchSelection from "./ImprovedMatchSelection";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface RefereeToolsHeaderProps {
   fixtures: any[];
@@ -20,6 +21,8 @@ const RefereeToolsHeader = ({
   onFixtureChange,
   enhancedPlayersData
 }: RefereeToolsHeaderProps) => {
+  const { t } = useTranslation();
+
   return (
     <div className="space-y-4 md:space-y-6">
       {/* Header */}
@@ -32,10 +35,10 @@ const RefereeToolsHeader = ({
               </div>
               <div>
                 <CardTitle className="text-xl md:text-2xl font-bold">
-                  Referee Tools
+                  {t('referee.title')}
                 </CardTitle>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Manage match events and player statistics
+                  {t('referee.subtitle')}
                 </p>
               </div>
             </div>
@@ -45,12 +48,12 @@ const RefereeToolsHeader = ({
                 {enhancedPlayersData.hasValidData ? (
                   <Badge variant="default" className="referee-status-active">
                     <CheckCircle2 className="h-3 w-3 mr-1" />
-                    Ready
+                    {t('referee.ready')}
                   </Badge>
                 ) : (
                   <Badge variant="destructive" className="referee-status-warning">
                     <AlertTriangle className="h-3 w-3 mr-1" />
-                    Issues
+                    {t('referee.issues')}
                   </Badge>
                 )}
               </div>

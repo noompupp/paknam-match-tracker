@@ -13,6 +13,7 @@ import { ProcessedPlayer } from "@/utils/refereeDataProcessor";
 // Import EnhancedCardsTab and UnifiedMatchTimer
 import EnhancedCardsTab from "./tabs/EnhancedCardsTab";
 import UnifiedMatchTimer from "./UnifiedMatchTimer";
+import { useTranslation } from "@/hooks/useTranslation";
 
 // Remove workflowConfig from props type
 interface RefereeTabsContentProps {
@@ -62,12 +63,16 @@ interface RefereeTabsContentProps {
 }
 
 const RefereeTabsContent = (props: RefereeTabsContentProps) => {
+  const { t } = useTranslation();
+
   return (
     <>
       <TabsContent value="score" className="space-y-6">
         <div className="flex justify-between items-center">
-          <h3 className="text-lg font-semibold">Score Management</h3>
-          <SaveNowButton onSave={props.onSaveMatch} />
+          <h3 className="text-lg font-semibold">{t('referee.scoreManagement')}</h3>
+          <SaveNowButton onSave={props.onSaveMatch}>
+            {t('referee.save')}
+          </SaveNowButton>
         </div>
         <ScoreTab
           selectedFixtureData={props.selectedFixtureData}
@@ -87,8 +92,10 @@ const RefereeTabsContent = (props: RefereeTabsContentProps) => {
 
       <TabsContent value="timer-tracking" className="space-y-6">
         <div className="flex justify-between items-center">
-          <h3 className="text-lg font-semibold">Time Tracking</h3>
-          <SaveNowButton onSave={props.onSaveMatch} />
+          <h3 className="text-lg font-semibold">{t('referee.timeTracking')}</h3>
+          <SaveNowButton onSave={props.onSaveMatch}>
+            {t('referee.save')}
+          </SaveNowButton>
         </div>
         <RoleBasedUnifiedTimerTab
           selectedFixtureData={props.selectedFixtureData}
@@ -113,8 +120,10 @@ const RefereeTabsContent = (props: RefereeTabsContentProps) => {
 
       <TabsContent value="cards" className="space-y-6">
         <div className="flex justify-between items-center">
-          <h3 className="text-lg font-semibold">Cards Management</h3>
-          <SaveNowButton onSave={props.onSaveMatch} />
+          <h3 className="text-lg font-semibold">{t('referee.cardsManagement')}</h3>
+          <SaveNowButton onSave={props.onSaveMatch}>
+            {t('referee.save')}
+          </SaveNowButton>
         </div>
         <EnhancedCardsTab
           selectedFixtureData={props.selectedFixtureData}
@@ -142,14 +151,16 @@ const RefereeTabsContent = (props: RefereeTabsContentProps) => {
 
       <TabsContent value="summary" className="space-y-6">
         <div className="flex justify-between items-center">
-          <h3 className="text-lg font-semibold">Match Summary</h3>
+          <h3 className="text-lg font-semibold">{t('referee.matchSummary')}</h3>
           <div className="flex gap-2">
-            <SaveNowButton onSave={props.onSaveMatch} />
+            <SaveNowButton onSave={props.onSaveMatch}>
+              {t('referee.save')}
+            </SaveNowButton>
             <SaveNowButton 
               onSave={props.onExportSummary} 
               variant="outline"
             >
-              Export
+              {t('referee.export')}
             </SaveNowButton>
           </div>
         </div>

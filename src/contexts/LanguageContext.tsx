@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
 export type Language = 'en' | 'th';
@@ -70,17 +69,29 @@ const translations = {
     'match.vs': 'VS',
     
     // Referee tools
-    'referee.selectMatch': 'Select Match',
-    'referee.matchTimer': 'Match Timer',
-    'referee.score': 'Score',
-    'referee.timerTracking': 'Timer & Tracking',
-    'referee.cards': 'Cards',
-    'referee.summary': 'Summary',
-    'referee.start': 'Start',
-    'referee.pause': 'Pause',
-    'referee.resume': 'Resume',
-    'referee.reset': 'Reset',
-    'referee.saveMatch': 'Save Match',
+    'referee.title': 'Referee Tools',
+    'referee.subtitle': 'Manage match events and player statistics',
+    'referee.cardsManagement': 'Cards Management',
+    'referee.scoreManagement': 'Score Management',
+    'referee.timeTracking': 'Time Tracking',
+    'referee.matchSummary': 'Match Summary',
+    'referee.ready': 'Ready',
+    'referee.issues': 'Issues',
+    'referee.save': 'Save Now',
+    'referee.saving': 'Saving...',
+    'referee.export': 'Export',
+    'referee.cardsAutoSaveEnhanced': 'Cards Auto-Save Enhanced',
+    'referee.cardsAutoSaveTip': 'Card changes are automatically saved every 3 minutes with improved database sync.',
+    'referee.loadingFixtures': 'Loading fixtures...',
+    'referee.matchSelection': 'Select Match',
+    'referee.homeTeam': 'Home Team',
+    'referee.awayTeam': 'Away Team',
+    'referee.cancel': 'Cancel',
+    // Tab labels
+    'referee.tab.timer': 'Timer',
+    'referee.tab.score': 'Score',
+    'referee.tab.cards': 'Cards',
+    'referee.tab.summary': 'Summary',
     
     // Match events
     'event.goal': 'Goal',
@@ -168,17 +179,29 @@ const translations = {
     'match.vs': 'VS',
     
     // Referee tools
-    'referee.selectMatch': 'เลือกแมตช์',
-    'referee.matchTimer': 'ตัวจับเวลาแมตช์',
-    'referee.score': 'คะแนน',
-    'referee.timerTracking': 'ตัวจับเวลาและการติดตาม',
-    'referee.cards': 'การ์ด',
-    'referee.summary': 'สรุป',
-    'referee.start': 'เริ่ม',
-    'referee.pause': 'หยุดชั่วคราว',
-    'referee.resume': 'ดำเนินต่อ',
-    'referee.reset': 'รีเซ็ต',
-    'referee.saveMatch': 'บันทึกแมตช์',
+    'referee.title': 'เครื่องมือผู้ตัดสิน',
+    'referee.subtitle': 'จัดการเหตุการณ์และสถิตินักเตะในการแข่งขัน',
+    'referee.cardsManagement': 'จัดการใบเหลืองใบแดง',
+    'referee.scoreManagement': 'จัดการคะแนน',
+    'referee.timeTracking': 'ติดตามเวลา',
+    'referee.matchSummary': 'สรุปการแข่งขัน',
+    'referee.ready': 'พร้อม',
+    'referee.issues': 'ปัญหา',
+    'referee.save': 'บันทึกทันที',
+    'referee.saving': 'กำลังบันทึก...',
+    'referee.export': 'ส่งออก',
+    'referee.cardsAutoSaveEnhanced': 'การบันทึกใบเหลืองใบแดงอัตโนมัติ (ขั้นสูง)',
+    'referee.cardsAutoSaveTip': 'มีการบันทึกข้อมูลใบเหลืองใบแดงอัตโนมัติทุก 3 นาทีและซิงค์กับฐานข้อมูล',
+    'referee.loadingFixtures': 'กำลังโหลดข้อมูลการแข่งขัน...',
+    'referee.matchSelection': 'เลือกแมตช์',
+    'referee.homeTeam': 'ทีมเหย้า',
+    'referee.awayTeam': 'ทีมเยือน',
+    'referee.cancel': 'ยกเลิก',
+    // Tab labels
+    'referee.tab.timer': 'จับเวลา',
+    'referee.tab.score': 'คะแนน',
+    'referee.tab.cards': 'ใบเหลือง-แดง',
+    'referee.tab.summary': 'สรุป',
     
     // Match events
     'event.goal': 'ประตู',

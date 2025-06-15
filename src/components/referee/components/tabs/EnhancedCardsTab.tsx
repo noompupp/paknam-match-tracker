@@ -1,4 +1,3 @@
-
 import React from "react";
 import CardManagementDropdown from "../../CardManagementDropdown";
 import UnifiedMatchTimer from "../UnifiedMatchTimer";
@@ -7,6 +6,7 @@ import { useGlobalBatchSaveManager } from "@/hooks/useGlobalBatchSaveManager";
 import { useMatchStore } from "@/stores/useMatchStore";
 import { ProcessedPlayer } from "@/utils/refereeDataProcessor";
 import { useCardHandlers } from "../../hooks/handlers/useCardHandlers";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface EnhancedCardsTabProps {
   allPlayers: ProcessedPlayer[];
@@ -49,6 +49,8 @@ const EnhancedCardsTab = ({
   homeScore,
   awayScore
 }: EnhancedCardsTabProps) => {
+  const { t } = useTranslation();
+
   // Get unsaved changes state and sync methods
   const { hasUnsavedChanges, syncCardsToDatabase, addEvent } = useMatchStore();
 
@@ -149,10 +151,10 @@ const EnhancedCardsTab = ({
       {hasUnsavedChanges && (
         <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 dark:bg-orange-900/10 dark:border-orange-800">
           <div className="text-sm font-medium text-orange-800 dark:text-orange-400 mb-1">
-            Cards Auto-Save Enhanced
+            {t('referee.cardsAutoSaveEnhanced')}
           </div>
           <div className="text-xs text-orange-700 dark:text-orange-500">
-            Card changes are automatically saved every 3 minutes with improved database sync.
+            {t('referee.cardsAutoSaveTip')}
           </div>
         </div>
       )}
@@ -161,4 +163,3 @@ const EnhancedCardsTab = ({
 };
 
 export default EnhancedCardsTab;
-
