@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Member, Team } from "@/types/database";
@@ -16,36 +15,117 @@ import React from "react";
  */
 const estimateStarts = (player: Member) => player.matches_played || 0;
 
-/**
- * New: Assign dot & color per likelihood.
- */
-const getLikelihoodIndicator = (likelihoodPct: number) => {
-  if (likelihoodPct >= 80)
-    return { dot: "🟢", label: "Very likely", color: "text-green-700 dark:text-green-400" };
-  if (likelihoodPct >= 40)
-    return { dot: "🟡", label: "Possible", color: "text-yellow-700 dark:text-yellow-400" };
-  return { dot: "🔴", label: "Unlikely", color: "text-red-700 dark:text-red-400" };
+// ENHANCED: Role- and match-aware likelihood, with nuanced explanations.
+const computeRoleBaseline = (player: Member) => {
+  if (!player.role) return 0;
+  const role = player.role.trim().toLowerCase();
+  switch (role) {
+    case "captain":
+      return 30; // Captains get minimum 30%
+    case "s-class":
+      return 18; // S-Class lowest baseline higher than default reserve
+    case "starter":
+      return 10;
+    default:
+      return 0;
+  }
 };
 
-/**
- * Improved prediction: use match/start history.
- */
+const isLikelyKeyRole = (player: Member) => {
+  if (!player.role) return false;
+  const r = player.role.trim().toLowerCase();
+  return r === 'captain' || r === 's-class' || r === 'starter';
+};
+
+// Enhanced calculation: adjusts for early season AND applies baselines for key roles
 const predictTeamStarting7 = (squad: Member[], team: Team) => {
-  // Defensive: get max matches_played among squad as proxy for total team matches
-  const totalTeamMatches = Math.max(1, ...squad.map(m => m.matches_played || 0));
-  // Calculate likelihood for each player
-  const predictions = squad.map(player => {
+  const totalMatches = Math.max(1, ...squad.map(m => m.matches_played || 0));
+  // Defensive: Find out how many with minutes as proxy for starters each match
+  const playersWithMinutes = squad.filter(p => p.total_minutes_played && p.total_minutes_played > 0);
+
+  return squad.map(player => {
     const starts = estimateStarts(player);
-    const likelihood = Math.round((starts / totalTeamMatches) * 100); // %
+    const baseline = computeRoleBaseline(player);
+    let likelihood = 0;
     let reason = "";
 
-    // Reason - explain why they're likely/unlikely starter
-    if (likelihood >= 80) reason = "Consistent starter";
-    else if (likelihood >= 40) reason = "Regular rotation";
-    else reason = "Sporadic appearances";
+    // Early season detection
+    if (totalMatches <= 2) {
+      // 1-2 matches played in season
+      if (player.total_minutes_played > 0) {
+        likelihood = Math.max(baseline, Math.round(75 + (starts > 0 ? 10 : 0))); // high for those with minutes
+        if (player.role?.trim().toLowerCase() === "captain") {
+          reason = "Captain: always prioritized, even early in season";
+        } else if (player.role?.toLowerCase() === "s-class") {
+          reason = "S-Class: top-rated, expected to start, especially early on";
+        } else {
+          reason = "Played in recent match(es)";
+        }
+      } else if (baseline > 0) {
+        likelihood = baseline + 10; // boost key roles if not yet started
+        reason = `Key role "${player.role}": given chance to start even if not yet played`;
+      } else {
+        likelihood = 0;
+        reason = "Has not played yet: true reserve or backup";
+      }
+    } else {
+      // After 3+ matches, weight both baseline and start history
+      // Classic ratio as base
+      let pct = Math.round((starts / totalMatches) * 100);
+      if (player.role?.trim().toLowerCase() === "captain") {
+        // Captain always high, but not '100% locked' in case they missed games
+        pct = Math.max(pct, 80);
+        reason = "Team captain: nearly automatic starter";
+      } else if (player.role?.toLowerCase() === "s-class") {
+        pct = Math.max(pct, 65);
+        reason = "S-Class player: top rated, typically starts";
+      } else if (player.role?.toLowerCase() === "starter") {
+        pct = Math.max(baseline, pct);
+        reason = "Named as starter";
+      } else if (!player.role || ["reserve", "bench", "sub"].includes(player.role.trim().toLowerCase())) {
+        // Reserves only get percent from actual starts
+        if (pct < 30) {
+          reason = "Mainly a reserve: used occasionally";
+        } else {
+          reason = "Occasional rotation option";
+        }
+      } else {
+        if (pct === 0) {
+          likelihood = baseline;
+          reason = "No minutes or starts yet: depth option";
+        }
+      }
+      likelihood = pct;
+      // Defensive: never below role baseline
+      likelihood = Math.max(likelihood, baseline);
+    }
 
-    if (player.role === "Captain") reason = "Team captain (auto select)";
-    else if (player.role === "S-Class") reason = "Top-rated S-Class player";
+    // Clamp
+    likelihood = Math.min(100, Math.max(0, likelihood));
+
+    // Special override, always max for captain with >0 mins
+    if (player.role?.toLowerCase() === 'captain' && player.total_minutes_played > 0) {
+      likelihood = 99;
+      reason = "Captain: almost always starts if fit";
+    }
+
+    // If player has started every possible game
+    if (starts === totalMatches && totalMatches > 0) {
+      likelihood = 100;
+      reason = "Ever-present: started every match";
+    }
+
+    // Defensive: never assign 0% unless truly no games or mins, nor baseline role
+    if (likelihood === 0 && isLikelyKeyRole(player)) {
+      likelihood = computeRoleBaseline(player);
+      reason = `Key role "${player.role}", so never ruled out completely`;
+    }
+
+    // Lower likelihood for deep reserves, but never 0 unless absolutely unused
+    if (!isLikelyKeyRole(player) && player.total_minutes_played === 0 && totalMatches > 0) {
+      likelihood = 0;
+      reason = "No appearances yet: not in rotation so far";
+    }
 
     return {
       id: player.id,
@@ -61,18 +141,26 @@ const predictTeamStarting7 = (squad: Member[], team: Team) => {
       },
       reason,
       starts,
-      totalTeamMatches
+      totalTeamMatches: totalMatches
     };
-  });
-
-  // Sort by likelihood, then by minutes/goals if tied
-  return predictions
+  })
     .sort((a, b) => {
       if (b.likelihood !== a.likelihood) return b.likelihood - a.likelihood;
       if (b.recentStats.minutes !== a.recentStats.minutes) return b.recentStats.minutes - a.recentStats.minutes;
       return b.recentStats.goals - a.recentStats.goals;
     })
-    .slice(0, 7); // Top 7 likely starters
+    .slice(0, 7);
+};
+
+/**
+ * New: Assign dot & color per likelihood.
+ */
+const getLikelihoodIndicator = (likelihoodPct: number) => {
+  if (likelihoodPct >= 80)
+    return { dot: "🟢", label: "Very likely", color: "text-green-700 dark:text-green-400" };
+  if (likelihoodPct >= 40)
+    return { dot: "🟡", label: "Possible", color: "text-yellow-700 dark:text-yellow-400" };
+  return { dot: "🔴", label: "Unlikely", color: "text-red-700 dark:text-red-400" };
 };
 
 const PredictedStarting7 = ({ homeTeam, awayTeam, homeSquad, awaySquad }: {
@@ -197,11 +285,24 @@ const PredictedStarting7 = ({ homeTeam, awayTeam, homeSquad, awaySquad }: {
         </CardHeader>
         <CardContent>
           <div className={cn("text-muted-foreground space-y-2", isMobilePortrait ? "text-xs" : "text-sm")}>
-            <p>• <strong>Likely to Start %:</strong> Based on the ratio of matches the player has started to the team's total played matches.</p>
-            <p>• <strong>🟢 80%+:</strong> Very likely starter &mdash; played almost every match</p>
-            <p>• <strong>🟡 40–79%:</strong> Regular rotation or sometimes starts</p>
-            <p>• <strong>🔴 &lt;40%:</strong> Rarely starts or only played a few matches</p>
-            <p>• <strong>Captain/S-Class:</strong> Will appear at the top of list if available</p>
+            <p>
+              • <strong>Likely to Start %:</strong> Combines match start ratio <em>and</em> player's role. Early-season logic gives extra credit to core players after the first match—even if only 1 has been played, a "starter" or "S-Class" won't show as 0%.
+            </p>
+            <p>
+              • <strong>🟢 80%+:</strong> Very likely starter (consistent + key roles, or played every match)
+            </p>
+            <p>
+              • <strong>🟡 40–79%:</strong> Regular rotation, or squad fixture, or important player returning after missing matches
+            </p>
+            <p>
+              • <strong>🔴 &lt;40%:</strong> Reserve/rotation or yet to play
+            </p>
+            <p>
+              • <strong>Early in season:</strong> After 1 match, everyone who played that match gets 75%+, key roles get a minimum (e.g. Captains always at least 30%)
+            </p>
+            <p>
+              • <strong>Reason text:</strong> Explains rationale: e.g. Captain, S-Class, "Never played yet" for reserves, etc.
+            </p>
           </div>
         </CardContent>
       </Card>
@@ -210,4 +311,3 @@ const PredictedStarting7 = ({ homeTeam, awayTeam, homeSquad, awaySquad }: {
 };
 
 export default PredictedStarting7;
-
