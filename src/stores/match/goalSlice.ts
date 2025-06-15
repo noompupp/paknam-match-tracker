@@ -2,6 +2,7 @@ import { StateCreator } from 'zustand';
 import { MatchState } from './types';
 import { MatchActions } from './actions';
 import { generateId } from './utils';
+import { findDuplicateGoal } from "@/utils/findDuplicateGoal";
 
 export interface GoalSlice {
   addGoal: MatchActions['addGoal'];
@@ -20,6 +21,24 @@ export const createGoalSlice: StateCreator<
   GoalSlice
 > = (set, get) => ({
   addGoal: (goalData) => {
+    const state = get();
+
+    // Prevent duplicates
+    const existing = findDuplicateGoal(
+      state.goals as any,
+      {
+        playerId: goalData.playerId,
+        time: goalData.time,
+        teamId: goalData.teamId,
+        type: goalData.type,
+        isOwnGoal: goalData.isOwnGoal,
+      }
+    );
+    if (existing) {
+      console.warn("[DEDUP] Attempting to add duplicate goal:", goalData, existing);
+      return null; // Don't add duplicate
+    }
+
     const newGoal = {
       ...goalData,
       id: generateId(),
@@ -29,13 +48,13 @@ export const createGoalSlice: StateCreator<
 
     set((state) => {
       // Only increment score for actual goals, not assists
-      const newHomeScore = goalData.teamName && goalData.type === 'goal' ? 
-        (goalData.teamName === state.homeTeamName ? state.homeScore + 1 : state.homeScore) : 
+      const newHomeScore = goalData.teamName && goalData.type === 'goal' ?
+        (goalData.teamName === state.homeTeamName ? state.homeScore + 1 : state.homeScore) :
         state.homeScore;
-      const newAwayScore = goalData.teamName && goalData.type === 'goal' ? 
-        (goalData.teamName === state.awayTeamName ? state.awayScore + 1 : state.awayScore) : 
+      const newAwayScore = goalData.teamName && goalData.type === 'goal' ?
+        (goalData.teamName === state.awayTeamName ? state.awayScore + 1 : state.awayScore) :
         state.awayScore;
-      
+
       const updatedState = {
         goals: [...state.goals, newGoal],
         homeScore: newHomeScore,
@@ -117,11 +136,11 @@ export const createGoalSlice: StateCreator<
       if (!goalToRemove) return state;
 
       // Only decrement score if it's an actual goal, not an assist
-      const newHomeScore = goalToRemove.teamName && goalToRemove.type === 'goal' ? 
-        (goalToRemove.teamName === state.homeTeamName ? state.homeScore - 1 : state.homeScore) : 
+      const newHomeScore = goalToRemove.teamName && goalToRemove.type === 'goal' ?
+        (goalToRemove.teamName === state.homeTeamName ? state.homeScore - 1 : state.homeScore) :
         state.homeScore;
-      const newAwayScore = goalToRemove.teamName && goalToRemove.type === 'goal' ? 
-        (goalToRemove.teamName === state.awayTeamName ? state.awayScore - 1 : state.awayScore) : 
+      const newAwayScore = goalToRemove.teamName && goalToRemove.type === 'goal' ?
+        (goalToRemove.teamName === state.awayTeamName ? state.awayScore - 1 : state.awayScore) :
         state.awayScore;
 
       return {
@@ -142,11 +161,11 @@ export const createGoalSlice: StateCreator<
       if (!goalToUndo) return state;
 
       // Only decrement score if it's an actual goal, not an assist
-      const newHomeScore = goalToUndo.teamName && goalToUndo.type === 'goal' ? 
-        (goalToUndo.teamName === state.homeTeamName ? state.homeScore - 1 : state.homeScore) : 
+      const newHomeScore = goalToUndo.teamName && goalToUndo.type === 'goal' ?
+        (goalToUndo.teamName === state.homeTeamName ? state.homeScore - 1 : state.homeScore) :
         state.homeScore;
-      const newAwayScore = goalToUndo.teamName && goalToUndo.type === 'goal' ? 
-        (goalToUndo.teamName === state.awayTeamName ? state.awayScore - 1 : state.awayScore) : 
+      const newAwayScore = goalToUndo.teamName && goalToUndo.type === 'goal' ?
+        (goalToUndo.teamName === state.awayTeamName ? state.awayScore - 1 : state.awayScore) :
         state.awayScore;
 
       console.log('🔄 MatchStore: Goal undone:', {

@@ -38,7 +38,7 @@ const GoalWizard = ({
     assistPlayer: null
   });
 
-  const { addGoal, addAssist } = useMatchStore();
+  const { addGoal, addAssist, goals } = useMatchStore();
   const { toast } = useToast();
 
   const resetWizard = () => {
@@ -105,7 +105,7 @@ const GoalWizard = ({
     }
   };
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     if (!wizardData.selectedPlayer || !wizardData.selectedTeam) {
       console.error('❌ GoalWizard: Missing required data for goal assignment');
       toast({
@@ -121,31 +121,51 @@ const GoalWizard = ({
     const homeTeamName = selectedFixtureData?.home_team?.name || 'Home Team';
     const awayTeamName = selectedFixtureData?.away_team?.name || 'Away Team';
 
-    // Determine the correct team IDs based on which team benefits from the goal
     const beneficiaryTeamId = wizardData.selectedTeam === 'home' ? homeTeamId : awayTeamId;
     const beneficiaryTeamName = wizardData.selectedTeam === 'home' ? homeTeamName : awayTeamName;
 
-    console.log('🎯 GoalWizard: Confirming goal with comprehensive own goal support:', {
-      selectedPlayer: wizardData.selectedPlayer.name,
-      selectedPlayerTeam: wizardData.selectedPlayer.team,
-      selectedTeam: wizardData.selectedTeam,
-      beneficiaryTeam: beneficiaryTeamName,
-      isOwnGoal: wizardData.isOwnGoal,
-      matchTime,
-      assistPlayer: wizardData.assistPlayer?.name
-    });
+    // NEW: Disable button/spinner during save
+    const [isSaving, setIsSaving] = useState(false);
 
     try {
-      // Add the goal with proper own goal flag
+      // Duplicate check BEFORE addGoal
+      const duplicate = goals.find(g =>
+        g.playerId === wizardData.selectedPlayer.id &&
+        g.time === matchTime &&
+        g.teamId === (wizardData.selectedPlayer.team === homeTeamName ? homeTeamId : awayTeamId) &&
+        g.type === 'goal' &&
+        Boolean(g.isOwnGoal) === Boolean(wizardData.isOwnGoal)
+      );
+      if (duplicate) {
+        setIsSaving(false);
+        toast({
+          title: "Duplicate Goal",
+          description: "A goal for this player, time, and team already exists. No duplicate created.",
+          variant: "warning"
+        });
+        return;
+      }
+
+      // Add the goal via deduped store. If it returns null, it's a duplicate.
       const goalData = addGoal({
         playerId: wizardData.selectedPlayer.id,
         playerName: wizardData.selectedPlayer.name,
-        teamId: wizardData.selectedPlayer.team === homeTeamName ? homeTeamId : awayTeamId, // Player's actual team
-        teamName: wizardData.selectedPlayer.team, // Player's actual team name
+        teamId: wizardData.selectedPlayer.team === homeTeamName ? homeTeamId : awayTeamId,
+        teamName: wizardData.selectedPlayer.team,
         type: 'goal' as const,
         time: matchTime,
-        isOwnGoal: wizardData.isOwnGoal // CRITICAL: Pass the own goal flag
+        isOwnGoal: wizardData.isOwnGoal
       });
+
+      if (!goalData) {
+        setIsSaving(false);
+        toast({
+          title: "Duplicate Goal",
+          description: "A goal for this player, time, and team already exists.",
+          variant: "warning"
+        });
+        return;
+      }
 
       toast({
         title: "Goal Added",
@@ -172,11 +192,13 @@ const GoalWizard = ({
         });
       }
 
-      // Show unsaved changes banner (triggers ScoreTabUnsavedChangesSection logic downstream)
-      // (No explicit UI code needed here; state update already handled in store)
+      // Success, auto clear state, close dialog, auto-refresh data in parent after
+      setIsSaving(false);
+      resetWizard();
+      onClose();
 
-      handleClose();
     } catch (error) {
+      setIsSaving(false);
       console.error('❌ GoalWizard: Error during goal assignment:', error);
       toast({
         title: "Error Adding Goal",
@@ -238,10 +260,24 @@ const GoalWizard = ({
             {getStepTitle()}
           </DialogTitle>
         </DialogHeader>
-        
         <div className="mt-4">
           {renderCurrentStep()}
         </div>
+        {/* Confirmation Step: Save Button */}
+        {currentStep === 'confirm' && (
+          <button
+            className="w-full mt-4 bg-blue-600 text-white py-2 rounded disabled:opacity-60 flex items-center justify-center gap-2"
+            onClick={handleConfirm}
+            disabled={isSaving}
+            type="button"
+          >
+            {isSaving ? (
+              <span className="animate-spin h-4 w-4 mr-2 border-2 border-white border-t-transparent rounded-full" />
+            ) : (
+              <span className="font-semibold">Save Goal</span>
+            )}
+          </button>
+        )}
       </DialogContent>
     </Dialog>
   );
