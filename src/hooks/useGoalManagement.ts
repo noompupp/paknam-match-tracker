@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { unifiedGoalService } from "@/services/unifiedGoalService";
 import { resolveTeamIdForMatchEvent, validateAndConvertTeamId } from "@/utils/teamIdMapping";
@@ -108,6 +107,7 @@ export const useGoalManagement = () => {
         isOwnGoal
       });
 
+      // --- NOTE: Operation log now expects string or null for record_id ---
       // Use the unified goal service with enhanced error handling and own goal support
       console.log('🚀 useGoalManagement: Calling unified goal service with own goal parameters:', {
         fixtureId,
