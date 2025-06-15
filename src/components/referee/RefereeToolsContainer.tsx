@@ -49,9 +49,6 @@ const RefereeToolsContent = () => {
     setSelectedTimePlayer,
     events,
     saveAttempts,
-    // --- THE FOLLOWING REFS ARE NOT NEEDED AS WE USE DATA HANDLERS ---
-    // handleSaveMatch,
-    // handleResetMatch,
     handleAssignGoal,
     handleAddPlayer,
     handleRemovePlayer,
@@ -72,11 +69,8 @@ const RefereeToolsContent = () => {
     forceRefresh,
   } = useRefereeStateOrchestrator();
 
-  // Batch sync/atomicity/minimal REST feedback
   const { syncStatus, forceSync, pendingChanges } = useIntelligentSyncManager();
 
-  // --- Integrate new match data handlers (dialog, save, reset) ---
-  // Supplying the same object/refs expected in useMatchDataHandlers
   const {
     handleSaveMatch,
     handleResetMatchData,
@@ -90,7 +84,7 @@ const RefereeToolsContent = () => {
     matchTime,
     setSaveAttempts: typeof saveAttempts === "function"
       ? saveAttempts
-      : () => {}, // fallback no-op if not available
+      : () => {},
     resetTimer,
     resetScore,
     resetEvents,
@@ -101,7 +95,6 @@ const RefereeToolsContent = () => {
     forceRefresh,
   });
 
-  // Localization
   const { t, language } = useTranslation();
 
   if (fixturesLoading) {
@@ -126,10 +119,8 @@ const RefereeToolsContent = () => {
         title={t("referee.title")}
         showLanguageToggle={true}
       />
-      {/* --- Ensure dialog component is rendered at root --- */}
       {ResetDialog}
       <main className="container mx-auto px-4 py-6 space-y-6 min-h-screen">
-        {/* Sync banners */}
         {syncStatus.isSyncing && (
           <div className="flex items-center gap-2 py-2 px-4 bg-blue-50 border border-blue-200 rounded-lg text-blue-800 dark:bg-blue-900/10 dark:border-blue-800 mb-4">
             <span className="animate-spin mr-2 w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full" />
@@ -160,6 +151,7 @@ const RefereeToolsContent = () => {
           enhancedPlayersData={enhancedPlayersData}
         />
 
+        {/* 🔓 UnifiedMatchTimer and all score/timer functionality should NEVER be blocked by permissions */}
         {selectedFixture && (
           <RefereeMainContent
             selectedFixtureData={selectedFixtureData}
@@ -198,9 +190,7 @@ const RefereeToolsContent = () => {
             addPlayer={handleAddPlayer}
             removePlayer={handleRemovePlayer}
             togglePlayerTime={handleTogglePlayerTime}
-            // <-- correct, via useMatchDataHandlers
             onSaveMatch={handleSaveMatch}
-            // <-- correct dialog-based handler
             onResetMatch={handleResetMatchData}
             onDataRefresh={handleManualRefresh}
           />

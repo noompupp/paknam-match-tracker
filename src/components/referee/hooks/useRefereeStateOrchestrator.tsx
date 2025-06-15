@@ -3,11 +3,20 @@ import { useRefereeEnhancedHandlers } from "./useRefereeEnhancedHandlers";
 import { useMatchStore } from "@/stores/useMatchStore";
 import { useEffect, useRef, React } from "react";
 
+// If in the future we want to leverage permissions for anything UI-conditional, we can fetch here,
+// but UnifiedMatchTimer (and all critical scoreboard logic) must NEVER be gated by this state!
 export const useRefereeStateOrchestrator = () => {
-  // Get all integrated state
+  // Integrated orchestrator as before
   const orchestrator = useRefereeStateIntegration();
-  // Always use match store for scores and team names
-  const { homeScore, awayScore, homeTeamName: storeHomeTeamName, awayTeamName: storeAwayTeamName } = useMatchStore();
+
+  // Always get live store state for score and team names
+  const {
+    homeScore,
+    awayScore,
+    homeTeamName: storeHomeTeamName,
+    awayTeamName: storeAwayTeamName,
+    lastUpdated
+  } = useMatchStore();
 
   // Keep a ref for last setup params to avoid excessive setupMatch runs
   const lastSetupParams = React.useRef<{
@@ -16,11 +25,12 @@ export const useRefereeStateOrchestrator = () => {
     awayTeamName: string
   } | null>(null);
 
-  React.useEffect(() => {
+  // UNCONDITIONAL: SetupMatch must always run when fixture/team changes, regardless of permissions/role state.
+  useEffect(() => {
     const { selectedFixtureData } = orchestrator.baseState;
     if (!selectedFixtureData) return;
 
-    // Always prefer the up-to-date store values if available, fallback to fixtureData
+    // Live values for teams
     const fixtureId = selectedFixtureData.id;
     const fixtureHome = selectedFixtureData.home_team?.name || selectedFixtureData.home_team_name || '';
     const fixtureAway = selectedFixtureData.away_team?.name || selectedFixtureData.away_team_name || '';
@@ -39,7 +49,7 @@ export const useRefereeStateOrchestrator = () => {
       ""
     );
 
-    // Defensive guard: only fire if any of fixture/team name/id have changed
+    // Defensive: Only fire if changed
     const setupChanged =
       !lastSetupParams.current ||
       lastSetupParams.current.fixtureId !== fixtureId ||
@@ -90,7 +100,14 @@ export const useRefereeStateOrchestrator = () => {
     storeAwayTeamName
   ]);
 
-  // Get enhanced handlers
+  // Debug loading/permission status (do NOT gate state propagation on this)
+  useEffect(() => {
+    // If role system changes, log here for debugging, but never block rendering.
+    // Future hooks could pull from a permission system, but it's not used here.
+    // console.log('Role/permission state is not blocking UnifiedMatchTimer rendering!');
+  }, []);
+
+  // Always get enhanced handlers
   const enhancedHandlers = useRefereeEnhancedHandlers({
     baseState: orchestrator.baseState,
     scoreState: orchestrator.scoreState,
@@ -112,7 +129,8 @@ export const useRefereeStateOrchestrator = () => {
     goalFilteredPlayersCount: orchestrator.teamSelection.getGoalFilteredPlayers().length,
     timeFilteredPlayersCount: orchestrator.teamSelection.getTimeFilteredPlayers().length,
     databaseDrivenScore: { homeScore: orchestrator.scoreState.homeScore, awayScore: orchestrator.scoreState.awayScore },
-    hasRealTimeSync: !!orchestrator.scoreState.forceRefresh
+    hasRealTimeSync: !!orchestrator.scoreState.forceRefresh,
+    lastUpdated
   });
 
   return {
@@ -144,7 +162,7 @@ export const useRefereeStateOrchestrator = () => {
     isRunning: orchestrator.baseState.isRunning,
     formatTime: orchestrator.baseState.formatTime,
     
-    // Database-driven score/state (force from store)
+    // Store-synced scores (NEVER block on permissions/loading!)
     homeScore,
     awayScore,
     
@@ -183,7 +201,7 @@ export const useRefereeStateOrchestrator = () => {
     // Save attempts
     saveAttempts: orchestrator.baseState.saveAttempts,
 
-    // Enhanced handlers (from orchestrator and enhancedHandlers)
+    // Enhanced handlers
     handleSaveMatch: enhancedHandlers.handleSaveMatch,
     handleResetMatch: enhancedHandlers.handleResetMatch,
     handleAssignGoal: enhancedHandlers.handleAssignGoal,

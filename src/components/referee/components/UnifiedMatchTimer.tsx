@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -32,16 +31,21 @@ const UnifiedMatchTimer = ({
   const isMobile = useIsMobile();
   const { t, language } = useTranslation();
 
-  // NEW: Always read lastUpdated to force re-render on score/timeline changes
-  const { homeScore, awayScore, homeTeamName, awayTeamName, goals, hasUnsavedChanges, lastUpdated } = useMatchStore();
+  // ALWAYS subscribe directly to the live store for scores/team names/etc.
+  const {
+    homeScore,
+    awayScore,
+    homeTeamName,
+    awayTeamName,
+    goals,
+    hasUnsavedChanges,
+    lastUpdated
+  } = useMatchStore();
 
-  // Use lastUpdated as a tracked dependency via a pointless useEffect to guarantee render
-  // (Zustand + React batching sometimes skips context value, this pattern ensures visibility)
-  React.useEffect(() => {
-    // Side-effect is not needed, just tracking lastUpdated.
-  }, [lastUpdated]);
+  // Always re-render on lastUpdated
+  React.useEffect(() => { /* pointless effect so batching never skips updates */ }, [lastUpdated]);
 
-  // Debug: log every render with focus on team names and scores
+  // Debug every render with team names and scores
   console.log('[UnifiedMatchTimer v2] Current ZUSTAND STATE:', {
     homeScore, awayScore, homeTeamName, awayTeamName, goals, hasUnsavedChanges, lastUpdated, matchTime
   });
@@ -55,7 +59,6 @@ const UnifiedMatchTimer = ({
     });
   }
 
-  // Calculate phase time for 7-a-side (25 minutes per half)
   const HALF_DURATION = 25 * 60; // 25 minutes in seconds
   const currentPhaseTime = phase === 'second' && matchTime > HALF_DURATION 
     ? matchTime - HALF_DURATION 
@@ -76,7 +79,6 @@ const UnifiedMatchTimer = ({
     }
   };
 
-  // Button label logic (localized)
   let timerButtonLabel = "";
   if (isRunning) {
     timerButtonLabel = t("referee.timer.pause", "Pause Timer");
@@ -90,7 +92,6 @@ const UnifiedMatchTimer = ({
     ? t("referee.status.live", "LIVE")
     : t("referee.status.paused", "PAUSED");
 
-  // Date and time formatting based on locale
   const dateFormatter = language === "th"
     ? (d: string) => new Date(d).toLocaleDateString("th-TH", { year: "numeric", month: "short", day: "numeric" })
     : (d: string) => new Date(d).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
@@ -105,7 +106,7 @@ const UnifiedMatchTimer = ({
               {dateFormatter(selectedFixtureData.match_date)} • {selectedFixtureData.match_time}
             </div>
             <div className="text-xs text-muted-foreground">
-              {/* Always reference up-to-date store team names to guarantee sync */}
+              {/* Always use live store team names */}
               {(homeTeamName || selectedFixtureData.home_team?.name || t("referee.homeTeam"))} {t("referee.matchTeamsVs.connector", "vs")} {(awayTeamName || selectedFixtureData.away_team?.name || t("referee.awayTeam"))}
             </div>
           </div>
@@ -130,11 +131,7 @@ const UnifiedMatchTimer = ({
                   <Badge className={cn("text-xs font-medium", getPhaseColor())}>
                     {getPhaseDisplay()}
                   </Badge>
-                  
-                  {/* Main Timer */}
                   <div className="text-4xl font-bold mb-1">{formatTime(matchTime)}</div>
-                  
-                  {/* Status Badge */}
                   <Badge variant={isRunning ? "default" : "secondary"} className="text-xs">
                     <Timer className="h-3 w-3 mr-1" />
                     {statusBadgeLabel}
@@ -174,7 +171,6 @@ const UnifiedMatchTimer = ({
             {isRunning ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
             {timerButtonLabel}
           </Button>
-          
           <Button
             onClick={onResetMatch}
             variant="outline"
