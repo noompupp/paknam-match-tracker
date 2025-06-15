@@ -1,15 +1,12 @@
+
 import { TabsContent } from "@/components/ui/tabs";
 import { ComponentPlayer } from "../hooks/useRefereeState";
 import ScoreTab from "./tabs/ScoreTab";
 import RoleBasedUnifiedTimerTab from "./tabs/RoleBasedUnifiedTimerTab";
-// Removed import of GoalsTab
 import CardsTab from "./tabs/CardsTab";
-// Removed import CoordinationTab
 import SummaryTab from "./tabs/SummaryTab";
 import SaveNowButton from "./shared/SaveNowButton";
 import { ProcessedPlayer } from "@/utils/refereeDataProcessor";
-
-// Import EnhancedCardsTab and UnifiedMatchTimer
 import EnhancedCardsTab from "./tabs/EnhancedCardsTab";
 import UnifiedMatchTimer from "./UnifiedMatchTimer";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -56,7 +53,7 @@ interface RefereeTabsContentProps {
   onRemovePlayer: (playerId: number) => void;
   onTogglePlayerTime: () => void;
   onExportSummary: () => void;
-  // Removed: workflowConfig: WorkflowModeConfig;
+  // Removed: homeScore and awayScore
 }
 
 const RefereeTabsContent = (props: RefereeTabsContentProps) => {
@@ -166,8 +163,8 @@ const RefereeTabsContent = (props: RefereeTabsContentProps) => {
         />
         <SummaryTab
           selectedFixtureData={props.selectedFixtureData}
-          homeScore={props.homeScore}
-          awayScore={props.awayScore}
+          // homeScore={props.homeScore}  <-- REMOVE
+          // awayScore={props.awayScore}  <-- REMOVE
           matchTime={props.matchTime}
           goals={props.goals}
           cards={props.cards}
@@ -183,3 +180,4 @@ const RefereeTabsContent = (props: RefereeTabsContentProps) => {
 };
 
 export default RefereeTabsContent;
+

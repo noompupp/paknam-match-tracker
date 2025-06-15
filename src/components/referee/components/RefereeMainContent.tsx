@@ -107,7 +107,6 @@ const RefereeMainContent = (props: any) => {
           setSelectedTimePlayer={props.setSelectedTimePlayer}
           setSelectedTimeTeam={props.setSelectedTimeTeam}
           events={props.events}
-          saveAttempts={props.saveAttempts}
           toggleTimer={props.toggleTimer}
           resetTimer={props.resetTimer}
           assignGoal={props.assignGoal}
