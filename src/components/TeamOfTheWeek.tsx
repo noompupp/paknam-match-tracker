@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useLatestCompleteFixtures } from "@/hooks/useLatestCompleteFixtures";
 import { Card, CardContent } from "@/components/ui/card";
@@ -6,6 +5,9 @@ import { Loader2, Star, StarOff } from "lucide-react";
 import UnifiedPageHeader from "@/components/shared/UnifiedPageHeader";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Button } from "@/components/ui/button";
+import { useSecureAuth } from "@/contexts/SecureAuthContext";
+import { usePlayerRatings, useSubmitPlayerRating } from "@/hooks/usePlayerRatings";
+import { useToast } from "@/hooks/use-toast";
 
 // Enhanced StarRating with debug/info
 const StarRating = ({
@@ -32,7 +34,7 @@ const StarRating = ({
         <button
           type="button"
           key={i}
-          className="p-1 rounded transition hover:bg-accent/40"
+          className="p-1 rounded transition hover:bg-accent/40 disabled:cursor-not-allowed"
           onClick={() => !disabled && onChange?.(i + 1)}
           disabled={disabled}
           tabIndex={-1}
@@ -51,16 +53,36 @@ const StarRating = ({
 const TeamOfTheWeek: React.FC = () => {
   const { data, isLoading, error } = useLatestCompleteFixtures();
   const { t } = useTranslation();
-  const [ratings, setRatings] = React.useState<{ [playerId: string]: number }>({});
+  const { user } = useSecureAuth();
+  const { toast } = useToast();
+  const [localRatings, setLocalRatings] = React.useState<{ [k: string]: number }>({});
+  const [hasAttemptedSubmit, setHasAttemptedSubmit] = React.useState(false);
 
-  // Defensive + DEBUG: Log raw data/result/fixture
+  // Currently only supporting one fixture (most recent), could be expanded
+  const fixture = (data && data.length > 0) ? data[0] : null;
+
+  // Preload ratings for this fixture for the current user
+  const {
+    data: userRatings,
+    isLoading: ratingsLoading,
+    error: ratingsError,
+    refetch: refetchRatings,
+  } = usePlayerRatings(fixture?.id || null);
+
+  const submitMutation = useSubmitPlayerRating();
+
   React.useEffect(() => {
-    if (isLoading) console.log("[TeamOfTheWeek] Loading fixtures...");
-    if (error)  console.error("[TeamOfTheWeek] Error loading fixtures", error);
-    if (data) {
-      console.log("[TeamOfTheWeek] Received fixtures data", data);
+    if (Array.isArray(userRatings)) {
+      // Pre-fill localRatings with user's submitted ratings for players in this fixture
+      const nextRatings: { [k: string]: number } = {};
+      for (const r of userRatings) {
+        if (r && typeof r.player_id !== "undefined") {
+          nextRatings[String(r.player_id)] = r.rating;
+        }
+      }
+      setLocalRatings((prev) => ({ ...nextRatings, ...prev }));
     }
-  }, [isLoading, error, data]);
+  }, [userRatings]);
 
   if (isLoading) {
     return (
@@ -83,9 +105,90 @@ const TeamOfTheWeek: React.FC = () => {
   const fixtures = (data ?? []).filter(
     (fixture: any) => typeof fixture.id === "number" && !isNaN(fixture.id)
   );
-
   if ((data && fixtures.length === 0) || (!data && !isLoading)) {
     console.warn("[TeamOfTheWeek] No valid fixtures found, check source data:", data);
+  }
+
+  // Preprocess goal events for playerId lookup and team validation
+  function getGoalPlayersWithId(goalEvents: any[]): Array<{ player_name: string; team_id: string; player_id: number; event_type: string; }> {
+    // Only events with player_id are ratable
+    return (goalEvents || [])
+      .filter(event => event && typeof event.player_id === "number" && event.player_id > 0)
+      .map(event => ({
+        player_name: event.player_name,
+        team_id: event.team_id,
+        player_id: event.player_id,
+        event_type: event.event_type,
+      }));
+  }
+
+  // Find user's team for access control
+  function getUserTeamId(): string | null {
+    if (!user) return null;
+    // Heuristic: Check user.email matches a member record (needs improved mapping)
+    // For real implementation, fetch user profile or member record by user.uid or email
+    // Here, fallback to null (admin can always rate)
+    return null;
+  }
+
+  // Prevent rating from user's own team
+  function canRatePlayer(playerTeamId: string): boolean {
+    // For now, always return true (RLS will block backend if user is not permitted)
+    // If fetching user's own team data, implement check here!
+    return true;
+  }
+
+  // Submit ALL ratings for this fixture
+  async function handleSubmitAllRatings() {
+    if (!fixture) return;
+    setHasAttemptedSubmit(true);
+    if (!user) {
+      toast({
+        title: t("common.error"),
+        description: t("message.signInRequired"),
+        variant: "destructive",
+      });
+      return;
+    }
+    const ratablePlayers = getGoalPlayersWithId(fixture.goalEvents || []);
+    // Only submit ratings for players we changed or have not submitted yet
+    const toSubmit = ratablePlayers.filter(
+      (p) => {
+        const score = localRatings[p.player_id];
+        // allow only valid ratings 1-5
+        return typeof score === "number" && score >= 1 && score <= 5;
+      }
+    );
+    if (toSubmit.length === 0) {
+      toast({
+        title: t("common.error"),
+        description: t("rating.noRatingsSelected") || "Please rate at least one player before submitting.",
+        variant: "destructive",
+      });
+      return;
+    }
+    // Submit ratings one by one (supabase.upsert allows batch, but let's keep simple)
+    for (const p of toSubmit) {
+      try {
+        await submitMutation.mutateAsync({
+          fixtureId: fixture.id,
+          playerId: p.player_id,
+          rating: localRatings[p.player_id],
+        });
+      } catch (err) {
+        toast({
+          title: t("common.error"),
+          description: (err as any)?.message ?? "Failed to submit rating.",
+          variant: "destructive",
+        });
+      }
+    }
+    toast({
+      title: t("rating.submitRatings"),
+      description: t("rating.submissionSuccess") || "Your ratings have been submitted.",
+      variant: "default",
+    });
+    refetchRatings();
   }
 
   return (
@@ -104,67 +207,73 @@ const TeamOfTheWeek: React.FC = () => {
             {t("rating.noMatches")}
           </p>
         )}
-        {fixtures.map((fixture) => {
-          // Defensive: log fixture (debug)
-          if (!fixture || typeof fixture !== "object") {
-            console.warn("[TeamOfTheWeek] Skipping invalid fixture:", fixture);
-            return null;
-          }
-          return (
-            <Card key={fixture.id} className="mb-6 w-full">
-              <CardContent className="py-5">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="font-bold text-primary">
-                    {/* Defensive team display */}
-                    {fixture.team1 || fixture.home_team_id || "???"} vs{" "}
-                    {fixture.team2 || fixture.away_team_id || "???"}
-                  </span>
-                  <span className="font-mono text-lg">
-                    <span className="text-foreground">{fixture.home_score ?? "?"}</span>{" "}
-                    <span className="font-thin text-muted-foreground">-</span>{" "}
-                    <span className="text-foreground">{fixture.away_score ?? "?"}</span>
-                  </span>
-                </div>
-                <div>
-                  <div className="mb-2">
-                    <span className="font-semibold">{t("rating.goalScorers")}:</span>
-                    <ul className="ml-4 mt-1 list-disc text-muted-foreground text-sm">
-                      {(fixture.goalEvents || []).map((event: any, idx: number) => {
-                        if (
-                          !event ||
-                          typeof event !== "object" ||
-                          typeof event.id !== "number" ||
-                          isNaN(event.id)
-                        ) {
-                          console.warn("[TeamOfTheWeek] Skipping invalid goal event:", event);
-                          return null;
-                        }
-                        // DEBUG event
-                        console.log("[TeamOfTheWeek] Valid goal event:", event);
-
-                        return (
-                          <li key={event.id}>
-                            <span className="font-medium">{event.player_name}</span> ({event.team_id}),
-                            <span className="text-xs ml-1">
-                              {event.event_type === "goal" ? t("rating.goal") : t("rating.assist")}
+        {fixtures.map((fixture) => (
+          <Card key={fixture.id} className="mb-6 w-full">
+            <CardContent className="py-5">
+              <div className="flex justify-between items-center mb-2">
+                <span className="font-bold text-primary">
+                  {fixture.team1 || fixture.home_team_id || "???"} vs{" "}
+                  {fixture.team2 || fixture.away_team_id || "???"}
+                </span>
+                <span className="font-mono text-lg">
+                  <span className="text-foreground">{fixture.home_score ?? "?"}</span>{" "}
+                  <span className="font-thin text-muted-foreground">-</span>{" "}
+                  <span className="text-foreground">{fixture.away_score ?? "?"}</span>
+                </span>
+              </div>
+              <div>
+                <div className="mb-2">
+                  <span className="font-semibold">{t("rating.goalScorers")}:</span>
+                  {/* Ratings list: group by player, show rating + allow edit */}
+                  <ul className="ml-4 mt-1 list-disc text-muted-foreground text-sm">
+                    {getGoalPlayersWithId(fixture.goalEvents || []).map((player) => (
+                      <li key={player.player_id} className="mb-2 flex flex-row items-center gap-2">
+                        <span className="font-medium">{player.player_name}</span> ({player.team_id}),
+                        <span className="text-xs ml-1">
+                          {player.event_type === "goal"
+                            ? t("rating.goal")
+                            : t("rating.assist")}
+                        </span>
+                        <span className="ml-3">
+                          <StarRating
+                            value={localRatings[player.player_id] ?? 0}
+                            onChange={(v) =>
+                              setLocalRatings((r) => ({
+                                ...r,
+                                [player.player_id]: v,
+                              }))
+                            }
+                            disabled={submitMutation.isPending || !canRatePlayer(player.team_id)}
+                          />
+                        </span>
+                        {!!userRatings &&
+                          Number(userRatings.find((r) => r.player_id === player.player_id)?.rating) > 0 && (
+                            <span className="ml-2 text-green-700 font-medium">
+                              {t("rating.yourRating")}: {userRatings.find((r) => r.player_id === player.player_id)?.rating}
                             </span>
-                            <StarRating
-                              value={ratings[event.player_name] ?? 0}
-                              onChange={v => setRatings(r => ({ ...r, [event.player_name]: v }))}
-                            />
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  </div>
-                  <Button variant="secondary" size="sm" className="mt-2" disabled>
-                    {t("rating.submitRatings")}
-                  </Button>
+                          )}
+                      </li>
+                    ))}
+                  </ul>
                 </div>
-              </CardContent>
-            </Card>
-          );
-        })}
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  className="mt-2"
+                  onClick={handleSubmitAllRatings}
+                  disabled={submitMutation.isPending || !user}
+                >
+                  {submitMutation.isPending
+                    ? t("rating.submitting") || "Submitting..."
+                    : t("rating.submitRatings") || "Submit Ratings"}
+                </Button>
+                {!user && (
+                  <p className="text-xs mt-2 text-muted-foreground">{t("message.signInRequired")}</p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        ))}
       </div>
     </div>
   );
