@@ -1,4 +1,3 @@
-
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "@/hooks/useTranslation";
 import { PlayerTime } from "@/types/database";
@@ -60,20 +59,41 @@ export const usePlayerTimeNotifications = () => {
   }
 
   function notifySubstitutionComplete({ incoming, outgoingName, matchTime, addEvent }: SubstitutionCompleteParams) {
+    // Defensive fallback/defaults for missing name data
+    const inName = incoming?.name || "(no name: incoming)";
+    const outName = outgoingName || "(no name: outgoing)";
+
+    // DEBUG log values and translations before using them
+    const eventTitle = t("referee.event.substitutionComplete", "Substitution Complete");
+    const eventDesc = t("referee.event.substitutionCompleteDescription", "{inName} substituted for {outName}", {
+      inName,
+      outName
+    });
+    const toastTitle = t("referee.toast.substitutionCompleteTitle", "Substitution Complete");
+    const toastDesc = t("referee.toast.substitutionCompleteDesc", "{inName} replaced {outName}", {
+      inName,
+      outName
+    });
+
+    console.log("[PlayerTimeNotifications] notifySubstitutionComplete", {
+      incoming,
+      outgoingName,
+      inName,
+      outName,
+      eventTitle,
+      eventDesc,
+      toastTitle,
+      toastDesc
+    });
+
     addEvent(
-      t("referee.event.substitutionComplete", "Substitution Complete"),
-      t("referee.event.substitutionCompleteDescription", "{inName} substituted for {outName}", {
-        inName: incoming.name,
-        outName: outgoingName,
-      }),
+      eventTitle,
+      eventDesc,
       matchTime
     );
     toast({
-      title: t("referee.toast.substitutionCompleteTitle", "Substitution Complete"),
-      description: t("referee.toast.substitutionCompleteDesc", "{inName} replaced {outName}", {
-        inName: incoming.name,
-        outName: outgoingName,
-      }),
+      title: toastTitle,
+      description: toastDesc,
     });
   }
 
