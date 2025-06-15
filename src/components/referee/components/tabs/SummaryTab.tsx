@@ -1,8 +1,8 @@
-
 import EnhancedMatchSummary from "../../EnhancedMatchSummary";
 import MatchEvents from "../../MatchEvents";
 import { ComponentPlayer } from "../../hooks/useRefereeState";
 import { useDataValidation } from "@/hooks/useDataValidation";
+import UnifiedMatchTimer from "../../UnifiedMatchTimer";
 
 interface SummaryTabProps {
   selectedFixtureData: any;
@@ -35,8 +35,15 @@ const SummaryTab = ({
   allPlayers,
   onExportSummary,
   formatTime,
-  resetState
-}: SummaryTabProps) => {
+  resetState,
+  onToggleTimer,
+  onResetMatch,
+  isRunning
+}: SummaryTabProps & {
+  onToggleTimer?: () => void;
+  onResetMatch?: () => void;
+  isRunning?: boolean;
+}) => {
   
   // Add data validation for this component
   useDataValidation({
@@ -48,6 +55,7 @@ const SummaryTab = ({
 
   return (
     <div className="space-y-6">
+      {/* UnifiedMatchTimer is now rendered in the parent RefereeTabsContent, so not needed here */}
       <EnhancedMatchSummary
         selectedFixtureData={selectedFixtureData}
         homeScore={homeScore}

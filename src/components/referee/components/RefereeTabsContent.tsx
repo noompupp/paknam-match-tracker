@@ -1,4 +1,3 @@
-
 // Remove workflowConfig and CoordinationTab
 import { TabsContent } from "@/components/ui/tabs";
 import { ComponentPlayer } from "../hooks/useRefereeState";
@@ -10,6 +9,10 @@ import CardsTab from "./tabs/CardsTab";
 import SummaryTab from "./tabs/SummaryTab";
 import SaveNowButton from "./shared/SaveNowButton";
 import { ProcessedPlayer } from "@/utils/refereeDataProcessor";
+
+// Import EnhancedCardsTab and UnifiedMatchTimer
+import EnhancedCardsTab from "./tabs/EnhancedCardsTab";
+import UnifiedMatchTimer from "./UnifiedMatchTimer";
 
 // Remove workflowConfig from props type
 interface RefereeTabsContentProps {
@@ -113,7 +116,7 @@ const RefereeTabsContent = (props: RefereeTabsContentProps) => {
           <h3 className="text-lg font-semibold">Cards Management</h3>
           <SaveNowButton onSave={props.onSaveMatch} />
         </div>
-        <CardsTab
+        <EnhancedCardsTab
           selectedFixtureData={props.selectedFixtureData}
           allPlayers={props.allPlayers}
           homeTeamPlayers={props.homeTeamPlayers}
@@ -122,11 +125,16 @@ const RefereeTabsContent = (props: RefereeTabsContentProps) => {
           selectedPlayer={props.selectedPlayer}
           selectedTeam={props.selectedTeam}
           selectedCardType={props.selectedCardType}
+          matchTime={props.matchTime}
           onPlayerSelect={props.setSelectedPlayer}
           onTeamChange={props.setSelectedTeam}
           onCardTypeChange={props.setSelectedCardType}
           formatTime={props.formatTime}
-          matchTime={props.matchTime}
+          onToggleTimer={props.onToggleTimer}
+          onResetMatch={props.onResetMatch}
+          isRunning={props.isRunning}
+          homeScore={props.homeScore}
+          awayScore={props.awayScore}
         />
       </TabsContent>
 
@@ -145,6 +153,17 @@ const RefereeTabsContent = (props: RefereeTabsContentProps) => {
             </SaveNowButton>
           </div>
         </div>
+        {/* UnifiedMatchTimer for quick timer controls in summary */}
+        <UnifiedMatchTimer
+          selectedFixtureData={props.selectedFixtureData}
+          homeScore={props.homeScore}
+          awayScore={props.awayScore}
+          matchTime={props.matchTime}
+          isRunning={props.isRunning}
+          formatTime={props.formatTime}
+          onToggleTimer={props.onToggleTimer}
+          onResetMatch={props.onResetMatch}
+        />
         <SummaryTab
           selectedFixtureData={props.selectedFixtureData}
           homeScore={props.homeScore}
