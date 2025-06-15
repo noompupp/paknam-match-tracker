@@ -1,4 +1,3 @@
-
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 import { MatchState, MatchGoal, MatchCard, MatchPlayerTime } from './types';
@@ -17,37 +16,24 @@ type MatchStore = MatchState & MatchActions;
 
 export const useMatchStore = create<MatchStore>()(
   subscribeWithSelector((set, get, api) => {
-    // --- NEW: batched event queues for goals, cards, playerTimes ---
-    // These will be flushed all at once when batch-save is triggered.
-    const goalBatchQueue = useBatchEventQueue<MatchGoal>(
-      async (events) => {
-        set((state) => ({
-          goals: [...state.goals, ...(events as MatchGoal[])],
-          hasUnsavedChanges: true,
-          lastUpdated: Date.now(),
-        }));
-      }
-    );
+    // ------ FIX: REMOVE HOOKS FROM STORE! ------
+    // Replace useBatchEventQueue (which uses React hooks) with vanilla JS queue implementations!
 
-    const cardBatchQueue = useBatchEventQueue<MatchCard>(
-      async (events) => {
-        set((state) => ({
-          cards: [...state.cards, ...(events as MatchCard[])],
-          hasUnsavedChanges: true,
-          lastUpdated: Date.now(),
-        }));
-      }
-    );
+    // Vanilla queues for match event batching (not reliant on React)
+    const goalQueue: any[] = [];
+    const cardQueue: any[] = [];
+    const playerTimeQueue: any[] = [];
 
-    const playerTimeBatchQueue = useBatchEventQueue<MatchPlayerTime>(
-      async (events) => {
-        set((state) => ({
-          playerTimes: [...state.playerTimes, ...(events as MatchPlayerTime[])],
-          hasUnsavedChanges: true,
-          lastUpdated: Date.now(),
-        }));
-      }
-    );
+    // Helper to flush a specific queue and update store state
+    const flushQueue = (queue: any[], key: 'goals' | 'cards' | 'playerTimes') => {
+      if (queue.length === 0) return;
+      set((state) => ({
+        [key]: [...(state[key] as any[]), ...queue],
+        hasUnsavedChanges: true,
+        lastUpdated: Date.now(),
+      }));
+      queue.length = 0; // clear array
+    };
 
     return {
       ...createInitialState(),
@@ -60,12 +46,7 @@ export const useMatchStore = create<MatchStore>()(
       ...createCoreSlice(set, get, api),
       ...createOptimizedPlayerTimeSlice(set, get, api),
 
-      // --- Batched event queues (for test/dev/flush-inspection; not typed in MatchState) ---
-      goalBatchQueue,
-      cardBatchQueue,
-      playerTimeBatchQueue,
-
-      // --- Override add handlers to use the queue (for unsynced local state until flush) ---
+      // --- Override add handlers to use the (vanilla) event queues ---
       addGoal: (goalData) => {
         const newGoal: MatchGoal = {
           ...goalData,
@@ -73,7 +54,7 @@ export const useMatchStore = create<MatchStore>()(
           timestamp: Date.now(),
           synced: false,
         };
-        goalBatchQueue.add(newGoal);
+        goalQueue.push(newGoal);
         return newGoal;
       },
       addCard: (cardData) => {
@@ -83,7 +64,7 @@ export const useMatchStore = create<MatchStore>()(
           timestamp: Date.now(),
           synced: false,
         };
-        cardBatchQueue.add(newCard);
+        cardQueue.push(newCard);
         return newCard;
       },
       addPlayerTime: (playerTimeData) => {
@@ -93,15 +74,15 @@ export const useMatchStore = create<MatchStore>()(
           timestamp: Date.now(),
           synced: false,
         };
-        playerTimeBatchQueue.add(newPlayerTime);
+        playerTimeQueue.push(newPlayerTime);
         return newPlayerTime;
       },
 
-      // --- Batch flush to commit all queued events as true "unsynced" local state ---
+      // ----- Provide flush to commit all queued events -----
       flushBatchedEvents: async () => {
-        await goalBatchQueue.flush();
-        await cardBatchQueue.flush();
-        await playerTimeBatchQueue.flush();
+        flushQueue(goalQueue, 'goals');
+        flushQueue(cardQueue, 'cards');
+        flushQueue(playerTimeQueue, 'playerTimes');
       },
     };
   })
