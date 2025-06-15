@@ -7,11 +7,10 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 // Translation
 import { useTranslation } from "@/hooks/useTranslation";
+import { useMatchStore } from "@/stores/useMatchStore";
 
 interface UnifiedMatchTimerProps {
   selectedFixtureData: any;
-  homeScore: number;
-  awayScore: number;
   matchTime: number;
   isRunning: boolean;
   formatTime: (seconds: number) => string;
@@ -22,8 +21,6 @@ interface UnifiedMatchTimerProps {
 
 const UnifiedMatchTimer = ({
   selectedFixtureData,
-  homeScore,
-  awayScore,
   matchTime,
   isRunning,
   formatTime,
@@ -33,6 +30,9 @@ const UnifiedMatchTimer = ({
 }: UnifiedMatchTimerProps) => {
   const isMobile = useIsMobile();
   const { t, language } = useTranslation();
+
+  // Get live scores direct from match store for local-first updates!
+  const { homeScore, awayScore } = useMatchStore();
 
   // Calculate phase time for 7-a-side (25 minutes per half)
   const HALF_DURATION = 25 * 60; // 25 minutes in seconds

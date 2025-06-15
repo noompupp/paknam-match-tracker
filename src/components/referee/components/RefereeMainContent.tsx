@@ -81,8 +81,7 @@ const RefereeMainContent = (props: any) => {
         <RoleBasedRefereeTabsNavigation selectedFixtureData={props.selectedFixtureData} />
         <RefereeTabsContent
           selectedFixtureData={props.selectedFixtureData}
-          homeScore={props.homeScore}
-          awayScore={props.awayScore}
+          // Home & awayScore from useMatchStore, no need to pass as props anymore!
           matchTime={props.matchTime}
           isRunning={props.isRunning}
           formatTime={props.formatTime}
