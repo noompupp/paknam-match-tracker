@@ -14,6 +14,7 @@ interface UnifiedMatchTimerProps {
   formatTime: (seconds: number) => string;
   onToggleTimer: () => void;
   onResetMatch: () => void;
+  onFinishMatch?: () => void;
   phase?: 'first' | 'second' | 'overtime';
 }
 
@@ -26,6 +27,7 @@ const UnifiedMatchTimer = ({
   formatTime,
   onToggleTimer,
   onResetMatch,
+  onFinishMatch,
   phase = 'first'
 }: UnifiedMatchTimerProps) => {
   const isMobile = useIsMobile();
@@ -138,6 +140,26 @@ const UnifiedMatchTimer = ({
           >
             {isRunning ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
             {timerButtonLabel}
+          </Button>
+          
+          {/* --- Finish & Exit Button --- */}
+          <Button
+            onClick={onFinishMatch}
+            className={cn(
+              isMobile ? "w-full" : "",
+              "flex items-center gap-2 font-semibold ring-2 ring-primary/10"
+            )}
+            size={isMobile ? "lg" : "default"}
+            variant="default"
+            type="button"
+          >
+            <span>
+              <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2l4 -4" />
+                <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth={2} fill="none" />
+              </svg>
+            </span>
+            Finish &amp; Exit
           </Button>
           
           <Button

@@ -5,6 +5,8 @@ import { useRefereeStateOrchestrator } from "./hooks/useRefereeStateOrchestrator
 import { useIntelligentSyncManager } from "./hooks/useIntelligentSyncManager";
 import { MatchSaveStatusProvider } from "./hooks/useMatchSaveStatus";
 import { useState } from "react";
+import FinishMatchConfirmationDialog from "./components/FinishMatchConfirmationDialog";
+import { useNavigate } from "react-router-dom"; // for redirect after finish
 
 // Import useMatchDataHandlers (for reset/save/dialog logic)
 import { useMatchDataHandlers } from "./hooks/handlers/useMatchDataHandlers";
@@ -98,6 +100,40 @@ const RefereeToolsContent = () => {
     forceRefresh,
   });
 
+  const navigate = useNavigate();
+
+  // --- STATE: Finish & Exit Modal ---
+  const [finishDialogOpen, setFinishDialogOpen] = useState(false);
+  const [finishLoading, setFinishLoading] = useState(false);
+
+  // --- HANDLER: Finish & Exit Logic ---
+  const handleFinishMatch = async () => {
+    setFinishDialogOpen(true);
+  };
+
+  const handleFinishDialogCancel = () => setFinishDialogOpen(false);
+
+  // Confirmed: Save & finalize, then exit
+  const handleFinishDialogConfirm = async () => {
+    setFinishLoading(true);
+    // First: Save (if needed)
+    try {
+      if (typeof handleSaveMatch === "function") {
+        await handleSaveMatch();
+      }
+      // TODO: Optionally, set a "finalized" status in database if available
+
+      setFinishDialogOpen(false);
+      setFinishLoading(false);
+
+      // Option 1: Redirect to dashboard (root "/")
+      navigate("/");
+    } catch (e) {
+      // handle error (show message/toast, but don't exit)
+      setFinishLoading(false);
+    }
+  };
+
   if (fixturesLoading) {
     return (
       <>
@@ -120,8 +156,14 @@ const RefereeToolsContent = () => {
         title="Referee Tools"
         showLanguageToggle={true}
       />
-      {/* --- Ensure dialog component is rendered at root --- */}
+      {/* --- Ensure dialog components are rendered at root --- */}
       {ResetDialog}
+      <FinishMatchConfirmationDialog
+        open={finishDialogOpen}
+        onCancel={handleFinishDialogCancel}
+        onConfirm={handleFinishDialogConfirm}
+        loading={finishLoading}
+      />
       <main className="container mx-auto px-4 py-6 space-y-6 min-h-screen">
         {/* Sync banners */}
         {syncStatus.isSyncing && (
@@ -194,6 +236,7 @@ const RefereeToolsContent = () => {
             onSaveMatch={handleSaveMatch}
             // <-- correct dialog-based handler
             onResetMatch={handleResetMatchData}
+            onFinishMatch={handleFinishMatch} // <-- Add this callback!
             onDataRefresh={handleManualRefresh}
           />
         )}
