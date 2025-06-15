@@ -8,8 +8,6 @@ import UnifiedMatchTimer from "../UnifiedMatchTimer";
 
 interface SummaryTabProps {
   selectedFixtureData: any;
-  homeScore: number;
-  awayScore: number;
   matchTime: number;
   events: any[];
   goals: any[];
@@ -27,8 +25,6 @@ interface SummaryTabProps {
 
 const SummaryTab = ({
   selectedFixtureData,
-  homeScore,
-  awayScore,
   matchTime,
   events,
   goals,
@@ -60,8 +56,6 @@ const SummaryTab = ({
       {/* UnifiedMatchTimer is now rendered in the parent RefereeTabsContent, so not needed here */}
       <EnhancedMatchSummary
         selectedFixtureData={selectedFixtureData}
-        homeScore={homeScore}
-        awayScore={awayScore}
         matchTime={matchTime}
         events={events}
         goals={goals}
@@ -83,4 +77,3 @@ const SummaryTab = ({
 };
 
 export default SummaryTab;
-

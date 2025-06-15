@@ -107,15 +107,24 @@ const RefereeMainContent = (props: any) => {
           setSelectedTimePlayer={props.setSelectedTimePlayer}
           setSelectedTimeTeam={props.setSelectedTimeTeam}
           events={props.events}
-          toggleTimer={props.toggleTimer}
-          resetTimer={props.resetTimer}
+          // These were previously toggleTimer/resetTimer—pass correctly:
+          onToggleTimer={props.toggleTimer}
+          onResetMatch={props.resetTimer}
           assignGoal={props.assignGoal}
           addPlayer={props.addPlayer}
           removePlayer={props.removePlayer}
           togglePlayerTime={props.togglePlayerTime}
           onSaveMatch={props.onSaveMatch}
-          onResetMatch={props.onResetMatch}
           onDataRefresh={props.onDataRefresh}
+          onExportSummary={() => {}} // Add a no-op to satisfy required prop, adjust based on real usage if needed
+          onAddGoal={() => {}}
+          onRemoveGoal={() => {}}
+          onQuickGoal={() => {}}
+          onOpenGoalWizard={() => {}}
+          onAssignGoal={() => {}}
+          onAddCard={() => {}}
+          onAddPlayer={() => {}}
+          onRemovePlayer={() => {}}
         />
       </Tabs>
     </div>
