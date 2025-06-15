@@ -1,7 +1,5 @@
-
 import { Card, CardContent } from "@/components/ui/card";
 import GoalAssignmentHeader from "./components/GoalAssignmentHeader";
-import LiveScoreDisplay from "./components/LiveScoreDisplay";
 import GoalAssignmentForm from "./components/GoalAssignmentForm";
 import GoalAssignmentButton from "./components/GoalAssignmentButton";
 import AssignedGoalsList from "./components/AssignedGoalsList";
@@ -67,16 +65,6 @@ const GoalAssignment = ({
     <Card className="card-shadow-lg">
       <GoalAssignmentHeader />
       <CardContent className="space-y-6">
-        <LiveScoreDisplay
-          homeTeamName={selectedFixtureData?.home_team?.name}
-          awayTeamName={selectedFixtureData?.away_team?.name}
-          homeScore={homeScore}
-          awayScore={awayScore}
-          homeTeamGoals={homeTeamGoals}
-          awayTeamGoals={awayTeamGoals}
-          totalAssists={totalAssists}
-        />
-
         <GoalAssignmentForm
           allPlayers={allPlayers}
           homeTeamPlayers={homeTeamPlayers}

@@ -1,4 +1,3 @@
-
 import { Crown, Clock } from "lucide-react";
 import RefereeCard from "../../../shared/RefereeCard";
 import { cn } from "@/lib/utils";
@@ -33,7 +32,7 @@ const ScoreTabDisplay = ({
       variant="highlighted"
       className="referee-score-display"
       icon={<Crown className="h-5 w-5" />}
-      title="Live Score"
+      title={null}
       headerActions={
         <div className="flex items-center gap-2">
           <div className={cn(
