@@ -177,36 +177,72 @@ const InitialPlayerSelection = ({
                 {availablePlayers.map((player) => {
                   const isSelected = selectedPlayerIds.has(player.id);
                   const canSelect = selectedCount < REQUIRED_PLAYERS || isSelected;
+
+                  // Handler for clicking or keyboard toggling the row
+                  const handleRowToggle = () => {
+                    // Toggle selection only if possible
+                    if (isSelected) {
+                      handlePlayerToggle(player.id, false);
+                    } else if (canSelect) {
+                      handlePlayerToggle(player.id, true);
+                    }
+                  };
                   
+                  // Handler for keyboard (space/enter triggers)
+                  const onKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+                    if (e.key === " " || e.key === "Enter") {
+                      e.preventDefault();
+                      handleRowToggle();
+                    }
+                  };
+
+                  // Tailwind for accessibility, focus, and pressed states
+                  const baseClass =
+                    `p-3 border rounded-lg transition-colors outline-none
+                    flex items-center gap-3
+                    ${isSelected 
+                      ? 'border-primary bg-primary/10' 
+                      : canSelect 
+                        ? 'border-border hover:border-primary/50 hover:bg-accent/30 focus:border-primary focus:ring-2 focus:ring-primary/40' 
+                        : 'border-border opacity-60'
+                    }
+                    cursor-pointer
+                    active:bg-primary/30
+                    focus-visible:ring-2
+                    focus-visible:ring-primary
+                    select-none
+                    `;
+
                   return (
-                    <div 
+                    <div
                       key={player.id}
-                      className={`p-3 border rounded-lg transition-colors ${
-                        isSelected 
-                          ? 'border-primary bg-primary/10' 
-                          : canSelect 
-                            ? 'border-border hover:border-primary/50' 
-                            : 'border-border opacity-60'
-                      }`}
+                      className={baseClass}
+                      tabIndex={canSelect ? 0 : -1}
+                      role="checkbox"
+                      aria-checked={isSelected}
+                      aria-disabled={!canSelect}
+                      onClick={() => canSelect && handleRowToggle()}
+                      onKeyDown={canSelect ? onKeyDown : undefined}
+                      data-selected={isSelected}
+                      data-disabled={!canSelect}
                     >
-                      <div className="flex items-center gap-3">
+                      {/* Checkbox: purely visual, not interactive */}
+                      <div className="pointer-events-none">
                         <Checkbox
                           checked={isSelected}
-                          onCheckedChange={(checked) => 
-                            handlePlayerToggle(player.id, checked as boolean)
-                          }
-                          disabled={!canSelect}
+                          tabIndex={-1}
+                          // Don't call onCheckedChange to disable separate interaction
                         />
-                        
-                        <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center text-sm font-bold text-primary flex-shrink-0">
-                          {player.number || '?'}
-                        </div>
-                        
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <span className="font-medium truncate">{player.name}</span>
-                            <PlayerRoleBadge role={player.role || 'Starter'} size="sm" />
-                          </div>
+                      </div>
+                      
+                      <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center text-sm font-bold text-primary flex-shrink-0">
+                        {player.number || '?'}
+                      </div>
+                      
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium truncate">{player.name}</span>
+                          <PlayerRoleBadge role={player.role || 'Starter'} size="sm" />
                         </div>
                       </div>
                     </div>
