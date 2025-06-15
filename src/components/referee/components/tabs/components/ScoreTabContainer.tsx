@@ -1,12 +1,13 @@
+
 import React from "react";
 import { ComponentPlayer } from "../../../hooks/useRefereeState";
 import { useMatchStore } from "@/stores/useMatchStore";
 import { useGlobalBatchSaveManager } from "@/hooks/useGlobalBatchSaveManager";
 import { useAutoSave } from "@/hooks/useAutoSave";
-import UnsavedChangesIndicator from "./UnsavedChangesIndicator";
-import SimplifiedGoalRecording from "./SimplifiedGoalRecording";
-import GoalsSummary from "./GoalsSummary";
-import MatchControlsSection from "./MatchControlsSection";
+import ScoreTabGoalsSummarySection from "./ScoreTabGoalsSummarySection";
+import ScoreTabGoalRecordingSection from "./ScoreTabGoalRecordingSection";
+import ScoreTabUnsavedChangesSection from "./ScoreTabUnsavedChangesSection";
+import ScoreTabMatchControlsSection from "./ScoreTabMatchControlsSection";
 
 interface ScoreTabContainerProps {
   selectedFixtureData: any;
@@ -113,24 +114,19 @@ const ScoreTabContainer = ({
 
   return (
     <div className="space-y-6">
-      {goals.length > 0 && (
-        <GoalsSummary goals={goals} formatTime={formatTime} />
-      )}
-
-      <SimplifiedGoalRecording
+      <ScoreTabGoalsSummarySection goals={goals} formatTime={formatTime} />
+      <ScoreTabGoalRecordingSection
         homeTeamName={homeTeamName}
         awayTeamName={awayTeamName}
         onRecordGoal={handleRecordGoal}
         isDisabled={false}
       />
-
-      <UnsavedChangesIndicator
+      <ScoreTabUnsavedChangesSection
         hasUnsavedChanges={hasUnsavedChanges}
         unsavedItemsCount={unsavedItemsCount}
         onSave={handleSaveMatch}
       />
-
-      <MatchControlsSection
+      <ScoreTabMatchControlsSection
         isRunning={isRunning}
         onToggleTimer={onToggleTimer}
         onSaveMatch={handleSaveMatch}
