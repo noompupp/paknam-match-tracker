@@ -6,6 +6,7 @@ import { useEnhancedAutoSave } from "@/hooks/useEnhancedAutoSave";
 import { useGlobalBatchSaveManager } from "@/hooks/useGlobalBatchSaveManager";
 import { useMatchStore } from "@/stores/useMatchStore";
 import { ProcessedPlayer } from "@/utils/refereeDataProcessor";
+import { useCardHandlers } from "../../hooks/handlers/useCardHandlers";
 
 interface EnhancedCardsTabProps {
   allPlayers: ProcessedPlayer[];
@@ -49,7 +50,16 @@ const EnhancedCardsTab = ({
   awayScore
 }: EnhancedCardsTabProps) => {
   // Get unsaved changes state and sync methods
-  const { hasUnsavedChanges, syncCardsToDatabase } = useMatchStore();
+  const { hasUnsavedChanges, syncCardsToDatabase, addEvent } = useMatchStore();
+
+  // Set up card handlers (use working DB-driven handler)
+  const { handleAddCard } = useCardHandlers({
+    allPlayers,
+    matchTime,
+    selectedFixtureData,
+    addCard: () => {}, // Not used directly since we commit to DB
+    addEvent: addEvent
+  });
 
   // Optimized batch save manager for cards
   const { batchSave } = useGlobalBatchSaveManager({
@@ -83,31 +93,24 @@ const EnhancedCardsTab = ({
   const currentPhase = matchTime <= HALF_DURATION ? 'first' : 
                        matchTime <= HALF_DURATION * 2 ? 'second' : 'overtime';
 
-  const handleAddCard = () => {
+  // Actual handler wired up: resolves playerId, team, type and calls useCardHandlers.handleAddCard
+  const handleAddCardWrapper = async () => {
     if (!selectedPlayer || !selectedTeam) return;
-    
+
     // Find player in filtered arrays first, then fall back to all players
     let player: ProcessedPlayer | undefined;
-    
     if (selectedTeam === 'home' && homeTeamPlayers) {
       player = homeTeamPlayers.find(p => p.id.toString() === selectedPlayer);
     } else if (selectedTeam === 'away' && awayTeamPlayers) {
       player = awayTeamPlayers.find(p => p.id.toString() === selectedPlayer);
     }
-    
-    // Fallback to all players if not found in filtered arrays
     if (!player) {
       player = allPlayers.find(p => p.id.toString() === selectedPlayer);
     }
-    
     if (!player) return;
-    
-    console.log('🟨 Enhanced Cards: Adding card with improved sync:', { 
-      player: player.name, 
-      team: selectedTeam, 
-      cardType: selectedCardType, 
-      time: matchTime 
-    });
+
+    // Delegate to main handler (which writes to DB and manages events)
+    await handleAddCard(player.name, selectedTeam, selectedCardType, matchTime);
   };
 
   return (
@@ -138,7 +141,7 @@ const EnhancedCardsTab = ({
         onPlayerSelect={onPlayerSelect}
         onTeamChange={onTeamChange}
         onCardTypeChange={onCardTypeChange}
-        onAddCard={handleAddCard}
+        onAddCard={handleAddCardWrapper}
         formatTime={formatTime}
       />
 
@@ -158,3 +161,4 @@ const EnhancedCardsTab = ({
 };
 
 export default EnhancedCardsTab;
+
