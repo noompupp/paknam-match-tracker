@@ -86,18 +86,18 @@ const EnhancedPlayerTimeTracker = ({
 
   const handlePlayerRemove = (playerId: number) => {
     const removal = canRemovePlayer(playerId, trackedPlayers, t);
-    
+
     if (!removal.canRemove) {
       toast({
         title: t('referee.cannotRemovePlayer'),
         description: removal.reason
-          ? t('referee.removePlayerReason', undefined, { reason: removal.reason })
+          ? t('referee.removePlayerReason').replace('{reason}', removal.reason)
           : "",
         variant: "destructive"
       });
       return;
     }
-    
+
     handleRemovePlayer(playerId);
   };
 
@@ -132,16 +132,14 @@ const EnhancedPlayerTimeTracker = ({
           <AlertDescription>
             <div className="flex items-center justify-between">
               <span>
-                {substitutionManager.isSubOutInitiated 
-                  ? t(
-                      "referee.substitutionAlertOut",
-                      undefined,
-                      { name: substitutionManager.pendingSubstitution?.outgoingPlayerName || "" }
+                {substitutionManager.isSubOutInitiated
+                  ? t("referee.substitutionAlertOut").replace(
+                      "{name}",
+                      substitutionManager.pendingSubstitution?.outgoingPlayerName || ""
                     )
-                  : t(
-                      "referee.substitutionAlertIn",
-                      undefined,
-                      { name: substitutionManager.pendingSubstitution?.outgoingPlayerName || "" }
+                  : t("referee.substitutionAlertIn").replace(
+                      "{name}",
+                      substitutionManager.pendingSubstitution?.outgoingPlayerName || ""
                     )
                 }
               </span>
@@ -166,7 +164,10 @@ const EnhancedPlayerTimeTracker = ({
             <div className="flex items-center justify-between">
               <span>{playerCountValidation.message}</span>
               <Badge variant={playerCountValidation.isValid ? 'default' : 'destructive'}>
-                {t("referee.playerOnFieldBadge", undefined, { count: playerCountValidation.activeCount })}
+                {t("referee.playerOnFieldBadge").replace(
+                  "{count}",
+                  `${playerCountValidation.activeCount}`
+                )}
               </Badge>
             </div>
           </AlertDescription>
