@@ -3,27 +3,34 @@ import { useRefereeEnhancedHandlers } from "./useRefereeEnhancedHandlers";
 import { useMatchStore } from "@/stores/useMatchStore";
 import { useEffect, useRef } from "react";
 
+// Main orchestrator for referee match state
 export const useRefereeStateOrchestrator = () => {
   // Get all integrated state
   const orchestrator = useRefereeStateIntegration();
-  // Use match store directly for homeScore/awayScore/team names
+
+  // Always use up-to-date data from Zustand for live scores and names
   const { homeScore, awayScore, homeTeamName, awayTeamName } = useMatchStore();
 
-  // Track last fixture id in a ref to avoid duplicate calls
+  // Ref to avoid unnecessary duplicate setupMatch calls
   const lastFixtureIdRef = useRef<number | null>(null);
-  // Synchronize store's base info when fixture changes
+
+  // Whenever selectedFixtureData changes, trigger setupMatch!
   useEffect(() => {
-    const selectedFixtureData = orchestrator.baseState.selectedFixtureData;
+    const { selectedFixtureData } = orchestrator.baseState;
     if (
       selectedFixtureData &&
+      selectedFixtureData.id &&
       selectedFixtureData.id !== lastFixtureIdRef.current &&
       selectedFixtureData.home_team &&
       selectedFixtureData.away_team
     ) {
+      // Always use names from fixture data directly; never from the store (store may be stale/empty)
       const homeTeamNameValue = selectedFixtureData.home_team?.name || "";
       const awayTeamNameValue = selectedFixtureData.away_team?.name || "";
       const homeTeamId = String(selectedFixtureData.home_team?.id || "");
       const awayTeamId = String(selectedFixtureData.away_team?.id || "");
+
+      // Call setupMatch
       orchestrator.matchState?.setupMatch?.({
         fixtureId: selectedFixtureData.id,
         homeTeamName: homeTeamNameValue,
@@ -32,7 +39,8 @@ export const useRefereeStateOrchestrator = () => {
         awayTeamId
       });
       lastFixtureIdRef.current = selectedFixtureData.id;
-      // Deep state log: store after setupMatch runs
+
+      // Deep log after setupMatch
       setTimeout(() => {
         const storeState = useMatchStore.getState();
         console.log('[useRefereeStateOrchestrator] 🟢 Store snapshot immediately after setupMatch:', {
@@ -45,7 +53,7 @@ export const useRefereeStateOrchestrator = () => {
         });
       }, 0);
       console.log(
-        "[useRefereeStateOrchestrator] setupMatch called on fixture change:",
+        "[useRefereeStateOrchestrator] setupMatch called on fixtureData change with FIXTURE team names:",
         {
           fixtureId: selectedFixtureData.id,
           homeTeamName: homeTeamNameValue,

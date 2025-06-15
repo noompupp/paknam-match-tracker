@@ -39,7 +39,6 @@ const ScoreTabContainer = ({
   forceRefresh,
   onShowWizard
 }: ScoreTabContainerProps) => {
-  // Use match store as single source of truth for homeScore/awayScore and team info
   const {
     fixtureId,
     homeScore,
@@ -58,32 +57,37 @@ const ScoreTabContainer = ({
     awayTeamId
   } = useMatchStore();
 
-  // Set fixture ID and team names when component mounts or fixture changes
+  // Only react to fixture ID change, and always use names from fixtureData
   React.useEffect(() => {
     if (
-      selectedFixtureData?.id && (
-        fixtureId !== selectedFixtureData.id ||
-        homeTeamName !== useMatchStore.getState().homeTeamName ||
-        awayTeamName !== useMatchStore.getState().awayTeamName
+      selectedFixtureData?.id &&
+      (
+        fixtureId !== selectedFixtureData.id
       )
     ) {
+      // Always use names from fixtureData directly (match store can sometimes be empty on new match)
+      const homeTeamNameValue = selectedFixtureData.home_team?.name || "";
+      const awayTeamNameValue = selectedFixtureData.away_team?.name || "";
+      const homeTeamIdValue = String(selectedFixtureData.home_team?.id || "");
+      const awayTeamIdValue = String(selectedFixtureData.away_team?.id || "");
+
       setupMatch({
         fixtureId: selectedFixtureData.id,
-        homeTeamName: homeTeamName,
-        awayTeamName: awayTeamName,
-        homeTeamId: homeTeamId,
-        awayTeamId: awayTeamId
+        homeTeamName: homeTeamNameValue,
+        awayTeamName: awayTeamNameValue,
+        homeTeamId: homeTeamIdValue,
+        awayTeamId: awayTeamIdValue
       });
-      setFixtureId(selectedFixtureData.id); // In case any legacy code needs it
-      console.log("[ScoreTabContainer] setupMatch called", {
+      setFixtureId(selectedFixtureData.id); // (If legacy code or analytics still need raw fixtureId)
+      console.log("[ScoreTabContainer] setupMatch called (using fixture data)", {
         fixtureId: selectedFixtureData.id,
-        homeTeamName,
-        awayTeamName,
-        homeTeamId,
-        awayTeamId,
+        homeTeamName: homeTeamNameValue,
+        awayTeamName: awayTeamNameValue,
+        homeTeamId: homeTeamIdValue,
+        awayTeamId: awayTeamIdValue
       });
     }
-  }, [selectedFixtureData?.id, homeTeamName, awayTeamName, homeTeamId, awayTeamId, fixtureId, setupMatch, setFixtureId]);
+  }, [selectedFixtureData?.id, fixtureId, setupMatch, setFixtureId]);
 
   // Global batch save manager
   const { batchSave, unsavedItemsCount } = useGlobalBatchSaveManager({
@@ -95,7 +99,7 @@ const ScoreTabContainer = ({
   useAutoSave({
     enabled: true,
     onAutoSave: batchSave,
-    interval: 30000, // 30 seconds
+    interval: 30000,
     hasUnsavedChanges
   });
 
@@ -110,7 +114,6 @@ const ScoreTabContainer = ({
 
   const { toast } = useToast();
 
-  // Show yellow unsaved banner/toast logic
   React.useEffect(() => {
     if (hasUnsavedChanges && (unsavedItemsCount.goals > 0 || unsavedItemsCount.cards > 0 || unsavedItemsCount.playerTimes > 0)) {
       toast({
@@ -182,4 +185,3 @@ const ScoreTabContainer = ({
 };
 
 export default ScoreTabContainer;
-

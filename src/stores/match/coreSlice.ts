@@ -1,4 +1,3 @@
-
 import { StateCreator } from 'zustand';
 import { MatchState } from './types';
 import { MatchActions } from './actions';
@@ -22,7 +21,8 @@ export interface CoreSlice {
 export const createCoreSlice = (set: any, get: any, api: any): CoreSlice => ({
   setupMatch: ({ fixtureId, homeTeamName, awayTeamName, homeTeamId, awayTeamId }) => {
     set((state: any) => {
-      // Merge and always update essential match meta (team names/IDs)
+      // Merge and ALWAYS update essential match meta (team names, IDs) directly from fixture
+      // This overwrites any placeholder or empty string previously set
       const next = {
         ...state,
         fixtureId,
@@ -31,14 +31,14 @@ export const createCoreSlice = (set: any, get: any, api: any): CoreSlice => ({
         homeTeamId: homeTeamId ?? state.homeTeamId ?? "",
         awayTeamId: awayTeamId ?? state.awayTeamId ?? "",
       };
-      // Debug log: show before and after
+      // Debug log: show before and after state for easy diagnosis
       console.log("[MATCH SETUP] State before update:", state);
       console.log("[MATCH SETUP] State after update:", next);
       return next;
     });
-    // Defensive: recalculate scores right after setting team names
+    // Defensive: recalculate scores immediately after setting team names
     if (typeof get().recalculateScores === "function") {
-      get().recalculateScores(); // This will re-tally live scores with current team names, if implemented
+      get().recalculateScores();
       console.log("[MATCH SETUP] Forced immediate score recalc after team names set");
     }
   },
@@ -101,4 +101,3 @@ export const createCoreSlice = (set: any, get: any, api: any): CoreSlice => ({
     };
   }
 });
-
