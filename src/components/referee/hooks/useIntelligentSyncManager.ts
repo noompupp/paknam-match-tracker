@@ -21,42 +21,56 @@ export const useIntelligentSyncManager = () => {
   const debounceTimer = useRef<NodeJS.Timeout>();
   const maxIntervalTimer = useRef<NodeJS.Timeout>();
   const isMounted = useRef(true);
-  const { batchSave, hasUnsavedChanges, unsavedItemsCount } = useMatchStore();
+
+  // Get required fields/actions from store
+  const {
+    fixtureId,
+    hasUnsavedChanges,
+    getUnsavedItemsCount,
+    syncAllToDatabase
+  } = useMatchStore();
+
+  // Calculate sum of all unsaved items (goals, cards, playerTimes)
+  const getTotalPendingChanges = useCallback(() => {
+    if (typeof getUnsavedItemsCount !== "function") return 0;
+    const counts = getUnsavedItemsCount();
+    return (counts.goals ?? 0) + (counts.cards ?? 0) + (counts.playerTimes ?? 0);
+  }, [getUnsavedItemsCount]);
 
   // Sync function, batched & robust
   const executeSync = useCallback(async () => {
+    if (!fixtureId) return;
     setStatus((s) => ({ ...s, isSyncing: true, lastError: null }));
     try {
-      const resp = await batchSave();
-      if (resp && resp.success) {
-        setStatus((s) => ({
-          ...s,
-          isSyncing: false,
-          lastError: null,
-          lastSuccess: Date.now(),
-          pendingChanges: 0
-        }));
-        toast({ title: "Match Data Synced", description: "All changes saved!" });
-      } else {
-        throw new Error(resp?.message ?? "Unknown sync error");
-      }
+      await syncAllToDatabase(fixtureId);
+      setStatus((s) => ({
+        ...s,
+        isSyncing: false,
+        lastError: null,
+        lastSuccess: Date.now(),
+        pendingChanges: 0
+      }));
+      toast({ title: "Match Data Synced", description: "All changes saved!" });
     } catch (error: any) {
       setStatus(s => ({
-        ...s, isSyncing: false, lastError: error.message || "Sync failed"
+        ...s,
+        isSyncing: false,
+        lastError: error?.message || "Sync failed"
       }));
       toast({
-        title: "Sync Failed", 
-        description: error.message ?? "Unknown sync error", 
+        title: "Sync Failed",
+        description: error?.message ?? "Unknown sync error",
         variant: "destructive"
       });
     }
-  }, [batchSave, toast]);
+  }, [fixtureId, syncAllToDatabase, toast]);
 
   // Schedule debounced/batched sync
   const scheduleSync = useCallback(() => {
+    const pending = getTotalPendingChanges();
     setStatus((s) => ({
       ...s,
-      pendingChanges: Object.values(unsavedItemsCount ?? {}).reduce((a: number, b: number) => a + (typeof b === "number" ? b : 0), 0)
+      pendingChanges: typeof pending === "number" ? pending : 0
     }));
     if (!hasUnsavedChanges) return;
     if (debounceTimer.current) clearTimeout(debounceTimer.current);
@@ -68,7 +82,7 @@ export const useIntelligentSyncManager = () => {
         maxIntervalTimer.current = undefined;
       }, 120000); // 2 min max
     }
-  }, [executeSync, hasUnsavedChanges, unsavedItemsCount]);
+  }, [executeSync, hasUnsavedChanges, getTotalPendingChanges]);
 
   // Listen for unsaved local changes
   useEffect(() => {
