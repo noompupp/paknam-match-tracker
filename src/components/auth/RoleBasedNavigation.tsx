@@ -1,8 +1,7 @@
-
 import React, { useEffect, useRef } from 'react';
 import { useSecureAuth } from "@/contexts/SecureAuthContext";
 import { Button } from "@/components/ui/button";
-import { Home, Calendar, Trophy, Flag, LogOut, User, Lock, Users } from "lucide-react";
+import { Home, Calendar, Trophy, Flag, LogOut, User, Lock, Users, Star } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { usePlatformDetection } from "@/hooks/usePlatformDetection";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -74,6 +73,7 @@ const RoleBasedNavigation = ({ activeTab, onTabChange }: RoleBasedNavigationProp
     { id: "teams", label: t('nav.teams'), icon: Users },
     { id: "results", label: t('nav.results'), icon: Trophy },
     { id: "fixtures", label: t('nav.fixtures'), icon: Calendar },
+    { id: "rating", label: t('nav.rating'), icon: Star }, // NEW "Rating" tab
   ];
 
   // Protected navigation items for authenticated users
@@ -207,3 +207,6 @@ const RoleBasedNavigation = ({ activeTab, onTabChange }: RoleBasedNavigationProp
 };
 
 export default RoleBasedNavigation;
+
+// NOTE: This file is getting quite long (210+ lines).
+// Consider refactoring into smaller components after this update.

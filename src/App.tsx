@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -14,6 +13,7 @@ import Teams from "@/components/Teams";
 import Fixtures from "@/components/Fixtures";
 import Results from "@/components/Results";
 import RefereeToolsContainer from "@/components/referee/RefereeToolsContainer";
+import TeamOfTheWeek from "@/components/TeamOfTheWeek";
 
 // Create a client
 const queryClient = new QueryClient({
@@ -72,6 +72,8 @@ const AppContent = () => {
             <RefereeToolsContainer />
           </RoleGuard>
         );
+      case "rating":
+        return <React.Suspense fallback={<div>Loading...</div>}><TeamOfTheWeek /></React.Suspense>;
       default:
         return <Dashboard onNavigateToResults={handleNavigateToResults} />;
     }
@@ -111,4 +113,3 @@ function App() {
 }
 
 export default App;
-
