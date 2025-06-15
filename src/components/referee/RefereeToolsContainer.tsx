@@ -7,8 +7,8 @@ import { useIntelligentSyncManager } from "./hooks/useIntelligentSyncManager";
 import { MatchSaveStatusProvider } from "./hooks/useMatchSaveStatus";
 import { useState } from "react";
 
-// Remove all workflow/coordination logic and types
-// The referee tool is now always for a solo referee
+// Import useMatchDataHandlers (for reset/save/dialog logic)
+import { useMatchDataHandlers } from "./hooks/handlers/useMatchDataHandlers";
 
 const RefereeToolsContent = () => {
   const {
@@ -47,8 +47,9 @@ const RefereeToolsContent = () => {
     setSelectedTimePlayer,
     events,
     saveAttempts,
-    handleSaveMatch,
-    handleResetMatch,
+    // --- THE FOLLOWING REFS ARE NOT NEEDED AS WE USE DATA HANDLERS ---
+    // handleSaveMatch,
+    // handleResetMatch,
     handleAssignGoal,
     handleAddPlayer,
     handleRemovePlayer,
@@ -58,11 +59,45 @@ const RefereeToolsContent = () => {
     assignGoal,
     removePlayer,
     addPlayer,
-    handleManualRefresh
+    handleManualRefresh,
+    resetScore,
+    resetEvents,
+    resetCards,
+    resetTracking,
+    resetGoals,
+    addEvent,
+    playersForTimeTracker,
+    forceRefresh,
   } = useRefereeStateOrchestrator();
 
-  // --- Improved batch sync/atomicity/minimal REST feedback ---
+  // Batch sync/atomicity/minimal REST feedback
   const { syncStatus, forceSync, pendingChanges } = useIntelligentSyncManager();
+
+  // --- Integrate new match data handlers (dialog, save, reset) ---
+  // Supplying the same object/refs expected in useMatchDataHandlers
+  const {
+    handleSaveMatch,
+    handleResetMatchData,
+    ResetDialog,
+  } = useMatchDataHandlers({
+    selectedFixtureData,
+    homeScore,
+    awayScore,
+    goals,
+    playersForTimeTracker,
+    matchTime,
+    setSaveAttempts: typeof saveAttempts === "function"
+      ? saveAttempts
+      : () => {}, // fallback no-op if not available
+    resetTimer,
+    resetScore,
+    resetEvents,
+    resetCards,
+    resetTracking,
+    resetGoals,
+    addEvent,
+    forceRefresh,
+  });
 
   if (fixturesLoading) {
     return (
@@ -86,8 +121,10 @@ const RefereeToolsContent = () => {
         title="Referee Tools"
         showLanguageToggle={true}
       />
+      {/* --- Ensure dialog component is rendered at root --- */}
+      {ResetDialog}
       <main className="container mx-auto px-4 py-6 space-y-6 min-h-screen">
-        {/* --- New: Show loading/sync/error banner as needed --- */}
+        {/* Sync banners */}
         {syncStatus.isSyncing && (
           <div className="flex items-center gap-2 py-2 px-4 bg-blue-50 border border-blue-200 rounded-lg text-blue-800 dark:bg-blue-900/10 dark:border-blue-800 mb-4">
             <span className="animate-spin mr-2 w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full" />
@@ -154,8 +191,8 @@ const RefereeToolsContent = () => {
             addPlayer={handleAddPlayer}
             removePlayer={handleRemovePlayer}
             togglePlayerTime={handleTogglePlayerTime}
-            onSaveMatch={handleSaveMatch}
-            onResetMatch={handleResetMatch}
+            onSaveMatch={handleSaveMatch} {/** <-- correct, via useMatchDataHandlers */}
+            onResetMatch={handleResetMatchData} {/** <-- correct dialog-based handler */}
             onDataRefresh={handleManualRefresh}
           />
         )}
@@ -173,3 +210,4 @@ const RefereeToolsContainer = () => {
 };
 
 export default RefereeToolsContainer;
+
