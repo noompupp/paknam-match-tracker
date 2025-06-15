@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -13,6 +12,7 @@ import {
   PauseCircle,
   FileText
 } from "lucide-react";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface RefereeHomeActionMenuProps {
   selectedFixtureData: any;
@@ -47,6 +47,7 @@ const RefereeHomeActionMenu = ({
   onQuickGoal,
   onExportSummary
 }: RefereeHomeActionMenuProps) => {
+  const { t } = useTranslation();
   const totalUnsavedChanges = unsavedChanges.goals + unsavedChanges.cards + unsavedChanges.playerTimes;
   const hasUnsavedChanges = totalUnsavedChanges > 0;
 
@@ -54,8 +55,8 @@ const RefereeHomeActionMenu = ({
     return (
       <Card className="w-full">
         <CardHeader className="text-center">
-          <CardTitle className="text-muted-foreground">No Match Selected</CardTitle>
-          <CardDescription>Select a match to access referee controls</CardDescription>
+          <CardTitle className="text-muted-foreground">{t('referee.noMatchSelected')}</CardTitle>
+          <CardDescription>{t('referee.selectMatchTooltip')}</CardDescription>
         </CardHeader>
       </Card>
     );
@@ -68,11 +69,10 @@ const RefereeHomeActionMenu = ({
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <CardTitle className="text-lg">
-              {selectedFixtureData.home_team?.name || 'Home'} vs{' '}
-              {selectedFixtureData.away_team?.name || 'Away'}
+              {selectedFixtureData.home_team?.name || t('referee.homeTeam')} {t('match.vs')} {selectedFixtureData.away_team?.name || t('referee.awayTeam')}
             </CardTitle>
             <Badge variant={isRunning ? 'destructive' : 'secondary'}>
-              {isRunning ? 'LIVE' : 'PAUSED'}
+              {isRunning ? t('referee.live') : t('referee.paused')}
             </Badge>
           </div>
         </CardHeader>
@@ -98,12 +98,12 @@ const RefereeHomeActionMenu = ({
               {isRunning ? (
                 <>
                   <PauseCircle className="h-4 w-4" />
-                  Pause
+                  {t('referee.pause')}
                 </>
               ) : (
                 <>
                   <PlayCircle className="h-4 w-4" />
-                  Start
+                  {t('referee.start')}
                 </>
               )}
             </Button>
@@ -114,7 +114,7 @@ const RefereeHomeActionMenu = ({
               className="flex items-center gap-2"
             >
               <RotateCcw className="h-4 w-4" />
-              Reset
+              {t('referee.reset')}
             </Button>
           </div>
         </CardContent>
@@ -125,13 +125,13 @@ const RefereeHomeActionMenu = ({
         <CardHeader className="pb-3">
           <CardTitle className="text-base flex items-center gap-2">
             <Target className="h-4 w-4" />
-            Quick Actions
+            {t('referee.quickActions')}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           {/* Quick Goals */}
           <div className="space-y-2">
-            <div className="text-sm font-medium">Quick Goals</div>
+            <div className="text-sm font-medium">{t('referee.quickGoals')}</div>
             <div className="flex gap-2">
               <Button
                 onClick={() => onQuickGoal('home')}
@@ -139,7 +139,7 @@ const RefereeHomeActionMenu = ({
                 size="sm"
                 className="flex-1"
               >
-                {selectedFixtureData.home_team?.name || 'Home'} Goal
+                {selectedFixtureData.home_team?.name || t('referee.homeTeam')} {t('event.goal')}
               </Button>
               <Button
                 onClick={() => onQuickGoal('away')}
@@ -147,7 +147,7 @@ const RefereeHomeActionMenu = ({
                 size="sm"
                 className="flex-1"
               >
-                {selectedFixtureData.away_team?.name || 'Away'} Goal
+                {selectedFixtureData.away_team?.name || t('referee.awayTeam')} {t('event.goal')}
               </Button>
             </div>
           </div>
@@ -155,10 +155,10 @@ const RefereeHomeActionMenu = ({
           {/* Save Controls */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <div className="text-sm font-medium">Match Data</div>
+              <div className="text-sm font-medium">{t('referee.matchData')}</div>
               {hasUnsavedChanges && (
                 <Badge variant="destructive" className="text-xs">
-                  {totalUnsavedChanges} unsaved
+                  {t('referee.unsaved', { count: totalUnsavedChanges })}
                 </Badge>
               )}
             </div>
@@ -171,7 +171,7 @@ const RefereeHomeActionMenu = ({
                 disabled={!hasUnsavedChanges}
               >
                 <Save className="h-4 w-4" />
-                Save All
+                {t('referee.saveAll')}
               </Button>
               <Button
                 onClick={onExportSummary}
@@ -180,7 +180,7 @@ const RefereeHomeActionMenu = ({
                 className="flex items-center gap-2"
               >
                 <FileText className="h-4 w-4" />
-                Export
+                {t('referee.exportSummary')}
               </Button>
             </div>
           </div>
@@ -193,26 +193,26 @@ const RefereeHomeActionMenu = ({
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2 text-orange-800 dark:text-orange-400">
               <AlertTriangle className="h-4 w-4" />
-              Unsaved Changes
+              {t('referee.unsavedChanges')}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
             {unsavedChanges.goals > 0 && (
               <div className="flex items-center gap-2 text-sm">
                 <Target className="h-3 w-3" />
-                <span>{unsavedChanges.goals} goal{unsavedChanges.goals > 1 ? 's' : ''}</span>
+                <span>{t(`referee.goals`, { count: unsavedChanges.goals })}</span>
               </div>
             )}
             {unsavedChanges.cards > 0 && (
               <div className="flex items-center gap-2 text-sm">
                 <AlertTriangle className="h-3 w-3" />
-                <span>{unsavedChanges.cards} card{unsavedChanges.cards > 1 ? 's' : ''}</span>
+                <span>{t(`referee.cards`, { count: unsavedChanges.cards })}</span>
               </div>
             )}
             {unsavedChanges.playerTimes > 0 && (
               <div className="flex items-center gap-2 text-sm">
                 <Users className="h-3 w-3" />
-                <span>{unsavedChanges.playerTimes} player time{unsavedChanges.playerTimes > 1 ? 's' : ''}</span>
+                <span>{t(`referee.playerTimes`, { count: unsavedChanges.playerTimes })}</span>
               </div>
             )}
           </CardContent>

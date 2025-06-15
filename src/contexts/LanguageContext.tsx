@@ -124,7 +124,50 @@ const translations = {
     // Language
     'language.english': 'English',
     'language.thai': 'ไทย',
-    'language.changeLanguage': 'Change language'
+    'language.changeLanguage': 'Change language',
+
+    // Referee tools (expanding with missing keys for warnings, quick actions, summary etc)
+    'referee.noMatchSelected': 'No Match Selected',
+    'referee.selectMatchTooltip': 'Select a match to access referee controls',
+    'referee.quickActions': 'Quick Actions',
+    'referee.quickGoals': 'Quick Goals',
+    'referee.matchData': 'Match Data',
+    'referee.unsavedChanges': 'Unsaved Changes',
+    'referee.completed': 'Completed',
+    'referee.live': 'Live',
+    'referee.paused': 'Paused',
+    'referee.start': 'Start',
+    'referee.pause': 'Pause',
+    'referee.reset': 'Reset',
+    'referee.scheduled': 'Scheduled',
+    'referee.scored': 'Scored',
+    'referee.dataReady': 'Data Ready',
+    'referee.dataIssues': 'Data Issues',
+    'referee.matchTeamsVs': '{home} vs {away}',
+    'referee.playerTimeTracking': 'Player Time Tracking',
+    'referee.noPlayersTracked': 'No players are being tracked',
+    'referee.players': '{count} players',
+    'referee.totalMinutes': '{count} total minutes',
+    // Warnings
+    'referee.sevenPlayerLimitExceeded': '7-Player Limit Exceeded!',
+    'referee.currentPlayersOnField': 'Currently {count} players on field.',
+    'referee.limit': 'LIMIT EXCEEDED',
+    'referee.approachingLimit': 'APPROACHING LIMIT',
+    'referee.sClassHalfLimit': 'S-Class players are limited to 20 minutes per half',
+
+    'referee.saveAll': 'Save All',
+    'referee.exportSummary': 'Export',
+    'referee.goal': '{count} goal',
+    'referee.goals': '{count} goals',
+    'referee.card': '{count} card',
+    'referee.cards': '{count} cards',
+    'referee.playerTime': '{count} player time',
+    'referee.playerTimes': '{count} player times',
+    'referee.unsaved': '{count} unsaved',
+
+    'referee.chooseMatchPlaceholder': 'Choose a match to manage...',
+    'referee.selectFixture': 'Select Fixture',
+    'referee.matchSelectionTitle': 'Match Selection',
   },
   th: {
     // Navigation
@@ -234,7 +277,50 @@ const translations = {
     // Language
     'language.english': 'English',
     'language.thai': 'ไทย',
-    'language.changeLanguage': 'เปลี่ยนภาษา'
+    'language.changeLanguage': 'เปลี่ยนภาษา',
+
+    // Referee tools (expand with all missing keys, based on English list above)
+    'referee.noMatchSelected': 'ยังไม่ได้เลือกแมตช์',
+    'referee.selectMatchTooltip': 'เลือกแมตช์เพื่อใช้งานเครื่องมือผู้ตัดสิน',
+    'referee.quickActions': 'ทางลัด',
+    'referee.quickGoals': 'เพิ่มประตูด่วน',
+    'referee.matchData': 'ข้อมูลการแข่งขัน',
+    'referee.unsavedChanges': 'ข้อมูลยังไม่ได้บันทึก',
+    'referee.completed': 'เสร็จสิ้น',
+    'referee.live': 'กำลังแข่ง',
+    'referee.paused': 'หยุดชั่วคราว',
+    'referee.start': 'เริ่ม',
+    'referee.pause': 'หยุด',
+    'referee.reset': 'รีเซ็ต',
+    'referee.scheduled': 'กำหนดการ',
+    'referee.scored': 'มีคะแนน',
+    'referee.dataReady': 'ข้อมูลถูกต้อง',
+    'referee.dataIssues': 'ข้อมูลมีปัญหา',
+    'referee.matchTeamsVs': '{home} พบ {away}',
+    'referee.playerTimeTracking': 'ติดตามเวลานักเตะ',
+    'referee.noPlayersTracked': 'ยังไม่มีนักเตะถูกติดตาม',
+    'referee.players': '{count} คน',
+    'referee.totalMinutes': '{count} นาทีรวม',
+    // Warnings
+    'referee.sevenPlayerLimitExceeded': 'เกินจำนวนผู้เล่น 7 คน!',
+    'referee.currentPlayersOnField': 'ขณะนี้มี {count} คนในสนาม',
+    'referee.limit': 'เกินขีดจำกัด',
+    'referee.approachingLimit': 'ใกล้ถึงขีดจำกัด',
+    'referee.sClassHalfLimit': 'S-Class จำกัดไม่เกิน 20 นาทีต่อครึ่งเวลา',
+
+    'referee.saveAll': 'บันทึกทั้งหมด',
+    'referee.exportSummary': 'ส่งออก',
+    'referee.goal': '{count} ประตู',
+    'referee.goals': '{count} ประตู',
+    'referee.card': '{count} ใบ',
+    'referee.cards': '{count} ใบ',
+    'referee.playerTime': '{count} เวลานักเตะ',
+    'referee.playerTimes': '{count} เวลานักเตะ',
+    'referee.unsaved': '{count} ยังไม่บันทึก',
+
+    'referee.chooseMatchPlaceholder': 'เลือกแมตช์ที่ต้องการจัดการ...',
+    'referee.selectFixture': 'เลือกแมตช์',
+    'referee.matchSelectionTitle': 'เลือกแมตช์',
   }
 };
 

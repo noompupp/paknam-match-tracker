@@ -3,6 +3,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Calendar, MapPin, Users, Clock } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface ImprovedMatchSelectionProps {
   fixtures: any[];
@@ -20,10 +21,14 @@ const ImprovedMatchSelection = ({
   onFixtureChange,
   enhancedPlayersData 
 }: ImprovedMatchSelectionProps) => {
+  const { t, language } = useTranslation();
+
+  // Format date to Thai or English as appropriate
   const formatMatchDate = (dateStr: string) => {
     try {
       const date = new Date(dateStr);
-      return date.toLocaleDateString('en-US', { 
+      // Use th-TH or en-US depending on language
+      return date.toLocaleDateString(language === 'th' ? 'th-TH' : 'en-US', { 
         month: 'short', 
         day: 'numeric',
         year: 'numeric'
@@ -35,15 +40,12 @@ const ImprovedMatchSelection = ({
 
   const formatMatchTime = (timeStr: string) => {
     try {
-      // Handle both 'HH:MM:SS' and 'HH:MM' formats
       const timeParts = timeStr.split(':');
       const hours = parseInt(timeParts[0]);
       const minutes = parseInt(timeParts[1]);
-      
       const date = new Date();
       date.setHours(hours, minutes, 0, 0);
-      
-      return date.toLocaleTimeString('en-US', { 
+      return date.toLocaleTimeString(language === 'th' ? 'th-TH' : 'en-US', { 
         hour: 'numeric', 
         minute: '2-digit',
         hour12: true 
@@ -54,12 +56,12 @@ const ImprovedMatchSelection = ({
   };
 
   const getMatchStatus = (fixture: any) => {
-    if (fixture.status === 'completed') return { label: 'Completed', variant: 'secondary' as const };
-    if (fixture.status === 'in_progress') return { label: 'Live', variant: 'destructive' as const };
+    if (fixture.status === 'completed') return { label: t('referee.completed'), variant: 'secondary' as const };
+    if (fixture.status === 'in_progress') return { label: t('referee.live'), variant: 'destructive' as const };
     if (fixture.home_score !== null || fixture.away_score !== null) {
-      return { label: 'Scored', variant: 'default' as const };
+      return { label: t('referee.scored'), variant: 'default' as const };
     }
-    return { label: 'Scheduled', variant: 'outline' as const };
+    return { label: t('referee.scheduled'), variant: 'outline' as const };
   };
 
   // Sort fixtures by ID (ascending order) for consistent ordering
@@ -71,10 +73,10 @@ const ImprovedMatchSelection = ({
     <Card className="referee-card">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-lg font-semibold">Select Match</CardTitle>
+          <CardTitle className="text-lg font-semibold">{t('referee.matchSelectionTitle')}</CardTitle>
           {selectedFixture && (
             <Badge variant={enhancedPlayersData.hasValidData ? 'default' : 'destructive'}>
-              {enhancedPlayersData.hasValidData ? 'Data Ready' : 'Data Issues'}
+              {enhancedPlayersData.hasValidData ? t('referee.dataReady') : t('referee.dataIssues')}
             </Badge>
           )}
         </div>
@@ -83,18 +85,17 @@ const ImprovedMatchSelection = ({
       <CardContent className="space-y-4">
         <Select value={selectedFixture} onValueChange={onFixtureChange}>
           <SelectTrigger className="w-full referee-select referee-focus h-auto min-h-[44px]">
-            <SelectValue placeholder="Choose a match to referee..." />
+            <SelectValue placeholder={t('referee.chooseMatchPlaceholder')} />
           </SelectTrigger>
           <SelectContent className="max-h-80 overflow-y-auto bg-background border border-border shadow-lg z-50">
             {sortedFixtures.map((fixture) => {
               const status = getMatchStatus(fixture);
-              const homeTeam = fixture.home_team?.name || fixture.team1 || 'Home Team';
-              const awayTeam = fixture.away_team?.name || fixture.team2 || 'Away Team';
+              const homeTeam = fixture.home_team?.name || fixture.team1 || t('referee.homeTeam');
+              const awayTeam = fixture.away_team?.name || fixture.team2 || t('referee.awayTeam');
               const score = (fixture.home_score !== null && fixture.away_score !== null) 
                 ? `${fixture.home_score}-${fixture.away_score}` 
                 : null;
 
-              // Use match_time first, then time, then default to '18:00'
               const kickoffTime = fixture.match_time || fixture.time || '18:00';
 
               return (
@@ -109,7 +110,7 @@ const ImprovedMatchSelection = ({
                       <div className="flex items-center gap-2">
                         <Users className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                         <span className="font-medium text-foreground">
-                          {homeTeam} vs {awayTeam}
+                          {homeTeam} {t('match.vs')} {awayTeam}
                         </span>
                       </div>
                       <div className="flex items-center gap-2">
@@ -151,7 +152,7 @@ const ImprovedMatchSelection = ({
         {enhancedPlayersData.dataIssues.length > 0 && selectedFixture && (
           <div className="referee-status-warning rounded-lg p-3 border">
             <div className="text-sm font-medium mb-1">
-              Data Issues Detected
+              {t('referee.dataIssues')}
             </div>
             <ul className="text-xs space-y-1">
               {enhancedPlayersData.dataIssues.map((issue, index) => (
