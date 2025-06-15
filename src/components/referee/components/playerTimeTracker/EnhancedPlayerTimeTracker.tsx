@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -97,13 +98,7 @@ const EnhancedPlayerTimeTracker = ({
     handleRemovePlayer(playerId);
   };
 
-  const handleQuickAdd = () => {
-    if (trackedPlayers.length === 0) {
-      setShowInitialSelection(true);
-    } else {
-      console.log('Use existing player selection dropdown');
-    }
-  };
+  // REMOVED: handleQuickAdd and related button
 
   const isMatchStarted = trackedPlayers.length > 0;
 
@@ -198,16 +193,7 @@ const EnhancedPlayerTimeTracker = ({
                 <Play className="h-4 w-4 mr-2" />
                 Select Starting Squad (7 players)
               </Button>
-            ) : (
-              <Button
-                onClick={handleQuickAdd}
-                variant="outline"
-                className="flex-1"
-              >
-                <UserPlus className="h-4 w-4 mr-2" />
-                {substitutionManager.hasPendingSubstitution ? 'Complete Substitution' : 'Add Player to Squad'}
-              </Button>
-            )}
+            ) : null}
           </div>
 
           {/* Tracked Players List with dual-behavior substitution status */}
@@ -258,3 +244,6 @@ const EnhancedPlayerTimeTracker = ({
 };
 
 export default EnhancedPlayerTimeTracker;
+
+// NOTE: This file is getting quite long (over 261 lines). For maintainability,
+// consider splitting it into smaller components after this change.
