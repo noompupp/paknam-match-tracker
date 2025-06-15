@@ -40,9 +40,8 @@ const MatchSaveStatusOverlay: React.FC = () => {
   return (
     <div className="fixed inset-0 z-50 bg-black/30 flex items-center justify-center backdrop-blur-sm animate-fade-in">
       <div className="bg-white dark:bg-zinc-900 shadow-lg rounded-xl px-8 py-7 min-w-[320px] flex flex-col items-center gap-3 relative animate-scale-in">
-        {phase !== "idle" && (
-          <div className="mb-2">{phaseIcons[phase]}</div>
-        )}
+        {/* 'phase' is never 'idle' beyond this point, so we don't need that check */}
+        <div className="mb-2">{phaseIcons[phase]}</div>
 
         <div className="text-lg font-semibold text-center">
           {statusMessage || getDefaultStatus(phase)}
@@ -78,3 +77,4 @@ const MatchSaveStatusOverlay: React.FC = () => {
 };
 
 export default MatchSaveStatusOverlay;
+
