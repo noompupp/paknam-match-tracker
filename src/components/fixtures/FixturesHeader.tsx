@@ -7,7 +7,7 @@ const FixturesHeader = () => {
   
   return (
     <UnifiedPageHeader 
-      title={t('page.fixtures')}
+      title={t('nav.fixtures')}
       logoSize="small"
       showLanguageToggle={true}
     />
@@ -15,3 +15,4 @@ const FixturesHeader = () => {
 };
 
 export default FixturesHeader;
+

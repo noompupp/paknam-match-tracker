@@ -7,7 +7,7 @@ const DashboardHeader = () => {
   
   return (
     <UnifiedPageHeader 
-      title={t('page.dashboard')}
+      title={t('nav.dashboard')}
       logoSize="medium"
       showLanguageToggle={true}
     />
@@ -15,3 +15,4 @@ const DashboardHeader = () => {
 };
 
 export default DashboardHeader;
+

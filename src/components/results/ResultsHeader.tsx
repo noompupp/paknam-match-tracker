@@ -7,7 +7,7 @@ const ResultsHeader = () => {
   
   return (
     <UnifiedPageHeader 
-      title={t('page.results')}
+      title={t('nav.results')}
       logoSize="small"
       showLanguageToggle={true}
     />
@@ -15,3 +15,4 @@ const ResultsHeader = () => {
 };
 
 export default ResultsHeader;
+

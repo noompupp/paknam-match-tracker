@@ -5,6 +5,7 @@ import { LocaleModule } from "./types";
 
 const navigation: LocaleModule = {
   en: {
+    'nav.dashboard': 'Dashboard',
     'nav.latest': 'Latest',
     'nav.teams': 'Teams',
     'nav.results': 'Results',
@@ -14,6 +15,7 @@ const navigation: LocaleModule = {
     'nav.signOut': 'Sign out',
   },
   th: {
+    'nav.dashboard': 'แดชบอร์ด',
     'nav.latest': 'ล่าสุด',
     'nav.teams': 'ทีม',
     'nav.results': 'ผลการแข่งขัน',
@@ -25,3 +27,4 @@ const navigation: LocaleModule = {
 };
 
 export default navigation;
+

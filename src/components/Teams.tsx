@@ -66,7 +66,7 @@ const Teams = () => {
     <div className="gradient-bg">
       {/* Header */}
       <UnifiedPageHeader 
-        title={selectedTeam ? `${selectedTeam.name} Squad` : t('page.teams')}
+        title={selectedTeam ? `${selectedTeam.name} Squad` : t('nav.teams')}
         logoSize="small"
         showLanguageToggle={true}
       />
@@ -107,3 +107,4 @@ const Teams = () => {
 };
 
 export default Teams;
+
