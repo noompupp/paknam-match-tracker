@@ -1,4 +1,3 @@
-
 import { useRefereeStateIntegration } from "./useRefereeStateIntegration";
 import { useRefereeEnhancedHandlers } from "./useRefereeEnhancedHandlers";
 
@@ -96,8 +95,8 @@ export const useRefereeStateOrchestrator = () => {
     // Events
     events: matchState.events,
 
-    // The missing reset functions and event logger passed through from matchState:
-    resetScore: matchState.resetScore,
+    // The missing reset functions and event logger passed through from correct sources:
+    resetScore: scoreState.resetScore,           // <<--- Fix: now from scoreState
     resetEvents: matchState.resetEvents,
     resetCards: matchState.resetCards,
     resetTracking: matchState.resetTracking,
