@@ -1,9 +1,31 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
+type FixtureRow = {
+  id: number;
+  home_team_id: string;
+  away_team_id: string;
+  team1?: string;
+  team2?: string;
+  home_score: number | null;
+  away_score: number | null;
+  match_date: string;
+  [key: string]: any;
+};
+
+type MatchEventRow = {
+  id: number;
+  fixture_id: number;
+  event_type: string;
+  player_name: string;
+  team_id: string;
+  [key: string]: any;
+};
+
 /**
  * Fetches the 3 most recent 'completed' fixtures
- * that have non-null scores AND at least 1 goal event.
+ * that have non-null scores AND at least 1 goal/assist event.
+ * Skips any fixture/event with an invalid/null id.
  */
 export const useLatestCompleteFixtures = () => {
   return useQuery({
@@ -19,6 +41,7 @@ export const useLatestCompleteFixtures = () => {
         .order('match_date', { ascending: false })
         .limit(1)
         .maybeSingle();
+
       if (dateErr || !latestDateInfo?.match_date) {
         throw dateErr || new Error("No completed fixtures found");
       }
@@ -37,9 +60,13 @@ export const useLatestCompleteFixtures = () => {
 
       if (fixturesErr) throw fixturesErr;
 
-      // Step 3: For each fixture, check for at least one goal or assist event
+      // Defensive: Only process rows with a valid numeric id!
+      const fixturesWithValidIds = (fixtureRows ?? []).filter(
+        (f: any) => typeof f.id === 'number' && !isNaN(f.id)
+      );
+
       const fixturesWithEvents = [];
-      for (const fixture of fixtureRows || []) {
+      for (const fixture of fixturesWithValidIds) {
         const { data: events, error: evtErr } = await supabase
           .from('match_events')
           .select('*')
@@ -47,14 +74,25 @@ export const useLatestCompleteFixtures = () => {
           .in('event_type', ['goal', 'assist']);
 
         if (evtErr) throw evtErr;
-        if ((events ?? []).length > 0) {
+
+        // Only accept events with a valid integer ID (skip broken events)
+        const validEvents = (events ?? []).filter(
+          (e: any) =>
+            typeof e.id === 'number' &&
+            !isNaN(e.id) &&
+            typeof e.fixture_id === 'number' &&
+            !isNaN(e.fixture_id)
+        );
+
+        if (validEvents.length > 0) {
           fixturesWithEvents.push({
             ...fixture,
-            goalEvents: events
+            goalEvents: validEvents,
           });
         }
       }
-      // Only keep those with at least events (and up to 3)
+
+      // Only keep up to 3
       return fixturesWithEvents.slice(0, 3);
     },
     staleTime: 5 * 60 * 1000,
