@@ -1,4 +1,3 @@
-
 import { MatchGoal, MatchCard, MatchPlayerTime } from './types';
 
 export interface MatchActions {
@@ -49,4 +48,7 @@ export interface MatchActions {
   markAsSaved: () => void;
   resetMatch: () => void;
   getUnsavedItemsCount: () => { goals: number; cards: number; playerTimes: number };
+
+  // Batch flush actions
+  flushBatchedEvents: () => Promise<void>;
 }
