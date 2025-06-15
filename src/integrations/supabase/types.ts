@@ -551,6 +551,42 @@ export type Database = {
           },
         ]
       }
+      modification_logs: {
+        Row: {
+          action: string
+          created_at: string
+          event_type: string
+          fixture_id: number
+          id: string
+          new_data: Json | null
+          notes: string | null
+          prev_data: Json
+          user_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          event_type: string
+          fixture_id: number
+          id?: string
+          new_data?: Json | null
+          notes?: string | null
+          prev_data: Json
+          user_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          event_type?: string
+          fixture_id?: number
+          id?: string
+          new_data?: Json | null
+          notes?: string | null
+          prev_data?: Json
+          user_id?: string
+        }
+        Relationships: []
+      }
       operation_logs: {
         Row: {
           created_at: string | null

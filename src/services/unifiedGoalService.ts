@@ -1,8 +1,8 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { assignGoalToPlayer } from './fixtures/simplifiedGoalAssignmentService';
 import { enhancedDuplicatePreventionService } from './fixtures/enhancedDuplicatePreventionService';
 import { enhancedOwnGoalService } from './fixtures/enhancedOwnGoalService';
+import { logMatchEventModification } from "./modificationLogService";
 
 interface UnifiedGoalData {
   fixtureId: number;
@@ -211,5 +211,52 @@ export const unifiedGoalService = {
       console.error('❌ Unified Goal Service: Error in updateFixtureScoreForRegularGoal:', error);
       return { success: false, homeScore: 0, awayScore: 0 };
     }
+  },
+
+  /**
+   * Example: Log edit when a goal is modified, for completed fixture.
+   * Usage: Call this from the event edit handler WITH THE CORRECT userId.
+   */
+  async logModificationIfCompleted({
+    fixtureId,
+    userId,
+    eventType,
+    action,
+    prevData,
+    newData,
+    notes,
+  }: {
+    fixtureId: number;
+    userId: string;
+    eventType: string;
+    action: string;
+    prevData: any;
+    newData?: any;
+    notes?: string;
+  }) {
+    // Check if fixture is completed before logging
+    const { data: fixture, error } = await supabase
+      .from("fixtures")
+      .select("status")
+      .eq("id", fixtureId)
+      .maybeSingle();
+
+    if (error) {
+      console.warn("Error checking fixture status for logging:", error);
+      return;
+    }
+    if (fixture?.status !== "completed") {
+      // Only log if fixture is completed
+      return;
+    }
+    await logMatchEventModification({
+      fixtureId,
+      userId,
+      eventType,
+      action,
+      prevData,
+      newData,
+      notes,
+    });
   }
 };
