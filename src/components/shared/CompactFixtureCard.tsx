@@ -55,25 +55,7 @@ const CompactFixtureCard = ({
     return 'Tap for Match Preview';
   };
 
-  const getScoreOrTime = () => {
-    if (fixture.status === 'completed' || fixture.status === 'live') {
-      return (
-        <div className="flex items-center gap-1 text-lg font-bold">
-          <span>{fixture.home_score || 0}</span>
-          <span className="text-muted-foreground">-</span>
-          <span>{fixture.away_score || 0}</span>
-        </div>
-      );
-    }
-    return (
-      <div className="flex items-center gap-1 text-sm text-muted-foreground">
-        <Clock className="h-3 w-3" />
-        <span>{formatCombinedDateTime(fixture.match_date, fixture.match_time)}</span>
-      </div>
-    );
-  };
-
-  // Use compact layout for mobile portrait
+  // --- MOBILE PORTRAIT LAYOUT ---
   if (isMobilePortrait) {
     return (
       <Card 
@@ -84,13 +66,25 @@ const CompactFixtureCard = ({
         onClick={handleCardClick}
       >
         <CardContent className="p-3">
-          {/* Header with kickoff time (left) and status (right) */}
-          <div className="flex justify-between items-center mb-3">
-            <div className="flex items-center gap-1 text-sm text-muted-foreground">
-              <Clock className="h-3 w-3" />
-              <span>{formatTimeDisplay(fixture.match_time)}</span>
+          {/* Top row: Full date & time (left), nothing right */}
+          <div className="flex justify-between items-center mb-2">
+            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+              <Calendar className="h-3 w-3" />
+              <span className="font-medium">{formatCombinedDateTime(fixture.match_date, fixture.match_time)}</span>
             </div>
+            {/* Empty right slot in this design for a clean left alignment */}
+          </div>
+
+          {/* Center-aligned badge & score */}
+          <div className="flex flex-col items-center mb-2">
             {getStatusBadge()}
+            {(fixture.status === 'completed' || fixture.status === 'live') && (
+              <div className="flex items-center gap-1 text-xl font-bold mt-1 mb-1">
+                <span>{fixture.home_score ?? 0}</span>
+                <span className="text-muted-foreground">-</span>
+                <span>{fixture.away_score ?? 0}</span>
+              </div>
+            )}
           </div>
 
           {/* Teams displayed vertically */}
@@ -107,9 +101,13 @@ const CompactFixtureCard = ({
                   </span>
                 </div>
               </div>
-              {fixture.status === 'completed' || fixture.status === 'live' ? (
-                <div className="text-lg font-bold">{fixture.home_score || 0}</div>
-              ) : null}
+              {(fixture.status !== 'completed' && fixture.status !== 'live') && (
+                // Only for not completed/live: show kickoff time right-aligned with home team row
+                <div className="flex items-center gap-1 text-xs text-muted-foreground font-medium">
+                  <Clock className="h-3 w-3" />
+                  <span>{formatTimeDisplay(fixture.match_time)}</span>
+                </div>
+              )}
             </div>
 
             {/* Away team (bottom) */}
@@ -132,6 +130,12 @@ const CompactFixtureCard = ({
 
           {/* Footer with action text only */}
           <div className="mt-3 pt-2 border-t">
+            {showVenue && fixture.venue && fixture.venue !== 'TBD' && (
+              <div className="flex items-center gap-2 justify-center text-xs text-muted-foreground mb-1">
+                <MapPin className="h-3 w-3" />
+                <span>{fixture.venue}</span>
+              </div>
+            )}
             <div className="text-center">
               <span className="text-xs text-muted-foreground/70">{getActionText()}</span>
             </div>
@@ -172,7 +176,18 @@ const CompactFixtureCard = ({
 
           {/* Center - score or time */}
           <div className="mx-4">
-            {getScoreOrTime()}
+            {(fixture.status === 'completed' || fixture.status === 'live') ? (
+              <div className="flex items-center gap-1 text-lg font-bold">
+                <span>{fixture.home_score || 0}</span>
+                <span className="text-muted-foreground">-</span>
+                <span>{fixture.away_score || 0}</span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                <Clock className="h-3 w-3" />
+                <span>{formatCombinedDateTime(fixture.match_date, fixture.match_time)}</span>
+              </div>
+            )}
           </div>
 
           {/* Away team */}
@@ -202,3 +217,4 @@ const CompactFixtureCard = ({
 };
 
 export default CompactFixtureCard;
+
