@@ -55,7 +55,6 @@ const CompactFixtureCard = ({
     return 'Tap for Match Preview';
   };
 
-  // Used only by desktop view now
   const getScoreOrTime = () => {
     if (fixture.status === 'completed' || fixture.status === 'live') {
       return (
@@ -76,17 +75,6 @@ const CompactFixtureCard = ({
 
   // Use compact layout for mobile portrait
   if (isMobilePortrait) {
-    // Score element for centered layout
-    const centeredScore = (fixture.status === 'completed' || fixture.status === 'live') ? (
-      <div className="flex justify-center mt-2 mb-2">
-        <div className="flex items-center gap-1 text-xl font-bold">
-          <span>{fixture.home_score || 0}</span>
-          <span className="mx-1 text-muted-foreground">-</span>
-          <span>{fixture.away_score || 0}</span>
-        </div>
-      </div>
-    ) : null;
-
     return (
       <Card 
         className={cn(
@@ -105,10 +93,7 @@ const CompactFixtureCard = ({
             {getStatusBadge()}
           </div>
 
-          {/* Centered score (if completed or live) */}
-          {centeredScore}
-
-          {/* Teams displayed vertically without scores */}
+          {/* Teams displayed vertically */}
           <div className="space-y-2">
             {/* Home team (top) */}
             <div className="flex items-center justify-between">
@@ -122,7 +107,9 @@ const CompactFixtureCard = ({
                   </span>
                 </div>
               </div>
-              {/* No score displayed at row end in mobile portrait */}
+              {fixture.status === 'completed' || fixture.status === 'live' ? (
+                <div className="text-lg font-bold">{fixture.home_score || 0}</div>
+              ) : null}
             </div>
 
             {/* Away team (bottom) */}
@@ -137,7 +124,9 @@ const CompactFixtureCard = ({
                   </span>
                 </div>
               </div>
-              {/* No score displayed at row end in mobile portrait */}
+              {fixture.status === 'completed' || fixture.status === 'live' ? (
+                <div className="text-lg font-bold">{fixture.away_score || 0}</div>
+              ) : null}
             </div>
           </div>
 
@@ -213,4 +202,3 @@ const CompactFixtureCard = ({
 };
 
 export default CompactFixtureCard;
-
