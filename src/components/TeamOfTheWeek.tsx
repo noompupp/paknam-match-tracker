@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { useSecureAuth } from "@/contexts/SecureAuthContext";
 import { usePlayerRatings, useSubmitPlayerRating, PlayerRating } from "@/hooks/usePlayerRatings";
 import { useToast } from "@/hooks/use-toast";
+import RatingFixtureHeader from "./rating/RatingFixtureHeader";
 
 // Enhanced StarRating with debug/info
 const StarRating = ({
@@ -222,17 +223,10 @@ const TeamOfTheWeek: React.FC = () => {
         {fixtures.map((fixture) => (
           <Card key={fixture.id} className="mb-6 w-full">
             <CardContent className="py-5">
-              <div className="flex justify-between items-center mb-2">
-                <span className="font-bold text-primary">
-                  {fixture.team1 || fixture.home_team_id || "???"} vs{" "}
-                  {fixture.team2 || fixture.away_team_id || "???"}
-                </span>
-                <span className="font-mono text-lg">
-                  <span className="text-foreground">{fixture.home_score ?? "?"}</span>{" "}
-                  <span className="font-thin text-muted-foreground">-</span>{" "}
-                  <span className="text-foreground">{fixture.away_score ?? "?"}</span>
-                </span>
-              </div>
+              {/* --- NEW FIXTURE HEADER --- */}
+              <RatingFixtureHeader fixture={fixture} className="mb-3" />
+              {/* ---- END FIXTURE HEADER ---- */}
+              {/* Ratings section */}
               <div>
                 <div className="mb-2">
                   <span className="font-semibold">{t("rating.goalScorers")}:</span>
