@@ -100,7 +100,7 @@ export const createEnhancedCoreSlice: StateCreator<
     setTimeout(() => {
       const state = get();
       if (state.isAutoSyncEnabled && !state.isSyncing) {
-        state.autoSyncScores();
+        state.syncToDatabase();
       }
     }, 100);
   },

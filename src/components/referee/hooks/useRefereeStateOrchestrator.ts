@@ -1,3 +1,4 @@
+
 import { useRefereeStateIntegration } from "./useRefereeStateIntegration";
 import { useRefereeEnhancedHandlers } from "./useRefereeEnhancedHandlers";
 import { useMatchStore } from "@/stores/useMatchStore";
@@ -6,7 +7,7 @@ import { useEffect, useRef } from "react";
 export const useRefereeStateOrchestrator = () => {
   const orchestrator = useRefereeStateIntegration();
 
-  // Get live store state
+  // Get live store state and the setupMatch function directly from the store
   const {
     homeScore,
     awayScore,
@@ -14,7 +15,8 @@ export const useRefereeStateOrchestrator = () => {
     awayTeamName: storeAwayTeamName,
     homeTeamId: storeHomeTeamId,
     awayTeamId: storeAwayTeamId,
-    lastUpdated
+    lastUpdated,
+    setupMatch
   } = useMatchStore();
 
   // Keep a ref for last setup params to avoid excessive setupMatch runs
@@ -74,8 +76,8 @@ export const useRefereeStateOrchestrator = () => {
       fixtureId &&
       setupChanged
     ) {
-      // Use the correct setupMatch from matchState
-      orchestrator.matchState?.setupMatch?.({
+      // Use setupMatch directly from the store
+      setupMatch({
         fixtureId,
         homeTeamName,
         awayTeamName,
@@ -119,7 +121,7 @@ export const useRefereeStateOrchestrator = () => {
     }
   }, [
     orchestrator.baseState.selectedFixtureData,
-    orchestrator.matchState?.setupMatch,
+    setupMatch,
     storeHomeTeamName,
     storeAwayTeamName,
     storeHomeTeamId,
