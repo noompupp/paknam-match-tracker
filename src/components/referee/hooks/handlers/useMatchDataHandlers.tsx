@@ -5,6 +5,8 @@ import { unifiedRefereeService } from "@/services/fixtures";
 import { matchResetService } from "@/services/fixtures";
 import { useResetState } from "@/hooks/useResetState";
 import { useMatchSaveStatus } from "../useMatchSaveStatus";
+import React from "react";
+import ResetMatchConfirmationDialog from "@/components/referee/components/ResetMatchConfirmationDialog";
 
 interface UseMatchDataHandlersProps {
   selectedFixtureData: any;
@@ -136,6 +138,41 @@ export const useMatchDataHandlers = (props: UseMatchDataHandlersProps) => {
     }
   };
 
+  // ---- Dialog state for Reset confirmation ----
+  // We expose this out for the UI to open dialog, and capture the user's choice.
+  const [resetDialogOpen, setResetDialogOpen] = React.useState(false);
+  const [resetDialogWarnings, setResetDialogWarnings] = React.useState<string[]>([]);
+  const [resetDialogPromise, setResetDialogPromise] = React.useState<{
+    resolve: (confirmed: boolean) => void;
+    reject: (err: any) => void;
+  } | null>(null);
+  const [resetDialogLoading, setResetDialogLoading] = React.useState(false);
+
+  // Utility: Show dialog and return a Promise when confirmed
+  const showResetDialog = (warnings?: string[]): Promise<boolean> => {
+    setResetDialogWarnings(warnings || []);
+    setResetDialogOpen(true);
+    setResetDialogLoading(false);
+    return new Promise((resolve, reject) => {
+      setResetDialogPromise({ resolve, reject });
+    });
+  };
+
+  // Handler for dialog cancellation
+  const handleDialogCancel = () => {
+    setResetDialogOpen(false);
+    setResetDialogLoading(false);
+    if (resetDialogPromise) resetDialogPromise.resolve(false);
+    setResetDialogPromise(null);
+  };
+  // Handler for dialog confirmation
+  const handleDialogConfirm = () => {
+    setResetDialogLoading(true);
+    setResetDialogOpen(false);
+    if (resetDialogPromise) resetDialogPromise.resolve(true);
+    setResetDialogPromise(null);
+  };
+
   const handleResetMatchData = async () => {
     if (!props.selectedFixtureData) {
       toast({
@@ -164,22 +201,14 @@ export const useMatchDataHandlers = (props: UseMatchDataHandlersProps) => {
         ? `\n\nWarnings:\n${safetyCheck.warnings.join('\n')}`
         : '';
 
-      const confirmReset = window.confirm(
-        `⚠️ RESET MATCH DATA\n\n` +
-        `This will completely reset all match data for this fixture:\n\n` +
-        `• Delete all match events (goals, cards, etc.)\n` +
-        `• Delete all player time tracking records\n` +
-        `• Reset fixture scores to 0-0\n` +
-        `• Clear all local match state\n\n` +
-        `This action CANNOT be undone!${warningMessage}\n\n` +
-        `Are you absolutely sure you want to proceed?`
-      );
-
-      if (!confirmReset) {
+      // --- Replace window.confirm with dialog ---
+      const userConfirmed = await showResetDialog(safetyCheck.warnings);
+      if (!userConfirmed) {
         resetSaveStatus();
         return;
       }
 
+      // --- Continue as before if user confirmed ---
       resetState.startReset(props.selectedFixtureData.id);
       setPhase("saving", { statusMessage: "Resetting match data...", progress: 25 });
 
@@ -305,10 +334,23 @@ export const useMatchDataHandlers = (props: UseMatchDataHandlersProps) => {
     }
   };
 
+  // ---- Dialog component (consumer must render this!) ----
+  const ResetDialog = (
+    <ResetMatchConfirmationDialog
+      open={resetDialogOpen}
+      warningLines={resetDialogWarnings}
+      onCancel={handleDialogCancel}
+      onConfirm={handleDialogConfirm}
+      loading={resetDialogLoading}
+    />
+  );
+
+  // ---- Return the dialog to be rendered by consumer along with handlers. ----
   return {
     handleSaveMatch,
     handleResetMatchData,
     handleCleanupDuplicates,
-    resetState // Expose reset state for coordination
+    resetState, // Expose reset state for coordination
+    ResetDialog // Consumer must render this within their component tree
   };
 };
