@@ -65,7 +65,7 @@ const UnsavedChangesIndicator = ({
           size="sm"
           icon={<Save className="h-4 w-4" />}
         >
-          Save Now
+          Finish & Exit
         </RefereeButton>
       </div>
     </RefereeCard>
