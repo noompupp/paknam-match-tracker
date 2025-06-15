@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useManualScore } from "@/hooks/useManualScore";
 import { useMatchStore } from "@/stores/useMatchStore";
@@ -15,7 +14,6 @@ export const useRefereeScoreState = ({ selectedFixtureData }: RefereeScoreStateP
 
   const fetchInitialScores = async () => {
     if (!selectedFixtureData?.id) return;
-
     setIsLoading(true);
     try {
       await new Promise(resolve => setTimeout(resolve, 500));
@@ -30,7 +28,6 @@ export const useRefereeScoreState = ({ selectedFixtureData }: RefereeScoreStateP
 
   const refreshScores = async () => {
     if (!selectedFixtureData?.id) return;
-
     setIsLoading(true);
     try {
       await new Promise(resolve => setTimeout(resolve, 500));
@@ -48,24 +45,23 @@ export const useRefereeScoreState = ({ selectedFixtureData }: RefereeScoreStateP
     }
   }, [selectedFixtureData?.id, isInitialLoad]);
 
-  // Build a goal object for "Quick Goal"
+  // Build a goal object for "Quick Goal" and ensure type safety per MatchGoal type
   const getQuickGoalData = (team: 'home' | 'away') => {
-    // Try to obtain teamName and teamId for more accurate goal representation
     let teamName: string = '';
-    let teamId: string | null = null;
+    let teamId: string = '';
     if (team === 'home') {
       teamName = selectedFixtureData?.home_team?.name || selectedFixtureData?.home_team_name || 'Home Team';
-      teamId = selectedFixtureData?.home_team?.__id__ || selectedFixtureData?.home_team_id || null;
+      teamId = selectedFixtureData?.home_team?.__id__ || selectedFixtureData?.home_team_id || '';
     } else {
       teamName = selectedFixtureData?.away_team?.name || selectedFixtureData?.away_team_name || 'Away Team';
-      teamId = selectedFixtureData?.away_team?.__id__ || selectedFixtureData?.away_team_id || null;
+      teamId = selectedFixtureData?.away_team?.__id__ || selectedFixtureData?.away_team_id || '';
     }
     return {
       teamName,
       teamId,
-      type: 'goal',
+      type: "goal" as const,       // Fix: use string literal
       playerName: 'Quick Goal',
-      playerId: null,
+      playerId: 0,                 // Fix: MatchGoal expects number, not null
       time: 0,
       isOwnGoal: false
     };
@@ -80,8 +76,6 @@ export const useRefereeScoreState = ({ selectedFixtureData }: RefereeScoreStateP
   const removeGoal = async (team: 'home' | 'away') => {
     console.log('📊 useRefereeScoreState: Manual goal removal triggered for:', team);
 
-    // Find the latest "Quick Goal" for the team to remove
-    // Get all current goals from the store that match Quick Goal and the team
     const { goals } = useMatchStore.getState();
     const teamName =
       team === 'home'
@@ -92,14 +86,13 @@ export const useRefereeScoreState = ({ selectedFixtureData }: RefereeScoreStateP
           selectedFixtureData?.away_team_name ||
           'Away Team';
 
-    // Find latest matching "Quick Goal" for that team
     const lastQuickGoal = [...goals]
       .reverse()
       .find(
         (g) =>
           g.playerName === 'Quick Goal' &&
           g.teamName === teamName &&
-          g.type === 'goal'
+          g.type === "goal"
       );
 
     if (lastQuickGoal) {
