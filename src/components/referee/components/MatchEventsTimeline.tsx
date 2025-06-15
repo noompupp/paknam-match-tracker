@@ -1,4 +1,6 @@
+
 import { Badge } from "@/components/ui/badge";
+import { roundSecondsUpToMinute } from "@/utils/timeUtils"; // <-- Import here
 
 interface MatchEventsTimelineProps {
   events: any[];
@@ -25,13 +27,7 @@ const MatchEventsTimeline = ({
                     {event.type}
                   </Badge>
                   <span className="text-xs text-muted-foreground font-mono">
-                    {
-                      // Use new time rounding formatter here
-                      (() => {
-                        const { roundSecondsUpToMinute } = require("@/utils/timeUtils");
-                        return `${roundSecondsUpToMinute(event.time)}'`;
-                      })()
-                    }
+                    {`${roundSecondsUpToMinute(event.time)}'`}
                   </span>
                 </div>
               </div>
@@ -49,3 +45,4 @@ const MatchEventsTimeline = ({
 };
 
 export default MatchEventsTimeline;
+
