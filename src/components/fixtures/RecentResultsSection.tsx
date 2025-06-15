@@ -1,117 +1,88 @@
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Trophy, Calendar } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Trophy } from "lucide-react";
 import CompactFixtureCard from "../shared/CompactFixtureCard";
 import LoadingCard from "./LoadingCard";
-import { Badge } from "@/components/ui/badge";
+import DateGroupHeader from "../shared/DateGroupHeader";
+import { useDeviceOrientation } from "@/hooks/useDeviceOrientation";
+import { groupFixturesByDate, initializeGameweekMappings } from "@/utils/dateGroupingUtils";
+import { useEffect } from "react";
 
 interface RecentResultsSectionProps {
   recentFixtures: any[];
-  allFixtures: any[];
+  allFixtures?: any[]; // Add this to initialize gameweek mappings
   isLoading: boolean;
   onFixtureClick: (fixture: any) => void;
 }
 
-const RecentResultsSection = ({
-  recentFixtures,
-  allFixtures,
-  isLoading,
-  onFixtureClick
+const RecentResultsSection = ({ 
+  recentFixtures, 
+  allFixtures = [],
+  isLoading, 
+  onFixtureClick 
 }: RecentResultsSectionProps) => {
-  const completedFixtures = recentFixtures?.filter(fixture => 
-    fixture.status === 'completed' || fixture.status === 'finished'
-  ) || [];
+  const { isMobile, isPortrait } = useDeviceOrientation();
+  const isMobilePortrait = isMobile && isPortrait;
+  
+  // Initialize gameweek mappings when fixtures are available
+  useEffect(() => {
+    if (allFixtures.length > 0) {
+      initializeGameweekMappings(allFixtures);
+    }
+  }, [allFixtures]);
+  
+  // Filter to only show completed fixtures
+  const completedFixtures = recentFixtures.filter(fixture => fixture.status === 'completed');
 
-  const upcomingFixtures = allFixtures?.filter(fixture => 
-    fixture.status === 'scheduled' || fixture.status === 'pending'
-  ) || [];
-
-  if (isLoading) {
-    return (
-      <div className="space-y-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Trophy className="h-5 w-5" />
-              Recent Results
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-4">
-              {[...Array(3)].map((_, i) => (
-                <LoadingCard key={i} />
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
+  if (completedFixtures.length === 0 && !isLoading) {
+    return null; // Don't show section if no results
   }
 
-  return (
-    <div className="space-y-6">
-      {/* Recent Results */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 justify-between">
-            <div className="flex items-center gap-2">
-              <Trophy className="h-5 w-5" />
-              Recent Results
-            </div>
-            <Badge variant="secondary">
-              {completedFixtures.length} matches
-            </Badge>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {completedFixtures.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              <Trophy className="h-8 w-8 mx-auto mb-2 opacity-50" />
-              <p>No completed matches yet</p>
-            </div>
-          ) : (
-            <div className="grid gap-4">
-              {completedFixtures.map((fixture) => (
-                <CompactFixtureCard
-                  key={fixture.id}
-                  fixture={fixture}
-                  onClick={() => onFixtureClick(fixture)}
-                  showStatus={false}
-                />
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+  // Group fixtures by date
+  const groupedFixtures = groupFixturesByDate(completedFixtures);
 
-      {/* Upcoming Fixtures Preview */}
-      {upcomingFixtures.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 justify-between">
-              <div className="flex items-center gap-2">
-                <Calendar className="h-5 w-5" />
-                Upcoming Fixtures
+  return (
+    <div id="recent-results" className="scroll-mt-20 mb-8">
+      <div className="flex items-center gap-2 mb-6">
+        <Trophy className="h-6 w-6 text-primary" />
+        <h2 className="text-2xl font-bold text-foreground py-1 px-3 rounded-lg bg-gradient-to-r from-muted via-background to-muted/60 shadow-sm">
+          All Results
+        </h2>
+      </div>
+      
+      <div className="space-y-4">
+        {isLoading ? (
+          <div className="grid gap-3">
+            {Array.from({ length: 3 }).map((_, index) => (
+              <LoadingCard key={index} />
+            ))}
+          </div>
+        ) : (
+          groupedFixtures.map((group) => (
+            <div key={group.date} className="space-y-3">
+              <DateGroupHeader
+                date={group.date}
+                displayDate={group.displayDate}
+                fixtureCount={group.fixtures.length}
+                gameweek={group.gameweek}
+                gameweekLabel={group.gameweekLabel}
+                isFinalGameweek={group.isFinalGameweek}
+              />
+              <div className="grid gap-3">
+                {group.fixtures.map((fixture) => (
+                  <CompactFixtureCard 
+                    key={fixture.id} 
+                    fixture={fixture} 
+                    onFixtureClick={onFixtureClick}
+                    showDate={true}
+                    showVenue={true}
+                  />
+                ))}
               </div>
-              <Badge variant="outline">
-                {upcomingFixtures.slice(0, 3).length} next
-              </Badge>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-4">
-              {upcomingFixtures.slice(0, 3).map((fixture) => (
-                <CompactFixtureCard
-                  key={fixture.id}
-                  fixture={fixture}
-                  onClick={() => onFixtureClick(fixture)}
-                  showStatus={true}
-                />
-              ))}
             </div>
-          </CardContent>
-        </Card>
-      )}
+          ))
+        )}
+      </div>
     </div>
   );
 };

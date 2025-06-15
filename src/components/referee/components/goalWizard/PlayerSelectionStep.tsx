@@ -1,8 +1,8 @@
 import { Button } from "@/components/ui/button";
-import { AlertTriangle } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Users, AlertTriangle } from "lucide-react";
 import { BaseStepProps } from "./types";
 import { ComponentPlayer } from "../../hooks/useRefereeState";
-import MobilePlayerGrid from "./MobilePlayerGrid";
 
 interface PlayerSelectionStepProps extends Pick<BaseStepProps, 'selectedFixtureData' | 'homeTeamPlayers' | 'awayTeamPlayers' | 'wizardData' | 'onDataChange' | 'onNext'> {}
 
@@ -31,7 +31,17 @@ const PlayerSelectionStep = ({
     const scoringTeamName = getTeamName(selectedTeam!);
     const playerTeamName = player.team;
     
+    // Enhanced own goal detection logic
     const isOwnGoal = playerTeamName !== scoringTeamName;
+    
+    console.log('⚽ PlayerSelectionStep: Player selected with own goal detection:', {
+      playerName: player.name,
+      playerTeam: playerTeamName,
+      scoringTeam: scoringTeamName,
+      selectedTeam: selectedTeam,
+      isOwnGoal,
+      detectionReason: isOwnGoal ? 'Player team differs from scoring team' : 'Player team matches scoring team'
+    });
 
     onDataChange({ 
       selectedPlayer: player,
@@ -54,18 +64,40 @@ const PlayerSelectionStep = ({
     <div className="space-y-6">
       <div className="text-center">
         <h3 className="text-lg font-semibold mb-2">Select Goal Scorer</h3>
-        <p className="text-muted-foreground text-sm">
+        <p className="text-muted-foreground">
           Goal will benefit: <strong>{scoringTeamName}</strong>
         </p>
       </div>
 
       {/* Primary Team Players */}
-      <MobilePlayerGrid
-        players={teamPlayers}
-        onPlayerSelect={handlePlayerSelect}
-        variant="primary"
-        title={`${scoringTeamName} Players (Regular Goals)`}
-      />
+      <div className="space-y-3">
+        <h4 className="font-medium text-sm">
+          {scoringTeamName} Players (Regular Goals)
+        </h4>
+        <div className="grid grid-cols-1 gap-2 max-h-60 overflow-y-auto">
+          {teamPlayers.map((player) => (
+            <Button
+              key={`team-player-${player.id}`}
+              onClick={() => handlePlayerSelect(player)}
+              variant="outline"
+              className="justify-start h-auto p-3 hover:bg-green-50 hover:border-green-300"
+            >
+              <div className="flex items-center gap-3 w-full">
+                <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center text-xs font-bold text-green-700">
+                  {player.number || '?'}
+                </div>
+                <div className="text-left flex-1">
+                  <div className="font-medium">{player.name}</div>
+                  <div className="text-sm text-muted-foreground">{player.team}</div>
+                </div>
+                <Badge variant="outline" className="text-green-700 border-green-300">
+                  Regular
+                </Badge>
+              </div>
+            </Button>
+          ))}
+        </div>
+      </div>
 
       {/* Other Team Players (Own Goals) */}
       {otherTeamPlayers.length > 0 && (
@@ -84,11 +116,29 @@ const PlayerSelectionStep = ({
             </p>
           </div>
 
-          <MobilePlayerGrid
-            players={otherTeamPlayers}
-            onPlayerSelect={handlePlayerSelect}
-            variant="secondary"
-          />
+          <div className="grid grid-cols-1 gap-2 max-h-40 overflow-y-auto">
+            {otherTeamPlayers.map((player) => (
+              <Button
+                key={`other-player-${player.id}`}
+                onClick={() => handlePlayerSelect(player)}
+                variant="ghost"
+                className="justify-start h-auto p-3 hover:bg-orange-50 hover:border-orange-300 border border-transparent"
+              >
+                <div className="flex items-center gap-3 w-full">
+                  <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center text-xs font-bold text-orange-700">
+                    {player.number || '?'}
+                  </div>
+                  <div className="text-left flex-1">
+                    <div className="font-medium">{player.name}</div>
+                    <div className="text-sm text-muted-foreground">{player.team}</div>
+                  </div>
+                  <Badge variant="destructive" className="text-xs">
+                    Own Goal
+                  </Badge>
+                </div>
+              </Button>
+            ))}
+          </div>
         </div>
       )}
     </div>

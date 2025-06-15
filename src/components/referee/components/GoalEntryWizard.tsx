@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -64,6 +63,9 @@ const GoalEntryWizard = ({
   // Initialize wizard data when editing a goal
   useEffect(() => {
     if (editingGoal) {
+      console.log('🎯 GoalEntryWizard: Initializing edit mode with enhanced goal data:', editingGoal);
+      
+      // Determine team from the goal data
       let goalTeam: 'home' | 'away' = 'home';
       
       if (editingGoal.team === 'home' || editingGoal.team === 'away') {
@@ -84,10 +86,18 @@ const GoalEntryWizard = ({
   }, [editingGoal, homeTeamName, awayTeamName]);
 
   const handleDataChange = (data: Partial<GoalWizardData>) => {
+    console.log('🔄 GoalEntryWizard: Data change:', {
+      currentData: wizardData,
+      newData: data,
+      mergedData: { ...wizardData, ...data }
+    });
+    
     setWizardData(prev => ({ ...prev, ...data }));
   };
 
   const handleNext = () => {
+    console.log('➡️ GoalEntryWizard: Moving to next step from:', currentStep);
+    
     switch (currentStep) {
       case 'team':
         setCurrentStep('player');
@@ -97,8 +107,10 @@ const GoalEntryWizard = ({
         break;
       case 'goal-type':
         if (wizardData.isOwnGoal) {
+          console.log('🥅 GoalEntryWizard: Own goal detected, skipping to confirmation');
           setCurrentStep('confirm');
         } else {
+          console.log('⚽ GoalEntryWizard: Regular goal, proceeding to assist selection');
           setCurrentStep('assist');
         }
         break;
@@ -109,6 +121,8 @@ const GoalEntryWizard = ({
   };
 
   const handleBack = () => {
+    console.log('⬅️ GoalEntryWizard: Moving back from step:', currentStep);
+    
     switch (currentStep) {
       case 'player':
         if (initialTeam || isEditMode) {
@@ -135,9 +149,21 @@ const GoalEntryWizard = ({
 
   const handleConfirm = () => {
     if (!wizardData.selectedPlayer || !wizardData.selectedTeam) {
+      console.error('❌ GoalEntryWizard: Missing required data for confirmation');
       return;
     }
 
+    console.log('🎯 GoalEntryWizard: Confirming goal assignment with complete data:', {
+      isEditMode,
+      editingGoalId: editingGoal?.id,
+      player: wizardData.selectedPlayer,
+      team: wizardData.selectedTeam,
+      isOwnGoal: wizardData.isOwnGoal,
+      assistPlayer: wizardData.assistPlayer,
+      timestamp: new Date().toISOString()
+    });
+
+    // Enhanced goal assignment call with proper own goal handling
     const goalData: GoalAssignmentData = {
       player: wizardData.selectedPlayer,
       goalType: 'goal',
@@ -148,6 +174,7 @@ const GoalEntryWizard = ({
       originalGoalId: editingGoal?.id
     };
 
+    console.log('📤 GoalEntryWizard: Sending goal data to parent handler:', goalData);
     onGoalAssigned(goalData);
   };
 
@@ -221,6 +248,16 @@ const GoalEntryWizard = ({
             <div className="text-xs text-orange-700">
               Team: {wizardData.selectedTeam === 'home' ? homeTeamName : awayTeamName}
             </div>
+          </div>
+        )}
+
+        {/* Debug info for development */}
+        {process.env.NODE_ENV === 'development' && (
+          <div className="bg-gray-50 border rounded p-2 text-xs">
+            <strong>Debug:</strong> Step: {currentStep}, Own Goal: {wizardData.isOwnGoal ? 'Yes' : 'No'}
+            {wizardData.selectedPlayer && (
+              <>, Player: {wizardData.selectedPlayer.name} ({wizardData.selectedPlayer.team})</>
+            )}
           </div>
         )}
       </CardHeader>

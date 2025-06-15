@@ -1,7 +1,8 @@
+
 import { useRefereeStateIntegration } from "./useRefereeStateIntegration";
 import { useRefereeEnhancedHandlers } from "./useRefereeEnhancedHandlers";
 import { useMatchStore } from "@/stores/useMatchStore";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, React } from "react";
 
 // If in the future we want to leverage permissions for anything UI-conditional, we can fetch here,
 // but UnifiedMatchTimer (and all critical scoreboard logic) must NEVER be gated by this state!
@@ -15,14 +16,11 @@ export const useRefereeStateOrchestrator = () => {
     awayScore,
     homeTeamName: storeHomeTeamName,
     awayTeamName: storeAwayTeamName,
-    homeTeamId: storeHomeTeamId,
-    awayTeamId: storeAwayTeamId,
-    lastUpdated,
-    setupMatch
+    lastUpdated
   } = useMatchStore();
 
   // Keep a ref for last setup params to avoid excessive setupMatch runs
-  const lastSetupParams = useRef<{
+  const lastSetupParams = React.useRef<{
     fixtureId: number | null,
     homeTeamName: string,
     awayTeamName: string
@@ -42,22 +40,22 @@ export const useRefereeStateOrchestrator = () => {
 
     // Pull team names from fixture data
     const fixtureId = selectedFixtureData.id;
-    const fixtureHome = selectedFixtureData.home_team?.name || '';
-    const fixtureAway = selectedFixtureData.away_team?.name || '';
+    const fixtureHome = selectedFixtureData.home_team?.name || selectedFixtureData.home_team_name || '';
+    const fixtureAway = selectedFixtureData.away_team?.name || selectedFixtureData.away_team_name || '';
     // Use correct logic: prefer store names ONLY if valid, otherwise fallback to fixture team names
     const homeTeamName = resolveTeamName(storeHomeTeamName, fixtureHome);
     const awayTeamName = resolveTeamName(storeAwayTeamName, fixtureAway);
 
     const homeTeamId = String(
+      selectedFixtureData.home_team?.id ||
       selectedFixtureData.home_team?.__id__ ||
       selectedFixtureData.home_team_id ||
-      storeHomeTeamId ||
       ""
     );
     const awayTeamId = String(
+      selectedFixtureData.away_team?.id ||
       selectedFixtureData.away_team?.__id__ ||
       selectedFixtureData.away_team_id ||
-      storeAwayTeamId ||
       ""
     );
 
@@ -74,7 +72,7 @@ export const useRefereeStateOrchestrator = () => {
       fixtureId &&
       setupChanged
     ) {
-      setupMatch({
+      orchestrator.matchState?.setupMatch?.({
         fixtureId,
         homeTeamName,
         awayTeamName,
@@ -119,11 +117,9 @@ export const useRefereeStateOrchestrator = () => {
     }
   }, [
     orchestrator.baseState.selectedFixtureData,
-    setupMatch,
+    orchestrator.matchState?.setupMatch,
     storeHomeTeamName,
-    storeAwayTeamName,
-    storeHomeTeamId,
-    storeAwayTeamId
+    storeAwayTeamName
   ]);
 
   // Debug loading/permission status (do NOT gate state propagation on this)

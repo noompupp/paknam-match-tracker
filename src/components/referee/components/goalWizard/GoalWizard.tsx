@@ -52,6 +52,7 @@ const GoalWizard = ({
   const [syncMessage, setSyncMessage] = useState<string | undefined>(undefined);
   const debounceRef = React.useRef<boolean>(false);
 
+  // Robust team mapping
   const homeTeamId =
     selectedFixtureData?.home_team?.__id__ ??
     selectedFixtureData?.home_team_id ??
@@ -65,6 +66,7 @@ const GoalWizard = ({
   const homeTeamName = selectedFixtureData?.home_team?.name ?? 'Home Team';
   const awayTeamName = selectedFixtureData?.away_team?.name ?? 'Away Team';
 
+  // Setup batchSave manager for unsaved warning
   const batchSaveManager = useGlobalBatchSaveManager({
     homeTeamData: { id: homeTeamId, name: homeTeamName },
     awayTeamData: { id: awayTeamId, name: awayTeamName }
@@ -151,6 +153,7 @@ const GoalWizard = ({
     }
   }
 
+  // --- Enhanced handleConfirm: robust team mapping + strong unsaved feedback ---
   const handleConfirm = async () => {
     if (debounceRef.current) return;
     debounceRef.current = true;
@@ -175,6 +178,7 @@ const GoalWizard = ({
         ? homeTeamId
         : awayTeamId;
 
+    // Ensure no duplicate
     const alreadyExists = goals.find(g =>
       g.playerId === wizardData.selectedPlayer.id &&
       g.time === matchTime &&
@@ -194,6 +198,7 @@ const GoalWizard = ({
       return;
     }
 
+    // Add to local store
     const goalData = addGoal({
       playerId: wizardData.selectedPlayer.id,
       playerName: wizardData.selectedPlayer.name,
@@ -215,6 +220,7 @@ const GoalWizard = ({
       return;
     }
 
+    // Assists (if present, not for own goal)
     if (!wizardData.isOwnGoal && wizardData.needsAssist && wizardData.assistPlayer) {
       addAssist({
         playerId: wizardData.assistPlayer.id,
@@ -230,6 +236,7 @@ const GoalWizard = ({
     setSyncStatus("unsaved");
     setSyncMessage("Goal added locally. Ready to save.");
 
+    // STRONGER toast for unsaved
     toast({
       title: "Goal Added (Local)",
       description: (
@@ -247,6 +254,7 @@ const GoalWizard = ({
     setCurrentStep("confirm");
   };
 
+  // ---- Save Now to DB (batchSave) ----
   const handleSaveNow = async () => {
     setSyncStatus("saving");
     setSyncMessage("Saving to database...");
@@ -295,9 +303,9 @@ const GoalWizard = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="w-[95vw] max-w-[500px] max-h-[90vh] overflow-y-auto p-4 sm:p-6">
+      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-center text-lg sm:text-xl">
+          <DialogTitle className="text-center">
             {getStepTitle()}
           </DialogTitle>
         </DialogHeader>
@@ -316,6 +324,7 @@ const GoalWizard = ({
           />
         </div>
 
+        {/* Enhanced warning after local score update */}
         {hasUnsaved && (
           <div className="flex items-center gap-2 mt-2 px-2 py-2 text-xs text-red-800 bg-red-50 border border-red-300 rounded-lg">
             <AlertTriangle className="h-4 w-4 text-red-600" />
@@ -345,6 +354,7 @@ const GoalWizard = ({
           isSynced={syncStatus === "synced"}
         />
 
+        {/* Visual status & database indicator */}
         <GoalWizardSyncStatus status={syncStatus} message={syncMessage} />
 
         {batchSaveManager.hasUnsavedChanges && (

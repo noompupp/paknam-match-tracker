@@ -12,32 +12,26 @@ import FixtureStatusBadge from "./FixtureStatusBadge";
 
 interface CompactFixtureCardProps {
   fixture: Fixture;
-  onClick?: (fixture: Fixture) => void;
   onFixtureClick?: (fixture: Fixture) => void;
   onPreviewClick?: (fixture: Fixture) => void;
   showDate?: boolean;
   showVenue?: boolean;
-  showStatus?: boolean;
   className?: string;
 }
 
 const CompactFixtureCard = ({
   fixture,
-  onClick,
   onFixtureClick,
   onPreviewClick,
   showDate = true,
   showVenue = false,
-  showStatus = true,
   className = "",
 }: CompactFixtureCardProps) => {
   const { isMobile, isPortrait } = useDeviceOrientation();
   const isMobilePortrait = isMobile && isPortrait;
 
   const handleCardClick = () => {
-    if (onClick) {
-      onClick(fixture);
-    } else if (fixture.status === "completed" && onFixtureClick) {
+    if (fixture.status === "completed" && onFixtureClick) {
       onFixtureClick(fixture);
     } else if (onPreviewClick) {
       onPreviewClick(fixture);
@@ -82,7 +76,7 @@ const CompactFixtureCard = ({
               </span>
             </div>
           )}
-          {showStatus && <FixtureStatusBadge status={fixture.status} />}
+          <FixtureStatusBadge status={fixture.status} />
         </div>
 
         <div className="flex items-center justify-between">
