@@ -1,3 +1,4 @@
+
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -31,7 +32,7 @@ const UnifiedMatchTimer = ({
   const { t, language } = useTranslation();
 
   // Get live scores direct from match store for local-first updates!
-  const { homeScore, awayScore, homeTeamName, awayTeamName, homeTeamId, awayTeamId } = useMatchStore();
+  const { homeScore, awayScore } = useMatchStore();
 
   // Calculate phase time for 7-a-side (25 minutes per half)
   const HALF_DURATION = 25 * 60; // 25 minutes in seconds
@@ -76,14 +77,6 @@ const UnifiedMatchTimer = ({
   return (
     <Card className="card-shadow-lg border-l-4 border-l-primary">
       <CardContent className="pt-4">
-        {/* Debugging: LIVE Zustand Store Team Info */}
-        <div className="mb-2 p-2 bg-yellow-50 border border-yellow-300 rounded text-xs">
-          <strong>Debug Team Names/IDs from Zustand:</strong>
-          <div>homeTeamName: "<span className="font-mono">{homeTeamName}</span>"</div>
-          <div>awayTeamName: "<span className="font-mono">{awayTeamName}</span>"</div>
-          <div>homeTeamId: "<span className="font-mono">{homeTeamId ?? ''}</span>"</div>
-          <div>awayTeamId: "<span className="font-mono">{awayTeamId ?? ''}</span>"</div>
-        </div>
         {/* Match Info Header */}
         {selectedFixtureData && (
           <div className="text-center mb-3">

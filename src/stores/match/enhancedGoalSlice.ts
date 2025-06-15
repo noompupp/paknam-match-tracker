@@ -4,7 +4,6 @@ import { MatchState } from './types';
 import { MatchActions } from './actions';
 import { generateId } from './utils';
 import { assignGoalToPlayer } from '@/services/fixtures/simplifiedGoalAssignmentService';
-import { normalizeTeamName } from './teamStringUtils';
 
 export interface EnhancedGoalSlice {
   addGoal: MatchActions['addGoal'];
@@ -24,40 +23,17 @@ export const createEnhancedGoalSlice: StateCreator<
     const state = get();
     const { homeTeamName, awayTeamName, homeScore, awayScore } = state;
 
-    // Use normalization for all team name matching
-    const inputTeamName = normalizeTeamName(goalData.teamName);
-    const homeNameNorm = normalizeTeamName(homeTeamName);
-    const awayNameNorm = normalizeTeamName(awayTeamName);
-
-    // Debug logs for deeper trace
-    console.log('[ENH GOAL][addGoal] INPUT:', {
-      goalData,
-      inputTeamName,
-      homeTeamName,
-      homeNameNorm,
-      awayTeamName,
-      awayNameNorm,
-      homeScore,
-      awayScore
-    });
-
     // Determine if this is an actual goal (not assist)
     const isGoal = goalData.type === "goal";
     let newHomeScore = homeScore;
     let newAwayScore = awayScore;
 
-    // Only increment score for actual goals (not assists), using normalized teamName for match
+    // Only increment score for actual goals (not assists), using teamName for match
     if (isGoal) {
-      if (inputTeamName === homeNameNorm) {
+      if (goalData.teamName === homeTeamName) {
         newHomeScore = homeScore + 1;
-        console.log('[ENH GOAL][addGoal] Home goal detected', { newHomeScore });
-      } else if (inputTeamName === awayNameNorm) {
+      } else if (goalData.teamName === awayTeamName) {
         newAwayScore = awayScore + 1;
-        console.log('[ENH GOAL][addGoal] Away goal detected', { newAwayScore });
-      } else {
-        console.warn('[ENH GOAL][addGoal] Goal TeamName did not match either home or away after normalization', {
-          inputTeamName, homeNameNorm, awayNameNorm
-        });
       }
     }
 
@@ -80,13 +56,8 @@ export const createEnhancedGoalSlice: StateCreator<
 
     console.log('⚽ Enhanced Goal Store: Goal added (w/ score update) with standardized own goal support:', {
       newGoal,
-      homeTeamName,
-      awayTeamName,
-      inputTeamName,
       newHomeScore,
-      newAwayScore,
-      goalCount: get().goals.length + 1, // +1 because we just added one, before Zustand state commit
-      justAddedGoal: newGoal,
+      newAwayScore
     });
     return newGoal;
   },
@@ -96,29 +67,16 @@ export const createEnhancedGoalSlice: StateCreator<
       const goalToRemove = state.goals.find(g => g.id === goalId);
       if (!goalToRemove) return state;
 
-      // Use normalization for matching
-      const toRemoveNorm = normalizeTeamName(goalToRemove.teamName);
-      const homeNameNorm = normalizeTeamName(state.homeTeamName);
-      const awayNameNorm = normalizeTeamName(state.awayTeamName);
-
+      // Only decrement score if this record is a goal (not assist), and is for the matching team name
       let newHomeScore = state.homeScore;
       let newAwayScore = state.awayScore;
       if (goalToRemove.type === "goal") {
-        if (toRemoveNorm === homeNameNorm) {
+        if (goalToRemove.teamName === state.homeTeamName) {
           newHomeScore = Math.max(0, state.homeScore - 1);
-        } else if (toRemoveNorm === awayNameNorm) {
+        } else if (goalToRemove.teamName === state.awayTeamName) {
           newAwayScore = Math.max(0, state.awayScore - 1);
         }
       }
-
-      console.log('[ENH GOAL][removeGoal] Removing goal:', {
-        goalId,
-        toRemoveNorm,
-        homeNameNorm,
-        awayNameNorm,
-        newHomeScore,
-        newAwayScore
-      });
 
       return {
         goals: state.goals.filter(g => g.id !== goalId),
