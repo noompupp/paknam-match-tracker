@@ -5,8 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { SecureAuthProvider, useSecureAuth } from "@/contexts/SecureAuthContext";
 import { AuthProvider } from "@/contexts/AuthContext"; // Keep for backward compatibility
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
-// REMOVE LanguageProvider import here
-// import { LanguageProvider } from "@/contexts/LanguageContext";
+import { LanguageProvider } from "@/contexts/LanguageContext";
 import SecureLogin from "@/components/auth/SecureLogin";
 import RoleBasedNavigation from "@/components/auth/RoleBasedNavigation";
 import RoleGuard from "@/components/auth/RoleGuard";
@@ -97,15 +96,15 @@ function App() {
         enableSystem
         disableTransitionOnChange
       >
-        {/* REMOVE LanguageProvider here */}
-        {/* <LanguageProvider> */}
+        {/* Wrap everything in LanguageProvider, crucial for useLanguage usage */}
+        <LanguageProvider>
           <SecureAuthProvider>
             <AuthProvider>
               <AppContent />
               <Toaster />
             </AuthProvider>
           </SecureAuthProvider>
-        {/* </LanguageProvider> */}
+        </LanguageProvider>
       </ThemeProvider>
     </QueryClientProvider>
   );
