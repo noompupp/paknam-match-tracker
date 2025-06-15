@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useMatchStore } from "@/stores/useMatchStore";
@@ -40,6 +41,9 @@ const GoalWizard = ({
 
   const { addGoal, addAssist, goals } = useMatchStore();
   const { toast } = useToast();
+
+  // FIX: Add isSaving at top-level state
+  const [isSaving, setIsSaving] = useState(false);
 
   const resetWizard = () => {
     setCurrentStep('team');
@@ -124,8 +128,7 @@ const GoalWizard = ({
     const beneficiaryTeamId = wizardData.selectedTeam === 'home' ? homeTeamId : awayTeamId;
     const beneficiaryTeamName = wizardData.selectedTeam === 'home' ? homeTeamName : awayTeamName;
 
-    // NEW: Disable button/spinner during save
-    const [isSaving, setIsSaving] = useState(false);
+    setIsSaving(true); // Move isSaving here
 
     try {
       // Duplicate check BEFORE addGoal
@@ -141,7 +144,7 @@ const GoalWizard = ({
         toast({
           title: "Duplicate Goal",
           description: "A goal for this player, time, and team already exists. No duplicate created.",
-          variant: "warning"
+          variant: "destructive"
         });
         return;
       }
@@ -162,7 +165,7 @@ const GoalWizard = ({
         toast({
           title: "Duplicate Goal",
           description: "A goal for this player, time, and team already exists.",
-          variant: "warning"
+          variant: "destructive"
         });
         return;
       }
@@ -284,3 +287,4 @@ const GoalWizard = ({
 };
 
 export default GoalWizard;
+

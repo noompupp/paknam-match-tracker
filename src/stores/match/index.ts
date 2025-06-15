@@ -1,4 +1,3 @@
-
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 import { MatchState, MatchGoal, MatchCard, MatchPlayerTime } from './types';
@@ -14,7 +13,9 @@ import { createOptimizedPlayerTimeSlice } from './optimizedPlayerTimeSlice';
 
 type MatchStore = MatchState & MatchActions;
 
-// Remove ALL old legacy goalQueue logic. Everything goes through the deduped slices now.
+// Fix: Zustand expects (setState, getState, store) argument names, but zustand <5 still works with (set, get, api).
+// We'll retain the 3-argument signature and ensure that flushBatchedEvents is included in the store as required.
+
 export const useMatchStore = create<MatchStore>()(
   subscribeWithSelector((set, get, api) => {
     return {
