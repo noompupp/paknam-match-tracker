@@ -58,8 +58,6 @@ export interface MatchState {
   awayScore: number;
   homeTeamName?: string; // Add for team matching in goal slice
   awayTeamName?: string; // Add for team matching in goal slice
-  homeTeamId?: string;   // <-- ADDED for ScoreTabContainer type correctness
-  awayTeamId?: string;   // <-- ADDED for ScoreTabContainer type correctness
   goals: MatchGoal[];
   cards: MatchCard[];
   playerTimes: MatchPlayerTime[];

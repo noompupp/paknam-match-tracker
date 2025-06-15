@@ -1,4 +1,3 @@
-
 import { useCallback, useRef } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useMatchStore, MatchGoal, MatchCard, MatchPlayerTime } from '@/stores/useMatchStore';
@@ -93,9 +92,7 @@ export const useGlobalBatchSaveManager = ({
         fixtureId,
         homeScore,
         awayScore,
-        unsavedGoals: goals.filter(g => !g.synced).length,
-        unsavedCards: cards.filter(c => !c.synced).length,
-        unsavedPlayerTimes: playerTimes.filter(pt => !pt.synced).length
+        unsavedGoals: goals.filter(g => !g.synced).length
       });
 
       toast({
@@ -191,4 +188,3 @@ export const useGlobalBatchSaveManager = ({
     unsavedItemsCount: getUnsavedItemsCount ? getUnsavedItemsCount() : { goals: 0, cards: 0, playerTimes: 0 }
   };
 };
-

@@ -1,12 +1,12 @@
-
 import { Crown, Clock } from "lucide-react";
 import RefereeCard from "../../../shared/RefereeCard";
 import { cn } from "@/lib/utils";
-import { useMatchStore } from "@/stores/useMatchStore";
 
 interface ScoreTabDisplayProps {
   homeTeamName: string;
   awayTeamName: string;
+  homeScore: number;
+  awayScore: number;
   matchTime: number;
   isRunning: boolean;
   hasUnsavedChanges?: boolean;
@@ -16,14 +16,13 @@ interface ScoreTabDisplayProps {
 const ScoreTabDisplay = ({
   homeTeamName,
   awayTeamName,
+  homeScore,
+  awayScore,
   matchTime,
   isRunning,
   hasUnsavedChanges = false,
   formatTime
 }: ScoreTabDisplayProps) => {
-  // 🟢 Get live score from store!
-  const { homeScore, awayScore } = useMatchStore();
-
   const isHomeWinning = homeScore > awayScore;
   const isAwayWinning = awayScore > homeScore;
   const isDraw = homeScore === awayScore;
@@ -71,12 +70,14 @@ const ScoreTabDisplay = ({
             </div>
           </div>
         </div>
+
         {/* VS Separator */}
         <div className="text-center">
           <div className="text-lg font-bold text-muted-foreground">
             VS
           </div>
         </div>
+
         {/* Away Team */}
         <div className="text-center">
           <div className={cn(
@@ -102,4 +103,3 @@ const ScoreTabDisplay = ({
 };
 
 export default ScoreTabDisplay;
-

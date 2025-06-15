@@ -1,3 +1,4 @@
+
 import { ComponentPlayer } from "../hooks/useRefereeState";
 import NoMatchSelectedPlaceholder from "./NoMatchSelectedPlaceholder";
 import MatchHeaderWithScore from "./MatchHeaderWithScore";
@@ -137,6 +138,8 @@ const EnhancedMatchSummaryDisplay = ({
       {/* Match Header with Real-time Score */}
       <MatchHeaderWithScore
         selectedFixtureData={selectedFixtureData}
+        homeScore={calculatedHomeScore}
+        awayScore={calculatedAwayScore}
         matchTime={matchTime}
         formatTime={formatTimeInMinutes}
       />

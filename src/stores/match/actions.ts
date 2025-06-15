@@ -43,13 +43,6 @@ export interface MatchActions {
   resetState: () => void;
 
   // Core actions
-  setupMatch: (data: {
-    fixtureId: number;
-    homeTeamName: string;
-    awayTeamName: string;
-    homeTeamId?: string;
-    awayTeamId?: string;
-  }) => void;
   setFixtureId: (fixtureId: number) => void;
   updateScore: (homeScore: number, awayScore: number) => void;
   markAsSaved: () => void;

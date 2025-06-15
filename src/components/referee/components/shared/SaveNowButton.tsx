@@ -57,9 +57,7 @@ const SaveNowButton = ({
       )}
       {children || (isLoading ? 'Saving...' : 'Save Now')}
       {hasUnsaved && (
-        <span title="Unsaved changes">
-          <AlertTriangle className="h-4 w-4 text-red-600 absolute right-2" />
-        </span>
+        <AlertTriangle className="h-4 w-4 text-red-600 absolute right-2" title="Unsaved changes" />
       )}
     </Button>
   );

@@ -74,6 +74,8 @@ const ScoreTab = ({
       {/* Unified Match Timer */}
       <UnifiedMatchTimer
         selectedFixtureData={selectedFixtureData}
+        homeScore={homeScore}
+        awayScore={awayScore}
         matchTime={matchTime}
         isRunning={isRunning}
         formatTime={formatTime}

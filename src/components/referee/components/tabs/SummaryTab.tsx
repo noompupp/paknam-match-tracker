@@ -3,11 +3,13 @@ import EnhancedMatchSummary from "../../EnhancedMatchSummary";
 import MatchEvents from "../../MatchEvents";
 import { ComponentPlayer } from "../../hooks/useRefereeState";
 import { useDataValidation } from "@/hooks/useDataValidation";
+// FIXED: Correct import path for UnifiedMatchTimer
 import UnifiedMatchTimer from "../UnifiedMatchTimer";
-import { useMatchStore } from "@/stores/useMatchStore";
 
 interface SummaryTabProps {
   selectedFixtureData: any;
+  homeScore: number;
+  awayScore: number;
   matchTime: number;
   events: any[];
   goals: any[];
@@ -25,6 +27,8 @@ interface SummaryTabProps {
 
 const SummaryTab = ({
   selectedFixtureData,
+  homeScore,
+  awayScore,
   matchTime,
   events,
   goals,
@@ -42,6 +46,7 @@ const SummaryTab = ({
   onResetMatch?: () => void;
   isRunning?: boolean;
 }) => {
+  
   // Add data validation for this component
   useDataValidation({
     componentName: 'SummaryTab',
@@ -49,9 +54,6 @@ const SummaryTab = ({
     cards,
     enabled: true
   });
-
-  // Get live scores from match store (local state is prioritized after reset)
-  const { homeScore, awayScore } = useMatchStore();
 
   return (
     <div className="space-y-6">
@@ -81,3 +83,4 @@ const SummaryTab = ({
 };
 
 export default SummaryTab;
+

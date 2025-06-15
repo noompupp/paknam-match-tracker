@@ -5,22 +5,23 @@ import { Clock } from "lucide-react"
 import TeamLogo from "../../teams/TeamLogo"
 import { getNeutralScoreStyle } from "@/utils/scoreColorUtils"
 import { useIsMobile } from "@/hooks/use-mobile"
-import { useMatchStore } from "@/stores/useMatchStore";
 
 interface MatchHeaderWithScoreProps {
   selectedFixtureData: any
+  homeScore: number
+  awayScore: number
   matchTime: number
   formatTime: (seconds: number) => string
 }
 
 const MatchHeaderWithScore = ({
   selectedFixtureData,
+  homeScore,
+  awayScore,
   matchTime,
   formatTime
 }: MatchHeaderWithScoreProps) => {
   const isMobile = useIsMobile();
-  // 🟢 Pull scores from store
-  const { homeScore, awayScore } = useMatchStore();
 
   return (
     <Card className="premier-card-shadow-lg match-border-gradient">
@@ -39,6 +40,7 @@ const MatchHeaderWithScore = ({
               {homeScore}
             </div>
           </div>
+
           {/* Match Info */}
           <div className="mx-8 text-center min-w-[120px]">
             <div className="flex items-center justify-center gap-2 mb-2">
@@ -52,6 +54,7 @@ const MatchHeaderWithScore = ({
               {new Date(selectedFixtureData.match_date).toLocaleDateString()}
             </Badge>
           </div>
+
           {/* Away Team */}
           <div className="flex-1 text-center">
             <div className="flex items-center justify-center gap-3 mb-2">
@@ -72,4 +75,3 @@ const MatchHeaderWithScore = ({
 }
 
 export default MatchHeaderWithScore
-

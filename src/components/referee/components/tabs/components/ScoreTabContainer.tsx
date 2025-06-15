@@ -1,4 +1,3 @@
-
 import React from "react";
 import { ComponentPlayer } from "../../../hooks/useRefereeState";
 import { useMatchStore } from "@/stores/useMatchStore";
@@ -39,6 +38,12 @@ const ScoreTabContainer = ({
   forceRefresh,
   onShowWizard
 }: ScoreTabContainerProps) => {
+  const homeTeamName = selectedFixtureData?.home_team?.name || 'Home Team';
+  const awayTeamName = selectedFixtureData?.away_team?.name || 'Away Team';
+  const homeTeamId = selectedFixtureData?.home_team?.__id__ || selectedFixtureData?.home_team_id;
+  const awayTeamId = selectedFixtureData?.away_team?.__id__ || selectedFixtureData?.away_team_id;
+
+  // Use match store as single source of truth for homeScore/awayScore
   const {
     fixtureId,
     homeScore,
@@ -46,48 +51,18 @@ const ScoreTabContainer = ({
     goals,
     hasUnsavedChanges,
     setFixtureId,
-    setupMatch,
     addGoal,
     addAssist,
     addEvent,
-    resetState,
-    homeTeamName,
-    awayTeamName,
-    homeTeamId,
-    awayTeamId
+    resetState
   } = useMatchStore();
 
-  // Only react to fixture ID change, and always use names from fixtureData
+  // Set fixture ID when component mounts or fixture changes
   React.useEffect(() => {
-    if (
-      selectedFixtureData?.id &&
-      (
-        fixtureId !== selectedFixtureData.id
-      )
-    ) {
-      // Always use names from fixtureData directly (match store can sometimes be empty on new match)
-      const homeTeamNameValue = selectedFixtureData.home_team?.name || "";
-      const awayTeamNameValue = selectedFixtureData.away_team?.name || "";
-      const homeTeamIdValue = String(selectedFixtureData.home_team?.id || "");
-      const awayTeamIdValue = String(selectedFixtureData.away_team?.id || "");
-
-      setupMatch({
-        fixtureId: selectedFixtureData.id,
-        homeTeamName: homeTeamNameValue,
-        awayTeamName: awayTeamNameValue,
-        homeTeamId: homeTeamIdValue,
-        awayTeamId: awayTeamIdValue
-      });
-      setFixtureId(selectedFixtureData.id); // (If legacy code or analytics still need raw fixtureId)
-      console.log("[ScoreTabContainer] setupMatch called (using fixture data)", {
-        fixtureId: selectedFixtureData.id,
-        homeTeamName: homeTeamNameValue,
-        awayTeamName: awayTeamNameValue,
-        homeTeamId: homeTeamIdValue,
-        awayTeamId: awayTeamIdValue
-      });
+    if (selectedFixtureData?.id && fixtureId !== selectedFixtureData.id) {
+      setFixtureId(selectedFixtureData.id);
     }
-  }, [selectedFixtureData?.id, fixtureId, setupMatch, setFixtureId]);
+  }, [selectedFixtureData?.id, fixtureId, setFixtureId]);
 
   // Global batch save manager
   const { batchSave, unsavedItemsCount } = useGlobalBatchSaveManager({
@@ -99,7 +74,7 @@ const ScoreTabContainer = ({
   useAutoSave({
     enabled: true,
     onAutoSave: batchSave,
-    interval: 30000,
+    interval: 30000, // 30 seconds
     hasUnsavedChanges
   });
 
@@ -114,6 +89,7 @@ const ScoreTabContainer = ({
 
   const { toast } = useToast();
 
+  // Show yellow unsaved banner/toast logic
   React.useEffect(() => {
     if (hasUnsavedChanges && (unsavedItemsCount.goals > 0 || unsavedItemsCount.cards > 0 || unsavedItemsCount.playerTimes > 0)) {
       toast({
