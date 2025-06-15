@@ -1,3 +1,4 @@
+
 import { StateCreator } from 'zustand';
 import { MatchState } from './types';
 import { MatchActions } from './actions';
@@ -43,7 +44,32 @@ export const createCoreSlice = (set: any, get: any, api: any): CoreSlice => ({
     set({ homeScore, awayScore });
   },
   markAsSaved: () => {
-    set({ hasUnsavedChanges: false });
+    set((state: MatchState) => {
+      const goalsBefore = state.goals.filter(g => !g.synced).length;
+      const cardsBefore = state.cards.filter(c => !c.synced).length;
+      const timesBefore = state.playerTimes.filter(t => !t.synced).length;
+
+      const updatedGoals = state.goals.map(goal => ({ ...goal, synced: true }));
+      const updatedCards = state.cards.map(card => ({ ...card, synced: true }));
+      const updatedPlayerTimes = state.playerTimes.map(time => ({ ...time, synced: true }));
+
+      console.log(
+        "[markAsSaved] Marked as saved:",
+        {
+          unsavedGoals: goalsBefore,
+          unsavedCards: cardsBefore,
+          unsavedPlayerTimes: timesBefore
+        }
+      );
+      return {
+        ...state,
+        goals: updatedGoals,
+        cards: updatedCards,
+        playerTimes: updatedPlayerTimes,
+        hasUnsavedChanges: false,
+        lastUpdated: Date.now()
+      };
+    });
   },
   resetMatch: () => {
     set((state: MatchState) => ({
