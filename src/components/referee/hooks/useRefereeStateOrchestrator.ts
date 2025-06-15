@@ -1,3 +1,4 @@
+
 import { useRefereeStateIntegration } from "./useRefereeStateIntegration";
 import { useRefereeEnhancedHandlers } from "./useRefereeEnhancedHandlers";
 import { useMatchStore } from "@/stores/useMatchStore";
@@ -39,14 +40,13 @@ export const useRefereeStateOrchestrator = () => {
     const fixtureId = selectedFixtureData.id;
 
     // Figure out correct home and away team name (store preferred, fallback to fixture)
-    // Use the type definitions: home_team, away_team, team1, team2
     const fixtureHome =
       selectedFixtureData.home_team?.name ||
-      selectedFixtureData.team1 ||
+      selectedFixtureData.home_team_name ||
       "";
     const fixtureAway =
       selectedFixtureData.away_team?.name ||
-      selectedFixtureData.team2 ||
+      selectedFixtureData.away_team_name ||
       "";
 
     const homeTeamName = resolveTeamName(storeHomeTeamName, fixtureHome);
@@ -81,8 +81,8 @@ export const useRefereeStateOrchestrator = () => {
       fixtureId &&
       setupChanged
     ) {
-      // FIX: use orchestrator.scoreState.setupMatch (not matchState)
-      orchestrator.scoreState?.setupMatch?.({
+      // FIX: use orchestrator.matchState.setupMatch, not scoreState
+      orchestrator.matchState?.setupMatch?.({
         fixtureId,
         homeTeamName,
         awayTeamName,
@@ -128,7 +128,7 @@ export const useRefereeStateOrchestrator = () => {
     }
   }, [
     orchestrator.baseState.selectedFixtureData,
-    orchestrator.scoreState?.setupMatch, // FIX: track scoreState instead of matchState
+    orchestrator.matchState?.setupMatch,
     storeHomeTeamName,
     storeAwayTeamName,
     storeHomeTeamId,
@@ -237,3 +237,4 @@ export const useRefereeStateOrchestrator = () => {
     handleManualRefresh: orchestrator.handleManualRefresh
   };
 };
+
