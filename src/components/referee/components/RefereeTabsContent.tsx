@@ -1,4 +1,3 @@
-// Remove workflowConfig and CoordinationTab
 import { TabsContent } from "@/components/ui/tabs";
 import { ComponentPlayer } from "../hooks/useRefereeState";
 import ScoreTab from "./tabs/ScoreTab";
@@ -18,8 +17,6 @@ import { useTranslation } from "@/hooks/useTranslation";
 // Remove workflowConfig from props type
 interface RefereeTabsContentProps {
   selectedFixtureData: any;
-  homeScore: number;
-  awayScore: number;
   matchTime: number;
   isRunning: boolean;
   formatTime: (seconds: number) => string;
@@ -38,7 +35,7 @@ interface RefereeTabsContentProps {
   selectedCardType: 'yellow' | 'red';
   setSelectedPlayer: (value: string) => void;
   setSelectedTeam: (value: string) => void;
-  setSelectedCardType: (value: 'yellow' | 'red') => void;
+  setSelectedCardType: (value: string) => void;
   cards: any[];
   trackedPlayers: any[];
   selectedTimePlayer: string;
@@ -57,7 +54,7 @@ interface RefereeTabsContentProps {
   onAddCard: (playerName: string, team: string, cardType: 'yellow' | 'red', time: number) => void;
   onAddPlayer: (player: ProcessedPlayer) => void;
   onRemovePlayer: (playerId: number) => void;
-  onTogglePlayerTime: (playerId: number) => void;
+  onTogglePlayerTime: () => void;
   onExportSummary: () => void;
   // Removed: workflowConfig: WorkflowModeConfig;
 }
@@ -97,8 +94,6 @@ const RefereeTabsContent = (props: RefereeTabsContentProps) => {
         </div>
         <RoleBasedUnifiedTimerTab
           selectedFixtureData={props.selectedFixtureData}
-          homeScore={props.homeScore}
-          awayScore={props.awayScore}
           matchTime={props.matchTime}
           isRunning={props.isRunning}
           formatTime={props.formatTime}
@@ -140,8 +135,6 @@ const RefereeTabsContent = (props: RefereeTabsContentProps) => {
           onToggleTimer={props.onToggleTimer}
           onResetMatch={props.onResetMatch}
           isRunning={props.isRunning}
-          homeScore={props.homeScore}
-          awayScore={props.awayScore}
         />
       </TabsContent>
 
@@ -165,8 +158,6 @@ const RefereeTabsContent = (props: RefereeTabsContentProps) => {
         {/* UnifiedMatchTimer for quick timer controls in summary */}
         <UnifiedMatchTimer
           selectedFixtureData={props.selectedFixtureData}
-          homeScore={props.homeScore}
-          awayScore={props.awayScore}
           matchTime={props.matchTime}
           isRunning={props.isRunning}
           formatTime={props.formatTime}

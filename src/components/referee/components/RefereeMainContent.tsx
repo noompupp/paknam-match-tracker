@@ -81,7 +81,6 @@ const RefereeMainContent = (props: any) => {
         <RoleBasedRefereeTabsNavigation selectedFixtureData={props.selectedFixtureData} />
         <RefereeTabsContent
           selectedFixtureData={props.selectedFixtureData}
-          // Home & awayScore from useMatchStore, no need to pass as props anymore!
           matchTime={props.matchTime}
           isRunning={props.isRunning}
           formatTime={props.formatTime}
@@ -108,19 +107,16 @@ const RefereeMainContent = (props: any) => {
           setSelectedTimePlayer={props.setSelectedTimePlayer}
           setSelectedTimeTeam={props.setSelectedTimeTeam}
           events={props.events}
-          onAddGoal={handleAddGoal}
-          onRemoveGoal={handleRemoveGoal}
-          onToggleTimer={props.toggleTimer}
-          onResetMatch={props.onResetMatch}
+          saveAttempts={props.saveAttempts}
+          toggleTimer={props.toggleTimer}
+          resetTimer={props.resetTimer}
+          assignGoal={props.assignGoal}
+          addPlayer={props.addPlayer}
+          removePlayer={props.removePlayer}
+          togglePlayerTime={props.togglePlayerTime}
           onSaveMatch={props.onSaveMatch}
-          onQuickGoal={handleQuickGoal}
-          onOpenGoalWizard={handleOpenGoalWizard}
-          onAssignGoal={props.assignGoal}
-          onAddCard={handleAddCard}
-          onAddPlayer={props.addPlayer}
-          onRemovePlayer={props.removePlayer}
-          onTogglePlayerTime={props.togglePlayerTime}
-          onExportSummary={handleExportSummary}
+          onResetMatch={props.onResetMatch}
+          onDataRefresh={props.onDataRefresh}
         />
       </Tabs>
     </div>

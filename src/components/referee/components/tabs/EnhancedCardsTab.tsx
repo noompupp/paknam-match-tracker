@@ -25,8 +25,6 @@ interface EnhancedCardsTabProps {
   onToggleTimer: () => void;
   onResetMatch: () => void;
   isRunning: boolean;
-  homeScore: number;
-  awayScore: number;
 }
 
 const EnhancedCardsTab = ({
@@ -45,9 +43,7 @@ const EnhancedCardsTab = ({
   formatTime,
   onToggleTimer,
   onResetMatch,
-  isRunning,
-  homeScore,
-  awayScore
+  isRunning
 }: EnhancedCardsTabProps) => {
   const { t } = useTranslation();
 
@@ -120,8 +116,6 @@ const EnhancedCardsTab = ({
       {/* Unified Match Timer */}
       <UnifiedMatchTimer
         selectedFixtureData={selectedFixtureData}
-        homeScore={homeScore}
-        awayScore={awayScore}
         matchTime={matchTime}
         isRunning={isRunning}
         formatTime={formatTime}

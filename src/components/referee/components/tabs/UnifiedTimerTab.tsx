@@ -1,4 +1,3 @@
-
 import { Separator } from "@/components/ui/separator";
 import { Users } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -11,8 +10,6 @@ import { useTranslation } from "@/hooks/useTranslation";
 
 interface UnifiedTimerTabProps {
   selectedFixtureData: any;
-  homeScore: number;
-  awayScore: number;
   matchTime: number;
   isRunning: boolean;
   formatTime: (seconds: number) => string;
@@ -29,8 +26,6 @@ interface UnifiedTimerTabProps {
 
 const UnifiedTimerTab = ({
   selectedFixtureData,
-  homeScore,
-  awayScore,
   matchTime,
   isRunning,
   formatTime,
@@ -57,8 +52,6 @@ const UnifiedTimerTab = ({
       {/* Unified Match Timer Section */}
       <UnifiedMatchTimer
         selectedFixtureData={selectedFixtureData}
-        homeScore={homeScore}
-        awayScore={awayScore}
         matchTime={matchTime}
         isRunning={isRunning}
         formatTime={formatTime}
