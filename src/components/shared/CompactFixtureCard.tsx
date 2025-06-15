@@ -1,3 +1,4 @@
+
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, Clock, MapPin } from "lucide-react";
@@ -25,8 +26,17 @@ const CompactFixtureCard = ({
   showVenue = false,
   className = ""
 }: CompactFixtureCardProps) => {
-  const { isMobile, isPortrait } = useDeviceOrientation();
+  const { isMobile, isPortrait, screenWidth, screenHeight } = useDeviceOrientation();
   const isMobilePortrait = isMobile && isPortrait;
+
+  // Temporary: Debug logs for mobile detection logic
+  console.log("[CompactFixtureCard] Device info:", {
+    screenWidth,
+    screenHeight,
+    isMobile,
+    isPortrait,
+    isMobilePortrait
+  });
 
   const handleCardClick = () => {
     if (fixture.status === 'completed' && onFixtureClick) {
@@ -56,6 +66,7 @@ const CompactFixtureCard = ({
 
   // --- MOBILE PORTRAIT LAYOUT ---
   if (isMobilePortrait) {
+    console.log("[CompactFixtureCard] Rendering: MOBILE PORTRAIT LAYOUT");
     return (
       <Card 
         className={cn(
@@ -143,6 +154,7 @@ const CompactFixtureCard = ({
   }
 
   // Default layout for larger screens
+  console.log("[CompactFixtureCard] Rendering: DESKTOP / LARGE SCREEN LAYOUT");
   return (
     <Card 
       className={cn(
@@ -214,3 +226,4 @@ const CompactFixtureCard = ({
 };
 
 export default CompactFixtureCard;
+
