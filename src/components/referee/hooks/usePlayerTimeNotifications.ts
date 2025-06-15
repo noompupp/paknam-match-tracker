@@ -81,14 +81,16 @@ export const usePlayerTimeNotifications = () => {
       outNameType: typeof outName,
     });
 
-    // Evaluate and log the interpolated translations for all relevant keys
+    // Use correct translation keys for substitution completion!
     const eventTitle = t("referee.event.substitutionComplete", "Substitution Complete");
+    // Corrected key for event description!
     const eventDesc = t(
       "referee.event.substitutionCompleteDescription",
       "{inName} substituted for {outName}",
       { inName, outName }
     );
     const toastTitle = t("referee.toast.substitutionCompleteTitle", "Substitution Complete");
+    // Corrected key for toast description!
     const toastDesc = t(
       "referee.toast.substitutionCompleteDesc",
       "{inName} replaced {outName}",
