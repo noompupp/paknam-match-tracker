@@ -1,5 +1,6 @@
+
 import { StateCreator } from 'zustand';
-import { MatchState } from './types';
+import { MatchState, MatchGoal } from './types';
 import { MatchActions } from './actions';
 import { generateId } from './utils';
 import { assignGoalToPlayer } from '@/services/fixtures/simplifiedGoalAssignmentService';
@@ -11,9 +12,9 @@ export interface EnhancedGoalSlice {
   getUnsavedGoalsCount: MatchActions['getUnsavedGoalsCount'];
   syncGoalsToDatabase: (fixtureId: number) => Promise<void>;
   undoGoal: (goalId: string) => void; // Add to interface
-  addAssist: (assistData: any) => void;
-  getUnassignedGoalsCount: () => void;
-  getUnassignedGoals: () => void;
+  addAssist: MatchActions['addAssist'];
+  getUnassignedGoalsCount: () => number;
+  getUnassignedGoals: () => MatchGoal[];
 }
 
 export const createEnhancedGoalSlice: StateCreator<
@@ -122,9 +123,9 @@ export const createEnhancedGoalSlice: StateCreator<
 
   // Implementation for addAssist (required by MatchActions)
   addAssist: (assistData) => {
-    const newAssist = {
+    const newAssist: MatchGoal = {
       ...assistData,
-      type: 'assist' as const,
+      type: 'assist',
       id: generateId(),
       timestamp: Date.now(),
       synced: false
@@ -158,9 +159,10 @@ export const createEnhancedGoalSlice: StateCreator<
       g.playerName === 'Quick Goal' || 
       g.playerName === 'Unknown Player' ||
       (!g.playerId && g.type === 'goal')
-    );
+    ) as MatchGoal[];
 
     console.log('[ENHANCED GOAL SLICE] getUnassignedGoals (compat):', unassignedGoals);
     return unassignedGoals;
   }
 });
+
