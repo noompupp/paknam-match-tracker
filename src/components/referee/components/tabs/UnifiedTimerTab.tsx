@@ -7,6 +7,7 @@ import UnifiedMatchTimer from "../UnifiedMatchTimer";
 import { ComponentPlayer } from "../../hooks/useRefereeState";
 import { PlayerTime } from "@/types/database";
 import { ProcessedPlayer } from "@/utils/refereeDataProcessor";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface UnifiedTimerTabProps {
   selectedFixtureData: any;
@@ -44,6 +45,7 @@ const UnifiedTimerTab = ({
   onTogglePlayerTime
 }: UnifiedTimerTabProps) => {
   const isMobile = useIsMobile();
+  const { t } = useTranslation();
 
   // Calculate current phase for 7-a-side timer
   const HALF_DURATION = 25 * 60; // 25 minutes in seconds
@@ -70,7 +72,7 @@ const UnifiedTimerTab = ({
         <Separator />
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="bg-background px-3 text-sm text-muted-foreground font-medium">
-            Player Time Tracking
+            {t("referee.playerTimeTracking", "Player Time Tracking")}
           </div>
         </div>
       </div>
@@ -79,7 +81,7 @@ const UnifiedTimerTab = ({
       <div>
         <div className="flex items-center gap-2 mb-4">
           <Users className="h-5 w-5" />
-          <h3 className="text-lg font-semibold">Player Time Tracking</h3>
+          <h3 className="text-lg font-semibold">{t("referee.playerTimeTracking", "Player Time Tracking")}</h3>
         </div>
         
         <EnhancedPlayerTimeTracker

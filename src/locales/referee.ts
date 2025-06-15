@@ -125,6 +125,22 @@ const referee: LocaleModule = {
     'wizard.missingFields': 'Please complete all required fields before confirming.',
     'wizard.completed': 'Goal recorded successfully',
     'wizard.editing': 'Editing quick goal entry',
+    // --- Newly added/extended translations below ---
+    "referee.status.live": "LIVE",
+    "referee.status.paused": "PAUSED",
+    "referee.timer.start": "Start Timer",
+    "referee.timer.pause": "Pause Timer",
+    "referee.timer.resume": "Resume Timer",
+    "referee.phase.firstHalf": "First Half",
+    "referee.phase.secondHalf": "Second Half",
+    "referee.phase.overtime": "Overtime",
+    "referee.matchTeamsVs.connector": "vs",
+    // Sync/status banners
+    "referee.sync.saving": "Saving changes to server...",
+    "referee.sync.error": "Sync Error",
+    "referee.sync.retry": "Retry Now",
+    "referee.sync.pending": "{count} unsaved changes. Saving shortly...",
+    "referee.sync.syncNow": "Sync Now"
   },
   th: {
     'page.referee': 'เครื่องมือผู้ตัดสิน',
@@ -238,6 +254,21 @@ const referee: LocaleModule = {
     'wizard.missingFields': 'กรุณากรอกข้อมูลให้ครบถ้วนก่อนยืนยัน',
     'wizard.completed': 'บันทึกประตูสำเร็จแล้ว',
     'wizard.editing': 'กำลังแก้ไขข้อมูลประตู',
+    "referee.status.live": "กำลังแข่งขัน",
+    "referee.status.paused": "หยุดชั่วคราว",
+    "referee.timer.start": "เริ่มเวลา",
+    "referee.timer.pause": "หยุดเวลา",
+    "referee.timer.resume": "เริ่มใหม่",
+    "referee.phase.firstHalf": "ครึ่งแรก",
+    "referee.phase.secondHalf": "ครึ่งหลัง",
+    "referee.phase.overtime": "ต่อเวลา",
+    "referee.matchTeamsVs.connector": "พบ",
+    // Sync/status banners
+    "referee.sync.saving": "กำลังบันทึกข้อมูลไปยังเซิร์ฟเวอร์...",
+    "referee.sync.error": "ข้อผิดพลาดในการซิงค์",
+    "referee.sync.retry": "ลองใหม่",
+    "referee.sync.pending": "{count} การเปลี่ยนแปลงที่ยังไม่ได้บันทึก กำลังบันทึก...",
+    "referee.sync.syncNow": "ซิงค์ทันที"
   }
 };
 

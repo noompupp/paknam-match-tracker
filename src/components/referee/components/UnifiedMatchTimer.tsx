@@ -1,9 +1,12 @@
+
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Play, Pause, RotateCcw, Timer } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
+// Translation
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface UnifiedMatchTimerProps {
   selectedFixtureData: any;
@@ -29,6 +32,7 @@ const UnifiedMatchTimer = ({
   phase = 'first'
 }: UnifiedMatchTimerProps) => {
   const isMobile = useIsMobile();
+  const { t, language } = useTranslation();
 
   // Calculate phase time for 7-a-side (25 minutes per half)
   const HALF_DURATION = 25 * 60; // 25 minutes in seconds
@@ -37,9 +41,9 @@ const UnifiedMatchTimer = ({
     : matchTime;
 
   const getPhaseDisplay = () => {
-    if (matchTime <= HALF_DURATION) return 'First Half';
-    if (matchTime <= HALF_DURATION * 2) return 'Second Half';
-    return 'Overtime';
+    if (matchTime <= HALF_DURATION) return t("referee.phase.firstHalf", "First Half");
+    if (matchTime <= HALF_DURATION * 2) return t("referee.phase.secondHalf", "Second Half");
+    return t("referee.phase.overtime", "Overtime");
   };
 
   const getPhaseColor = () => {
@@ -51,15 +55,24 @@ const UnifiedMatchTimer = ({
     }
   };
 
-  // Button label logic
+  // Button label logic (localized)
   let timerButtonLabel = "";
   if (isRunning) {
-    timerButtonLabel = "Pause Timer";
+    timerButtonLabel = t("referee.timer.pause", "Pause Timer");
   } else if (matchTime === 0) {
-    timerButtonLabel = "Start Timer";
+    timerButtonLabel = t("referee.timer.start", "Start Timer");
   } else {
-    timerButtonLabel = "Resume Timer";
+    timerButtonLabel = t("referee.timer.resume", "Resume Timer");
   }
+
+  const statusBadgeLabel = isRunning
+    ? t("referee.status.live", "LIVE")
+    : t("referee.status.paused", "PAUSED");
+
+  // Date and time formatting based on locale
+  const dateFormatter = language === "th"
+    ? (d: string) => new Date(d).toLocaleDateString("th-TH", { year: "numeric", month: "short", day: "numeric" })
+    : (d: string) => new Date(d).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
 
   return (
     <Card className="card-shadow-lg border-l-4 border-l-primary">
@@ -68,10 +81,10 @@ const UnifiedMatchTimer = ({
         {selectedFixtureData && (
           <div className="text-center mb-3">
             <div className="text-sm text-muted-foreground mb-1">
-              {new Date(selectedFixtureData.match_date).toLocaleDateString()} • {selectedFixtureData.match_time}
+              {dateFormatter(selectedFixtureData.match_date)} • {selectedFixtureData.match_time}
             </div>
             <div className="text-xs text-muted-foreground">
-              {selectedFixtureData.home_team?.name} vs {selectedFixtureData.away_team?.name}
+              {selectedFixtureData.home_team?.name} {t("referee.matchTeamsVs.connector", "vs")} {selectedFixtureData.away_team?.name}
             </div>
           </div>
         )}
@@ -83,7 +96,7 @@ const UnifiedMatchTimer = ({
               {/* Home Team */}
               <div className="text-center min-w-0 flex-1">
                 <div className="text-sm font-medium text-muted-foreground truncate">
-                  {selectedFixtureData.home_team?.name || 'Home'}
+                  {selectedFixtureData.home_team?.name || t("referee.homeTeam")}
                 </div>
                 <div className="text-3xl font-bold text-primary">{homeScore}</div>
               </div>
@@ -102,7 +115,7 @@ const UnifiedMatchTimer = ({
                   {/* Status Badge */}
                   <Badge variant={isRunning ? "default" : "secondary"} className="text-xs">
                     <Timer className="h-3 w-3 mr-1" />
-                    {isRunning ? "LIVE" : "PAUSED"}
+                    {statusBadgeLabel}
                   </Badge>
                 </div>
               </div>
@@ -110,7 +123,7 @@ const UnifiedMatchTimer = ({
               {/* Away Team */}
               <div className="text-center min-w-0 flex-1">
                 <div className="text-sm font-medium text-muted-foreground truncate">
-                  {selectedFixtureData.away_team?.name || 'Away'}
+                  {selectedFixtureData.away_team?.name || t("referee.awayTeam")}
                 </div>
                 <div className="text-3xl font-bold text-primary">{awayScore}</div>
               </div>
@@ -120,7 +133,7 @@ const UnifiedMatchTimer = ({
               <div className="text-4xl font-bold mb-1">{formatTime(matchTime)}</div>
               <Badge variant={isRunning ? "default" : "secondary"}>
                 <Timer className="h-3 w-3 mr-1" />
-                {isRunning ? "LIVE" : "PAUSED"}
+                {statusBadgeLabel}
               </Badge>
             </div>
           )}
@@ -150,7 +163,7 @@ const UnifiedMatchTimer = ({
             size={isMobile ? "lg" : "default"}
           >
             <RotateCcw className="h-4 w-4" />
-            Reset Match
+            {t("referee.reset", "Reset Match")}
           </Button>
         </div>
       </CardContent>
