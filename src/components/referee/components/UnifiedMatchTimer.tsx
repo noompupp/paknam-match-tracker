@@ -51,6 +51,16 @@ const UnifiedMatchTimer = ({
     }
   };
 
+  // Button label logic
+  let timerButtonLabel = "";
+  if (isRunning) {
+    timerButtonLabel = "Pause Timer";
+  } else if (matchTime === 0) {
+    timerButtonLabel = "Start Timer";
+  } else {
+    timerButtonLabel = "Resume Timer";
+  }
+
   return (
     <Card className="card-shadow-lg border-l-4 border-l-primary">
       <CardContent className="pt-4">
@@ -127,7 +137,7 @@ const UnifiedMatchTimer = ({
             size={isMobile ? "lg" : "default"}
           >
             {isRunning ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-            {isRunning ? "Pause Timer" : "Resume Timer"}
+            {timerButtonLabel}
           </Button>
           
           <Button

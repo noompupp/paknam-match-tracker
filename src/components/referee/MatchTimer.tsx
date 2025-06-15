@@ -25,6 +25,16 @@ const MatchTimer = ({
   formatTime,
   onToggleTimer
 }: MatchTimerProps) => {
+  // Button label logic
+  let timerButtonLabel = "";
+  if (isRunning) {
+    timerButtonLabel = "Pause";
+  } else if (matchTime === 0) {
+    timerButtonLabel = "Start";
+  } else {
+    timerButtonLabel = "Resume";
+  }
+
   return (
     <Card className="card-shadow-lg">
       <CardHeader>
@@ -70,7 +80,7 @@ const MatchTimer = ({
           <div className="flex gap-2 justify-center mt-4">
             <Button onClick={onToggleTimer} variant="default" className="button-primary-enhanced">
               {isRunning ? <Pause className="h-4 w-4 mr-2" /> : <Play className="h-4 w-4 mr-2" />}
-              {isRunning ? "Pause" : "Resume"}
+              {timerButtonLabel}
             </Button>
           </div>
         )}
@@ -80,4 +90,3 @@ const MatchTimer = ({
 };
 
 export default MatchTimer;
-
