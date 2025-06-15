@@ -1,10 +1,11 @@
-
 import React from "react";
 import { ComponentPlayer } from "../../../hooks/useRefereeState";
 import ScoreTabGoalsSummarySection from "./ScoreTabGoalsSummarySection";
 import ScoreTabGoalRecordingSection from "./ScoreTabGoalRecordingSection";
 import ScoreTabUnsavedChangesSection from "./ScoreTabUnsavedChangesSection";
 import ScoreTabMatchControlsSection from "./ScoreTabMatchControlsSection";
+import { useQuery } from "@tanstack/react-query";
+import { enhancedMatchSummaryService } from "@/services/fixtures/enhancedMatchSummaryService";
 
 interface UnsavedItemsCount {
   goals: number;
@@ -48,7 +49,18 @@ const EnhancedScoreTabContainer = ({
   const homeTeamId = selectedFixtureData?.home_team?.__id__ || selectedFixtureData?.home_team_id;
   const awayTeamId = selectedFixtureData?.away_team?.__id__ || selectedFixtureData?.away_team_id;
 
-  // Use global match store
+  // --- NEW: Fetch goals/cards etc from database (Supabase) using enhanced summary ---
+  const fixtureId = selectedFixtureData?.id;
+  const { data: enhancedData } = useQuery({
+    queryKey: ['enhancedGoalsSummary', fixtureId],
+    queryFn: () => enhancedMatchSummaryService.getEnhancedMatchSummary(fixtureId!),
+    enabled: !!fixtureId,
+    staleTime: 30 * 1000
+  });
+
+  const syncedGoals = enhancedData?.goals || [];
+
+  // Local unsaved state for UI indication (keep logic)
   const [hasUnsavedChanges, setHasUnsavedChanges] = React.useState(false);
   const [unsavedItemsCount, setUnsavedItemsCount] = React.useState<UnsavedItemsCount>({ goals: 0, cards: 0, playerTimes: 0 });
 
@@ -73,7 +85,8 @@ const EnhancedScoreTabContainer = ({
 
   return (
     <div className="space-y-6">
-      <ScoreTabGoalsSummarySection goals={[]} formatTime={formatTime} />
+      {/* Updated: display database-synced goals first */}
+      <ScoreTabGoalsSummarySection goals={syncedGoals} formatTime={formatTime} />
       <ScoreTabGoalRecordingSection
         homeTeamName={homeTeamName}
         awayTeamName={awayTeamName}
@@ -97,4 +110,3 @@ const EnhancedScoreTabContainer = ({
 };
 
 export default EnhancedScoreTabContainer;
-
