@@ -70,7 +70,7 @@ const RefereeToolsContent = () => {
   const { syncStatus, forceSync, pendingChanges } = useIntelligentSyncManager();
 
   // --- Integrate new match data handlers (dialog, save, reset) ---
-  // Supplying the same object/refs expected in useMatchDataHandlers
+  // Supplying only the necessary arguments from orchestrator (DO NOT supply removed fields)
   const {
     handleSaveMatch,
     handleResetMatchData,
@@ -86,12 +86,13 @@ const RefereeToolsContent = () => {
       ? saveAttempts
       : () => {}, // fallback no-op if not available
     resetTimer,
-    resetScore,
-    resetEvents,
-    resetCards,
-    resetTracking,
-    resetGoals,
-    addEvent,
+    // The following lines are removed:
+    // resetScore,
+    // resetEvents,
+    // resetCards,
+    // resetTracking,
+    // resetGoals,
+    // addEvent,
     forceRefresh,
   });
 
