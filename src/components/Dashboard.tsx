@@ -46,8 +46,13 @@ const Dashboard = ({ onNavigateToResults, onNavigateToFixtures }: DashboardProps
     }
   };
 
-  const handleFixturePreview = (fixture: Fixture) => {
-    setSelectedFixture(fixture);
+  const handleFixturePreview = (fixture: any) => {
+    // Ensure fixture has required properties for Fixture type
+    const fixtureWithRequiredProps: Fixture = {
+      ...fixture,
+      match_time: fixture.time || fixture.match_time || '18:00:00',
+    };
+    setSelectedFixture(fixtureWithRequiredProps);
     setIsPreviewModalOpen(true);
   };
 
@@ -66,6 +71,12 @@ const Dashboard = ({ onNavigateToResults, onNavigateToFixtures }: DashboardProps
       </div>
     );
   }
+
+  // Transform upcoming fixtures to ensure they have the required match_time property
+  const transformedUpcomingFixtures = upcomingFixtures?.map(fixture => ({
+    ...fixture,
+    match_time: fixture.time || fixture.match_time || '18:00:00',
+  })) as Fixture[] | undefined;
 
   return (
     <>
@@ -95,7 +106,7 @@ const Dashboard = ({ onNavigateToResults, onNavigateToFixtures }: DashboardProps
           />
 
           <UpcomingFixturesCard 
-            upcomingFixtures={upcomingFixtures} 
+            upcomingFixtures={transformedUpcomingFixtures} 
             isLoading={upcomingLoading}
             onViewAll={handleViewAllUpcomingFixtures}
             onFixturePreview={handleFixturePreview}
