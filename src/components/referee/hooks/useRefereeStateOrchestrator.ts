@@ -1,20 +1,156 @@
 import { useRefereeStateIntegration } from "./useRefereeStateIntegration";
 import { useRefereeEnhancedHandlers } from "./useRefereeEnhancedHandlers";
 import { useMatchStore } from "@/stores/useMatchStore";
+import { useEffect, useRef, React } from "react";
 
 export const useRefereeStateOrchestrator = () => {
-  // Get all integrated state
+  // Integrated orchestrator as before
   const orchestrator = useRefereeStateIntegration();
-  // Use match store directly for homeScore/awayScore to avoid accidental drift/duplicate
-  const { homeScore, awayScore } = useMatchStore();
 
-  // Get enhanced handlers
+  // Always get live store state for score and team names
+  const {
+    homeScore,
+    awayScore,
+    homeTeamName: storeHomeTeamName,
+    awayTeamName: storeAwayTeamName,
+    homeTeamId: storeHomeTeamId,
+    awayTeamId: storeAwayTeamId,
+    lastUpdated
+  } = useMatchStore();
+
+  // Keep a ref for last setup params to avoid excessive setupMatch runs
+  const lastSetupParams = React.useRef<{
+    fixtureId: number | null,
+    homeTeamName: string,
+    awayTeamName: string
+  } | null>(null);
+
+  // Helper to resolve the correct team names using fixture if store values are missing/empty
+  function resolveTeamName(possible: string | undefined, fallback: string | undefined): string {
+    if (typeof possible === "string" && possible.trim().length > 0) return possible.trim();
+    if (typeof fallback === "string" && fallback.trim().length > 0) return fallback.trim();
+    return "";
+  }
+
+  // UNCONDITIONAL: SetupMatch must always run when fixture/team changes, regardless of permissions/role state.
+  useEffect(() => {
+    const { selectedFixtureData } = orchestrator.baseState;
+    if (!selectedFixtureData) return;
+
+    // Pull team names and ids from fixture data
+    const fixtureId = selectedFixtureData.id;
+    const fixtureHome = selectedFixtureData.home_team?.name || selectedFixtureData.home_team_name || '';
+    const fixtureAway = selectedFixtureData.away_team?.name || selectedFixtureData.away_team_name || '';
+    // Prefer store names ONLY if valid, otherwise fallback to fixture team names
+    const homeTeamName = resolveTeamName(storeHomeTeamName, fixtureHome);
+    const awayTeamName = resolveTeamName(storeAwayTeamName, fixtureAway);
+
+    // Always extract up-to-date team IDs from fixture, fallback to store if needed
+    const homeTeamId = String(
+      selectedFixtureData.home_team?.id ||
+      selectedFixtureData.home_team?.__id__ ||
+      selectedFixtureData.home_team_id ||
+      storeHomeTeamId ||
+      ""
+    );
+    const awayTeamId = String(
+      selectedFixtureData.away_team?.id ||
+      selectedFixtureData.away_team?.__id__ ||
+      selectedFixtureData.away_team_id ||
+      storeAwayTeamId ||
+      ""
+    );
+
+    // Defensive: Only fire if changed
+    const setupChanged =
+      !lastSetupParams.current ||
+      lastSetupParams.current.fixtureId !== fixtureId ||
+      lastSetupParams.current.homeTeamName !== homeTeamName ||
+      lastSetupParams.current.awayTeamName !== awayTeamName;
+
+    if (
+      homeTeamName &&
+      awayTeamName &&
+      fixtureId &&
+      setupChanged
+    ) {
+      orchestrator.matchState?.setupMatch?.({
+        fixtureId,
+        homeTeamName,
+        awayTeamName,
+        homeTeamId,
+        awayTeamId
+      });
+      lastSetupParams.current = {
+        fixtureId,
+        homeTeamName,
+        awayTeamName,
+      };
+
+      setTimeout(() => {
+        const storeState = useMatchStore.getState();
+        // Extra dev-mode warning for empty team names after setup
+        if (!storeState.homeTeamName || !storeState.awayTeamName) {
+          console.error("[Orchestrator WARNING] setupMatch left home/away team names EMPTY!", {
+            fixtureId,
+            providedHome: homeTeamName, providedAway: awayTeamName,
+            storeHome: storeState.homeTeamName, storeAway: storeState.awayTeamName,
+            fixtureHome, fixtureAway
+          });
+        } else {
+          console.log('[Orchestrator] Store after setupMatch:', {
+            fixtureId,
+            homeTeamName: storeState.homeTeamName,
+            awayTeamName: storeState.awayTeamName,
+            homeScore: storeState.homeScore,
+            awayScore: storeState.awayScore,
+            homeTeamId: storeState.homeTeamId,
+            awayTeamId: storeState.awayTeamId,
+            goals: storeState.goals,
+          });
+        }
+      }, 0);
+
+      console.log("[Orchestrator] setupMatch called due to fixture/team change", {
+        fixtureId,
+        homeTeamName,
+        awayTeamName,
+        homeTeamId,
+        awayTeamId,
+      });
+    }
+  }, [
+    orchestrator.baseState.selectedFixtureData,
+    orchestrator.matchState?.setupMatch,
+    storeHomeTeamName,
+    storeAwayTeamName,
+    storeHomeTeamId,
+    storeAwayTeamId
+  ]);
+
+  // Debug loading/permission status (do NOT gate state propagation on this)
+  useEffect(() => {
+    // If role system changes, log here for debugging, but never block rendering.
+    // Future hooks could pull from a permission system, but it's not used here.
+    // console.log('Role/permission state is not blocking UnifiedMatchTimer rendering!');
+  }, []);
+
+  // Always get enhanced handlers
   const enhancedHandlers = useRefereeEnhancedHandlers({
     baseState: orchestrator.baseState,
     scoreState: orchestrator.scoreState,
     matchState: orchestrator.matchState,
     playerData: orchestrator.playerData
   });
+
+  // DEBUG: print store status each orchestrator render
+  useEffect(() => {
+    if (!storeHomeTeamName || !storeAwayTeamName) {
+      console.warn("[Orchestrator] Team names missing in store! Scoring will not work unless setupMatch is triggered properly.", {
+        storeHomeTeamName, storeAwayTeamName
+      });
+    }
+  }, [storeHomeTeamName, storeAwayTeamName, lastUpdated]);
 
   console.log('🎯 useRefereeStateOrchestrator Summary (Database-Driven Scores):', {
     selectedFixture: orchestrator.baseState.selectedFixture,
@@ -30,7 +166,8 @@ export const useRefereeStateOrchestrator = () => {
     goalFilteredPlayersCount: orchestrator.teamSelection.getGoalFilteredPlayers().length,
     timeFilteredPlayersCount: orchestrator.teamSelection.getTimeFilteredPlayers().length,
     databaseDrivenScore: { homeScore: orchestrator.scoreState.homeScore, awayScore: orchestrator.scoreState.awayScore },
-    hasRealTimeSync: !!orchestrator.scoreState.forceRefresh
+    hasRealTimeSync: !!orchestrator.scoreState.forceRefresh,
+    storeHomeTeamName, storeAwayTeamName, lastUpdated
   });
 
   return {
@@ -62,7 +199,7 @@ export const useRefereeStateOrchestrator = () => {
     isRunning: orchestrator.baseState.isRunning,
     formatTime: orchestrator.baseState.formatTime,
     
-    // Database-driven score with real-time sync
+    // Store-synced scores (NEVER block on permissions/loading!)
     homeScore,
     awayScore,
     
@@ -90,18 +227,18 @@ export const useRefereeStateOrchestrator = () => {
     // Events
     events: orchestrator.matchState.events,
 
-    // The missing reset functions and event logger passed through from correct sources:
-    resetScore: orchestrator.scoreState.resetScore,           // <<--- Fix: now from scoreState
+    // Reset functions and event logger
+    resetScore: orchestrator.scoreState.resetScore,
     resetEvents: orchestrator.matchState.resetEvents,
     resetCards: orchestrator.matchState.resetCards,
     resetTracking: orchestrator.matchState.resetTracking,
     resetGoals: orchestrator.matchState.resetGoals,
     addEvent: orchestrator.matchState.addEvent,
-    
+
     // Save attempts
     saveAttempts: orchestrator.baseState.saveAttempts,
-    
-    // Enhanced handlers with database-driven scores and real-time sync
+
+    // Enhanced handlers
     handleSaveMatch: enhancedHandlers.handleSaveMatch,
     handleResetMatch: enhancedHandlers.handleResetMatch,
     handleAssignGoal: enhancedHandlers.handleAssignGoal,
@@ -114,8 +251,8 @@ export const useRefereeStateOrchestrator = () => {
     assignGoal: orchestrator.matchState.assignGoal,
     removePlayer: orchestrator.matchState.removePlayer,
     addPlayer: orchestrator.matchState.addPlayer,
-    forceRefresh: orchestrator.scoreState.forceRefresh, // Expose immediate refresh for components
-    resetState: enhancedHandlers.resetState, // Expose reset state for components
-    handleManualRefresh: orchestrator.handleManualRefresh // <-- Fixed: get from orchestrator
+    forceRefresh: orchestrator.scoreState.forceRefresh,
+    resetState: enhancedHandlers.resetState,
+    handleManualRefresh: orchestrator.handleManualRefresh
   };
 };

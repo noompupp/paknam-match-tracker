@@ -1,17 +1,21 @@
+
 import { StateCreator } from 'zustand';
 import { MatchState } from './types';
 import { MatchActions } from './actions';
 
-function recalculateScores(goals: any[], homeTeamName: string, awayTeamName: string) {
-  let newHomeScore = 0;
-  let newAwayScore = 0;
-  for (const goal of goals) {
-    if (goal.type === "goal") {
-      if (goal.teamName?.trim() === homeTeamName?.trim()) newHomeScore++;
-      else if (goal.teamName?.trim() === awayTeamName?.trim()) newAwayScore++;
-    }
-  }
-  return { homeScore: newHomeScore, awayScore: newAwayScore };
+// Import robust calculateMatchScore
+import { calculateMatchScore } from "@/utils/calculateMatchScore";
+
+function recalculateScores(goals: any[], homeTeamName: string, awayTeamName: string, homeTeamId?: string, awayTeamId?: string) {
+  // Always use robust by-teamId fallback logic
+  const { homeScore, awayScore } = calculateMatchScore({
+    goals,
+    homeTeamId,
+    awayTeamId,
+    homeTeamName,
+    awayTeamName
+  });
+  return { homeScore, awayScore };
 }
 
 export interface CoreSlice {
@@ -44,8 +48,14 @@ export const createCoreSlice = (set: any, get: any, api: any): CoreSlice => ({
       };
 
       const oldGoals = prevState.goals || [];
-      // Always recalculate scores from current goals, using up-to-date (possibly fixture) team names
-      const { homeScore, awayScore } = recalculateScores(oldGoals, next.homeTeamName, next.awayTeamName);
+      // Always recalculate scores from current goals, using up-to-date (possibly fixture) team names and IDs
+      const { homeScore, awayScore } = recalculateScores(
+        oldGoals, 
+        next.homeTeamName, 
+        next.awayTeamName, 
+        next.homeTeamId, 
+        next.awayTeamId
+      );
 
       // Logging for tracing cause of any reactivity bugs
       console.log("[MATCH SETUP] setupMatch called with:", {
@@ -142,3 +152,4 @@ export const createCoreSlice = (set: any, get: any, api: any): CoreSlice => ({
     };
   }
 });
+
