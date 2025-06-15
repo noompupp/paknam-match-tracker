@@ -1,16 +1,17 @@
 
+// Remove workflowConfig and CoordinationTab
 import { TabsContent } from "@/components/ui/tabs";
 import { ComponentPlayer } from "../hooks/useRefereeState";
 import ScoreTab from "./tabs/ScoreTab";
 import RoleBasedUnifiedTimerTab from "./tabs/RoleBasedUnifiedTimerTab";
 // Removed import of GoalsTab
 import CardsTab from "./tabs/CardsTab";
-import CoordinationTab from "./tabs/CoordinationTab";
+// Removed import CoordinationTab
 import SummaryTab from "./tabs/SummaryTab";
 import SaveNowButton from "./shared/SaveNowButton";
 import { ProcessedPlayer } from "@/utils/refereeDataProcessor";
-import { WorkflowModeConfig } from "../workflows/types";
 
+// Remove workflowConfig from props type
 interface RefereeTabsContentProps {
   selectedFixtureData: any;
   homeScore: number;
@@ -54,7 +55,7 @@ interface RefereeTabsContentProps {
   onRemovePlayer: (playerId: number) => void;
   onTogglePlayerTime: (playerId: number) => void;
   onExportSummary: () => void;
-  workflowConfig: WorkflowModeConfig;
+  // Removed: workflowConfig: WorkflowModeConfig;
 }
 
 const RefereeTabsContent = (props: RefereeTabsContentProps) => {
@@ -129,16 +130,7 @@ const RefereeTabsContent = (props: RefereeTabsContentProps) => {
         />
       </TabsContent>
 
-      <TabsContent value="coordination" className="space-y-6">
-        <div className="flex justify-between items-center">
-          <h3 className="text-lg font-semibold">Match Coordination</h3>
-          <SaveNowButton onSave={props.onSaveMatch} />
-        </div>
-        <CoordinationTab
-          selectedFixtureData={props.selectedFixtureData}
-          workflowConfig={props.workflowConfig}
-        />
-      </TabsContent>
+      {/* Removed Coordination Tab */}
 
       <TabsContent value="summary" className="space-y-6">
         <div className="flex justify-between items-center">
