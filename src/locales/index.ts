@@ -1,4 +1,3 @@
-
 // Aggregate all modules and merge into single translation dictionary per language
 
 import navigation from "./navigation";
@@ -12,6 +11,7 @@ import forms from "./forms";
 import time from "./time";
 import messages from "./messages";
 import language from "./language";
+import rating from "./rating";
 
 import { SupportedLanguage, TranslationObject } from "./types";
 
@@ -29,6 +29,7 @@ const modules: Modules = [
   time,
   messages,
   language,
+  rating,
 ];
 
 function aggregateTranslations(): Record<SupportedLanguage, TranslationObject> {
