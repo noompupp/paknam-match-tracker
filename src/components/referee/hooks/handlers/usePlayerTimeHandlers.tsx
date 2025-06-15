@@ -35,6 +35,18 @@ export const usePlayerTimeHandlers = (props: UsePlayerTimeHandlersProps) => {
     return action();
   }, []);
 
+  // Enhanced: Logging helpers for translation param types
+  const logTranslationParams = (context: string, params: any) => {
+    // Log explicit type, stringification, and JSON for debugging
+    Object.keys(params).forEach(k => {
+      const val = params[k];
+      // Basic clean stringification
+      let stringified;
+      try { stringified = typeof val === "object" ? JSON.stringify(val) : String(val); } catch (err) { stringified = "(unstringifiable)"; }
+      console.info(`[PlayerTimeHandlers][I18N-PARAM][${context}] Param '${k}':`, { raw: val, type: typeof val, stringified });
+    });
+  };
+
   const handleAddPlayer = async (player: ComponentPlayer) => {
     return throttleAction(async () => {
       if (!props.selectedFixtureData) {
@@ -46,8 +58,8 @@ export const usePlayerTimeHandlers = (props: UsePlayerTimeHandlersProps) => {
         return;
       }
       try {
-        // IMPORTANT: Always try to find the full PlayerTime object
-        const playerTime = props.playersForTimeTracker.find(p => p.id === player.id) as PlayerTime | undefined;
+        // Find the PlayerTime object (may be missing)
+        const playerTime = props.playersForTimeTracker.find((p: PlayerTime) => p.id === player.id) as PlayerTime | undefined;
 
         // Complete substitution if pending
         if (substitutionManager.hasPendingSubstitution) {
@@ -63,14 +75,20 @@ export const usePlayerTimeHandlers = (props: UsePlayerTimeHandlersProps) => {
 
           const substitution = substitutionManager.completePendingSubstitution(processedPlayer);
 
-          // DEBUG LOG: Log substitution data before notification (add inName/outName computed values)
           let inName = processedPlayer && processedPlayer.name ? processedPlayer.name : "(no name: processedPlayer)";
           let outName = substitution?.outgoing?.outgoingPlayerName || "(no name: outgoingPlayerName)";
+
+          // ENHANCED LOGGING: Check types & content
+          logTranslationParams("handleAddPlayer (Sub Complete)", { inName, outName });
+
+          // Debug log for the whole substitution data
           console.info("[PlayerTimeHandlers] Sub Complete Attempt (handleAddPlayer)", {
             processedPlayer,
             substitution,
             inName,
-            outName
+            outName,
+            inNameType: typeof inName,
+            outNameType: typeof outName,
           });
 
           if (
@@ -82,7 +100,7 @@ export const usePlayerTimeHandlers = (props: UsePlayerTimeHandlersProps) => {
           ) {
             // Find the most complete "incoming" player info
             const incomingPlayerFullTime = props.playersForTimeTracker.find(
-              (p) => p.id === substitution.incoming.id
+              (p: PlayerTime) => p.id === substitution.incoming.id
             ) || null;
 
             const incomingForNotify = processedPlayer && processedPlayer.name ? processedPlayer : {
@@ -92,14 +110,13 @@ export const usePlayerTimeHandlers = (props: UsePlayerTimeHandlersProps) => {
             const outgoingNameForNotify =
               substitution.outgoing.outgoingPlayerName || "(no name: outgoingPlayerName)";
 
-            // LOG values passed to notification
-            console.info("[PlayerTimeHandlers - Calling notifySubstitutionComplete (handleAddPlayer)]", {
-              incomingForNotify,
-              outgoingNameForNotify,
-              playerTimeOrFallback: playerTime || (player as any),
-              matchTime: props.matchTime
+            // LOG all values for the notification, for clarity
+            logTranslationParams("handleAddPlayer (NotifySubComplete call)", {
+              incomingForNotifyName: incomingForNotify.name,
+              outgoingNameForNotify
             });
 
+            // Ensure only notification triggers toast, don't call toast here!
             notifications.notifySubstitutionComplete({
               incoming: incomingForNotify,
               outgoingName: outgoingNameForNotify,
@@ -115,7 +132,7 @@ export const usePlayerTimeHandlers = (props: UsePlayerTimeHandlersProps) => {
           }
         }
 
-        // FIX: Always use the PlayerTime object for addPlayer
+        // Use PlayerTime object for addPlayer if possible
         if (playerTime) {
           await props.addPlayer(playerTime, props.matchTime);
         } else {
@@ -345,5 +362,5 @@ export const usePlayerTimeHandlers = (props: UsePlayerTimeHandlersProps) => {
     substitutionManager
   };
 };
-// NOTE: This file is 309 lines long and is getting quite lengthy. 
+// NOTE: This file is 350+ lines long and is getting quite lengthy. 
 // Consider asking to refactor it into smaller, focused hooks/components for maintainability.

@@ -1,4 +1,3 @@
-
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "@/hooks/useTranslation";
 import { PlayerTime } from "@/types/database";
@@ -59,7 +58,7 @@ export const usePlayerTimeNotifications = () => {
     });
   }
 
-  function notifySubstitutionComplete({ incoming, outgoingName, matchTime, addEvent, player }: SubstitutionCompleteParams) {
+  function notifySubstitutionComplete({ incoming, outgoingName, matchTime, addEvent, player }) {
     // Defensive fallback/defaults for missing name data
     const inName =
       (incoming && typeof incoming.name === "string" && incoming.name.trim() !== "")
@@ -71,13 +70,15 @@ export const usePlayerTimeNotifications = () => {
         ? outgoingName
         : "(no name: outgoing)";
 
-    // Detailed/debug log
-    console.info("[PlayerTimeNotifications] notifySubstitutionComplete", {
+    // Debug (type and value of params)
+    console.info("[PlayerTimeNotifications][notifySubstitutionComplete] Raw inputs", {
       incoming,
       outgoingName,
       player,
       inName,
       outName,
+      inNameType: typeof inName,
+      outNameType: typeof outName,
     });
 
     // Evaluate and log the interpolated translations for all relevant keys
@@ -93,7 +94,12 @@ export const usePlayerTimeNotifications = () => {
       "{inName} replaced {outName}",
       { inName, outName }
     );
-    // Log final translation string results
+
+    // Log translation param types & resolved values
+    console.info("[PlayerTimeNotifications][I18N] Params to t():", {
+      eventDescParams: { inName, outName },
+      toastDescParams: { inName, outName },
+    });
     console.info("[PlayerTimeNotifications] Translation output for notifySubstitutionComplete", {
       eventTitle,
       eventDesc,
@@ -101,11 +107,7 @@ export const usePlayerTimeNotifications = () => {
       toastDesc,
     });
 
-    addEvent(
-      eventTitle,
-      eventDesc,
-      matchTime
-    );
+    addEvent(eventTitle, eventDesc, matchTime);
     toast({
       title: toastTitle,
       description: toastDesc,
@@ -158,4 +160,3 @@ export const usePlayerTimeNotifications = () => {
     notifySubOutUndone,
   }
 }
-
