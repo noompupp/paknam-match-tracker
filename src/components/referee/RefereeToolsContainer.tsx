@@ -1,4 +1,3 @@
-
 import RefereeToolsHeader from "./components/RefereeToolsHeader";
 import RefereeMainContent from "./components/RefereeMainContent";
 import UnifiedPageHeader from "@/components/shared/UnifiedPageHeader";
@@ -191,8 +190,10 @@ const RefereeToolsContent = () => {
             addPlayer={handleAddPlayer}
             removePlayer={handleRemovePlayer}
             togglePlayerTime={handleTogglePlayerTime}
-            onSaveMatch={handleSaveMatch} {/** <-- correct, via useMatchDataHandlers */}
-            onResetMatch={handleResetMatchData} {/** <-- correct dialog-based handler */}
+            // <-- correct, via useMatchDataHandlers
+            onSaveMatch={handleSaveMatch}
+            // <-- correct dialog-based handler
+            onResetMatch={handleResetMatchData}
             onDataRefresh={handleManualRefresh}
           />
         )}
@@ -210,4 +211,3 @@ const RefereeToolsContainer = () => {
 };
 
 export default RefereeToolsContainer;
-
