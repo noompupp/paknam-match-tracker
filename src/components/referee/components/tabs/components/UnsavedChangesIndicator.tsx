@@ -1,7 +1,8 @@
+
 import { Save, AlertTriangle, CheckCircle } from "lucide-react";
 import RefereeCard from "../../../shared/RefereeCard";
 import RefereeButton from "../../../shared/RefereeButton";
-import SaveGoalsButton from "../../../shared/SaveGoalsButton";
+import SaveGoalsButton from "../../shared/SaveGoalsButton";
 import { cn } from "@/lib/utils";
 
 interface UnsavedChangesIndicatorProps {
