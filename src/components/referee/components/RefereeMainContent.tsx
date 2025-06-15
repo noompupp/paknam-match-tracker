@@ -108,9 +108,10 @@ const RefereeMainContent = (props: any) => {
           setSelectedTimePlayer={props.setSelectedTimePlayer}
           setSelectedTimeTeam={props.setSelectedTimeTeam}
           events={props.events}
-          // Correct prop spelling; do NOT pass assignGoal, addPlayer, removePlayer, togglePlayerTime (those *aren't* accepted)
+          // Correct prop: wire up Pause/Start
           onToggleTimer={props.toggleTimer}
-          onResetMatch={props.resetTimer}
+          // CRITICAL FIX: Use the enhanced reset logic from parent, not resetTimer
+          onResetMatch={props.onResetMatch}
           onSaveMatch={props.onSaveMatch}
           onDataRefresh={props.onDataRefresh}
           onExportSummary={() => {}} // Add a no-op to satisfy required prop, adjust based on real usage if needed
