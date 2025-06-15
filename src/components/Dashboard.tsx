@@ -10,12 +10,60 @@ import EnhancedRecentResultsCard from "./dashboard/EnhancedRecentResultsCard";
 import UpcomingFixturesCard from "./dashboard/UpcomingFixturesCard";
 import MatchPreviewModal from "./fixtures/MatchPreviewModal";
 import { useState } from "react";
-import { Fixture } from "@/types/database";
+import { Fixture, Team } from "@/types/database";
 
 interface DashboardProps {
   onNavigateToResults?: () => void;
   onNavigateToFixtures?: () => void;
 }
+
+// Helper function to transform team data to match Team interface
+const transformTeamData = (teamData: any): Team | undefined => {
+  if (!teamData) return undefined;
+  
+  return {
+    id: teamData.id || 0,
+    name: teamData.name || '',
+    logo: teamData.logo || '⚽',
+    logoURL: teamData.logoURL,
+    founded: teamData.founded || '2020',
+    captain: teamData.captain || '',
+    position: teamData.position || 1,
+    previous_position: teamData.previous_position || null,
+    points: teamData.points || 0,
+    played: teamData.played || 0,
+    won: teamData.won || 0,
+    drawn: teamData.drawn || 0,
+    lost: teamData.lost || 0,
+    goals_for: teamData.goals_for || 0,
+    goals_against: teamData.goals_against || 0,
+    goal_difference: teamData.goal_difference || 0,
+    color: teamData.color,
+    created_at: teamData.created_at || new Date().toISOString(),
+    updated_at: teamData.updated_at || new Date().toISOString(),
+    __id__: teamData.__id__ || ''
+  };
+};
+
+// Helper function to transform fixture data to match Fixture interface
+const transformFixtureData = (fixture: any): Fixture => {
+  return {
+    id: fixture.id,
+    home_team_id: fixture.home_team_id || '',
+    away_team_id: fixture.away_team_id || '',
+    match_date: fixture.match_date,
+    match_time: fixture.time || fixture.match_time || '18:00:00',
+    home_score: fixture.home_score,
+    away_score: fixture.away_score,
+    status: fixture.status as 'scheduled' | 'live' | 'completed' | 'postponed',
+    venue: fixture.venue,
+    created_at: fixture.created_at,
+    updated_at: fixture.updated_at,
+    __id__: fixture.__id__,
+    home_team: transformTeamData(fixture.home_team),
+    away_team: transformTeamData(fixture.away_team),
+  };
+};
 
 const Dashboard = ({ onNavigateToResults, onNavigateToFixtures }: DashboardProps) => {
   const { data: teams, isLoading: teamsLoading, error: teamsError } = useTeams();
@@ -47,24 +95,8 @@ const Dashboard = ({ onNavigateToResults, onNavigateToFixtures }: DashboardProps
   };
 
   const handleFixturePreview = (fixture: any) => {
-    // Transform the database fixture data to match the Fixture type
-    const fixtureWithRequiredProps: Fixture = {
-      id: fixture.id,
-      home_team_id: fixture.home_team_id || '',
-      away_team_id: fixture.away_team_id || '',
-      match_date: fixture.match_date,
-      match_time: fixture.time || fixture.match_time || '18:00:00',
-      home_score: fixture.home_score,
-      away_score: fixture.away_score,
-      status: fixture.status as 'scheduled' | 'live' | 'completed' | 'postponed',
-      venue: fixture.venue,
-      created_at: fixture.created_at,
-      updated_at: fixture.updated_at,
-      __id__: fixture.__id__,
-      home_team: fixture.home_team,
-      away_team: fixture.away_team,
-    };
-    setSelectedFixture(fixtureWithRequiredProps);
+    const transformedFixture = transformFixtureData(fixture);
+    setSelectedFixture(transformedFixture);
     setIsPreviewModalOpen(true);
   };
 
@@ -84,23 +116,9 @@ const Dashboard = ({ onNavigateToResults, onNavigateToFixtures }: DashboardProps
     );
   }
 
-  // Transform upcoming fixtures to ensure they have the required match_time property
-  const transformedUpcomingFixtures = upcomingFixtures?.map(fixture => ({
-    id: fixture.id,
-    home_team_id: fixture.home_team_id || '',
-    away_team_id: fixture.away_team_id || '',
-    match_date: fixture.match_date,
-    match_time: fixture.time || fixture.match_time || '18:00:00',
-    home_score: fixture.home_score,
-    away_score: fixture.away_score,
-    status: fixture.status as 'scheduled' | 'live' | 'completed' | 'postponed',
-    venue: fixture.venue,
-    created_at: fixture.created_at,
-    updated_at: fixture.updated_at,
-    __id__: fixture.__id__,
-    home_team: fixture.home_team,
-    away_team: fixture.away_team,
-  }));
+  // Transform fixtures to match the Fixture interface
+  const transformedRecentFixtures = recentFixtures?.map(transformFixtureData);
+  const transformedUpcomingFixtures = upcomingFixtures?.map(transformFixtureData);
 
   return (
     <>
@@ -124,7 +142,7 @@ const Dashboard = ({ onNavigateToResults, onNavigateToFixtures }: DashboardProps
           </div>
 
           <EnhancedRecentResultsCard 
-            recentFixtures={recentFixtures} 
+            recentFixtures={transformedRecentFixtures} 
             isLoading={recentLoading}
             onViewAll={handleViewAllRecentResults}
           />
