@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Tabs } from "@/components/ui/tabs";
 import RoleBasedRefereeTabsNavigation from "./RoleBasedRefereeTabsNavigation";
@@ -107,13 +108,9 @@ const RefereeMainContent = (props: any) => {
           setSelectedTimePlayer={props.setSelectedTimePlayer}
           setSelectedTimeTeam={props.setSelectedTimeTeam}
           events={props.events}
-          // These were previously toggleTimer/resetTimer—pass correctly:
+          // Correct prop spelling; do NOT pass assignGoal, addPlayer, removePlayer, togglePlayerTime (those *aren't* accepted)
           onToggleTimer={props.toggleTimer}
           onResetMatch={props.resetTimer}
-          assignGoal={props.assignGoal}
-          addPlayer={props.addPlayer}
-          removePlayer={props.removePlayer}
-          togglePlayerTime={props.togglePlayerTime}
           onSaveMatch={props.onSaveMatch}
           onDataRefresh={props.onDataRefresh}
           onExportSummary={() => {}} // Add a no-op to satisfy required prop, adjust based on real usage if needed
@@ -125,6 +122,7 @@ const RefereeMainContent = (props: any) => {
           onAddCard={() => {}}
           onAddPlayer={() => {}}
           onRemovePlayer={() => {}}
+          onTogglePlayerTime={() => {}}
         />
       </Tabs>
     </div>
