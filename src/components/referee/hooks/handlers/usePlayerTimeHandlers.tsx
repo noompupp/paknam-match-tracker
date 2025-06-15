@@ -1,4 +1,3 @@
-
 import React, { useRef, useCallback } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { ComponentPlayer } from "../useRefereeState";
@@ -48,34 +47,43 @@ export const usePlayerTimeHandlers = (props: UsePlayerTimeHandlersProps) => {
 
       try {
         console.log('⏱️ usePlayerTimeHandlers: Adding player to time tracking (optimized):', player.name);
-        
+
         // Check if this completes a pending substitution
         if (substitutionManager.hasPendingSubstitution) {
           const substitution = substitutionManager.completePendingSubstitution(player);
-          if (substitution) {
+          console.log('[DEBUG] completePendingSubstitution result:', substitution);
+
+          // Defensive checks: Ensure substitution and fields exist
+          const inName = substitution?.incoming?.name ?? "";
+          const outName = substitution?.outgoing?.outgoingPlayerName ?? "";
+
+          if (substitution && inName && outName) {
             props.addEvent(
               t("referee.event.substitution", "Substitution"),
               t(
                 "referee.event.substitutionCompleteDescription",
                 "{inName} substituted for {outName}",
-                { inName: substitution.incoming.name, outName: substitution.outgoing.outgoingPlayerName }
+                { inName, outName }
               ),
               props.matchTime
             );
-            
+
             toast({
               title: t("referee.toast.substitutionCompleteTitle", "Substitution Complete"),
               description: t(
                 "referee.toast.substitutionCompleteDesc",
                 "{inName} replaced {outName}",
-                { inName: substitution.incoming.name, outName: substitution.outgoing.outgoingPlayerName }
+                { inName, outName }
               ),
             });
+            console.log(`[DEBUG] Substitution Complete toast: inName="${inName}", outName="${outName}"`);
+          } else {
+            console.warn('[WARN] Substitution object missing fields for inName/outName:', substitution);
           }
         }
-        
+
         await props.addPlayer(player, props.matchTime);
-        
+
         if (!substitutionManager.hasPendingSubstitution) {
           props.addEvent(
             t("referee.event.playerAdded", "Player Added"),
@@ -86,7 +94,7 @@ export const usePlayerTimeHandlers = (props: UsePlayerTimeHandlersProps) => {
             ),
             props.matchTime
           );
-          
+
           toast({
             title: t("referee.toast.playerAddedTitle", "Player Added"),
             description: t(
@@ -96,7 +104,7 @@ export const usePlayerTimeHandlers = (props: UsePlayerTimeHandlersProps) => {
             ),
           });
         }
-        
+
         console.log('✅ usePlayerTimeHandlers: Player added successfully (optimized)');
       } catch (error) {
         console.error('❌ usePlayerTimeHandlers: Failed to add player:', error);
@@ -143,15 +151,15 @@ export const usePlayerTimeHandlers = (props: UsePlayerTimeHandlersProps) => {
 
       try {
         console.log('⏱️ usePlayerTimeHandlers: Toggling player time (optimized):', player.name);
-        
+
         const hasPlayedBefore = player.totalTime > 0;
-        
+
         // DUAL-BEHAVIOR IMPLEMENTATION (optimized):
-        
+
         // SCENARIO 1: "Sub In" first (streamlined flow)
         if (!player.isPlaying && hasPlayedBefore) {
           substitutionManager.initiatePendingSubstitution(player, 'sub_in');
-          
+
           toast({
             title: t("referee.toast.substitutionReadyTitle", "Substitution Ready"),
             description: t(
@@ -160,7 +168,7 @@ export const usePlayerTimeHandlers = (props: UsePlayerTimeHandlersProps) => {
               { name: player.name }
             ),
           });
-          
+
           props.addEvent(
             t("referee.event.substitutionInitiated", "Substitution Initiated"),
             t(
@@ -176,35 +184,41 @@ export const usePlayerTimeHandlers = (props: UsePlayerTimeHandlersProps) => {
         // SCENARIO 2: Complete streamlined substitution (Sub Out after Sub In)
         if (player.isPlaying && substitutionManager.hasPendingSubstitution && !substitutionManager.isSubOutInitiated) {
           await props.togglePlayerTime(playerId, props.matchTime);
-          
+
           const pendingSub = substitutionManager.pendingSubstitution;
+          console.log('[DEBUG] Scenario 2: pendingSub:', pendingSub);
+
+          const inName = pendingSub?.outgoingPlayerName ?? "";
+          const outName = player.name;
+
           if (pendingSub) {
             const incomingPlayer = props.playersForTimeTracker.find(p => p.id === pendingSub.outgoingPlayerId);
             if (incomingPlayer) {
               // OPTIMIZATION: Batch these operations
               await props.togglePlayerTime(pendingSub.outgoingPlayerId, props.matchTime);
             }
-            
+
             substitutionManager.cancelPendingSubstitution();
-            
+
             props.addEvent(
               t("referee.event.substitutionComplete", "Substitution Complete"),
               t(
                 "referee.event.substitutionCompleteStreamlinedDesc",
                 "{inName} substituted for {outName} (Streamlined)",
-                { inName: pendingSub.outgoingPlayerName, outName: player.name }
+                { inName, outName }
               ),
               props.matchTime
             );
-            
+
             toast({
               title: t("referee.toast.substitutionCompleteTitle", "Substitution Complete"),
               description: t(
                 "referee.toast.substitutionCompleteDesc",
                 "{inName} replaced {outName}",
-                { inName: pendingSub.outgoingPlayerName, outName: player.name }
+                { inName, outName }
               ),
             });
+            console.log(`[DEBUG] Streamlined Substitution toast: inName="${inName}", outName="${outName}"`);
           }
           return;
         }
@@ -212,9 +226,9 @@ export const usePlayerTimeHandlers = (props: UsePlayerTimeHandlersProps) => {
         // SCENARIO 3: "Sub Out" first (modal flow)
         if (player.isPlaying && hasPlayedBefore && !substitutionManager.hasPendingSubstitution) {
           await props.togglePlayerTime(playerId, props.matchTime);
-          
+
           substitutionManager.initiatePendingSubstitution(player, 'sub_out');
-          
+
           props.addEvent(
             t("referee.event.substitutionOutInitiated", "Substitution Out Initiated"),
             t(
@@ -224,7 +238,7 @@ export const usePlayerTimeHandlers = (props: UsePlayerTimeHandlersProps) => {
             ),
             props.matchTime
           );
-          
+
           toast({
             title: t("referee.toast.playerSubOutTitle", "Player Substituted Out"),
             description: t(
@@ -238,7 +252,7 @@ export const usePlayerTimeHandlers = (props: UsePlayerTimeHandlersProps) => {
 
         // SCENARIO 4: Standard toggle for new players or regular start/stop actions
         await props.togglePlayerTime(playerId, props.matchTime);
-        
+
         const action = player.isPlaying
           ? t("referee.playerTimeStopped", "stopped")
           : t("referee.playerTimeStarted", "started");
@@ -252,7 +266,7 @@ export const usePlayerTimeHandlers = (props: UsePlayerTimeHandlersProps) => {
           ),
           props.matchTime
         );
-        
+
         toast({
           title: t("referee.toast.timeUpdatedTitle", "Time Updated"),
           description: t(
@@ -261,7 +275,7 @@ export const usePlayerTimeHandlers = (props: UsePlayerTimeHandlersProps) => {
             { action, name: player.name }
           ),
         });
-        
+
         console.log('✅ usePlayerTimeHandlers: Player time toggled successfully (optimized)');
       } catch (error) {
         console.error('❌ usePlayerTimeHandlers: Failed to toggle player time:', error);
@@ -389,4 +403,3 @@ export const usePlayerTimeHandlers = (props: UsePlayerTimeHandlersProps) => {
     substitutionManager
   };
 };
-
