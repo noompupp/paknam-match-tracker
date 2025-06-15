@@ -1,4 +1,3 @@
-
 import { useRefereeStateIntegration } from "./useRefereeStateIntegration";
 import { useRefereeEnhancedHandlers } from "./useRefereeEnhancedHandlers";
 import { useMatchStore } from "@/stores/useMatchStore";
@@ -39,14 +38,14 @@ export const useRefereeStateOrchestrator = () => {
     // Pull team names and ids from fixture data
     const fixtureId = selectedFixtureData.id;
 
-    // Figure out correct home and away team name (store preferred, fallback to fixture)
+    // Correct usage: fallback to .team1/.team2 if .home_team is not available (remove usage of .home_team_name/.away_team_name)
     const fixtureHome =
       selectedFixtureData.home_team?.name ||
-      selectedFixtureData.home_team_name ||
+      selectedFixtureData.team1 ||
       "";
     const fixtureAway =
       selectedFixtureData.away_team?.name ||
-      selectedFixtureData.away_team_name ||
+      selectedFixtureData.team2 ||
       "";
 
     const homeTeamName = resolveTeamName(storeHomeTeamName, fixtureHome);
@@ -81,8 +80,8 @@ export const useRefereeStateOrchestrator = () => {
       fixtureId &&
       setupChanged
     ) {
-      // FIX: use orchestrator.matchState.setupMatch, not scoreState
-      orchestrator.matchState?.setupMatch?.({
+      // FIX: use orchestrator.scoreState.setupMatch NOT matchState
+      orchestrator.scoreState?.setupMatch?.({
         fixtureId,
         homeTeamName,
         awayTeamName,
@@ -111,8 +110,6 @@ export const useRefereeStateOrchestrator = () => {
             awayTeamName: storeState.awayTeamName,
             homeScore: storeState.homeScore,
             awayScore: storeState.awayScore,
-            homeTeamId: storeState.homeTeamId,
-            awayTeamId: storeState.awayTeamId,
             goals: storeState.goals,
           });
         }
@@ -128,7 +125,7 @@ export const useRefereeStateOrchestrator = () => {
     }
   }, [
     orchestrator.baseState.selectedFixtureData,
-    orchestrator.matchState?.setupMatch,
+    orchestrator.scoreState?.setupMatch, // use scoreState correctly here
     storeHomeTeamName,
     storeAwayTeamName,
     storeHomeTeamId,
@@ -237,4 +234,3 @@ export const useRefereeStateOrchestrator = () => {
     handleManualRefresh: orchestrator.handleManualRefresh
   };
 };
-
