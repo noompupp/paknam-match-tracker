@@ -13,6 +13,8 @@ import { useToast } from "@/hooks/use-toast";
 import GoalWizardSyncStatus from "./GoalWizardSyncStatus";
 import { useGlobalBatchSaveManager } from "@/hooks/useGlobalBatchSaveManager";
 import PulseDotBadge from "@/components/ui/PulseDotBadge";
+import GoalWizardStepContainer from "../../goalWizard/GoalWizardStepContainer";
+import GoalWizardNavigation from "../../goalWizard/GoalWizardNavigation";
 
 interface GoalWizardProps {
   isOpen: boolean;
@@ -256,51 +258,6 @@ const GoalWizard = ({
   };
 
   // ---- Render ----
-  const renderCurrentStep = () => {
-    const commonProps = {
-      selectedFixtureData,
-      homeTeamPlayers,
-      awayTeamPlayers,
-      wizardData,
-      onDataChange: handleDataChange,
-      onNext: handleNext
-    };
-
-    switch (currentStep) {
-      case 'team':
-        return <TeamSelectionStep {...commonProps} />;
-      case 'player':
-        return <PlayerSelectionStep {...commonProps} />;
-      case 'goal-type':
-        return <GoalTypeStep {...commonProps} />;
-      case 'assist':
-        return <AssistSelectionStep {...commonProps} />;
-      case 'confirm':
-        return (
-          <ConfirmationStep
-            selectedFixtureData={selectedFixtureData}
-            wizardData={wizardData}
-            onConfirm={handleConfirm}
-            onBack={handleBack}
-          />
-        );
-      default:
-        return null;
-    }
-  };
-
-  const getStepTitle = () => {
-    switch (currentStep) {
-      case 'team': return t('wizard.selectScoringTeam');
-      case 'player': return t('wizard.selectGoalScorer');
-      case 'goal-type': return t('wizard.goalType');
-      case 'assist': return t('wizard.addAssist');
-      case 'confirm': return t('wizard.confirmGoal');
-      default: return t('referee.recordGoalTitle');
-    }
-  };
-
-  // ---- Next/DB save button in confirm step ----
   const isConfirmStep = currentStep === "confirm";
   const hasUnsaved = batchSaveManager.hasUnsavedChanges && (
     batchSaveManager.unsavedItemsCount.goals > 0 ||
@@ -317,73 +274,48 @@ const GoalWizard = ({
           </DialogTitle>
         </DialogHeader>
         <div className="mt-4">
-          {renderCurrentStep()}
+          <GoalWizardStepContainer
+            currentStep={currentStep}
+            selectedFixtureData={selectedFixtureData}
+            homeTeamPlayers={homeTeamPlayers}
+            awayTeamPlayers={awayTeamPlayers}
+            wizardData={wizardData}
+            onDataChange={handleDataChange}
+            onNext={handleNext}
+            onBack={handleBack}
+            onConfirmGoal={handleConfirm}
+            matchTime={matchTime}
+          />
         </div>
         {/* Confirmation Step: Save Button (add DB save now) */}
-        {isConfirmStep && (
-          <div className="mt-4 flex flex-col gap-2">
-            {/* Save to Local Store (Goal) Button */}
-            <button
-              className="w-full bg-blue-600 text-white py-2 rounded disabled:opacity-60 flex items-center justify-center gap-2 font-semibold"
-              onClick={handleConfirm}
-              disabled={syncStatus === "saving"}
-              type="button"
-              style={{ marginBottom: 0 }}
-            >
-              {syncStatus === "saving" ? (
-                <span className="animate-spin h-4 w-4 mr-2 border-2 border-white border-t-transparent rounded-full" />
-              ) : (
-                <span>
-                  Save Goal (Local)
-                  {hasUnsaved && <span className="ml-2 align-middle"><PulseDotBadge /></span>}
-                </span>
-              )}
-            </button>
-            {/* Save & Sync button (save all changes, batchSave) */}
-            <button
-              className={`w-full flex items-center justify-center gap-2 font-semibold py-2 rounded transition-colors ${syncStatus === "saving" || syncStatus === "synced"
-                ? "bg-green-300 text-white"
-                : hasUnsaved
-                ? "bg-red-600 text-white animate-pulse"
-                : "bg-green-600 text-white"
-              }`}
-              onClick={handleSaveNow}
-              disabled={
-                syncStatus === "saving" ||
-                syncStatus === "synced" ||
-                !batchSaveManager.hasUnsavedChanges
-              }
-              type="button"
-            >
-              {syncStatus === "saving" ? (
-                <span className="animate-spin h-4 w-4 mr-2 border-2 border-white border-t-transparent rounded-full" />
-              ) : (
-                <>
-                  <span>
-                    {syncStatus === "synced"
-                      ? "Saved"
-                      : batchSaveManager.hasUnsavedChanges
-                      ? "Save & Sync Now"
-                      : "No Unsaved Changes"}
-                  </span>
-                  {hasUnsaved && <span className="ml-2 align-middle"><PulseDotBadge /></span>}
-                </>
-              )}
-            </button>
-            {/* Visual status & database indicator */}
-            <GoalWizardSyncStatus status={syncStatus} message={syncMessage} />
-            {/* If there are unsaved items, show counts */}
-            {batchSaveManager.hasUnsavedChanges && (
-              <div className="text-xs text-gray-500 mt-1">
-                Unsaved: {batchSaveManager.unsavedItemsCount.goals} goals, {batchSaveManager.unsavedItemsCount.cards} cards, {batchSaveManager.unsavedItemsCount.playerTimes} pl. times
-              </div>
-            )}
-            {/* Big warning if unsaved */}
-            {hasUnsaved && (
-              <div className="w-full text-xs text-center text-red-700 bg-red-50 rounded border border-red-200 mt-2 p-1 font-semibold animate-pulse">
-                Unsaved changes! Be sure to sync to database for safe keeping.
-              </div>
-            )}
+        <GoalWizardNavigation
+          isConfirmStep={isConfirmStep}
+          syncStatus={syncStatus}
+          syncMessage={syncMessage}
+          hasUnsaved={hasUnsaved}
+          canSave={batchSaveManager.hasUnsavedChanges}
+          onConfirm={handleConfirm}
+          onSaveNow={handleSaveNow}
+          disableSave={
+            syncStatus === "saving" ||
+            syncStatus === "synced" ||
+            !batchSaveManager.hasUnsavedChanges
+          }
+          isSaving={syncStatus === "saving"}
+          isSynced={syncStatus === "synced"}
+        />
+        {/* Visual status & database indicator */}
+        <GoalWizardSyncStatus status={syncStatus} message={syncMessage} />
+        {/* If there are unsaved items, show counts */}
+        {batchSaveManager.hasUnsavedChanges && (
+          <div className="text-xs text-gray-500 mt-1">
+            Unsaved: {batchSaveManager.unsavedItemsCount.goals} goals, {batchSaveManager.unsavedItemsCount.cards} cards, {batchSaveManager.unsavedItemsCount.playerTimes} pl. times
+          </div>
+        )}
+        {/* Big warning if unsaved */}
+        {hasUnsaved && (
+          <div className="w-full text-xs text-center text-red-700 bg-red-50 rounded border border-red-200 mt-2 p-1 font-semibold animate-pulse">
+            Unsaved changes! Be sure to sync to database for safe keeping.
           </div>
         )}
       </DialogContent>
