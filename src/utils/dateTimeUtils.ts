@@ -1,4 +1,3 @@
-
 import { formatDateDisplay, formatTimeDisplay } from "@/utils/timeUtils";
 
 /**
@@ -31,4 +30,13 @@ export const formatMobileDateDisplay = (dateString: string): string => {
     console.warn('Error formatting mobile date display:', error);
     return 'TBD';
   }
+};
+
+/**
+ * Formats only the time as minutes (rounded up for football norm)
+ */
+export const formatMinuteOnly = (seconds: number): string => {
+  // Import here instead of top for tree shaking where possible
+  const { roundSecondsUpToMinute } = require("./timeUtils");
+  return `${roundSecondsUpToMinute(seconds)}'`;
 };

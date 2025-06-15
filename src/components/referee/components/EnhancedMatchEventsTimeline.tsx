@@ -1,6 +1,7 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Target, AlertTriangle, Users } from "lucide-react";
+import { roundSecondsUpToMinute } from "@/utils/timeUtils";
 
 interface LocalTimelineEvent {
   id: string | number;
@@ -107,7 +108,7 @@ const EnhancedMatchEventsTimeline = ({
                     </div>
                   </div>
                   <span className="text-xs text-muted-foreground font-mono">
-                    {formatTime(event.time)}
+                    {roundSecondsUpToMinute(event.time)}'
                   </span>
                 </div>
               </div>

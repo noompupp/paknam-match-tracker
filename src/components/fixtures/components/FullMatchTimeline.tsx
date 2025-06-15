@@ -1,4 +1,3 @@
-
 import { Badge } from "@/components/ui/badge";
 import { Target, AlertTriangle, Users, Clock } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -162,7 +161,13 @@ const FullMatchTimeline = ({
                 </div>
                 <div className="text-right">
                   <span className="text-sm font-mono text-muted-foreground">
-                    {Math.floor(event.time / 60)}'
+                    {
+                      // Use new rounding logic for minute display
+                      (() => {
+                        const { roundSecondsUpToMinute } = require("@/utils/timeUtils");
+                        return `${roundSecondsUpToMinute(event.time)}'`;
+                      })()
+                    }
                   </span>
                 </div>
               </div>

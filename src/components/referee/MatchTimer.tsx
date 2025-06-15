@@ -35,6 +35,10 @@ const MatchTimer = ({
     timerButtonLabel = "Resume";
   }
 
+  // Use rounded up minute display for timer as well
+  const { roundSecondsUpToMinute } = require("@/utils/timeUtils");
+  const roundedTime = roundSecondsUpToMinute(matchTime);
+
   return (
     <Card className="card-shadow-lg">
       <CardHeader>
@@ -54,7 +58,7 @@ const MatchTimer = ({
                 <div className="text-4xl font-bold text-primary mt-2">{homeScore}</div>
               </div>
               <div className="mx-8">
-                <div className="text-2xl font-bold mb-2 time-display">{formatTime(matchTime)}</div>
+                <div className="text-2xl font-bold mb-2 time-display">{roundedTime}'</div>
                 <Badge variant={isRunning ? "default" : "secondary"}>
                   {isRunning ? "LIVE" : "PAUSED"}
                 </Badge>
@@ -68,7 +72,7 @@ const MatchTimer = ({
           
           {!selectedFixtureData && (
             <div className="flex-1 text-center">
-              <div className="text-2xl font-bold mb-2 time-display">{formatTime(matchTime)}</div>
+              <div className="text-2xl font-bold mb-2 time-display">{roundedTime}'</div>
               <Badge variant={isRunning ? "default" : "secondary"}>
                 {isRunning ? "LIVE" : "PAUSED"}
               </Badge>

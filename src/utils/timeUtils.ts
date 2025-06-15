@@ -1,4 +1,3 @@
-
 /**
  * Utility functions for consistent time formatting across the application
  * Updated for 7-a-side football format (50 minutes total, 2 x 25-minute halves)
@@ -10,8 +9,18 @@ export const formatMatchTime = (seconds: number): string => {
   return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
 };
 
+/**
+ * Rounds seconds up to the next full minute (e.g. 72 → 2).
+ * If seconds is 0, returns 0.
+ */
+export const roundSecondsUpToMinute = (seconds: number): number => {
+  if (seconds <= 0) return 0;
+  return Math.ceil(seconds / 60);
+};
+
+// Formats for the dashboard, always using rounded-up minutes
 export const formatTimeForDashboard = (seconds: number): string => {
-  const mins = Math.floor(seconds / 60);
+  const mins = roundSecondsUpToMinute(seconds);
   return `${mins}'`;
 };
 
@@ -56,15 +65,16 @@ export const secondsToMinutes = (seconds: number): number => {
   return Math.floor(seconds / 60);
 };
 
-// Standardized time formatting for match events (handles both seconds and minutes)
+/**
+ * Standardized event time formatting:
+ * - If isSeconds, rounds UP to the next full minute and shows minutes+apostrophe.
+ * - If already in minutes, just shows the integer value with apostrophe.
+ */
 export const formatEventTime = (timeValue: number, isSeconds: boolean = false): string => {
   if (isSeconds) {
-    // Convert seconds to MM:SS format
-    const mins = Math.floor(timeValue / 60);
-    const secs = timeValue % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
+    const mins = roundSecondsUpToMinute(timeValue);
+    return `${mins}'`;
   } else {
-    // timeValue is already in minutes, format as MM'
     return `${Math.floor(timeValue)}'`;
   }
 };

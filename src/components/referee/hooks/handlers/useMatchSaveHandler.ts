@@ -1,10 +1,10 @@
-
 import { useToast } from "@/hooks/use-toast";
 import { useMatchSaveStatus } from "../useMatchSaveStatus";
 import { unifiedRefereeService } from "@/services/fixtures";
 import { formatMatchSaveSuccessMessage } from "./formatMatchSaveSuccessMessage";
 import { UseMatchDataHandlersProps } from "./types";
 import { useCallback } from "react";
+import { roundSecondsUpToMinute } from "@/utils/timeUtils";
 
 export const useMatchSaveHandler = ({
   selectedFixtureData,
@@ -47,10 +47,11 @@ export const useMatchSaveHandler = ({
           playerName: goal.playerName,
           team: goal.team,
           type: goal.type as 'goal' | 'assist',
-          time: goal.time,
+          // Round up to next minute when saving DB event
+          time: roundSecondsUpToMinute(goal.time),
           isOwnGoal: goal.isOwnGoal || false
         })),
-        cards: [],
+        cards: [], // TODO: update if cards stored similarly
         playerTimes: playersForTimeTracker.map(player => ({
           playerId: player.id,
           playerName: player.name,
@@ -58,7 +59,8 @@ export const useMatchSaveHandler = ({
           totalTime: Math.floor(player.totalTime / 60),
           periods: [{
             start_time: player.startTime || 0,
-            end_time: matchTime,
+            // Also round matchTime for saving
+            end_time: roundSecondsUpToMinute(matchTime),
             duration: Math.floor(player.totalTime / 60)
           }]
         })),

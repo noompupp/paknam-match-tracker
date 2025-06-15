@@ -1,4 +1,3 @@
-
 import { Card, CardContent } from "@/components/ui/card";
 import { Activity } from "lucide-react";
 import { getGoalAssistPlayerName } from "../utils/matchSummaryDataProcessor";
@@ -55,9 +54,10 @@ const MatchEventsSection = ({
     }))
   ].sort((a, b) => a.time - b.time);
 
+  // Replace this with new rounded up formatter
   const formatTime = (seconds: number) => {
-    const minutes = Math.floor(seconds / 60);
-    return `${minutes}'`;
+    const { roundSecondsUpToMinute } = require("@/utils/timeUtils");
+    return `${roundSecondsUpToMinute(seconds)}'`;
   };
 
   return (
