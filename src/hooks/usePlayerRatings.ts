@@ -20,12 +20,14 @@ export function usePlayerRatings(fixtureId: number | null) {
   const { user } = useSecureAuth();
   const queryKey = ["player_ratings", fixtureId, user?.id];
 
+  // NOTE: <any> cast workaround so we can use from("player_ratings") until the codegen is updated!
   const query = useQuery<PlayerRating[]>({
     queryKey,
     enabled: !!fixtureId && !!user,
     queryFn: async () => {
       if (!fixtureId || !user) return [];
-      const { data, error } = await supabase
+      // @ts-expect-error: player_ratings is not in the Supabase .types.ts (it's a custom table)
+      const { data, error } = (supabase as any)
         .from("player_ratings")
         .select("*")
         .eq("fixture_id", fixtureId)
@@ -33,7 +35,9 @@ export function usePlayerRatings(fixtureId: number | null) {
 
       if (error) throw error;
       // Defensive: data could be unknown/null, so ensure correct typing
-      return (data ?? []) as PlayerRating[];
+      return Array.isArray(data)
+        ? (data as PlayerRating[])
+        : [];
     },
     staleTime: 2 * 60 * 1000,
   });
@@ -59,8 +63,8 @@ export function useSubmitPlayerRating() {
       rating: number;
     }) => {
       if (!user) throw new Error("Not logged in");
-      // Upsert: Insert or update (enforces uniqueness by RLS + index)
-      const { data, error } = await supabase
+      // @ts-expect-error: player_ratings is not in Supabase typed client
+      const { data, error } = (supabase as any)
         .from("player_ratings")
         .upsert(
           [
@@ -74,8 +78,10 @@ export function useSubmitPlayerRating() {
           { onConflict: "fixture_id,player_id,rater_id", ignoreDuplicates: false }
         );
       if (error) throw error;
-      // Defensive: data is an array, take the first element
-      return (data?.[0] ?? null) as PlayerRating | null;
+      // Defensive: data could be null/unknown, so safely type it
+      return Array.isArray(data) && data.length > 0
+        ? (data[0] as PlayerRating)
+        : null;
     },
     onSuccess: (data, vars) => {
       // Refresh rating queries for fixture after submit
