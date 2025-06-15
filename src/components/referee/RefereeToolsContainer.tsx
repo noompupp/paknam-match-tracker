@@ -1,4 +1,3 @@
-
 import RefereeToolsHeader from "./components/RefereeToolsHeader";
 import RefereeMainContent from "./components/RefereeMainContent";
 import UnifiedPageHeader from "@/components/shared/UnifiedPageHeader";
@@ -6,7 +5,6 @@ import EnhancedWorkflowModeManager from "./workflows/EnhancedWorkflowModeManager
 import { useRefereeStateOrchestrator } from "./hooks/useRefereeStateOrchestrator";
 import { useState } from "react";
 import { WorkflowModeConfig } from "./workflows/types";
-import { MatchSaveStatusProvider } from "./hooks/useMatchSaveStatus";
 
 const RefereeToolsContainer = () => {
   const [workflowConfig, setWorkflowConfig] = useState<WorkflowModeConfig | null>(null);
@@ -129,7 +127,7 @@ const RefereeToolsContainer = () => {
   }
 
   return (
-    <MatchSaveStatusProvider>
+    <>
       <UnifiedPageHeader 
         title="Referee Tools"
         showLanguageToggle={true}
@@ -195,9 +193,8 @@ const RefereeToolsContainer = () => {
           />
         )}
       </main>
-    </MatchSaveStatusProvider>
+    </>
   );
 };
 
 export default RefereeToolsContainer;
-
