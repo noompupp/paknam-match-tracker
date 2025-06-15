@@ -70,7 +70,7 @@ const MatchTimer = ({
           <div className="flex gap-2 justify-center mt-4">
             <Button onClick={onToggleTimer} variant="default" className="button-primary-enhanced">
               {isRunning ? <Pause className="h-4 w-4 mr-2" /> : <Play className="h-4 w-4 mr-2" />}
-              {isRunning ? "Pause" : "Start"}
+              {isRunning ? "Pause" : "Resume"}
             </Button>
           </div>
         )}
@@ -80,3 +80,4 @@ const MatchTimer = ({
 };
 
 export default MatchTimer;
+

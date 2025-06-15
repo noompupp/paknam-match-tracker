@@ -1,4 +1,3 @@
-
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -128,7 +127,7 @@ const UnifiedMatchTimer = ({
             size={isMobile ? "lg" : "default"}
           >
             {isRunning ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-            {isRunning ? "Pause Timer" : "Start Timer"}
+            {isRunning ? "Pause Timer" : "Resume Timer"}
           </Button>
           
           <Button
