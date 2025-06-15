@@ -1,4 +1,4 @@
-// Referee tools - a large section due to many strings.
+// Referee tools - expanded for full localization
 
 import { LocaleModule } from "./types";
 
@@ -87,6 +87,44 @@ const referee: LocaleModule = {
     'referee.totalTrackedLabel': 'Total Tracked',
     'referee.time': '{time}',
     // Other referee strings omitted for brevity
+    'referee.startingSquadTitle': 'Select Starting Squad ({count} players)',
+    'referee.noSquadSelected': 'No squad selected',
+    'referee.choose7Notice': 'Select 7 starting players to begin match tracking',
+    'referee.selectTeam': 'Select team',
+    'referee.selectPlayers': 'Select Players',
+    'referee.startMatchBtn': 'Start Match',
+    'referee.back': 'Back',
+    'referee.cancelBtn': 'Cancel',
+    'referee.confirmBtn': 'Confirm',
+    'referee.timeTracker': 'Player Time Tracker (7-a-Side Role-Based)',
+    'referee.timer.half': 'Half {half} - {time}',
+    'referee.recordGoalTitle': 'Record Goal',
+    'referee.recordGoalDesc': 'Use the wizard to record goals with full details',
+    'referee.openGoalEntry': 'Open Goal Entry Wizard',
+    'referee.recordGoalsFor': 'Record goals for <0>{home}</0> vs <1>{away}</1>',
+    // Wizard steps
+    'wizard.selectScoringTeam': 'Which team scored?',
+    'wizard.selectGoalScorer': 'Select Goal Scorer',
+    'wizard.goalType': 'Goal Type',
+    'wizard.ownGoal': 'Own Goal',
+    'wizard.normalGoal': 'Regular Goal',
+    'wizard.addAssist': 'Add Assist (Optional)',
+    'wizard.selectAssist': 'Select Player for Assist',
+    'wizard.confirmGoal': 'Confirm Goal',
+    'wizard.editGoal': 'Edit Goal Details - {time}',
+    'wizard.goalEntryTime': 'Goal Entry - {time}',
+    'wizard.cancel': 'Cancel',
+    'wizard.back': 'Back',
+    // Step indicator
+    'wizard.step.team': 'Team',
+    'wizard.step.player': 'Player',
+    'wizard.step.goalType': 'Type',
+    'wizard.step.assist': 'Assist',
+    'wizard.step.confirm': 'Confirm',
+    // Alerts & instructions
+    'wizard.missingFields': 'Please complete all required fields before confirming.',
+    'wizard.completed': 'Goal recorded successfully',
+    'wizard.editing': 'Editing quick goal entry',
   },
   th: {
     'page.referee': 'เครื่องมือผู้ตัดสิน',
@@ -162,6 +200,44 @@ const referee: LocaleModule = {
     'referee.totalTrackedLabel': 'ติดตาม',
     'referee.time': '{time}',
     // Other referee strings omitted for brevity — to be expanded as needed.
+    'referee.startingSquadTitle': 'เลือกผู้เล่นตัวจริง ({count} คน)',
+    'referee.noSquadSelected': 'ยังไม่ได้เลือกทีม',
+    'referee.choose7Notice': 'เลือกนักเตะ 7 คนเพื่อเริ่มติดตามการแข่งขัน',
+    'referee.selectTeam': 'เลือกทีม',
+    'referee.selectPlayers': 'เลือกนักเตะ',
+    'referee.startMatchBtn': 'เริ่มการแข่งขัน',
+    'referee.back': 'ย้อนกลับ',
+    'referee.cancelBtn': 'ยกเลิก',
+    'referee.confirmBtn': 'ยืนยัน',
+    'referee.timeTracker': 'ติดตามเวลาผู้เล่น (7 คน/ตำแหน่ง)',
+    'referee.timer.half': 'ครึ่งที่ {half} - {time}',
+    'referee.recordGoalTitle': 'บันทึกประตู',
+    'referee.recordGoalDesc': 'ใช้วิซาร์ดเพื่อบันทึกประตูอย่างละเอียด',
+    'referee.openGoalEntry': 'เปิดตัวช่วยบันทึกประตู',
+    'referee.recordGoalsFor': 'บันทึกประตูสำหรับ <0>{home}</0> พบ <1>{away}</1>',
+    // Wizard steps
+    'wizard.selectScoringTeam': 'ทีมใดเป็นผู้ทำประตู?',
+    'wizard.selectGoalScorer': 'เลือกผู้ทำประตู',
+    'wizard.goalType': 'ประเภทประตู',
+    'wizard.ownGoal': 'เข้าประตูตัวเอง',
+    'wizard.normalGoal': 'ประตูปกติ',
+    'wizard.addAssist': 'เพิ่มแอสซิสต์ (ถ้ามี)',
+    'wizard.selectAssist': 'เลือกผู้เล่นสำหรับแอสซิสต์',
+    'wizard.confirmGoal': 'ยืนยันข้อมูลประตู',
+    'wizard.editGoal': 'แก้ไขข้อมูลประตู - {time}',
+    'wizard.goalEntryTime': 'บันทึกประตู - {time}',
+    'wizard.cancel': 'ยกเลิก',
+    'wizard.back': 'ย้อนกลับ',
+    // Step indicator
+    'wizard.step.team': 'ทีม',
+    'wizard.step.player': 'นักเตะ',
+    'wizard.step.goalType': 'ประเภท',
+    'wizard.step.assist': 'แอสซิสต์',
+    'wizard.step.confirm': 'ยืนยัน',
+    // Alerts & instructions
+    'wizard.missingFields': 'กรุณากรอกข้อมูลให้ครบถ้วนก่อนยืนยัน',
+    'wizard.completed': 'บันทึกประตูสำเร็จแล้ว',
+    'wizard.editing': 'กำลังแก้ไขข้อมูลประตู',
   }
 };
 

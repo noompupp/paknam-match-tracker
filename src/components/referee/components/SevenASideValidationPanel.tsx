@@ -19,7 +19,7 @@ const SevenASideValidationPanel = ({
   matchTime, 
   formatTime 
 }: SevenASideValidationPanelProps) => {
-  const { t, language } = useTranslation();
+  const { t } = useTranslation();
   const SEVEN_PLAYER_LIMIT = 7
   const S_CLASS_HALF_LIMIT = 20 * 60 // 20 minutes in seconds
   const S_CLASS_WARNING_THRESHOLD = 16 * 60 // 16 minutes warning
@@ -241,4 +241,4 @@ const SevenASideValidationPanel = ({
   )
 }
 
-export default SevenASideValidationPanel
+export default SevenASideValidationPanel;

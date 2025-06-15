@@ -1,9 +1,9 @@
-
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ProcessedPlayer } from "@/utils/refereeDataProcessor";
 import TeamSelectionPanel from "./TeamSelectionPanel";
 import PlayerSelectionPanel from "./PlayerSelectionPanel";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface InitialPlayerSelectionProps {
   isOpen: boolean;
@@ -22,6 +22,7 @@ const InitialPlayerSelection = ({
   onStartMatch,
   selectedFixtureData
 }: InitialPlayerSelectionProps) => {
+  const { t } = useTranslation();
   const [selectedTeam, setSelectedTeam] = useState<'home' | 'away' | null>(null);
   const [selectedPlayerIds, setSelectedPlayerIds] = useState<Set<number>>(new Set());
 
@@ -70,8 +71,8 @@ const InitialPlayerSelection = ({
   };
 
   const getTeamName = (team: 'home' | 'away') => {
-    if (team === 'home') return selectedFixtureData?.home_team?.name || 'Home Team';
-    return selectedFixtureData?.away_team?.name || 'Away Team';
+    if (team === 'home') return selectedFixtureData?.home_team?.name || t('referee.homeTeam');
+    return selectedFixtureData?.away_team?.name || t('referee.awayTeam');
   };
 
   return (
@@ -79,7 +80,7 @@ const InitialPlayerSelection = ({
       <DialogContent className="w-full max-w-2xl h-[90vh] max-h-[90vh] overflow-hidden flex flex-col p-0 sm:p-6 sm:h-auto sm:max-h-[80vh]">
         <DialogHeader className="p-4 sm:p-0 flex-shrink-0">
           <DialogTitle className="flex items-center gap-2">
-            Select Starting Squad ({REQUIRED_PLAYERS} players)
+            {t('referee.startingSquadTitle').replace('{count}', String(REQUIRED_PLAYERS))}
           </DialogTitle>
         </DialogHeader>
 
@@ -113,4 +114,3 @@ const InitialPlayerSelection = ({
 };
 
 export default InitialPlayerSelection;
-

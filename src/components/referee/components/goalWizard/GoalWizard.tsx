@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useMatchStore } from "@/stores/useMatchStore";
@@ -9,6 +8,7 @@ import PlayerSelectionStep from "./PlayerSelectionStep";
 import GoalTypeStep from "./GoalTypeStep";
 import AssistSelectionStep from "./AssistSelectionStep";
 import ConfirmationStep from "./ConfirmationStep";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface GoalWizardProps {
   isOpen: boolean;
@@ -27,6 +27,7 @@ const GoalWizard = ({
   awayTeamPlayers = [],
   matchTime
 }: GoalWizardProps) => {
+  const { t } = useTranslation();
   const [currentStep, setCurrentStep] = useState<WizardStep>('team');
   const [wizardData, setWizardData] = useState<GoalWizardData>({
     selectedTeam: null,
@@ -197,12 +198,12 @@ const GoalWizard = ({
 
   const getStepTitle = () => {
     switch (currentStep) {
-      case 'team': return 'Select Scoring Team';
-      case 'player': return 'Select Goal Scorer';
-      case 'goal-type': return 'Confirm Goal Type';
-      case 'assist': return 'Add Assist (Optional)';
-      case 'confirm': return 'Confirm Goal';
-      default: return 'Record Goal';
+      case 'team': return t('wizard.selectScoringTeam');
+      case 'player': return t('wizard.selectGoalScorer');
+      case 'goal-type': return t('wizard.goalType');
+      case 'assist': return t('wizard.addAssist');
+      case 'confirm': return t('wizard.confirmGoal');
+      default: return t('referee.recordGoalTitle');
     }
   };
 

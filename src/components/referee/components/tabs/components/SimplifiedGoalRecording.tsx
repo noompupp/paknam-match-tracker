@@ -1,7 +1,7 @@
-
 import { Target, Plus } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import RefereeButton from "../../../shared/RefereeButton";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface SimplifiedGoalRecordingProps {
   homeTeamName: string;
@@ -16,15 +16,16 @@ const SimplifiedGoalRecording = ({
   onRecordGoal,
   isDisabled = false
 }: SimplifiedGoalRecordingProps) => {
+  const { t } = useTranslation();
   return (
     <Card className="transition-all duration-200 hover:shadow-md">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-lg">
           <Target className="h-5 w-5" />
-          Record Goal
+          {t("referee.recordGoalTitle")}
         </CardTitle>
         <p className="text-sm text-muted-foreground">
-          Use the wizard to record goals with full details
+          {t("referee.recordGoalDesc")}
         </p>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -36,11 +37,13 @@ const SimplifiedGoalRecording = ({
           fullWidth
           icon={<Plus className="h-4 w-4" />}
         >
-          Open Goal Entry Wizard
+          {t("referee.openGoalEntry")}
         </RefereeButton>
         
         <div className="text-center text-sm text-muted-foreground">
-          Record goals for <span className="font-medium">{homeTeamName}</span> vs <span className="font-medium">{awayTeamName}</span>
+          {t("referee.recordGoalsFor")
+            .replace("{home}", homeTeamName)
+            .replace("{away}", awayTeamName)}
         </div>
       </CardContent>
     </Card>
