@@ -1,5 +1,4 @@
-
-import React, { useState } from "react";
+import React from "react";
 import { ComponentPlayer } from "../../../hooks/useRefereeState";
 import { useMatchStore } from "@/stores/useMatchStore";
 import { useGlobalBatchSaveManager } from "@/hooks/useGlobalBatchSaveManager";
@@ -7,8 +6,6 @@ import { useEnhancedAutoSave } from "@/hooks/useEnhancedAutoSave";
 import UnsavedChangesIndicator from "./UnsavedChangesIndicator";
 import SimplifiedGoalRecording from "./SimplifiedGoalRecording";
 import EnhancedGoalsSummary from "./EnhancedGoalsSummary";
-import { useGoalSaveHandler } from "../../../hooks/handlers/useGoalSaveHandler";
-import ScoreTabUnsavedChangesSection from "./ScoreTabUnsavedChangesSection";
 
 interface EnhancedScoreTabContainerProps {
   selectedFixtureData: any;
@@ -55,28 +52,8 @@ const EnhancedScoreTabContainer = ({
     addGoal,
     resetState,
     removeGoal,
-    undoGoal,
-    getUnsavedGoalsCount,
-    getUnsavedItemsCount
+    undoGoal
   } = useMatchStore();
-
-  // Add debug log for unsaved goals detection
-  const unsavedGoalsCount = typeof getUnsavedGoalsCount === 'function' ? getUnsavedGoalsCount() : 0;
-  const unsavedItemsCount = typeof getUnsavedItemsCount === 'function'
-    ? getUnsavedItemsCount()
-    : { goals: unsavedGoalsCount, cards: 0, playerTimes: 0 };
-
-  console.log('[EnhancedScoreTabContainer] Setup', {
-    fixtureId,
-    homeScore,
-    awayScore,
-    goalsCount: goals.length,
-    hasUnsavedChanges,
-    unsavedGoalsCount,
-    unsavedItemsCount,
-    getUnsavedGoalsCountFnExists: typeof getUnsavedGoalsCount === "function",
-    getUnsavedItemsCountFnExists: typeof getUnsavedItemsCount === "function"
-  });
 
   // Set fixture ID when component mounts or fixture changes
   React.useEffect(() => {
@@ -86,7 +63,7 @@ const EnhancedScoreTabContainer = ({
   }, [selectedFixtureData?.id, fixtureId, setFixtureId]);
 
   // Global batch save manager
-  const { batchSave, unsavedItemsCount: batchUnsavedItemsCount, isSaving } = useGlobalBatchSaveManager({
+  const { batchSave, unsavedItemsCount } = useGlobalBatchSaveManager({
     homeTeamData: { id: homeTeamId, name: homeTeamName },
     awayTeamData: { id: awayTeamId, name: awayTeamName }
   });
@@ -102,19 +79,14 @@ const EnhancedScoreTabContainer = ({
     tabName: 'Score'
   });
 
-  // Goals-only save handler -- now passes forceRefresh as the refreshScore callback:
-  const [isGoalsSaving, setIsGoalsSaving] = useState(false);
-  const { handleSaveGoals } = useGoalSaveHandler({ fixtureId: selectedFixtureData?.id, refreshScore: forceRefresh });
-
-  const handleSaveGoalsWrapper = async () => {
-    setIsGoalsSaving(true);
-    try {
-      console.log('[EnhancedScoreTabContainer] SaveGoals wrapper triggered');
-      await handleSaveGoals();
-    } finally {
-      setIsGoalsSaving(false);
-    }
-  };
+  console.log('📊 Enhanced ScoreTabContainer: Advanced workflow with autosave:', { 
+    fixtureId,
+    homeScore, 
+    awayScore, 
+    goalsCount: goals.length,
+    hasUnsavedChanges,
+    unsavedItemsCount
+  });
 
   const handleRecordGoal = () => {
     console.log('🎯 Enhanced ScoreTabContainer: Opening goal entry wizard');
@@ -141,16 +113,13 @@ const EnhancedScoreTabContainer = ({
     }
   };
 
-  // Log removeGoal/undoGoal triggers
   const handleRemoveGoal = (goalId: string) => {
-    console.log('[EnhancedScoreTabContainer] removeGoal triggered', { goalId });
     if (removeGoal) {
       removeGoal(goalId);
     }
   };
 
   const handleUndoGoal = (goalId: string) => {
-    console.log('[EnhancedScoreTabContainer] undoGoal triggered', { goalId });
     if (undoGoal) {
       undoGoal(goalId);
     }
@@ -174,13 +143,10 @@ const EnhancedScoreTabContainer = ({
         isDisabled={false}
       />
 
-      <ScoreTabUnsavedChangesSection
+      <UnsavedChangesIndicator
         hasUnsavedChanges={hasUnsavedChanges}
         unsavedItemsCount={unsavedItemsCount}
         onSave={handleSaveMatch}
-        onSaveGoals={handleSaveGoalsWrapper}
-        isSaving={isSaving}
-        isGoalsSaving={isGoalsSaving}
       />
 
       {/* Note: Match Controls section removed as per plan */}

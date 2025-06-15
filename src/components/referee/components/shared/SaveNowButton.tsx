@@ -41,7 +41,7 @@ const SaveNowButton = ({
       ) : (
         <Save className="h-4 w-4" />
       )}
-      {children || (isLoading ? 'Saving...' : 'Finish & Exit')}
+      {children || (isLoading ? 'Saving...' : 'Save Now')}
     </Button>
   );
 };

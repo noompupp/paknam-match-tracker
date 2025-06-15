@@ -1,6 +1,6 @@
 
 import { StateCreator } from 'zustand';
-import { MatchState, MatchGoal } from './types';
+import { MatchState } from './types';
 import { MatchActions } from './actions';
 import { generateId } from './utils';
 import { assignGoalToPlayer } from '@/services/fixtures/simplifiedGoalAssignmentService';
@@ -11,10 +11,6 @@ export interface EnhancedGoalSlice {
   updateGoal: (goalId: string, updates: Partial<any>) => void;
   getUnsavedGoalsCount: MatchActions['getUnsavedGoalsCount'];
   syncGoalsToDatabase: (fixtureId: number) => Promise<void>;
-  undoGoal: (goalId: string) => void; // Add to interface
-  addAssist: MatchActions['addAssist'];
-  getUnassignedGoalsCount: () => number;
-  getUnassignedGoals: () => MatchGoal[];
 }
 
 export const createEnhancedGoalSlice: StateCreator<
@@ -38,7 +34,7 @@ export const createEnhancedGoalSlice: StateCreator<
       lastUpdated: Date.now()
     }));
 
-    console.log('⚽ Enhanced Goal Store: Goal added with standardized own goal support:', newGoal, '(synced:', newGoal.synced, ')');
+    console.log('⚽ Enhanced Goal Store: Goal added with standardized own goal support:', newGoal);
     return newGoal;
   },
 
@@ -61,19 +57,16 @@ export const createEnhancedGoalSlice: StateCreator<
       hasUnsavedChanges: true,
       lastUpdated: Date.now()
     }));
-    console.log('✏️ Enhanced Goal Store: Goal updated:', goalId, updates);
   },
 
   getUnsavedGoalsCount: () => {
-    const count = get().goals.filter(g => !g.synced).length;
-    console.log('[ENHANCED GOAL SLICE] getUnsavedGoalsCount:', count, '(goals:', get().goals.map(g => ({ id: g.id, synced: g.synced })) ,')');
-    return count;
+    return get().goals.filter(g => !g.synced).length;
   },
 
   syncGoalsToDatabase: async (fixtureId: number) => {
     const state = get();
     const unsyncedGoals = state.goals.filter(g => !g.synced);
-
+    
     if (unsyncedGoals.length === 0) {
       console.log('✅ No unsynced goals to save');
       return;
@@ -101,68 +94,10 @@ export const createEnhancedGoalSlice: StateCreator<
         lastUpdated: Date.now()
       }));
 
-      console.log('✅ Goal sync completed successfully with standardized own goal support. Updated goals:', get().goals);
+      console.log('✅ Goal sync completed successfully with standardized own goal support');
     } catch (error) {
       console.error('❌ Error syncing goals to database:', error);
       throw error;
     }
-  },
-
-  // Added: new undoGoal implementation (simply removes the latest goal by id for now)
-  undoGoal: (goalId: string) => {
-    set((state) => {
-      const updatedGoals = state.goals.filter(g => g.id !== goalId);
-      console.log('[ENHANCED GOAL SLICE] undoGoal:', goalId, 'remaining:', updatedGoals.map(g => g.id));
-      return {
-        goals: updatedGoals,
-        hasUnsavedChanges: true,
-        lastUpdated: Date.now()
-      };
-    });
-  },
-
-  // Implementation for addAssist (required by MatchActions)
-  addAssist: (assistData) => {
-    const newAssist: MatchGoal = {
-      ...assistData,
-      type: 'assist',
-      id: generateId(),
-      timestamp: Date.now(),
-      synced: false
-    };
-
-    set((state) => ({
-      goals: [...state.goals, newAssist],
-      hasUnsavedChanges: true,
-      lastUpdated: Date.now()
-      // No score increment for assists
-    }));
-    console.log('⚽ Enhanced Goal Store: Assist added:', newAssist);
-    return newAssist;
-  },
-
-  // Implementation for getUnassignedGoalsCount (required by MatchActions)
-  getUnassignedGoalsCount: () => {
-    const unassignedCount = get().goals.filter(g => 
-      g.playerName === 'Quick Goal' || 
-      g.playerName === 'Unknown Player' ||
-      (!g.playerId && g.type === 'goal')
-    ).length;
-
-    console.log('[ENHANCED GOAL SLICE] getUnassignedGoalsCount (compat):', unassignedCount);
-    return unassignedCount;
-  },
-
-  // Implementation for getUnassignedGoals (required by MatchActions)
-  getUnassignedGoals: () => {
-    const unassignedGoals = get().goals.filter(g => 
-      g.playerName === 'Quick Goal' || 
-      g.playerName === 'Unknown Player' ||
-      (!g.playerId && g.type === 'goal')
-    ) as MatchGoal[];
-
-    console.log('[ENHANCED GOAL SLICE] getUnassignedGoals (compat):', unassignedGoals);
-    return unassignedGoals;
   }
 });
-

@@ -19,7 +19,6 @@ export const useManualScore = ({ fixtureId, onScoreUpdate }: ManualScoreProps) =
     if (!fixtureId) {
       setHomeScore(0);
       setAwayScore(0);
-      if (onScoreUpdate) onScoreUpdate(0, 0);
       return;
     }
 
@@ -59,19 +58,10 @@ export const useManualScore = ({ fixtureId, onScoreUpdate }: ManualScoreProps) =
       if (result?.scoreData) {
         setHomeScore(result.scoreData.homeScore);
         setAwayScore(result.scoreData.awayScore);
-
-        // Log every refresh, not just changes!
-        console.log('[SCORE REFRESH] Home:', result.scoreData.homeScore, 'Away:', result.scoreData.awayScore);
-
+        
         if (onScoreUpdate) {
           onScoreUpdate(result.scoreData.homeScore, result.scoreData.awayScore);
         }
-      } else {
-        // Explicitly clear to 0 if no result returned
-        setHomeScore(0);
-        setAwayScore(0);
-        if (onScoreUpdate) onScoreUpdate(0, 0);
-        console.log('[SCORE REFRESH] No score data returned - set both to 0');
       }
     } catch (error) {
       console.error('❌ useManualScore: Error refreshing scores:', error);
