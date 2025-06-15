@@ -1,21 +1,28 @@
 import { useState, useEffect } from "react";
 import { useManualScore } from "@/hooks/useManualScore";
-import { useMatchStore } from "@/stores/useMatchStore";
+import { useMatchStore } from "@/stores/useMatchStore"; // Add this
 
 interface RefereeScoreStateProps {
   selectedFixtureData: any;
 }
 
+// Provide homeScore and awayScore from match store only; refresh and other logic can still exist for DB sync
 export const useRefereeScoreState = ({ selectedFixtureData }: RefereeScoreStateProps) => {
   const { homeScore, awayScore, addGoal: addGoalToStore, removeGoal: removeGoalFromStore } = useMatchStore();
 
+  // Any DB/manual sync only triggers refresh, not state change
   const [isLoading, setIsLoading] = useState(false);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   const fetchInitialScores = async () => {
     if (!selectedFixtureData?.id) return;
+
     setIsLoading(true);
     try {
+      // Fetch initial scores from the database
+      // In a real implementation, you would fetch the scores from the database here
+      // and update the Zustand store with the fetched scores.
+      // For now, we'll just simulate a delay to show the loading state.
       await new Promise(resolve => setTimeout(resolve, 500));
       console.log('🔄 useRefereeScoreState: Initial scores loaded from database');
     } catch (error) {
@@ -28,8 +35,13 @@ export const useRefereeScoreState = ({ selectedFixtureData }: RefereeScoreStateP
 
   const refreshScores = async () => {
     if (!selectedFixtureData?.id) return;
+
     setIsLoading(true);
     try {
+      // Fetch updated scores from the database
+      // In a real implementation, you would fetch the scores from the database here
+      // and update the Zustand store with the fetched scores.
+      // For now, we'll just simulate a delay to show the loading state.
       await new Promise(resolve => setTimeout(resolve, 500));
       console.log('🔄 useRefereeScoreState: Scores refreshed from database');
     } catch (error) {
@@ -45,62 +57,34 @@ export const useRefereeScoreState = ({ selectedFixtureData }: RefereeScoreStateP
     }
   }, [selectedFixtureData?.id, isInitialLoad]);
 
-  // Build a goal object for "Quick Goal" and ensure type safety per MatchGoal type
-  const getQuickGoalData = (team: 'home' | 'away') => {
-    let teamName: string = '';
-    let teamId: string = '';
-    if (team === 'home') {
-      teamName = selectedFixtureData?.home_team?.name || selectedFixtureData?.home_team_name || 'Home Team';
-      teamId = selectedFixtureData?.home_team?.__id__ || selectedFixtureData?.home_team_id || '';
-    } else {
-      teamName = selectedFixtureData?.away_team?.name || selectedFixtureData?.away_team_name || 'Away Team';
-      teamId = selectedFixtureData?.away_team?.__id__ || selectedFixtureData?.away_team_id || '';
-    }
-    return {
-      teamName,
-      teamId,
-      type: "goal" as const,       // Fix: use string literal
-      playerName: 'Quick Goal',
-      playerId: 0,                 // Fix: MatchGoal expects number, not null
-      time: 0,
-      isOwnGoal: false
-    };
-  };
-
   const addGoal = async (team: 'home' | 'away') => {
     console.log('📊 useRefereeScoreState: Manual goal addition triggered for:', team);
-    addGoalToStore(getQuickGoalData(team));
+    addGoalToStore({
+      teamName: team === 'home' ? 'Home Team' : 'Away Team',
+      type: 'goal',
+      playerName: 'Quick Goal',
+      playerId: null,
+      teamId: null,
+      time: 0,
+      isOwnGoal: false
+    });
+    // Refresh scores after goal is added to database
     await refreshScores();
   };
 
   const removeGoal = async (team: 'home' | 'away') => {
     console.log('📊 useRefereeScoreState: Manual goal removal triggered for:', team);
-
-    const { goals } = useMatchStore.getState();
-    const teamName =
-      team === 'home'
-        ? selectedFixtureData?.home_team?.name ||
-          selectedFixtureData?.home_team_name ||
-          'Home Team'
-        : selectedFixtureData?.away_team?.name ||
-          selectedFixtureData?.away_team_name ||
-          'Away Team';
-
-    const lastQuickGoal = [...goals]
-      .reverse()
-      .find(
-        (g) =>
-          g.playerName === 'Quick Goal' &&
-          g.teamName === teamName &&
-          g.type === "goal"
-      );
-
-    if (lastQuickGoal) {
-      removeGoalFromStore(lastQuickGoal.id);
-      await refreshScores();
-    } else {
-      console.warn('⚠️ No Quick Goal found to remove for team:', teamName);
-    }
+    removeGoalFromStore({
+      teamName: team === 'home' ? 'Home Team' : 'Away Team',
+      type: 'goal',
+      playerName: 'Quick Goal',
+      playerId: null,
+      teamId: null,
+      time: 0,
+      isOwnGoal: false
+    });
+    // Refresh scores after goal is removed from database
+    await refreshScores();
   };
 
   const resetScore = async () => {
