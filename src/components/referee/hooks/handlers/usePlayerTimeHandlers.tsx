@@ -49,16 +49,38 @@ export const usePlayerTimeHandlers = (props: UsePlayerTimeHandlersProps) => {
       try {
         // Complete substitution if pending
         if (substitutionManager.hasPendingSubstitution) {
-          const substitution = substitutionManager.completePendingSubstitution(player as ProcessedPlayer);
+          // Find the full PlayerTime object for this player
+          const playerTime = props.playersForTimeTracker.find(p => p.id === player.id);
+          
+          // Construct a "ProcessedPlayer" with dummy fields if necessary for the API call
+          const processedPlayer: ProcessedPlayer = {
+            id: player.id,
+            name: player.name,
+            team: (player as any).team || "",
+            team_id: (player as any).team_id || "",
+            number: (player as any).number || "",
+            position: (player as any).position || "Player",
+            role: (player as any).role || "Starter"
+          };
+
+          const substitution = substitutionManager.completePendingSubstitution(processedPlayer);
           if (
             substitution &&
-            substitution.incoming?.name &&
-            substitution.outgoing?.outgoingPlayerName
+            substitution.incoming &&
+            substitution.incoming.name &&
+            substitution.outgoing &&
+            substitution.outgoing.outgoingPlayerName
           ) {
+            // Find the most complete "incoming" player info
+            // Try to find full PlayerTime for incoming, else fallback to ProcessedPlayer stub
+            const incomingPlayerFullTime = props.playersForTimeTracker.find(
+              (p) => p.id === substitution.incoming.id
+            ) || null;
+
             notifications.notifySubstitutionComplete({
-              incoming: substitution.incoming,
+              incoming: processedPlayer,
               outgoingName: substitution.outgoing.outgoingPlayerName,
-              player,
+              player: playerTime || (player as any), // Fallback to the available object
               matchTime: props.matchTime,
               addEvent: props.addEvent,
             });
@@ -115,6 +137,7 @@ export const usePlayerTimeHandlers = (props: UsePlayerTimeHandlersProps) => {
           await props.togglePlayerTime(playerId, props.matchTime);
           const pendingSub = substitutionManager.pendingSubstitution;
           if (pendingSub) {
+            // Find the full PlayerTime for the incoming player (outgoingPlayerId means the one who initiated sub in)
             const incomingPlayer = props.playersForTimeTracker.find(
               (p) => p.id === pendingSub.outgoingPlayerId
             );
@@ -122,10 +145,32 @@ export const usePlayerTimeHandlers = (props: UsePlayerTimeHandlersProps) => {
               await props.togglePlayerTime(pendingSub.outgoingPlayerId, props.matchTime);
             }
             substitutionManager.cancelPendingSubstitution();
+
+            // Build compatible ProcessedPlayer for notification
+            const processedIncomingPlayer: ProcessedPlayer = incomingPlayer
+              ? {
+                  id: incomingPlayer.id,
+                  name: incomingPlayer.name,
+                  team: (incomingPlayer as any).team || "",
+                  team_id: (incomingPlayer as any).team_id || "",
+                  number: (incomingPlayer as any).number || "",
+                  position: (incomingPlayer as any).position || "Player",
+                  role: (incomingPlayer as any).role || "Starter"
+                }
+              : {
+                  id: pendingSub.outgoingPlayerId,
+                  name: pendingSub.outgoingPlayerName,
+                  team: "",
+                  team_id: "",
+                  number: "",
+                  position: "Player",
+                  role: "Starter"
+                };
+
             notifications.notifySubstitutionComplete({
-              incoming: { id: incomingPlayer?.id!, name: incomingPlayer?.name! },
+              incoming: processedIncomingPlayer,
               outgoingName: player.name,
-              player,
+              player: incomingPlayer || player, // Use full if possible
               matchTime: props.matchTime,
               addEvent: props.addEvent,
             });
@@ -239,3 +284,5 @@ export const usePlayerTimeHandlers = (props: UsePlayerTimeHandlersProps) => {
     substitutionManager
   };
 };
+// NOTE: This file is 242 lines long and is getting quite lengthy. 
+// Consider asking to refactor it into smaller, focused hooks/components for maintainability.
