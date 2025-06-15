@@ -1,7 +1,7 @@
 import { useToast } from "@/hooks/use-toast";
 import { useMatchSaveStatus } from "../useMatchSaveStatus";
 import { unifiedRefereeService } from "@/services/fixtures";
-import { formatGoalsSaveSuccessMessage } from "./formatGoalsSaveSuccessMessage";
+import { formatMatchSaveSuccessMessage } from "./formatMatchSaveSuccessMessage";
 import { UseMatchDataHandlersProps } from "./types";
 import { useCallback } from "react";
 import { roundSecondsUpToMinute } from "@/utils/timeUtils";
@@ -51,7 +51,7 @@ export const useMatchSaveHandler = ({
           time: roundSecondsUpToMinute(goal.time),
           isOwnGoal: goal.isOwnGoal || false
         })),
-        cards: [],
+        cards: [], // TODO: update if cards stored similarly
         playerTimes: playersForTimeTracker.map(player => ({
           playerId: player.id,
           playerName: player.name,
@@ -93,24 +93,15 @@ export const useMatchSaveHandler = ({
         setPhase("success", { statusMessage: result.message, progress: 100 });
         setTimeout(resetSaveStatus, 1500);
 
-        // Gather details for contextual toast (show only newly added goals in this session)
-        const homeTeamName = selectedFixtureData.home_team?.name ?? "Home";
-        const awayTeamName = selectedFixtureData.away_team?.name ?? "Away";
         toast({
           title: "✅ Match Saved!",
-          // Contextual, bullet-style goal listing in description
-          description: formatGoalsSaveSuccessMessage({
-            goals: (goals || []).map((g: any) => ({
-              type: g.type,
-              playerName: g.playerName,
-              teamName: g.team === "home" ? homeTeamName : g.team === "away" ? awayTeamName : g.team,
-              time: g.time,
-              isOwnGoal: g.isOwnGoal,
-              assistPlayerName: g.assistPlayerName
-            })),
-            homeTeamName,
-            awayTeamName
-          })
+          description: formatMatchSaveSuccessMessage(
+            result,
+            selectedFixtureData.home_team?.name ?? "Home",
+            homeScore,
+            selectedFixtureData.away_team?.name ?? "Away",
+            awayScore
+          )
         });
       } else {
         setPhase("error", {
@@ -120,7 +111,13 @@ export const useMatchSaveHandler = ({
         });
         toast({
           title: "Save Completed with Issues",
-          description: "Some match data could not be saved.",
+          description: formatMatchSaveSuccessMessage(
+            result,
+            selectedFixtureData.home_team?.name ?? "Home",
+            homeScore,
+            selectedFixtureData.away_team?.name ?? "Away",
+            awayScore
+          ),
           variant: "destructive"
         });
       }
