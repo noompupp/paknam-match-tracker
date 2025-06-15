@@ -1,5 +1,5 @@
 
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Trophy, Clock, FileText, AlertTriangle } from "lucide-react";
 
 const RefereeTabsNavigation = () => {

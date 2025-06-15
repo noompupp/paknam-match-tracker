@@ -1,5 +1,5 @@
 
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Trophy, Clock, FileText, AlertTriangle, Lock } from "lucide-react";
 import { useRoleBasedAccess } from "../hooks/useRoleBasedAccess";
 
@@ -12,7 +12,6 @@ const RoleBasedRefereeTabsNavigation = ({ selectedFixtureData }: RoleBasedRefere
     canAccessTimerControls,
     canAccessScoreManagement,
     canAccessCardManagement,
-    // Coordination removed
     isLoading
   } = useRoleBasedAccess(selectedFixtureData?.id);
 
