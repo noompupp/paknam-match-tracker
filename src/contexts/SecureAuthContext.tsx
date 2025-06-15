@@ -149,7 +149,7 @@ export const SecureAuthProvider = ({ children }: SecureAuthProviderProps) => {
   /**
    * Enhanced hasRole:
    * Allows "admin" to access anything.
-   * Allows "referee_rater" to access both "referee" and "rater" protected areas.
+   * Allows "referee_rater" to access both "referee" and "rater" protected areas, and its own ("referee_rater").
    * NOTE: role comparison is case sensitive; expects lowercase.
    */
   const hasRole = async (role: string): Promise<boolean> => {
@@ -170,7 +170,8 @@ export const SecureAuthProvider = ({ children }: SecureAuthProviderProps) => {
 
       // "referee_rater" behaves as both referee and rater
       if (userRole === 'referee_rater') {
-        return role === 'referee' || role === 'rater' || role === 'referee_rater';
+        // Can access 'referee', 'rater', or 'referee_rater' protected areas
+        return ['referee', 'rater', 'referee_rater'].includes(role);
       }
 
       // Normal equality check for other roles

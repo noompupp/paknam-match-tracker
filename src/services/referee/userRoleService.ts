@@ -10,6 +10,7 @@ export interface UserRoleInfo {
   canManageWorkflow: boolean;
 }
 
+// Add "referee_rater" to role logic here
 export const userRoleService = {
   async getCurrentUserRole(): Promise<UserRoleInfo> {
     try {
@@ -67,10 +68,17 @@ export const userRoleService = {
       const userRole = roleData?.role || 'viewer';
       console.log(`✅ UserRoleService: User role: ${userRole}`);
 
-      // Determine permissions based on role
-      const canAccessRefereeTools = ['admin', 'referee'].includes(userRole);
-      const canAccessCoordination = ['admin', 'referee'].includes(userRole);
-      const canManageWorkflow = ['admin', 'referee'].includes(userRole);
+      // "admin" has all permissions.
+      // "referee_rater" has referee powers as well as rater.
+      let canAccessRefereeTools = false;
+      let canAccessCoordination = false;
+      let canManageWorkflow = false;
+
+      if (userRole === 'admin' || userRole === 'referee' || userRole === 'referee_rater') {
+        canAccessRefereeTools = true;
+        canAccessCoordination = true;
+        canManageWorkflow = true;
+      }
 
       const roleInfo: UserRoleInfo = {
         userId: userData.user.id,
@@ -113,12 +121,12 @@ export const userRoleService = {
         return true;
       }
 
-      // Create role for user
+      // Create role for user (could specify 'referee_rater' if desired)
       const { error } = await supabase
         .from('auth_roles')
         .insert({
           user_id: userId,
-          role: defaultRole
+          role: defaultRole // can explicitly pass "referee_rater"
         });
 
       if (error) {
