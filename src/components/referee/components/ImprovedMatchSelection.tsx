@@ -98,6 +98,11 @@ const ImprovedMatchSelection = ({
 
               const kickoffTime = fixture.match_time || fixture.time || '18:00';
 
+              // VS string must use translation
+              const teamsVs = t('referee.matchTeamsVs')
+                .replace('{home}', homeTeam)
+                .replace('{away}', awayTeam);
+
               return (
                 <SelectItem 
                   key={fixture.id} 
@@ -110,7 +115,7 @@ const ImprovedMatchSelection = ({
                       <div className="flex items-center gap-2">
                         <Users className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                         <span className="font-medium text-foreground">
-                          {homeTeam} {t('match.vs')} {awayTeam}
+                          {teamsVs}
                         </span>
                       </div>
                       <div className="flex items-center gap-2">

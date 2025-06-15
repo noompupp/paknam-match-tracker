@@ -47,7 +47,7 @@ const RefereeHomeActionMenu = ({
   onQuickGoal,
   onExportSummary
 }: RefereeHomeActionMenuProps) => {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const totalUnsavedChanges = unsavedChanges.goals + unsavedChanges.cards + unsavedChanges.playerTimes;
   const hasUnsavedChanges = totalUnsavedChanges > 0;
 
@@ -62,6 +62,13 @@ const RefereeHomeActionMenu = ({
     );
   }
 
+  // Render the teams VS string via translation, interpolating names
+  const homeTeam = selectedFixtureData.home_team?.name || t('referee.homeTeam');
+  const awayTeam = selectedFixtureData.away_team?.name || t('referee.awayTeam');
+  const teamsVs = t('referee.matchTeamsVs')
+    .replace('{home}', homeTeam)
+    .replace('{away}', awayTeam);
+
   return (
     <div className="space-y-4">
       {/* Match Overview */}
@@ -69,7 +76,7 @@ const RefereeHomeActionMenu = ({
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <CardTitle className="text-lg">
-              {selectedFixtureData.home_team?.name || t('referee.homeTeam')} {t('match.vs')} {selectedFixtureData.away_team?.name || t('referee.awayTeam')}
+              {teamsVs}
             </CardTitle>
             <Badge variant={isRunning ? 'destructive' : 'secondary'}>
               {isRunning ? t('referee.live') : t('referee.paused')}
@@ -139,7 +146,7 @@ const RefereeHomeActionMenu = ({
                 size="sm"
                 className="flex-1"
               >
-                {selectedFixtureData.home_team?.name || t('referee.homeTeam')} {t('event.goal')}
+                {homeTeam} {t('event.goal')}
               </Button>
               <Button
                 onClick={() => onQuickGoal('away')}
@@ -147,7 +154,7 @@ const RefereeHomeActionMenu = ({
                 size="sm"
                 className="flex-1"
               >
-                {selectedFixtureData.away_team?.name || t('referee.awayTeam')} {t('event.goal')}
+                {awayTeam} {t('event.goal')}
               </Button>
             </div>
           </div>
@@ -229,3 +236,5 @@ const RefereeHomeActionMenu = ({
 };
 
 export default RefereeHomeActionMenu;
+
+// NOTE: This file is now 232+ lines and getting long—consider splitting into smaller components for maintainability.
