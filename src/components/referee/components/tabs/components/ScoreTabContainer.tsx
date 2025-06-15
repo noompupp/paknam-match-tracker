@@ -1,3 +1,4 @@
+
 import React from "react";
 import { ComponentPlayer } from "../../../hooks/useRefereeState";
 import { useMatchStore } from "@/stores/useMatchStore";
@@ -7,7 +8,8 @@ import ScoreTabGoalsSummarySection from "./ScoreTabGoalsSummarySection";
 import ScoreTabGoalRecordingSection from "./ScoreTabGoalRecordingSection";
 import ScoreTabUnsavedChangesSection from "./ScoreTabUnsavedChangesSection";
 import ScoreTabMatchControlsSection from "./ScoreTabMatchControlsSection";
-import { useToast } from "@/hooks/use-toast";
+
+// removed homeScore/awayScore props (use store)
 
 interface ScoreTabContainerProps {
   selectedFixtureData: any;
@@ -87,20 +89,6 @@ const ScoreTabContainer = ({
     unsavedItemsCount
   });
 
-  const { toast } = useToast();
-
-  // Show yellow unsaved banner/toast logic
-  React.useEffect(() => {
-    if (hasUnsavedChanges && (unsavedItemsCount.goals > 0 || unsavedItemsCount.cards > 0 || unsavedItemsCount.playerTimes > 0)) {
-      toast({
-        title: "Unsaved Changes",
-        description: "New goals, cards, or time entries need to be saved.",
-        variant: "destructive"
-      });
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hasUnsavedChanges, unsavedItemsCount.goals, unsavedItemsCount.cards, unsavedItemsCount.playerTimes]);
-
   const handleRecordGoal = () => {
     console.log('🎯 ScoreTabContainer: Opening goal entry wizard');
     onShowWizard();
@@ -110,11 +98,6 @@ const ScoreTabContainer = ({
     console.log('💾 ScoreTabContainer: Save match triggered');
     await batchSave();
     onSaveMatch();
-    toast({
-      title: "Score Data Saved",
-      description: "All unsaved changes have been committed to the database. Scoreboard is up to date.",
-      variant: "default"
-    });
   };
 
   const handleResetMatch = () => {
@@ -143,12 +126,12 @@ const ScoreTabContainer = ({
       <ScoreTabUnsavedChangesSection
         hasUnsavedChanges={hasUnsavedChanges}
         unsavedItemsCount={unsavedItemsCount}
-        onSave={handleSaveMatch}
+        onSave={async () => { await batchSave(); onSaveMatch(); }}
       />
       <ScoreTabMatchControlsSection
         isRunning={isRunning}
         onToggleTimer={onToggleTimer}
-        onSaveMatch={handleSaveMatch}
+        onSaveMatch={async () => { await batchSave(); onSaveMatch(); }}
         onResetMatch={() => {
           if (window.confirm("⚠️ RESET MATCH DATA\n\nThis will reset all local match data and the database.\n\nThis action CANNOT be undone!\n\nAre you sure you want to proceed?")) {
             resetState();

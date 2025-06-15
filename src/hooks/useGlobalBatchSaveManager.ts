@@ -73,14 +73,10 @@ export const useGlobalBatchSaveManager = ({
 
     if (!homeTeamData || !awayTeamData) {
       console.error('❌ GlobalBatchSaveManager: Missing team data');
-      toast({
-        title: "Save Failed",
-        description: "Missing essential team data. Cannot save.",
-        variant: "destructive"
-      });
       return { success: false, message: 'Missing team data' };
     }
 
+    // NEW: Before preparing payload, first flush all batched (queued) events to local store
     if (flushBatchedEvents) {
       await flushBatchedEvents();
     }
@@ -88,16 +84,18 @@ export const useGlobalBatchSaveManager = ({
     isSaving.current = true;
 
     try {
-      console.log('📤 GlobalBatchSaveManager: Starting batch save...', {
+      console.log('📤 GlobalBatchSaveManager: Starting batch save with own goal support...', {
         fixtureId,
         homeScore,
         awayScore,
-        unsavedGoals: goals.filter(g => !g.synced).length
+        unsavedGoals: goals.filter(g => !g.synced).length,
+        unsavedCards: cards.filter(c => !c.synced).length,
+        unsavedPlayerTimes: playerTimes.filter(pt => !pt.synced).length
       });
 
       toast({
         title: "Saving Match Data...",
-        description: "Pushing local changes to the database...",
+        description: "Pushing local changes to the database",
       });
 
       const matchData = {
@@ -111,7 +109,7 @@ export const useGlobalBatchSaveManager = ({
         awayTeam: awayTeamData
       };
 
-      console.log('[MATCH SAVE PAYLOAD]', JSON.stringify(matchData, null, 2));
+      console.log('📊 GlobalBatchSaveManager: Prepared match data with own goal flags:', matchData);
 
       const result = await unifiedRefereeService.saveCompleteMatchData(matchData);
 
@@ -121,35 +119,34 @@ export const useGlobalBatchSaveManager = ({
         toast({
           title: "✅ Match Data Saved!",
           description: result.message,
-          variant: "default"
         });
 
-        console.log('✅ GlobalBatchSaveManager: Batch save completed successfully!');
+        console.log('✅ GlobalBatchSaveManager: Batch save completed successfully with own goal support');
         return { success: true, message: result.message };
       } else {
         toast({
           title: "Save Completed with Issues",
-          description: `${result.message}. Errors: ${(result.errors||[]).join(', ')}`,
+          description: `${result.message}. Errors: ${result.errors.join(', ')}`,
           variant: "destructive"
         });
 
-        console.warn('[MATCH SAVE FAILURE]', result);
+        console.warn('⚠️ GlobalBatchSaveManager: Batch save completed with errors:', result.errors);
         return { success: false, message: result.message, errors: result.errors };
       }
 
     } catch (error) {
-      console.error('[BATCH SAVE ERROR]', error);
+      console.error('❌ GlobalBatchSaveManager: Batch save failed:', error);
       
       toast({
         title: "Save Failed",
-        description: (error && typeof error === "object" && "message" in error) ? (error as any).message : "Failed to save match data. Please try again.",
+        description: "Failed to save match data. Please try again.",
         variant: "destructive"
       });
 
-      return {
-        success: false,
-        message: 'Failed to save match data',
-        error: error instanceof Error ? error.message : 'Unknown error'
+      return { 
+        success: false, 
+        message: 'Failed to save match data', 
+        error: error instanceof Error ? error.message : 'Unknown error' 
       };
     } finally {
       isSaving.current = false;

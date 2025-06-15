@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useMatchStore } from "@/stores/useMatchStore";
@@ -10,13 +9,6 @@ import GoalTypeStep from "./GoalTypeStep";
 import AssistSelectionStep from "./AssistSelectionStep";
 import ConfirmationStep from "./ConfirmationStep";
 import { useTranslation } from "@/hooks/useTranslation";
-import { useToast } from "@/hooks/use-toast";
-import GoalWizardSyncStatus from "./GoalWizardSyncStatus";
-import { useGlobalBatchSaveManager } from "@/hooks/useGlobalBatchSaveManager";
-import PulseDotBadge from "@/components/ui/PulseDotBadge";
-import GoalWizardStepContainer from "../../goalWizard/GoalWizardStepContainer";
-import GoalWizardNavigation from "../../goalWizard/GoalWizardNavigation";
-import { AlertTriangle } from "lucide-react";
 
 interface GoalWizardProps {
   isOpen: boolean;
@@ -45,32 +37,7 @@ const GoalWizard = ({
     assistPlayer: null
   });
 
-  const { addGoal, addAssist, goals } = useMatchStore();
-  const { toast } = useToast();
-  type SyncStatus = "unsaved" | "saving" | "synced" | "error";
-  const [syncStatus, setSyncStatus] = useState<SyncStatus>("unsaved");
-  const [syncMessage, setSyncMessage] = useState<string | undefined>(undefined);
-  const debounceRef = React.useRef<boolean>(false);
-
-  // Robust team mapping
-  const homeTeamId =
-    selectedFixtureData?.home_team?.__id__ ??
-    selectedFixtureData?.home_team_id ??
-    selectedFixtureData?.home_team_id?.toString?.() ??
-    "";
-  const awayTeamId =
-    selectedFixtureData?.away_team?.__id__ ??
-    selectedFixtureData?.away_team_id ??
-    selectedFixtureData?.away_team_id?.toString?.() ??
-    "";
-  const homeTeamName = selectedFixtureData?.home_team?.name ?? 'Home Team';
-  const awayTeamName = selectedFixtureData?.away_team?.name ?? 'Away Team';
-
-  // Setup batchSave manager for unsaved warning
-  const batchSaveManager = useGlobalBatchSaveManager({
-    homeTeamData: { id: homeTeamId, name: homeTeamName },
-    awayTeamData: { id: awayTeamId, name: awayTeamName }
-  });
+  const { addGoal, addAssist } = useMatchStore();
 
   const resetWizard = () => {
     setCurrentStep('team');
@@ -81,8 +48,6 @@ const GoalWizard = ({
       needsAssist: false,
       assistPlayer: null
     });
-    setSyncMessage(undefined);
-    setSyncStatus("unsaved");
   };
 
   const handleClose = () => {
@@ -91,6 +56,7 @@ const GoalWizard = ({
   };
 
   const handleDataChange = (data: Partial<GoalWizardData>) => {
+    console.log('🎯 GoalWizard: Data change with own goal support:', data);
     setWizardData(prev => ({ ...prev, ...data }));
   };
 
@@ -104,6 +70,7 @@ const GoalWizard = ({
         break;
       case 'goal-type':
         if (wizardData.isOwnGoal) {
+          // Skip assist selection for own goals
           setCurrentStep('confirm');
         } else {
           setCurrentStep('assist');
@@ -136,170 +103,109 @@ const GoalWizard = ({
     }
   };
 
-  function getStepTitle() {
-    switch (currentStep) {
-      case "team":
-        return t("Which team scored?") || "Which team scored?";
-      case "player":
-        return t("Select Goal Scorer") || "Select Goal Scorer";
-      case "goal-type":
-        return t("Confirm Goal Type") || "Confirm Goal Type";
-      case "assist":
-        return t("Was there an assist?") || "Was there an assist?";
-      case "confirm":
-        return t("Confirm Goal Assignment") || "Confirm Goal Assignment";
-      default:
-        return "";
-    }
-  }
-
-  // --- Enhanced handleConfirm: robust team mapping + strong unsaved feedback ---
-  const handleConfirm = async () => {
-    if (debounceRef.current) return;
-    debounceRef.current = true;
-    setTimeout(() => { debounceRef.current = false; }, 1300);
-
+  const handleConfirm = () => {
     if (!wizardData.selectedPlayer || !wizardData.selectedTeam) {
-      toast({
-        title: "Missing Data",
-        description: "Please select both a player and team before confirming the goal.",
-        variant: "destructive"
-      });
-      setSyncStatus("error");
-      setSyncMessage("Missing required info.");
+      console.error('❌ GoalWizard: Missing required data for goal assignment');
       return;
     }
 
-    setSyncStatus("saving");
-    setSyncMessage("Registering local goal...");
+    const homeTeamId = selectedFixtureData?.home_team?.__id__ || selectedFixtureData?.home_team_id;
+    const awayTeamId = selectedFixtureData?.away_team?.__id__ || selectedFixtureData?.away_team_id;
+    const homeTeamName = selectedFixtureData?.home_team?.name || 'Home Team';
+    const awayTeamName = selectedFixtureData?.away_team?.name || 'Away Team';
 
-    const scoringTeamId =
-      wizardData.selectedTeam === 'home'
-        ? homeTeamId
-        : awayTeamId;
+    // Determine the correct team IDs based on which team benefits from the goal
+    const beneficiaryTeamId = wizardData.selectedTeam === 'home' ? homeTeamId : awayTeamId;
+    const beneficiaryTeamName = wizardData.selectedTeam === 'home' ? homeTeamName : awayTeamName;
 
-    // Ensure no duplicate
-    const alreadyExists = goals.find(g =>
-      g.playerId === wizardData.selectedPlayer.id &&
-      g.time === matchTime &&
-      g.teamId === scoringTeamId &&
-      g.type === 'goal' &&
-      Boolean(g.isOwnGoal) === Boolean(wizardData.isOwnGoal)
-    );
-
-    if (alreadyExists) {
-      setSyncStatus("error");
-      setSyncMessage("Duplicate goal entry.");
-      toast({
-        title: "Duplicate Goal",
-        description: "A goal for this player, time, and team already exists.",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    // Add to local store
-    const goalData = addGoal({
-      playerId: wizardData.selectedPlayer.id,
-      playerName: wizardData.selectedPlayer.name,
-      teamId: scoringTeamId,
-      teamName: wizardData.selectedTeam === 'home' ? homeTeamName : awayTeamName,
-      type: 'goal' as const,
-      time: matchTime,
-      isOwnGoal: wizardData.isOwnGoal
+    console.log('🎯 GoalWizard: Confirming goal with comprehensive own goal support:', {
+      selectedPlayer: wizardData.selectedPlayer.name,
+      selectedPlayerTeam: wizardData.selectedPlayer.team,
+      selectedTeam: wizardData.selectedTeam,
+      beneficiaryTeam: beneficiaryTeamName,
+      isOwnGoal: wizardData.isOwnGoal,
+      matchTime,
+      assistPlayer: wizardData.assistPlayer?.name
     });
 
-    if (!goalData) {
-      setSyncStatus("error");
-      setSyncMessage("Duplicate detected (prevented).");
-      toast({
-        title: "Duplicate Goal",
-        description: "A goal for this player, time, and team already exists.",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    // Assists (if present, not for own goal)
-    if (!wizardData.isOwnGoal && wizardData.needsAssist && wizardData.assistPlayer) {
-      addAssist({
-        playerId: wizardData.assistPlayer.id,
-        playerName: wizardData.assistPlayer.name,
-        teamId: wizardData.assistPlayer.team === homeTeamName ? homeTeamId : awayTeamId,
-        teamName: wizardData.assistPlayer.team,
-        type: 'assist' as const,
-        time: matchTime,
-        isOwnGoal: false
-      });
-    }
-
-    setSyncStatus("unsaved");
-    setSyncMessage("Goal added locally. Ready to save.");
-
-    // STRONGER toast for unsaved
-    toast({
-      title: "Goal Added (Local)",
-      description: (
-        <>
-          {wizardData.selectedPlayer.name} ({goalData.teamName}) at {matchTime}s{wizardData.isOwnGoal ? ' (Own Goal)' : ''}.
-          <br />
-          <span className="font-semibold text-red-700">
-            This change is <u>not saved</u> to the database yet!
-          </span>
-        </>
-      ),
-      variant: "destructive"
-    });
-
-    setCurrentStep("confirm");
-  };
-
-  // ---- Save Now to DB (batchSave) ----
-  const handleSaveNow = async () => {
-    setSyncStatus("saving");
-    setSyncMessage("Saving to database...");
     try {
-      const result = await batchSaveManager.batchSave();
-      if (result.success) {
-        setSyncStatus("synced");
-        setSyncMessage(undefined);
-        toast({
-          title: "Changes Saved!",
-          description: "Goal(s) and all changes saved to the database.",
-          variant: "default"
-        });
-        setTimeout(() => {
-          resetWizard();
-          onClose();
-        }, 900);
-      } else {
-        setSyncStatus("error");
-        setSyncMessage(
-          result.message || "Failed to save. Try again."
-        );
-        toast({
-          title: "Save Failed",
-          description: (result.message || "Failed to save changes."),
-          variant: "destructive"
-        });
-      }
-    } catch (error: any) {
-      setSyncStatus("error");
-      setSyncMessage(error?.message ?? "Save error");
-      toast({
-        title: "Save Failed",
-        description: error?.message ?? "Failed to save changes.",
-        variant: "destructive"
+      // Add the goal with proper own goal flag
+      const goalData = addGoal({
+        playerId: wizardData.selectedPlayer.id,
+        playerName: wizardData.selectedPlayer.name,
+        teamId: wizardData.selectedPlayer.team === homeTeamName ? homeTeamId : awayTeamId, // Player's actual team
+        teamName: wizardData.selectedPlayer.team, // Player's actual team name
+        type: 'goal' as const,
+        time: matchTime,
+        isOwnGoal: wizardData.isOwnGoal // CRITICAL: Pass the own goal flag
       });
+
+      console.log('✅ GoalWizard: Goal added with own goal support:', goalData);
+
+      // Add assist if applicable (not for own goals)
+      if (!wizardData.isOwnGoal && wizardData.needsAssist && wizardData.assistPlayer) {
+        const assistData = addAssist({
+          playerId: wizardData.assistPlayer.id,
+          playerName: wizardData.assistPlayer.name,
+          teamId: wizardData.assistPlayer.team === homeTeamName ? homeTeamId : awayTeamId,
+          teamName: wizardData.assistPlayer.team,
+          type: 'assist' as const,
+          time: matchTime,
+          isOwnGoal: false // Assists cannot be own goals
+        });
+
+        console.log('✅ GoalWizard: Assist added:', assistData);
+      }
+
+      handleClose();
+    } catch (error) {
+      console.error('❌ GoalWizard: Error during goal assignment:', error);
     }
   };
 
-  const isConfirmStep = currentStep === "confirm";
-  const hasUnsaved = batchSaveManager.hasUnsavedChanges && (
-    batchSaveManager.unsavedItemsCount.goals > 0 ||
-    batchSaveManager.unsavedItemsCount.cards > 0 ||
-    batchSaveManager.unsavedItemsCount.playerTimes > 0
-  );
+  const renderCurrentStep = () => {
+    const commonProps = {
+      selectedFixtureData,
+      homeTeamPlayers,
+      awayTeamPlayers,
+      wizardData,
+      onDataChange: handleDataChange,
+      onNext: handleNext
+    };
+
+    switch (currentStep) {
+      case 'team':
+        return <TeamSelectionStep {...commonProps} />;
+      case 'player':
+        return <PlayerSelectionStep {...commonProps} />;
+      case 'goal-type':
+        return <GoalTypeStep {...commonProps} />;
+      case 'assist':
+        return <AssistSelectionStep {...commonProps} />;
+      case 'confirm':
+        return (
+          <ConfirmationStep
+            selectedFixtureData={selectedFixtureData}
+            wizardData={wizardData}
+            onConfirm={handleConfirm}
+            onBack={handleBack}
+          />
+        );
+      default:
+        return null;
+    }
+  };
+
+  const getStepTitle = () => {
+    switch (currentStep) {
+      case 'team': return t('wizard.selectScoringTeam');
+      case 'player': return t('wizard.selectGoalScorer');
+      case 'goal-type': return t('wizard.goalType');
+      case 'assist': return t('wizard.addAssist');
+      case 'confirm': return t('wizard.confirmGoal');
+      default: return t('referee.recordGoalTitle');
+    }
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
@@ -309,59 +215,10 @@ const GoalWizard = ({
             {getStepTitle()}
           </DialogTitle>
         </DialogHeader>
+        
         <div className="mt-4">
-          <GoalWizardStepContainer
-            currentStep={currentStep}
-            selectedFixtureData={selectedFixtureData}
-            homeTeamPlayers={homeTeamPlayers}
-            awayTeamPlayers={awayTeamPlayers}
-            wizardData={wizardData}
-            onDataChange={handleDataChange}
-            onNext={handleNext}
-            onBack={handleBack}
-            onConfirmGoal={handleConfirm}
-            matchTime={matchTime}
-          />
+          {renderCurrentStep()}
         </div>
-
-        {/* Enhanced warning after local score update */}
-        {hasUnsaved && (
-          <div className="flex items-center gap-2 mt-2 px-2 py-2 text-xs text-red-800 bg-red-50 border border-red-300 rounded-lg">
-            <AlertTriangle className="h-4 w-4 text-red-600" />
-            <span>
-              <strong>Unsaved changes:</strong> You have local changes that haven&#39;t been saved to the database.
-              <br />
-              <b>Tap "Save &amp; Sync Now" below to finalize!</b>
-              <PulseDotBadge className="ml-2" />
-            </span>
-          </div>
-        )}
-
-        <GoalWizardNavigation
-          isConfirmStep={isConfirmStep}
-          syncStatus={syncStatus}
-          syncMessage={syncMessage}
-          hasUnsaved={hasUnsaved}
-          canSave={batchSaveManager.hasUnsavedChanges}
-          onConfirm={handleConfirm}
-          onSaveNow={handleSaveNow}
-          disableSave={
-            syncStatus === "saving" ||
-            syncStatus === "synced" ||
-            !batchSaveManager.hasUnsavedChanges
-          }
-          isSaving={syncStatus === "saving"}
-          isSynced={syncStatus === "synced"}
-        />
-
-        {/* Visual status & database indicator */}
-        <GoalWizardSyncStatus status={syncStatus} message={syncMessage} />
-
-        {batchSaveManager.hasUnsavedChanges && (
-          <div className="text-xs text-gray-500 mt-1">
-            Unsaved: {batchSaveManager.unsavedItemsCount.goals} goals, {batchSaveManager.unsavedItemsCount.cards} cards, {batchSaveManager.unsavedItemsCount.playerTimes} pl. times
-          </div>
-        )}
       </DialogContent>
     </Dialog>
   );

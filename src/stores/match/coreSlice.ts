@@ -1,3 +1,4 @@
+
 import { StateCreator } from 'zustand';
 import { MatchState } from './types';
 import { MatchActions } from './actions';
@@ -15,7 +16,6 @@ export interface CoreSlice {
   loadPlayerTimesFromDatabase: MatchActions['loadPlayerTimesFromDatabase'];
   syncGoalsToDatabase: MatchActions['syncGoalsToDatabase'];
   syncCardsToDatabase: MatchActions['syncCardsToDatabase'];
-  flushBatchedEvents: () => Promise<void>;
 }
 
 export const createCoreSlice: StateCreator<
@@ -171,10 +171,5 @@ export const createCoreSlice: StateCreator<
       console.error('❌ Error syncing cards to database:', error);
       throw error;
     }
-  },
-
-  flushBatchedEvents: async () => {
-    // No batched events to flush by default
-    return;
   }
 });
