@@ -20,6 +20,23 @@ export const createEnhancedGoalSlice: StateCreator<
   EnhancedGoalSlice
 > = (set, get) => ({
   addGoal: (goalData) => {
+    const state = get();
+    const { homeTeamName, awayTeamName, homeScore, awayScore } = state;
+
+    // Determine if this is an actual goal (not assist)
+    const isGoal = goalData.type === "goal";
+    let newHomeScore = homeScore;
+    let newAwayScore = awayScore;
+
+    // Only increment score for actual goals (not assists), using teamName for match
+    if (isGoal) {
+      if (goalData.teamName === homeTeamName) {
+        newHomeScore = homeScore + 1;
+      } else if (goalData.teamName === awayTeamName) {
+        newAwayScore = awayScore + 1;
+      }
+    }
+
     const newGoal = {
       ...goalData,
       id: generateId(),
@@ -30,21 +47,46 @@ export const createEnhancedGoalSlice: StateCreator<
 
     set((state) => ({
       goals: [...state.goals, newGoal],
+      // Update scores if this is an actual goal
+      homeScore: newHomeScore,
+      awayScore: newAwayScore,
       hasUnsavedChanges: true,
       lastUpdated: Date.now()
     }));
 
-    console.log('⚽ Enhanced Goal Store: Goal added with standardized own goal support:', newGoal);
+    console.log('⚽ Enhanced Goal Store: Goal added (w/ score update) with standardized own goal support:', {
+      newGoal,
+      newHomeScore,
+      newAwayScore
+    });
     return newGoal;
   },
 
   removeGoal: (goalId: string) => {
-    set((state) => ({
-      goals: state.goals.filter(g => g.id !== goalId),
-      hasUnsavedChanges: true,
-      lastUpdated: Date.now()
-    }));
-    console.log('🗑️ Enhanced Goal Store: Goal removed:', goalId);
+    set((state) => {
+      const goalToRemove = state.goals.find(g => g.id === goalId);
+      if (!goalToRemove) return state;
+
+      // Only decrement score if this record is a goal (not assist), and is for the matching team name
+      let newHomeScore = state.homeScore;
+      let newAwayScore = state.awayScore;
+      if (goalToRemove.type === "goal") {
+        if (goalToRemove.teamName === state.homeTeamName) {
+          newHomeScore = Math.max(0, state.homeScore - 1);
+        } else if (goalToRemove.teamName === state.awayTeamName) {
+          newAwayScore = Math.max(0, state.awayScore - 1);
+        }
+      }
+
+      return {
+        goals: state.goals.filter(g => g.id !== goalId),
+        homeScore: newHomeScore,
+        awayScore: newAwayScore,
+        hasUnsavedChanges: true,
+        lastUpdated: Date.now()
+      };
+    });
+    console.log('🗑️ Enhanced Goal Store: Goal removed (w/ score recalculation):', goalId);
   },
 
   updateGoal: (goalId: string, updates: Partial<any>) => {
