@@ -57,33 +57,16 @@ export const useRefereeScoreState = ({ selectedFixtureData }: RefereeScoreStateP
     }
   }, [selectedFixtureData?.id, isInitialLoad]);
 
+  // FIXED: just pass team ("home"/"away") instead of full object
   const addGoal = async (team: 'home' | 'away') => {
     console.log('📊 useRefereeScoreState: Manual goal addition triggered for:', team);
-    addGoalToStore({
-      teamName: team === 'home' ? 'Home Team' : 'Away Team',
-      type: 'goal',
-      playerName: 'Quick Goal',
-      playerId: null,
-      teamId: null,
-      time: 0,
-      isOwnGoal: false
-    });
-    // Refresh scores after goal is added to database
+    addGoalToStore(team);
     await refreshScores();
   };
 
   const removeGoal = async (team: 'home' | 'away') => {
     console.log('📊 useRefereeScoreState: Manual goal removal triggered for:', team);
-    removeGoalFromStore({
-      teamName: team === 'home' ? 'Home Team' : 'Away Team',
-      type: 'goal',
-      playerName: 'Quick Goal',
-      playerId: null,
-      teamId: null,
-      time: 0,
-      isOwnGoal: false
-    });
-    // Refresh scores after goal is removed from database
+    removeGoalFromStore(team);
     await refreshScores();
   };
 

@@ -69,18 +69,17 @@ const GoalsTabContainer = (props: GoalsTabContainerProps) => {
   });
 
   // Use props for scores and calculate unassigned goals from props
-  const { homeScore, awayScore } = props;
+  // const { homeScore, awayScore } = props; // REMOVE
   const unassignedGoalsCount = props.goals.filter(g => g.playerName === 'Quick Goal').length;
 
-  console.log('📊 GoalsTabContainer: Using props scores:', { homeScore, awayScore, unassignedGoalsCount });
+  console.log('📊 GoalsTabContainer: Using props scores:', { /*homeScore, awayScore,*/ unassignedGoalsCount });
 
   return (
     <div className="space-y-6">
       <GoalsTabScoreDisplay
         homeTeamName={homeTeamName}
         awayTeamName={awayTeamName}
-        homeScore={homeScore}
-        awayScore={awayScore}
+        // homeScore, awayScore props removed
         matchTime={props.matchTime}
         formatTime={props.formatTime}
       />

@@ -116,6 +116,6 @@ export const useRefereeStateOrchestrator = () => {
     addPlayer: orchestrator.matchState.addPlayer,
     forceRefresh: orchestrator.scoreState.forceRefresh, // Expose immediate refresh for components
     resetState: enhancedHandlers.resetState, // Expose reset state for components
-    handleManualRefresh // Add the manual refresh handler
+    handleManualRefresh: orchestrator.handleManualRefresh // <-- Fixed: get from orchestrator
   };
 };
