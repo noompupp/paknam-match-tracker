@@ -1,8 +1,7 @@
 
 import { Save, AlertTriangle, CheckCircle } from "lucide-react";
 import RefereeCard from "../../../shared/RefereeCard";
-import RefereeButton from "../../../shared/RefereeButton";
-import SaveGoalsButton from "../../shared/SaveGoalsButton";
+import SaveGoalsButton from "../../shared/SaveGoalsButton"; // absolute import within tabs -> shared
 import { cn } from "@/lib/utils";
 
 interface UnsavedChangesIndicatorProps {
@@ -18,6 +17,7 @@ interface UnsavedChangesIndicatorProps {
   isGoalsSaving?: boolean;
 }
 
+// Only rendering for UnsavedChangesIndicator context. 
 const UnsavedChangesIndicator = ({
   hasUnsavedChanges,
   unsavedItemsCount,
@@ -31,18 +31,19 @@ const UnsavedChangesIndicator = ({
     unsavedItemsCount.cards +
     unsavedItemsCount.playerTimes;
 
-  // Only unsaved goals and nothing else
-  const goalsOnly =
+  // There are unsaved goals, but *no* unsaved cards/times
+  const goalsOnlyUnsaved =
     unsavedItemsCount.goals > 0 &&
     unsavedItemsCount.cards === 0 &&
     unsavedItemsCount.playerTimes === 0;
 
-  // Other unsaved items (cards or playerTimes)
-  const mixedUnsaved =
+  // If there are any unsaved cards or playerTimes (with or without goals)
+  const anyNonGoalUnsaved =
     unsavedItemsCount.cards > 0 ||
     unsavedItemsCount.playerTimes > 0;
 
-  if (!hasUnsavedChanges) {
+  // If there are NO unsaved changes, message only!
+  if (!hasUnsavedChanges || totalUnsaved === 0) {
     return (
       <RefereeCard
         variant="compact"
@@ -58,13 +59,46 @@ const UnsavedChangesIndicator = ({
     );
   }
 
-  return (
-    <RefereeCard
-      variant="compact"
-      className="bg-orange-50 border-orange-200 dark:bg-orange-900/10 dark:border-orange-800"
-    >
-      <div className="flex items-center justify-between p-3">
-        <div className="flex items-center gap-3">
+  // If ONLY goals are unsaved, show Save Goals button
+  if (goalsOnlyUnsaved && onSaveGoals) {
+    return (
+      <RefereeCard
+        variant="compact"
+        className="bg-orange-50 border-orange-200 dark:bg-orange-900/10 dark:border-orange-800"
+      >
+        <div className="flex items-center justify-between p-3">
+          <div className="flex items-center gap-3">
+            <AlertTriangle className="h-5 w-5 text-orange-600" />
+            <div>
+              <div className="text-sm font-medium text-orange-800 dark:text-orange-400">
+                {unsavedItemsCount.goals} unsaved goal
+                {unsavedItemsCount.goals !== 1 ? "s" : ""}
+              </div>
+              <div className="text-xs text-orange-700 dark:text-orange-500">
+                {unsavedItemsCount.goals > 0 && `${unsavedItemsCount.goals} goals`}
+              </div>
+            </div>
+          </div>
+          <SaveGoalsButton
+            onSaveGoals={onSaveGoals}
+            isLoading={isGoalsSaving}
+            size="sm"
+          >
+            Save Goals
+          </SaveGoalsButton>
+        </div>
+      </RefereeCard>
+    );
+  }
+
+  // If there are any cards or playerTimes unsaved, just show "Changes Pending" (no Finish/Exit or Save button here)
+  if (anyNonGoalUnsaved) {
+    return (
+      <RefereeCard
+        variant="compact"
+        className="bg-orange-50 border-orange-200 dark:bg-orange-900/10 dark:border-orange-800"
+      >
+        <div className="flex items-center gap-3 p-3">
           <AlertTriangle className="h-5 w-5 text-orange-600" />
           <div>
             <div className="text-sm font-medium text-orange-800 dark:text-orange-400">
@@ -73,35 +107,17 @@ const UnsavedChangesIndicator = ({
             <div className="text-xs text-orange-700 dark:text-orange-500">
               {unsavedItemsCount.goals > 0 && `${unsavedItemsCount.goals} goals `}
               {unsavedItemsCount.cards > 0 && `${unsavedItemsCount.cards} cards `}
-              {unsavedItemsCount.playerTimes > 0 &&
-                `${unsavedItemsCount.playerTimes} times`}
+              {unsavedItemsCount.playerTimes > 0 && `${unsavedItemsCount.playerTimes} times`}
             </div>
           </div>
+          {/* No buttons shown for mixed unsaved, as instructed */}
         </div>
-        {goalsOnly && onSaveGoals ? (
-          <SaveGoalsButton
-            onSaveGoals={onSaveGoals}
-            isLoading={isGoalsSaving}
-            size="sm"
-          >
-            Save Goals
-          </SaveGoalsButton>
-        ) : (
-          <RefereeButton
-            onClick={onSave}
-            loading={isSaving}
-            variant="default"
-            size="sm"
-            icon={<Save className="h-4 w-4" />}
-          >
-            {mixedUnsaved
-              ? "Save All Changes"
-              : "Finish & Exit"}
-          </RefereeButton>
-        )}
-      </div>
-    </RefereeCard>
-  );
+      </RefereeCard>
+    );
+  }
+
+  // Fallback: never show Finish/Exit or Save button here
+  return null;
 };
 
 export default UnsavedChangesIndicator;
