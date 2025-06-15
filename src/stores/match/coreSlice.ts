@@ -1,3 +1,4 @@
+
 import { StateCreator } from 'zustand';
 import { MatchState } from './types';
 import { MatchActions } from './actions';
@@ -135,18 +136,18 @@ export const createCoreSlice: StateCreator<
     try {
       console.log('💾 Syncing', unsyncedGoals.length, 'goals to database');
       for (const localGoal of unsyncedGoals) {
-        // Compose event payload for matchEventsApi.create (omit 'id', 'created_at')
+        // Compose event payload for matchEventsApi.create
         const payload = {
           fixture_id: fixtureId,
-          player_name: localGoal.playerName || localGoal.player_name || 'Unknown',
+          player_name: localGoal.playerName || 'Unknown',
           team_id: localGoal.teamId || localGoal.team || '',
           event_time: localGoal.time ?? 0,
-          event_type: 'goal',
+          event_type: 'goal' as const,
           is_own_goal: !!localGoal.isOwnGoal,
           description: localGoal.description || '',
-          card_type: null, // not used for goals
-          affected_team_id: null, // server will assign
-          scoring_team_id: null, // server will assign
+          card_type: null, // Not used for goals
+          affected_team_id: null,
+          scoring_team_id: null,
         };
         await matchEventsApi.create(payload);
       }
@@ -174,14 +175,20 @@ export const createCoreSlice: StateCreator<
     try {
       console.log('💾 Syncing', unsyncedCards.length, 'cards to database');
       for (const localCard of unsyncedCards) {
+        // Map local type to database accepted event_type
+        let event_type: "yellow_card" | "red_card" = "yellow_card";
+        if (localCard.type === "yellow") event_type = "yellow_card";
+        else if (localCard.type === "red") event_type = "red_card";
+
+        // Compose event payload
         const payload = {
           fixture_id: fixtureId,
           player_name: localCard.playerName || 'Unknown',
           team_id: localCard.teamId || '',
           event_time: localCard.time ?? 0,
-          event_type: localCard.type, // should be 'yellow_card' or 'red_card'
-          card_type: localCard.cardType || localCard.type,
-          description: localCard.description || '',
+          event_type,
+          card_type: event_type === "yellow_card" ? "yellow" : "red",
+          description: '', // No description property on MatchCard
           is_own_goal: false,
           affected_team_id: null,
           scoring_team_id: null,
