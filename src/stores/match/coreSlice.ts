@@ -1,3 +1,4 @@
+
 import { StateCreator } from 'zustand';
 import { MatchState } from './types';
 import { MatchActions } from './actions';
@@ -21,19 +22,25 @@ export interface CoreSlice {
 export const createCoreSlice = (set: any, get: any, api: any): CoreSlice => ({
   setupMatch: ({ fixtureId, homeTeamName, awayTeamName, homeTeamId, awayTeamId }) => {
     set((state: any) => {
-      // Always immediately set both home/away names on setup
+      // Merge and always update essential match meta (team names/IDs)
       const next = {
+        ...state,
         fixtureId,
-        homeTeamName: homeTeamName || "",
-        awayTeamName: awayTeamName || "",
-        homeTeamId: homeTeamId || state.homeTeamId || "",
-        awayTeamId: awayTeamId || state.awayTeamId || "",
+        homeTeamName: (homeTeamName ?? "").trim(),
+        awayTeamName: (awayTeamName ?? "").trim(),
+        homeTeamId: homeTeamId ?? state.homeTeamId ?? "",
+        awayTeamId: awayTeamId ?? state.awayTeamId ?? "",
       };
-      // Debug: log new state snapshot for verification
-      console.log("[MATCH SETUP] State updated via setupMatch:", next);
-      // Defensive: prevent accidental undefined propagation
+      // Debug log: show before and after
+      console.log("[MATCH SETUP] State before update:", state);
+      console.log("[MATCH SETUP] State after update:", next);
       return next;
     });
+    // Defensive: recalculate scores right after setting team names
+    if (typeof get().recalculateScores === "function") {
+      get().recalculateScores(); // This will re-tally live scores with current team names, if implemented
+      console.log("[MATCH SETUP] Forced immediate score recalc after team names set");
+    }
   },
   setFixtureId: (fixtureId: number) => {
     set({ fixtureId });
@@ -94,3 +101,4 @@ export const createCoreSlice = (set: any, get: any, api: any): CoreSlice => ({
     };
   }
 });
+

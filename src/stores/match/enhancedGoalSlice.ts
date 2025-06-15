@@ -11,6 +11,7 @@ export interface EnhancedGoalSlice {
   updateGoal: (goalId: string, updates: Partial<any>) => void;
   getUnsavedGoalsCount: MatchActions['getUnsavedGoalsCount'];
   syncGoalsToDatabase: (fixtureId: number) => Promise<void>;
+  recalculateScores: () => void; // new: recalc scores from existing goals using team names
 }
 
 export const createEnhancedGoalSlice: StateCreator<
@@ -201,5 +202,28 @@ export const createEnhancedGoalSlice: StateCreator<
       console.error('❌ Error syncing goals to database:', error);
       throw error;
     }
+  },
+
+  // New: Defensive method to recalculate scores from current goals and team names
+  recalculateScores: () => {
+    const { goals, homeTeamName, awayTeamName } = get();
+    let newHomeScore = 0;
+    let newAwayScore = 0;
+    for (const goal of goals) {
+      if (goal.type === "goal") {
+        if (goal.teamName?.trim() === homeTeamName?.trim()) {
+          newHomeScore++;
+        } else if (goal.teamName?.trim() === awayTeamName?.trim()) {
+          newAwayScore++;
+        }
+      }
+    }
+    set((state) => ({
+      ...state,
+      homeScore: newHomeScore,
+      awayScore: newAwayScore
+    }));
+    // Debug
+    console.log("[recalculateScores] Defensive score tally:", { homeTeamName, awayTeamName, newHomeScore, newAwayScore, goalCount: goals.length });
   }
 });
