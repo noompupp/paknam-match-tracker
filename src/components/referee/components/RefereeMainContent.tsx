@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Tabs } from "@/components/ui/tabs";
 import RoleBasedRefereeTabsNavigation from "./RoleBasedRefereeTabsNavigation";
@@ -76,7 +77,7 @@ const RefereeMainContent = (props: any) => {
   return (
     <div className="space-y-6">
       <RefereeMatchHeader selectedFixtureData={props.selectedFixtureData} />
-      <Tabs defaultValue="score" className="w-full">
+      <Tabs defaultValue="timer-tracking" className="w-full">
         {/* Remove all workflowConfig/coordination navigation */}
         <RoleBasedRefereeTabsNavigation selectedFixtureData={props.selectedFixtureData} />
         <RefereeTabsContent
