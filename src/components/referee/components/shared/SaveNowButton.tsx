@@ -1,7 +1,7 @@
-
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Save, Loader2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 interface SaveNowButtonProps {
   onSave: () => void | Promise<void>;
@@ -20,11 +20,22 @@ const SaveNowButton = ({
   size = 'default',
   children
 }: SaveNowButtonProps) => {
+  const { toast } = useToast();
   const handleSave = async () => {
     try {
       await onSave();
+      toast({
+        title: "Changes Saved",
+        description: "All unsaved changes have been saved to the database.",
+        variant: "success"
+      });
     } catch (error) {
       console.error('Save operation failed:', error);
+      toast({
+        title: "Save Failed",
+        description: "Saving changes failed. Please try again.",
+        variant: "destructive"
+      });
     }
   };
 

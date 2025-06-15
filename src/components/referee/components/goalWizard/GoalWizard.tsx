@@ -9,6 +9,7 @@ import GoalTypeStep from "./GoalTypeStep";
 import AssistSelectionStep from "./AssistSelectionStep";
 import ConfirmationStep from "./ConfirmationStep";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useToast } from "@/hooks/use-toast";
 
 interface GoalWizardProps {
   isOpen: boolean;
@@ -38,6 +39,7 @@ const GoalWizard = ({
   });
 
   const { addGoal, addAssist } = useMatchStore();
+  const { toast } = useToast();
 
   const resetWizard = () => {
     setCurrentStep('team');
@@ -106,6 +108,11 @@ const GoalWizard = ({
   const handleConfirm = () => {
     if (!wizardData.selectedPlayer || !wizardData.selectedTeam) {
       console.error('❌ GoalWizard: Missing required data for goal assignment');
+      toast({
+        title: "Missing Data",
+        description: "Please select both a player and team before confirming the goal.",
+        variant: "destructive"
+      });
       return;
     }
 
@@ -140,7 +147,11 @@ const GoalWizard = ({
         isOwnGoal: wizardData.isOwnGoal // CRITICAL: Pass the own goal flag
       });
 
-      console.log('✅ GoalWizard: Goal added with own goal support:', goalData);
+      toast({
+        title: "Goal Added",
+        description: `${wizardData.selectedPlayer.name} (${goalData.teamName}) at ${matchTime}s${wizardData.isOwnGoal ? ' (Own Goal)' : ''}. Scoreboard updated. Remember to Save!`,
+        variant: "success"
+      });
 
       // Add assist if applicable (not for own goals)
       if (!wizardData.isOwnGoal && wizardData.needsAssist && wizardData.assistPlayer) {
@@ -154,12 +165,24 @@ const GoalWizard = ({
           isOwnGoal: false // Assists cannot be own goals
         });
 
-        console.log('✅ GoalWizard: Assist added:', assistData);
+        toast({
+          title: "Assist Added",
+          description: `${wizardData.assistPlayer.name} (${assistData.teamName}) at ${matchTime}s. Remember to Save!`,
+          variant: "success"
+        });
       }
+
+      // Show unsaved changes banner (triggers ScoreTabUnsavedChangesSection logic downstream)
+      // (No explicit UI code needed here; state update already handled in store)
 
       handleClose();
     } catch (error) {
       console.error('❌ GoalWizard: Error during goal assignment:', error);
+      toast({
+        title: "Error Adding Goal",
+        description: "There was a problem adding the goal. Please try again.",
+        variant: "destructive"
+      });
     }
   };
 

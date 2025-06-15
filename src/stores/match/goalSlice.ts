@@ -1,4 +1,3 @@
-
 import { StateCreator } from 'zustand';
 import { MatchState } from './types';
 import { MatchActions } from './actions';
@@ -41,7 +40,7 @@ export const createGoalSlice: StateCreator<
         goals: [...state.goals, newGoal],
         homeScore: newHomeScore,
         awayScore: newAwayScore,
-        hasUnsavedChanges: true,
+        hasUnsavedChanges: true, // mark unsaved changes on goal add
         lastUpdated: Date.now()
       };
 
@@ -70,7 +69,7 @@ export const createGoalSlice: StateCreator<
     set((state) => {
       const updatedState = {
         goals: [...state.goals, newAssist],
-        hasUnsavedChanges: true,
+        hasUnsavedChanges: true, // mark unsaved changes on assist add
         lastUpdated: Date.now()
         // NOTE: No score increment for assists
       };
@@ -97,7 +96,7 @@ export const createGoalSlice: StateCreator<
 
       const updatedState = {
         goals: updatedGoals,
-        hasUnsavedChanges: true,
+        hasUnsavedChanges: true, // mark unsaved changes on update
         lastUpdated: Date.now()
       };
 
@@ -129,7 +128,7 @@ export const createGoalSlice: StateCreator<
         goals: state.goals.filter(g => g.id !== goalId),
         homeScore: Math.max(0, newHomeScore),
         awayScore: Math.max(0, newAwayScore),
-        hasUnsavedChanges: true,
+        hasUnsavedChanges: true, // mark unsaved changes on remove
         lastUpdated: Date.now()
       };
     });
@@ -160,7 +159,7 @@ export const createGoalSlice: StateCreator<
         goals: state.goals.filter(g => g.id !== goalId),
         homeScore: Math.max(0, newHomeScore),
         awayScore: Math.max(0, newAwayScore),
-        hasUnsavedChanges: true,
+        hasUnsavedChanges: true, // mark unsaved changes on undo
         lastUpdated: Date.now()
       };
     });
