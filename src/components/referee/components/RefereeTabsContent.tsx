@@ -59,6 +59,7 @@ interface RefereeTabsContentProps {
   onTogglePlayerTime: (playerId: number) => void;
   onExportSummary: () => void;
   onFinishMatch?: () => void; // <--- Added
+  forceRefresh?: () => Promise<void>; // <-- Add this!
 }
 
 const RefereeTabsContent = (props: RefereeTabsContentProps) => {

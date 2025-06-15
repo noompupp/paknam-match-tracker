@@ -1,9 +1,16 @@
+
 import React from "react";
 import { ComponentPlayer } from "../../../hooks/useRefereeState";
 import ScoreTabGoalsSummarySection from "./ScoreTabGoalsSummarySection";
 import ScoreTabGoalRecordingSection from "./ScoreTabGoalRecordingSection";
 import ScoreTabUnsavedChangesSection from "./ScoreTabUnsavedChangesSection";
 import ScoreTabMatchControlsSection from "./ScoreTabMatchControlsSection";
+
+interface UnsavedItemsCount {
+  goals: number;
+  cards: number;
+  playerTimes: number;
+}
 
 interface EnhancedScoreTabContainerProps {
   selectedFixtureData: any;
@@ -43,7 +50,7 @@ const EnhancedScoreTabContainer = ({
 
   // Use global match store
   const [hasUnsavedChanges, setHasUnsavedChanges] = React.useState(false);
-  const [unsavedItemsCount, setUnsavedItemsCount] = React.useState(0);
+  const [unsavedItemsCount, setUnsavedItemsCount] = React.useState<UnsavedItemsCount>({ goals: 0, cards: 0, playerTimes: 0 });
 
   console.log('📊 EnhancedScoreTabContainer: Simplified workflow active:', { 
     homeTeamName,
@@ -61,7 +68,7 @@ const EnhancedScoreTabContainer = ({
     console.log('💾 EnhancedScoreTabContainer: Save match triggered');
     onSaveMatch();
     setHasUnsavedChanges(false);
-    setUnsavedItemsCount(0);
+    setUnsavedItemsCount({ goals: 0, cards: 0, playerTimes: 0 });
   };
 
   return (
@@ -90,3 +97,4 @@ const EnhancedScoreTabContainer = ({
 };
 
 export default EnhancedScoreTabContainer;
+
