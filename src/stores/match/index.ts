@@ -25,6 +25,7 @@ export const useMatchStore = create<MatchStore>()(
       ...createEnhancedCardSlice(set, get, api),
       ...createEnhancedPlayerTimeSlice(set, get, api),
       ...createPlayerTimeSlice(set, get, api),
+      // !! Insert createCoreSlice last so core actions can override if needed
       ...createCoreSlice(set, get, api),
       ...createOptimizedPlayerTimeSlice(set, get, api),
     };

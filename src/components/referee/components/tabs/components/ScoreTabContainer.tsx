@@ -38,11 +38,6 @@ const ScoreTabContainer = ({
   forceRefresh,
   onShowWizard
 }: ScoreTabContainerProps) => {
-  const homeTeamName = selectedFixtureData?.home_team?.name || 'Home Team';
-  const awayTeamName = selectedFixtureData?.away_team?.name || 'Away Team';
-  const homeTeamId = selectedFixtureData?.home_team?.__id__ || selectedFixtureData?.home_team_id;
-  const awayTeamId = selectedFixtureData?.away_team?.__id__ || selectedFixtureData?.away_team_id;
-
   // Use match store as single source of truth for homeScore/awayScore
   const {
     fixtureId,
@@ -51,18 +46,38 @@ const ScoreTabContainer = ({
     goals,
     hasUnsavedChanges,
     setFixtureId,
+    setupMatch,
     addGoal,
     addAssist,
     addEvent,
     resetState
   } = useMatchStore();
 
-  // Set fixture ID when component mounts or fixture changes
+  // Set fixture ID and team names when component mounts or fixture changes
   React.useEffect(() => {
-    if (selectedFixtureData?.id && fixtureId !== selectedFixtureData.id) {
-      setFixtureId(selectedFixtureData.id);
+    if (selectedFixtureData?.id && (
+          fixtureId !== selectedFixtureData.id ||
+          homeTeamName !== (useMatchStore.getState().homeTeamName) ||
+          awayTeamName !== (useMatchStore.getState().awayTeamName)
+       )
+    ) {
+      setupMatch({
+        fixtureId: selectedFixtureData.id,
+        homeTeamName: homeTeamName,
+        awayTeamName: awayTeamName,
+        homeTeamId: homeTeamId,
+        awayTeamId: awayTeamId
+      });
+      setFixtureId(selectedFixtureData.id); // In case any legacy code needs it
+      console.log("[ScoreTabContainer] setupMatch called", {
+        fixtureId: selectedFixtureData.id,
+        homeTeamName,
+        awayTeamName,
+        homeTeamId,
+        awayTeamId,
+      });
     }
-  }, [selectedFixtureData?.id, fixtureId, setFixtureId]);
+  }, [selectedFixtureData?.id, homeTeamName, awayTeamName, homeTeamId, awayTeamId, fixtureId, setupMatch, setFixtureId]);
 
   // Global batch save manager
   const { batchSave, unsavedItemsCount } = useGlobalBatchSaveManager({

@@ -22,6 +22,9 @@ export const createGoalSlice: StateCreator<
 > = (set, get) => ({
   addGoal: (goalData) => {
     const state = get();
+    // We'll use initialized home/awayTeamName for robust goal storing
+    const homeTeamName = state.homeTeamName;
+    const awayTeamName = state.awayTeamName;
 
     // Prevent duplicates
     const existing = findDuplicateGoal(
@@ -48,12 +51,12 @@ export const createGoalSlice: StateCreator<
 
     set((state) => {
       // Only increment score for actual goals, not assists
-      const newHomeScore = goalData.teamName && goalData.type === 'goal' ?
-        (goalData.teamName === state.homeTeamName ? state.homeScore + 1 : state.homeScore) :
-        state.homeScore;
-      const newAwayScore = goalData.teamName && goalData.type === 'goal' ?
-        (goalData.teamName === state.awayTeamName ? state.awayScore + 1 : state.awayScore) :
-        state.awayScore;
+      const newHomeScore = (goalData.teamName === state.homeTeamName && goalData.type === 'goal') ?
+        state.homeScore + 1
+        : state.homeScore;
+      const newAwayScore = (goalData.teamName === state.awayTeamName && goalData.type === 'goal') ?
+        state.awayScore + 1
+        : state.awayScore;
 
       const updatedState = {
         goals: [...state.goals, newGoal],
@@ -65,6 +68,9 @@ export const createGoalSlice: StateCreator<
 
       console.log('🏪 MatchStore: Goal added with UI update trigger:', {
         goal: newGoal,
+        goalTeamName: goalData.teamName,
+        homeTeamName: state.homeTeamName,
+        awayTeamName: state.awayTeamName,
         newScore: `${newHomeScore}-${newAwayScore}`,
         totalGoals: updatedState.goals.length,
         lastUpdated: updatedState.lastUpdated
