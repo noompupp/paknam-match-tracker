@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRightLeft } from "lucide-react";
@@ -89,7 +88,7 @@ const TrackedPlayerCard = ({
     // Show completion indicator for streamlined substitutions
     if (canCompleteStreamlinedSub) {
       return {
-        text: t("referee.substitutionComplete", "Complete Sub"),
+        text: t("referee.action.completeSub", "Complete Sub"),
         variant: "destructive" as const,
         icon: <ArrowRightLeft className="h-3 w-3" />
       };

@@ -176,6 +176,9 @@ const referee: LocaleModule = {
     'referee.playIconLabel': 'Start',
     'referee.selectStartingSquadLabel': 'Select Starting Squad (7 players)',
 
+    // --- NEW BUTTON ACTION KEY ---
+    'referee.action.completeSub': 'Complete Sub', // <-- added for streamlined substitution button
+
     // Misc
     'referee.playerNotFound': 'Player not found',
     'referee.teamLockMultipleTeams': 'Warning: Players from multiple teams detected. Team lock disabled.',
@@ -417,6 +420,9 @@ const referee: LocaleModule = {
     'referee.playIconLabel': 'เริ่ม',
     'referee.selectStartingSquadLabel': 'เลือกตัวจริง (7 คน)',
 
+    // --- NEW BUTTON ACTION KEY ---
+    'referee.action.completeSub': 'เปลี่ยนตัวเสร็จสิ้น', // <-- added for streamlined substitution button
+
     // Misc
     'referee.playerNotFound': 'ไม่พบนักเตะ',
     'referee.teamLockMultipleTeams': 'มีนักเตะหลายทีม (ระบบล็อกทีมถูกปิดชั่วคราว)',
@@ -499,3 +505,5 @@ const referee: LocaleModule = {
 };
 
 export default referee;
+
+// NOTE: This file is 500+ lines long. Please consider refactoring for maintainability if you plan additional changes.
