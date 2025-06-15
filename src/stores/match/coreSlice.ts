@@ -1,4 +1,3 @@
-
 import { StateCreator } from 'zustand';
 import { MatchState } from './types';
 import { MatchActions } from './actions';
@@ -25,8 +24,8 @@ export const createCoreSlice = (set: any, get: any, api: any): CoreSlice => ({
       fixtureId,
       homeTeamName,
       awayTeamName,
-      homeTeamId: homeTeamId || state.homeTeamId,
-      awayTeamId: awayTeamId || state.awayTeamId,
+      homeTeamId: homeTeamId || state.homeTeamId || "",
+      awayTeamId: awayTeamId || state.awayTeamId || ""
     }));
     console.log("[MATCH SETUP] Store initialized:", {
       fixtureId,
@@ -81,13 +80,13 @@ export const createCoreSlice = (set: any, get: any, api: any): CoreSlice => ({
       hasUnsavedChanges: false,
       lastUpdated: Date.now()
     }));
+    console.log("[MATCH RESET] State reset for fixture");
   },
   getUnsavedItemsCount: () => {
     const state = get();
     const unsavedGoals = state.goals.filter(item => !item.synced).length;
     const unsavedCards = state.cards.filter(item => !item.synced).length;
     const unsavedPlayerTimes = state.playerTimes.filter(item => !item.synced).length;
-
     return {
       goals: unsavedGoals,
       cards: unsavedCards,
