@@ -1,3 +1,4 @@
+
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, Clock, MapPin } from "lucide-react";
@@ -84,23 +85,31 @@ const CompactFixtureCard = ({
         onClick={handleCardClick}
       >
         <CardContent className="p-3">
-          {/* Header with kickoff time (left) and status (right) */}
+          {/* Header with kickoff time (left), only for non-completed/live matches */}
           <div className="flex justify-between items-center mb-2">
             <div className="flex items-center gap-1 text-sm text-muted-foreground">
               <Clock className="h-3 w-3" />
               <span>{formatTimeDisplay(fixture.match_time)}</span>
             </div>
-            {getStatusBadge()}
+            {/* Empty for badge in main stack */}
           </div>
 
-          {/* Centered combined score for completed/live matches */}
+          {/* Centered stack of badge + score for completed/live */}
           {(fixture.status === 'completed' || fixture.status === 'live') && (
-            <div className="flex justify-center my-2">
-              <div className="flex items-center gap-2 text-2xl font-extrabold text-foreground">
+            <div className="flex flex-col items-center justify-center my-2">
+              {getStatusBadge()}
+              <div className="flex items-center gap-2 text-2xl font-extrabold text-foreground mt-1">
                 <span>{fixture.home_score ?? 0}</span>
                 <span className="mx-1 text-xl text-muted-foreground">–</span>
                 <span>{fixture.away_score ?? 0}</span>
               </div>
+            </div>
+          )}
+
+          {/* Status badge for scheduled matches only, shown inline */}
+          {fixture.status === 'scheduled' && (
+            <div className="flex justify-end mb-2">
+              {getStatusBadge()}
             </div>
           )}
 
@@ -203,3 +212,4 @@ const CompactFixtureCard = ({
 };
 
 export default CompactFixtureCard;
+
