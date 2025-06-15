@@ -140,7 +140,46 @@ const referee: LocaleModule = {
     "referee.sync.error": "Sync Error",
     "referee.sync.retry": "Retry Now",
     "referee.sync.pending": "{count} unsaved changes. Saving shortly...",
-    "referee.sync.syncNow": "Sync Now"
+    "referee.sync.syncNow": "Sync Now",
+
+    // --- NEW for Player Time Tracking section ---
+    'referee.selectStartingSquadBtn': 'Select Starting Squad (7 players)',
+    'referee.noSquadSelectedHeader': 'No squad selected',
+    'referee.noSquadSelectedDesc': 'Select 7 starting players to begin match tracking',
+    'referee.playerOnFieldBadge': '{count}/7 on field',
+    'referee.teamLockedBadge': 'Team Locked',
+    'referee.playerAdded': '{name} added to time tracking',
+    'referee.playerRemoved': '{name} removed from time tracking',
+    'referee.cannotRemovePlayer': "Cannot Remove Player",
+    'referee.removePlayerReason': '{reason}',
+    'referee.playerAddedTitle': 'Player Added',
+    'referee.playerRemovedTitle': 'Player Removed',
+    'referee.substitutionReady': '{name} will be substituted in. Press "Sub Out" on another player to complete.',
+    'referee.substitutionComplete': '{inName} replaced {outName}',
+    'referee.playerSubstitutedOut': '{name} has been substituted out. Select a replacement player.',
+    'referee.timeUpdated': 'Time tracking {action} for {name}',
+    'referee.playerTimeStarted': 'started',
+    'referee.playerTimeStopped': 'stopped',
+    'referee.teamLockStatus': 'Team lock active: Only tracking {team} players.',
+    'referee.noPlayersTrackedSection': 'No players currently tracked',
+    // Critical count errors
+    'referee.tooFewPlayersOnField': 'Only {count} players on field. Need at least {required} players.',
+    'referee.tooManyPlayersOnField': '{count} players on field. Maximum allowed is {required}.',
+    'referee.playersOnFieldPerfect': '{count} players on field - Perfect!',
+    'referee.removeLeavesTooFew': "Cannot remove player - would leave only {remaining} players on field (minimum: {required})",
+
+    // Substitution flows
+    'referee.substitutionAlertOut': '{name} has been substituted out. Select a replacement player.',
+    'referee.substitutionAlertIn': 'Substitution pending: {name} is ready to be substituted in. Press "Sub Out" on another player to complete.',
+
+    // Buttons used in tracker
+    'referee.playIconLabel': 'Start',
+    'referee.selectStartingSquadLabel': 'Select Starting Squad (7 players)',
+
+    // Misc
+    'referee.playerNotFound': 'Player not found',
+    'referee.teamLockMultipleTeams': 'Warning: Players from multiple teams detected. Team lock disabled.',
+    'referee.teamLockNone': 'No team lock active. You can track players from any team.',
   },
   th: {
     'page.referee': 'เครื่องมือผู้ตัดสิน',
@@ -268,7 +307,46 @@ const referee: LocaleModule = {
     "referee.sync.error": "ข้อผิดพลาดในการซิงค์",
     "referee.sync.retry": "ลองใหม่",
     "referee.sync.pending": "{count} การเปลี่ยนแปลงที่ยังไม่ได้บันทึก กำลังบันทึก...",
-    "referee.sync.syncNow": "ซิงค์ทันที"
+    "referee.sync.syncNow": "ซิงค์ทันที",
+
+    // --- NEW for Player Time Tracking section ---
+    'referee.selectStartingSquadBtn': 'เลือกผู้เล่นตัวจริง (7 คน)',
+    'referee.noSquadSelectedHeader': 'ยังไม่ได้เลือกทีม',
+    'referee.noSquadSelectedDesc': 'เลือกนักเตะ 7 คนเพื่อเริ่มติดตามการแข่งขัน',
+    'referee.playerOnFieldBadge': '{count}/7 ในสนาม',
+    'referee.teamLockedBadge': 'ล็อกทีม',
+    'referee.playerAdded': 'เพิ่ม {name} ในการติดตามเวลา',
+    'referee.playerRemoved': 'ลบ {name} ออกจากการติดตามเวลา',
+    'referee.cannotRemovePlayer': "ไม่สามารถลบนักเตะ",
+    'referee.removePlayerReason': '{reason}',
+    'referee.playerAddedTitle': 'เพิ่มผู้เล่นแล้ว',
+    'referee.playerRemovedTitle': 'ลบผู้เล่นแล้ว',
+    'referee.substitutionReady': '{name} พร้อมเปลี่ยนตัว กด "เปลี่ยนออก" ที่ผู้เล่นอีกคนเพื่อเสร็จสิ้น',
+    'referee.substitutionComplete': '{inName} แทนที่ {outName}',
+    'referee.playerSubstitutedOut': '{name} ถูกเปลี่ยนตัวออก กรุณาเลือกผู้เล่นใหม่',
+    'referee.timeUpdated': 'การติดตามเวลา {action} สำหรับ {name}',
+    'referee.playerTimeStarted': 'เริ่ม',
+    'referee.playerTimeStopped': 'หยุด',
+    'referee.teamLockStatus': 'ล็อกทีม: ติดตามนักเตะทีม {team} เท่านั้น',
+    'referee.noPlayersTrackedSection': 'ยังไม่มีนักเตะที่ติดตาม',
+    // Critical count errors
+    'referee.tooFewPlayersOnField': 'มีเพียง {count} คนในสนาม ต้องมีอย่างน้อย {required} คน',
+    'referee.tooManyPlayersOnField': '{count} คนในสนาม เกินจำนวนสูงสุด {required} คน',
+    'referee.playersOnFieldPerfect': '{count} คนในสนาม - สมบูรณ์!',
+    'referee.removeLeavesTooFew': "ลบไม่ได้ จะเหลือแค่ {remaining} คนในสนาม (อย่างน้อย {required})",
+
+    // Substitution flows
+    'referee.substitutionAlertOut': '{name} ถูกเปลี่ยนตัวออก กรุณาเลือกผู้เล่นใหม่',
+    'referee.substitutionAlertIn': 'รอเปลี่ยนตัว: {name} พร้อมเปลี่ยนเข้า กด "เปลี่ยนออก" ที่อีกคนเพื่อเสร็จสิ้น',
+
+    // Buttons used in tracker
+    'referee.playIconLabel': 'เริ่ม',
+    'referee.selectStartingSquadLabel': 'เลือกตัวจริง (7 คน)',
+
+    // Misc
+    'referee.playerNotFound': 'ไม่พบนักเตะ',
+    'referee.teamLockMultipleTeams': 'มีนักเตะหลายทีม (ระบบล็อกทีมถูกปิดชั่วคราว)',
+    'referee.teamLockNone': 'ยังไม่ล็อกทีม สามารถติดตามได้ทุกทีม',
   }
 };
 

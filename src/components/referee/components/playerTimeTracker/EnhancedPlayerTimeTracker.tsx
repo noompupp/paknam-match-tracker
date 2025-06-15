@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -19,6 +18,7 @@ import {
   validateTeamLock, 
   canRemovePlayer
 } from "./playerValidationUtils";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface EnhancedPlayerTimeTrackerProps {
   trackedPlayers: PlayerTime[];
@@ -47,6 +47,7 @@ const EnhancedPlayerTimeTracker = ({
 }: EnhancedPlayerTimeTrackerProps) => {
   const [showInitialSelection, setShowInitialSelection] = useState(false);
   const { toast } = useToast();
+  const { t, language } = useTranslation();
 
   // Mock the handlers props structure for usePlayerTimeHandlers
   const handlersProps = {
@@ -68,8 +69,8 @@ const EnhancedPlayerTimeTracker = ({
     substitutionManager 
   } = usePlayerTimeHandlers(handlersProps);
 
-  const playerCountValidation = validatePlayerCount(trackedPlayers);
-  const teamLockValidation = validateTeamLock(trackedPlayers);
+  const playerCountValidation = validatePlayerCount(trackedPlayers, t);
+  const teamLockValidation = validateTeamLock(trackedPlayers, t);
 
   const handleStartMatch = (selectedPlayers: ProcessedPlayer[], team: 'home' | 'away') => {
     console.log('🚀 Starting match with initial squad:', {
@@ -84,12 +85,12 @@ const EnhancedPlayerTimeTracker = ({
   };
 
   const handlePlayerRemove = (playerId: number) => {
-    const removal = canRemovePlayer(playerId, trackedPlayers);
+    const removal = canRemovePlayer(playerId, trackedPlayers, t);
     
     if (!removal.canRemove) {
       toast({
-        title: "Cannot Remove Player",
-        description: removal.reason,
+        title: t('referee.cannotRemovePlayer'),
+        description: removal.reason ? t('referee.removePlayerReason', { reason: removal.reason }) : "",
         variant: "destructive"
       });
       return;
@@ -98,7 +99,7 @@ const EnhancedPlayerTimeTracker = ({
     handleRemovePlayer(playerId);
   };
 
-  // REMOVED: handleQuickAdd and related button
+  // REMOVED: handleQuickAdd
 
   const isMatchStarted = trackedPlayers.length > 0;
 
@@ -130,8 +131,12 @@ const EnhancedPlayerTimeTracker = ({
             <div className="flex items-center justify-between">
               <span>
                 {substitutionManager.isSubOutInitiated 
-                  ? `${substitutionManager.pendingSubstitution?.outgoingPlayerName} has been substituted out. Select a replacement player.`
-                  : `Substitution pending: ${substitutionManager.pendingSubstitution?.outgoingPlayerName} is ready to be substituted in. Press "Sub Out" on another player to complete.`
+                  ? t("referee.substitutionAlertOut", {
+                      name: substitutionManager.pendingSubstitution?.outgoingPlayerName || ""
+                    })
+                  : t("referee.substitutionAlertIn", {
+                      name: substitutionManager.pendingSubstitution?.outgoingPlayerName || ""
+                    })
                 }
               </span>
               <Button
@@ -147,7 +152,7 @@ const EnhancedPlayerTimeTracker = ({
         </Alert>
       )}
 
-      {/* Single Top-Level Player Count Alert (replaces repetitive warnings) */}
+      {/* Player Count Alert */}
       {!playerCountValidation.isValid && (
         <Alert variant={playerCountValidation.severity === 'error' ? 'destructive' : 'default'}>
           <AlertTriangle className="h-4 w-4" />
@@ -155,7 +160,7 @@ const EnhancedPlayerTimeTracker = ({
             <div className="flex items-center justify-between">
               <span>{playerCountValidation.message}</span>
               <Badge variant={playerCountValidation.isValid ? 'default' : 'destructive'}>
-                {playerCountValidation.activeCount}/7 on field
+                {t("referee.playerOnFieldBadge", { count: playerCountValidation.activeCount })}
               </Badge>
             </div>
           </AlertDescription>
@@ -169,7 +174,7 @@ const EnhancedPlayerTimeTracker = ({
           <AlertDescription>
             <div className="flex items-center justify-between">
               <span>{teamLockValidation.message}</span>
-              <Badge variant="outline">Team Locked</Badge>
+              <Badge variant="outline">{t("referee.teamLockedBadge")}</Badge>
             </div>
           </AlertDescription>
         </Alert>
@@ -191,12 +196,12 @@ const EnhancedPlayerTimeTracker = ({
                 disabled={!selectedFixtureData}
               >
                 <Play className="h-4 w-4 mr-2" />
-                Select Starting Squad (7 players)
+                {t("referee.selectStartingSquadBtn")}
               </Button>
             ) : null}
           </div>
 
-          {/* Tracked Players List with dual-behavior substitution status */}
+          {/* Tracked Players List */}
           <TrackedPlayersList
             trackedPlayers={trackedPlayers}
             allPlayers={allPlayers}
@@ -210,8 +215,8 @@ const EnhancedPlayerTimeTracker = ({
           {!isMatchStarted && (
             <div className="text-center py-8 text-muted-foreground">
               <Users className="h-12 w-12 mx-auto mb-3 opacity-50" />
-              <p className="font-medium">No squad selected</p>
-              <p className="text-sm">Select 7 starting players to begin match tracking</p>
+              <p className="font-medium">{t("referee.noSquadSelectedHeader")}</p>
+              <p className="text-sm">{t("referee.noSquadSelectedDesc")}</p>
             </div>
           )}
         </CardContent>
@@ -245,5 +250,5 @@ const EnhancedPlayerTimeTracker = ({
 
 export default EnhancedPlayerTimeTracker;
 
-// NOTE: This file is getting quite long (over 261 lines). For maintainability,
+// NOTE: This file is getting quite long (250+ lines). For maintainability,
 // consider splitting it into smaller components after this change.

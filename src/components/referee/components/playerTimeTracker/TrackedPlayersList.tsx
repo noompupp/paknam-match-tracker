@@ -1,7 +1,7 @@
-
 import TrackedPlayerCard from "./TrackedPlayerCard";
 import { PlayerTime } from "@/types/database";
 import { ProcessedPlayer } from "@/utils/refereeDataProcessor";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface TrackedPlayersListProps {
   trackedPlayers: PlayerTime[];
@@ -28,10 +28,12 @@ const TrackedPlayersList = ({
   pendingSubstitutionPlayerId = null,
   substitutionManager
 }: TrackedPlayersListProps) => {
+  const { t } = useTranslation();
+
   if (trackedPlayers.length === 0) {
     return (
       <div className="text-center py-4 text-muted-foreground">
-        <p className="text-sm">No players currently tracked</p>
+        <p className="text-sm">{t("referee.noPlayersTrackedSection", "No players currently tracked")}</p>
       </div>
     );
   }
@@ -62,4 +64,3 @@ const TrackedPlayersList = ({
 };
 
 export default TrackedPlayersList;
-
