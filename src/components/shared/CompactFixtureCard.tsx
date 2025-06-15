@@ -1,4 +1,3 @@
-
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, Clock, MapPin } from "lucide-react";
@@ -84,11 +83,12 @@ const CompactFixtureCard = ({
         onClick={handleCardClick}
       >
         <CardContent className="p-3">
-          {/* Header with kickoff time (left) and status (right) */}
+          {/* Header with kickoff date + time (left) and status (right) */}
           <div className="flex justify-between items-center mb-3">
             <div className="flex items-center gap-1 text-sm text-muted-foreground">
               <Clock className="h-3 w-3" />
-              <span>{formatTimeDisplay(fixture.match_time)}</span>
+              {/* Updated: Show full date + time string */}
+              <span>{formatCombinedDateTime(fixture.match_date, fixture.match_time)}</span>
             </div>
             {getStatusBadge()}
           </div>
