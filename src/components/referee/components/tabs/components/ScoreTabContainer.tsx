@@ -3,11 +3,12 @@ import React from "react";
 import { ComponentPlayer } from "../../../hooks/useRefereeState";
 import { useMatchStore } from "@/stores/useMatchStore";
 import { useGlobalBatchSaveManager } from "@/hooks/useGlobalBatchSaveManager";
-import { useAutoSave } from "@/hooks/useAutoSave";
+import { useAutoSync } from "@/hooks/useAutoSync";
 import ScoreTabGoalsSummarySection from "./ScoreTabGoalsSummarySection";
 import ScoreTabGoalRecordingSection from "./ScoreTabGoalRecordingSection";
 import ScoreTabUnsavedChangesSection from "./ScoreTabUnsavedChangesSection";
 import ScoreTabMatchControlsSection from "./ScoreTabMatchControlsSection";
+import SyncStatusIndicator from "@/components/shared/SyncStatusIndicator";
 import { useToast } from "@/hooks/use-toast";
 
 interface ScoreTabContainerProps {
@@ -39,7 +40,6 @@ const ScoreTabContainer = ({
   forceRefresh,
   onShowWizard
 }: ScoreTabContainerProps) => {
-  // Use match store as single source of truth for homeScore/awayScore and team info
   const {
     fixtureId,
     homeScore,
@@ -55,7 +55,10 @@ const ScoreTabContainer = ({
     homeTeamName,
     awayTeamName,
     homeTeamId,
-    awayTeamId
+    awayTeamId,
+    syncToDatabase,
+    isAutoSyncEnabled,
+    isSyncing
   } = useMatchStore();
 
   // Set fixture ID and team names when component mounts or fixture changes
@@ -69,19 +72,13 @@ const ScoreTabContainer = ({
     ) {
       setupMatch({
         fixtureId: selectedFixtureData.id,
-        homeTeamName: homeTeamName,
-        awayTeamName: awayTeamName,
-        homeTeamId: homeTeamId,
-        awayTeamId: awayTeamId
+        homeTeamName: selectedFixtureData.home_team?.name || homeTeamName,
+        awayTeamName: selectedFixtureData.away_team?.name || awayTeamName,
+        homeTeamId: selectedFixtureData.home_team_id || homeTeamId,
+        awayTeamId: selectedFixtureData.away_team_id || awayTeamId
       });
-      setFixtureId(selectedFixtureData.id); // In case any legacy code needs it
-      console.log("[ScoreTabContainer] setupMatch called", {
-        fixtureId: selectedFixtureData.id,
-        homeTeamName,
-        awayTeamName,
-        homeTeamId,
-        awayTeamId,
-      });
+      setFixtureId(selectedFixtureData.id);
+      console.log("[ScoreTabContainer] setupMatch called with auto-sync enabled");
     }
   }, [selectedFixtureData?.id, homeTeamName, awayTeamName, homeTeamId, awayTeamId, fixtureId, setupMatch, setFixtureId]);
 
@@ -91,36 +88,40 @@ const ScoreTabContainer = ({
     awayTeamData: { id: awayTeamId, name: awayTeamName }
   });
 
-  // Auto-save functionality
-  useAutoSave({
-    enabled: true,
-    onAutoSave: batchSave,
-    interval: 30000, // 30 seconds
+  // Auto-sync functionality with enhanced database sync
+  useAutoSync({
+    enabled: isAutoSyncEnabled,
+    onAutoSave: async () => {
+      console.log('🔄 Auto-sync triggered - syncing to database');
+      await syncToDatabase();
+    },
+    interval: 3000, // 3 seconds for faster sync
     hasUnsavedChanges
   });
 
-  console.log('📊 ScoreTabContainer: Simplified workflow active:', { 
+  console.log('📊 ScoreTabContainer: Enhanced auto-sync workflow active:', { 
     fixtureId,
     homeScore, 
     awayScore, 
     goalsCount: goals.length,
     hasUnsavedChanges,
-    unsavedItemsCount
+    unsavedItemsCount,
+    isAutoSyncEnabled,
+    isSyncing
   });
 
   const { toast } = useToast();
 
-  // Show yellow unsaved banner/toast logic
+  // Show enhanced sync status notifications
   React.useEffect(() => {
-    if (hasUnsavedChanges && (unsavedItemsCount.goals > 0 || unsavedItemsCount.cards > 0 || unsavedItemsCount.playerTimes > 0)) {
+    if (hasUnsavedChanges && !isSyncing && !isAutoSyncEnabled) {
       toast({
-        title: "Unsaved Changes",
-        description: "New goals, cards, or time entries need to be saved.",
+        title: "Manual Save Required",
+        description: "Auto-sync is disabled. Changes need to be saved manually.",
         variant: "destructive"
       });
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hasUnsavedChanges, unsavedItemsCount.goals, unsavedItemsCount.cards, unsavedItemsCount.playerTimes]);
+  }, [hasUnsavedChanges, isSyncing, isAutoSyncEnabled, toast]);
 
   const handleRecordGoal = () => {
     console.log('🎯 ScoreTabContainer: Opening goal entry wizard');
@@ -128,14 +129,23 @@ const ScoreTabContainer = ({
   };
 
   const handleSaveMatch = async () => {
-    console.log('💾 ScoreTabContainer: Save match triggered');
-    await batchSave();
-    onSaveMatch();
-    toast({
-      title: "Score Data Saved",
-      description: "All unsaved changes have been committed to the database. Scoreboard is up to date.",
-      variant: "default"
-    });
+    console.log('💾 ScoreTabContainer: Manual save triggered');
+    try {
+      await syncToDatabase();
+      await batchSave();
+      onSaveMatch();
+      toast({
+        title: "Match Data Saved",
+        description: "All changes have been synced to the database successfully.",
+        variant: "default"
+      });
+    } catch (error) {
+      toast({
+        title: "Save Failed",
+        description: "Failed to save match data to database. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleResetMatch = () => {
@@ -154,12 +164,25 @@ const ScoreTabContainer = ({
 
   return (
     <div className="space-y-6">
+      {/* Enhanced Sync Status */}
+      <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
+        <div className="flex items-center gap-3">
+          <span className="text-sm font-medium">Sync Status:</span>
+          <SyncStatusIndicator showDetails={true} />
+        </div>
+        {!isAutoSyncEnabled && (
+          <span className="text-xs text-muted-foreground">
+            Auto-sync disabled - manual saves required
+          </span>
+        )}
+      </div>
+
       <ScoreTabGoalsSummarySection goals={goals} formatTime={formatTime} />
       <ScoreTabGoalRecordingSection
         homeTeamName={homeTeamName}
         awayTeamName={awayTeamName}
         onRecordGoal={onShowWizard}
-        isDisabled={false}
+        isDisabled={isSyncing}
       />
       <ScoreTabUnsavedChangesSection
         hasUnsavedChanges={hasUnsavedChanges}
@@ -170,16 +193,10 @@ const ScoreTabContainer = ({
         isRunning={isRunning}
         onToggleTimer={onToggleTimer}
         onSaveMatch={handleSaveMatch}
-        onResetMatch={() => {
-          if (window.confirm("⚠️ RESET MATCH DATA\n\nThis will reset all local match data and the database.\n\nThis action CANNOT be undone!\n\nAre you sure you want to proceed?")) {
-            resetState();
-            onResetMatch();
-          }
-        }}
+        onResetMatch={handleResetMatch}
       />
     </div>
   );
 };
 
 export default ScoreTabContainer;
-

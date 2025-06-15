@@ -38,15 +38,9 @@ export const useRefereeStateOrchestrator = () => {
     // Pull team names and ids from fixture data
     const fixtureId = selectedFixtureData.id;
 
-    // Correct usage: fallback to .team1/.team2 if .home_team is not available (remove usage of .home_team_name/.away_team_name)
-    const fixtureHome =
-      selectedFixtureData.home_team?.name ||
-      selectedFixtureData.team1 ||
-      "";
-    const fixtureAway =
-      selectedFixtureData.away_team?.name ||
-      selectedFixtureData.team2 ||
-      "";
+    // Use correct fixture properties for team names
+    const fixtureHome = selectedFixtureData.home_team?.name || "";
+    const fixtureAway = selectedFixtureData.away_team?.name || "";
 
     const homeTeamName = resolveTeamName(storeHomeTeamName, fixtureHome);
     const awayTeamName = resolveTeamName(storeAwayTeamName, fixtureAway);
@@ -80,8 +74,8 @@ export const useRefereeStateOrchestrator = () => {
       fixtureId &&
       setupChanged
     ) {
-      // FIX: use orchestrator.scoreState.setupMatch NOT matchState
-      orchestrator.scoreState?.setupMatch?.({
+      // Use the correct setupMatch from matchState
+      orchestrator.matchState?.setupMatch?.({
         fixtureId,
         homeTeamName,
         awayTeamName,
@@ -125,7 +119,7 @@ export const useRefereeStateOrchestrator = () => {
     }
   }, [
     orchestrator.baseState.selectedFixtureData,
-    orchestrator.scoreState?.setupMatch, // use scoreState correctly here
+    orchestrator.matchState?.setupMatch,
     storeHomeTeamName,
     storeAwayTeamName,
     storeHomeTeamId,
