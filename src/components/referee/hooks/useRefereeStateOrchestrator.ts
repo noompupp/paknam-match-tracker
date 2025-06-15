@@ -95,6 +95,14 @@ export const useRefereeStateOrchestrator = () => {
     
     // Events
     events: matchState.events,
+
+    // The missing reset functions and event logger passed through from matchState:
+    resetScore: matchState.resetScore,
+    resetEvents: matchState.resetEvents,
+    resetCards: matchState.resetCards,
+    resetTracking: matchState.resetTracking,
+    resetGoals: matchState.resetGoals,
+    addEvent: matchState.addEvent,
     
     // Save attempts
     saveAttempts: baseState.saveAttempts,
