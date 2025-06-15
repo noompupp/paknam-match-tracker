@@ -1,19 +1,39 @@
+
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { translations } from "../locales";
 import type { SupportedLanguage } from "../locales/types";
 
 export type Language = SupportedLanguage;
 
+// Add type for params parameter (object of key-value)
+type TranslationParams = Record<string, string | number>;
+
 interface LanguageContextType {
   language: Language;
   setLanguage: (language: Language) => void;
-  t: (key: string, fallback?: string) => string;
+  /**
+   * Main translation function.
+   * @param key The key from the translation file.
+   * @param fallback Optional fallback string.
+   * @param params Optional params for interpolation.
+   */
+  t: (key: string, fallback?: string, params?: TranslationParams) => string;
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 interface LanguageProviderProps {
   children: ReactNode;
+}
+
+/**
+ * Helper for replacing {params} in a string.
+ */
+function interpolate(template: string, params?: TranslationParams): string {
+  if (!params) return template;
+  return template.replace(/{([^}]+)}/g, (match, p1) =>
+    params[p1] !== undefined ? String(params[p1]) : match
+  );
 }
 
 export const LanguageProvider = ({ children }: LanguageProviderProps) => {
@@ -33,21 +53,25 @@ export const LanguageProvider = ({ children }: LanguageProviderProps) => {
     localStorage.setItem('language', newLanguage);
   };
 
-  // Translation function with fallback
-  const t = (key: string, fallback?: string): string => {
-    const translation = translations[language]?.[key];
+  // Enhanced translation function with fallback + interpolation support
+  const t = (
+    key: string,
+    fallback?: string,
+    params?: TranslationParams
+  ): string => {
+    let translation = translations[language]?.[key];
     if (translation) {
-      return translation;
+      return interpolate(translation, params);
     }
     // If no translation found, try English as fallback
     if (language !== 'en') {
       const englishTranslation = translations.en[key];
       if (englishTranslation) {
-        return englishTranslation;
+        return interpolate(englishTranslation, params);
       }
     }
     // If still no translation, return fallback or the key itself
-    return fallback || key;
+    return interpolate(fallback || key, params);
   };
 
   return (
@@ -65,5 +89,6 @@ export const useLanguage = (): LanguageContextType => {
   return context;
 };
 
-// NOTE: This file is still quite long, but all translation data has been moved out!
-// After this change, consider refactoring this file if logic grows further.
+// NOTE: This file now includes robust {param} interpolation in translations.
+// Consider refactoring if this file grows further.
+
