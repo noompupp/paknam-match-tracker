@@ -27,7 +27,7 @@ const SaveNowButton = ({
       toast({
         title: "Changes Saved",
         description: "All unsaved changes have been saved to the database.",
-        variant: "success"
+        variant: "default"
       });
     } catch (error) {
       console.error('Save operation failed:', error);

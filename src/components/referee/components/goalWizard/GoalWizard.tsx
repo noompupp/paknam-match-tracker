@@ -150,7 +150,7 @@ const GoalWizard = ({
       toast({
         title: "Goal Added",
         description: `${wizardData.selectedPlayer.name} (${goalData.teamName}) at ${matchTime}s${wizardData.isOwnGoal ? ' (Own Goal)' : ''}. Scoreboard updated. Remember to Save!`,
-        variant: "success"
+        variant: "default"
       });
 
       // Add assist if applicable (not for own goals)
@@ -168,7 +168,7 @@ const GoalWizard = ({
         toast({
           title: "Assist Added",
           description: `${wizardData.assistPlayer.name} (${assistData.teamName}) at ${matchTime}s. Remember to Save!`,
-          variant: "success"
+          variant: "default"
         });
       }
 

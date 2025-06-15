@@ -95,7 +95,7 @@ const ScoreTabContainer = ({
       toast({
         title: "Unsaved Changes",
         description: "New goals, cards, or time entries need to be saved.",
-        variant: "warning"
+        variant: "destructive"
       });
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -113,7 +113,7 @@ const ScoreTabContainer = ({
     toast({
       title: "Score Data Saved",
       description: "All unsaved changes have been committed to the database. Scoreboard is up to date.",
-      variant: "success"
+      variant: "default"
     });
   };
 

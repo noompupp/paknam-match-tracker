@@ -1,3 +1,4 @@
+
 import React from "react";
 import UnsavedChangesIndicator from "./UnsavedChangesIndicator";
 import { useToast } from "@/hooks/use-toast";
@@ -26,7 +27,7 @@ const ScoreTabUnsavedChangesSection = ({
       toast({
         title: "Attention",
         description: "You have unsaved changes. Click “Save Now” to write them to the database!",
-        variant: "warning"
+        variant: "destructive"
       });
     }
   }, [hasUnsavedChanges, unsavedItemsCount, toast]);
