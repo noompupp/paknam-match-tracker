@@ -1,25 +1,17 @@
-// Remove workflowConfig and CoordinationTab
+
 import { TabsContent } from "@/components/ui/tabs";
 import { ComponentPlayer } from "../hooks/useRefereeState";
 import ScoreTab from "./tabs/ScoreTab";
 import RoleBasedUnifiedTimerTab from "./tabs/RoleBasedUnifiedTimerTab";
-// Removed import of GoalsTab
-import CardsTab from "./tabs/CardsTab";
-// Removed import CoordinationTab
+import EnhancedCardsTab from "./tabs/EnhancedCardsTab";
+import UnifiedMatchTimer from "./UnifiedMatchTimer";
 import SummaryTab from "./tabs/SummaryTab";
 import SaveNowButton from "./shared/SaveNowButton";
 import { ProcessedPlayer } from "@/utils/refereeDataProcessor";
-
-// Import EnhancedCardsTab and UnifiedMatchTimer
-import EnhancedCardsTab from "./tabs/EnhancedCardsTab";
-import UnifiedMatchTimer from "./UnifiedMatchTimer";
 import { useTranslation } from "@/hooks/useTranslation";
 
-// Remove workflowConfig from props type
 interface RefereeTabsContentProps {
   selectedFixtureData: any;
-  homeScore: number;
-  awayScore: number;
   matchTime: number;
   isRunning: boolean;
   formatTime: (seconds: number) => string;
@@ -46,11 +38,14 @@ interface RefereeTabsContentProps {
   setSelectedTimePlayer: (value: string) => void;
   setSelectedTimeTeam: (value: string) => void;
   events: any[];
-  onAddGoal: (team: 'home' | 'away') => void;
-  onRemoveGoal: (team: 'home' | 'away') => void;
+  // Correct timer/reset props
   onToggleTimer: () => void;
   onResetMatch: () => void;
   onSaveMatch: () => void;
+  onDataRefresh: () => void;
+  // Add required goal/card handlers (can be empty as default):
+  onAddGoal: (team: 'home' | 'away') => void;
+  onRemoveGoal: (team: 'home' | 'away') => void;
   onQuickGoal: (team: 'home' | 'away') => void;
   onOpenGoalWizard: () => void;
   onAssignGoal: (player: ComponentPlayer) => void;
@@ -59,7 +54,7 @@ interface RefereeTabsContentProps {
   onRemovePlayer: (playerId: number) => void;
   onTogglePlayerTime: (playerId: number) => void;
   onExportSummary: () => void;
-  // Removed: workflowConfig: WorkflowModeConfig;
+  // Removed: homeScore and awayScore
 }
 
 const RefereeTabsContent = (props: RefereeTabsContentProps) => {
@@ -97,8 +92,6 @@ const RefereeTabsContent = (props: RefereeTabsContentProps) => {
         </div>
         <RoleBasedUnifiedTimerTab
           selectedFixtureData={props.selectedFixtureData}
-          homeScore={props.homeScore}
-          awayScore={props.awayScore}
           matchTime={props.matchTime}
           isRunning={props.isRunning}
           formatTime={props.formatTime}
@@ -140,8 +133,6 @@ const RefereeTabsContent = (props: RefereeTabsContentProps) => {
           onToggleTimer={props.onToggleTimer}
           onResetMatch={props.onResetMatch}
           isRunning={props.isRunning}
-          homeScore={props.homeScore}
-          awayScore={props.awayScore}
         />
       </TabsContent>
 
@@ -165,8 +156,6 @@ const RefereeTabsContent = (props: RefereeTabsContentProps) => {
         {/* UnifiedMatchTimer for quick timer controls in summary */}
         <UnifiedMatchTimer
           selectedFixtureData={props.selectedFixtureData}
-          homeScore={props.homeScore}
-          awayScore={props.awayScore}
           matchTime={props.matchTime}
           isRunning={props.isRunning}
           formatTime={props.formatTime}
@@ -175,8 +164,8 @@ const RefereeTabsContent = (props: RefereeTabsContentProps) => {
         />
         <SummaryTab
           selectedFixtureData={props.selectedFixtureData}
-          homeScore={props.homeScore}
-          awayScore={props.awayScore}
+          // homeScore={props.homeScore}  <-- REMOVED
+          // awayScore={props.awayScore}  <-- REMOVED
           matchTime={props.matchTime}
           goals={props.goals}
           cards={props.cards}

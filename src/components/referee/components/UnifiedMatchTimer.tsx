@@ -1,4 +1,3 @@
-
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -7,11 +6,10 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 // Translation
 import { useTranslation } from "@/hooks/useTranslation";
+import { useMatchStore } from "@/stores/useMatchStore";
 
 interface UnifiedMatchTimerProps {
   selectedFixtureData: any;
-  homeScore: number;
-  awayScore: number;
   matchTime: number;
   isRunning: boolean;
   formatTime: (seconds: number) => string;
@@ -22,8 +20,6 @@ interface UnifiedMatchTimerProps {
 
 const UnifiedMatchTimer = ({
   selectedFixtureData,
-  homeScore,
-  awayScore,
   matchTime,
   isRunning,
   formatTime,
@@ -33,6 +29,22 @@ const UnifiedMatchTimer = ({
 }: UnifiedMatchTimerProps) => {
   const isMobile = useIsMobile();
   const { t, language } = useTranslation();
+
+  // Get live scores direct from match store for local-first updates!
+  const { homeScore, awayScore, homeTeamName, awayTeamName, goals, hasUnsavedChanges, lastUpdated } = useMatchStore();
+  // Debug: log every render with focus on team names and scores
+  console.log('[UnifiedMatchTimer v2] Current ZUSTAND STATE:', {
+    homeScore, awayScore, homeTeamName, awayTeamName, goals, hasUnsavedChanges, lastUpdated, matchTime
+  });
+
+  if (selectedFixtureData) {
+    console.log('[UnifiedMatchTimer] 🔎 Fixture data team names:', {
+      fixtureHome: selectedFixtureData.home_team?.name,
+      fixtureAway: selectedFixtureData.away_team?.name,
+      storeHome: homeTeamName,
+      storeAway: awayTeamName
+    });
+  }
 
   // Calculate phase time for 7-a-side (25 minutes per half)
   const HALF_DURATION = 25 * 60; // 25 minutes in seconds
@@ -84,7 +96,8 @@ const UnifiedMatchTimer = ({
               {dateFormatter(selectedFixtureData.match_date)} • {selectedFixtureData.match_time}
             </div>
             <div className="text-xs text-muted-foreground">
-              {selectedFixtureData.home_team?.name} {t("referee.matchTeamsVs.connector", "vs")} {selectedFixtureData.away_team?.name}
+              {/* Always reference up-to-date store team names to guarantee sync */}
+              {(homeTeamName || selectedFixtureData.home_team?.name || t("referee.homeTeam"))} {t("referee.matchTeamsVs.connector", "vs")} {(awayTeamName || selectedFixtureData.away_team?.name || t("referee.awayTeam"))}
             </div>
           </div>
         )}
@@ -96,7 +109,7 @@ const UnifiedMatchTimer = ({
               {/* Home Team */}
               <div className="text-center min-w-0 flex-1">
                 <div className="text-sm font-medium text-muted-foreground truncate">
-                  {selectedFixtureData.home_team?.name || t("referee.homeTeam")}
+                  {homeTeamName || selectedFixtureData.home_team?.name || t("referee.homeTeam")}
                 </div>
                 <div className="text-3xl font-bold text-primary">{homeScore}</div>
               </div>
@@ -123,7 +136,7 @@ const UnifiedMatchTimer = ({
               {/* Away Team */}
               <div className="text-center min-w-0 flex-1">
                 <div className="text-sm font-medium text-muted-foreground truncate">
-                  {selectedFixtureData.away_team?.name || t("referee.awayTeam")}
+                  {awayTeamName || selectedFixtureData.away_team?.name || t("referee.awayTeam")}
                 </div>
                 <div className="text-3xl font-bold text-primary">{awayScore}</div>
               </div>
