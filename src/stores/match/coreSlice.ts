@@ -1,6 +1,19 @@
+
 import { StateCreator } from 'zustand';
 import { MatchState } from './types';
 import { MatchActions } from './actions';
+
+function recalculateScores(goals: any[], homeTeamName: string, awayTeamName: string) {
+  let newHomeScore = 0;
+  let newAwayScore = 0;
+  for (const goal of goals) {
+    if (goal.type === "goal") {
+      if (goal.teamName?.trim() === homeTeamName?.trim()) newHomeScore++;
+      else if (goal.teamName?.trim() === awayTeamName?.trim()) newAwayScore++;
+    }
+  }
+  return { homeScore: newHomeScore, awayScore: newAwayScore };
+}
 
 export interface CoreSlice {
   setupMatch: (data: {
@@ -17,23 +30,61 @@ export interface CoreSlice {
   getUnsavedItemsCount: () => { goals: number; cards: number; playerTimes: number };
 }
 
-// Add to your coreSlice
+// Improved: always spread previous state for defensive merging and validate correct persistence of team names/ids
 export const createCoreSlice = (set: any, get: any, api: any): CoreSlice => ({
   setupMatch: ({ fixtureId, homeTeamName, awayTeamName, homeTeamId, awayTeamId }) => {
-    set((state: any) => {
-      // Always immediately set both home/away names on setup
+    set((prevState: any) => {
+      // Defensive fallback
       const next = {
+        ...prevState,
         fixtureId,
-        homeTeamName: homeTeamName || "",
-        awayTeamName: awayTeamName || "",
-        homeTeamId: homeTeamId || state.homeTeamId || "",
-        awayTeamId: awayTeamId || state.awayTeamId || "",
+        homeTeamName: homeTeamName || prevState.homeTeamName || "",
+        awayTeamName: awayTeamName || prevState.awayTeamName || "",
+        homeTeamId: homeTeamId || prevState.homeTeamId || "",
+        awayTeamId: awayTeamId || prevState.awayTeamId || "",
       };
-      // Debug: log new state snapshot for verification
-      console.log("[MATCH SETUP] State updated via setupMatch:", next);
-      // Defensive: prevent accidental undefined propagation
-      return next;
+
+      // Defensive: recalculate scores from goals based on new team names
+      const { homeScore, awayScore } = recalculateScores(prevState.goals || [], next.homeTeamName, next.awayTeamName);
+
+      // Logging for diagnosis
+      console.log("[MATCH SETUP] setupMatch called with:", {
+        fixtureId,
+        homeTeamName,
+        awayTeamName,
+        homeTeamId,
+        awayTeamId
+      });
+      console.log("[MATCH SETUP] Previous state before update:", prevState);
+
+      // Defensive: warn if missing team names
+      if (!next.homeTeamName || !next.awayTeamName)
+        console.warn("[MATCH SETUP] Warning: Missing team names after setupMatch!", next);
+
+      // Provide recomputed score and avoid undefined fields
+      return {
+        ...next,
+        homeScore,
+        awayScore,
+        hasUnsavedChanges: false,
+        lastUpdated: Date.now()
+      };
     });
+
+    // Log actual new state after tick
+    setTimeout(() => {
+      const s = get();
+      console.log("[MATCH SETUP] 🏷️ Store state after setupMatch:", {
+        fixtureId: s.fixtureId,
+        homeTeamName: s.homeTeamName,
+        awayTeamName: s.awayTeamName,
+        homeTeamId: s.homeTeamId,
+        awayTeamId: s.awayTeamId,
+        homeScore: s.homeScore,
+        awayScore: s.awayScore,
+        goals: s.goals,
+      });
+    }, 0);
   },
   setFixtureId: (fixtureId: number) => {
     set({ fixtureId });

@@ -1,3 +1,4 @@
+
 import { useRefereeStateIntegration } from "./useRefereeStateIntegration";
 import { useRefereeEnhancedHandlers } from "./useRefereeEnhancedHandlers";
 import { useMatchStore } from "@/stores/useMatchStore";
@@ -7,32 +8,62 @@ export const useRefereeStateOrchestrator = () => {
   // Get all integrated state
   const orchestrator = useRefereeStateIntegration();
   // Use match store directly for homeScore/awayScore/team names
-  const { homeScore, awayScore, homeTeamName, awayTeamName } = useMatchStore();
+  const { homeScore, awayScore, homeTeamName: storeHomeTeamName, awayTeamName: storeAwayTeamName } = useMatchStore();
 
   // Track last fixture id in a ref to avoid duplicate calls
   const lastFixtureIdRef = useRef<number | null>(null);
-  // Synchronize store's base info when fixture changes
+
   useEffect(() => {
     const selectedFixtureData = orchestrator.baseState.selectedFixtureData;
+    if (!selectedFixtureData) return;
+
+    // Always prefer most recent team info (store > fixtureData)
+    const newFixtureId = selectedFixtureData.id;
+    const homeTeamNameValue =
+      storeHomeTeamName && storeHomeTeamName.length > 0
+        ? storeHomeTeamName
+        : selectedFixtureData.home_team?.name || selectedFixtureData.home_team_name || "";
+    const awayTeamNameValue =
+      storeAwayTeamName && storeAwayTeamName.length > 0
+        ? storeAwayTeamName
+        : selectedFixtureData.away_team?.name || selectedFixtureData.away_team_name || "";
+    const homeTeamId = String(
+      selectedFixtureData.home_team?.id ||
+      selectedFixtureData.home_team?.__id__ ||
+      selectedFixtureData.home_team_id ||
+      ""
+    );
+    const awayTeamId = String(
+      selectedFixtureData.away_team?.id ||
+      selectedFixtureData.away_team?.__id__ ||
+      selectedFixtureData.away_team_id ||
+      ""
+    );
+
+    // If missing teams, skip setupMatch
+    if (!homeTeamNameValue || !awayTeamNameValue) {
+      console.warn("[useRefereeStateOrchestrator] setupMatch skipped: missing team names", {
+        fixtureId: newFixtureId,
+        homeTeamNameValue,
+        awayTeamNameValue
+      });
+      return;
+    }
+
+    // Only update if changed
     if (
-      selectedFixtureData &&
-      selectedFixtureData.id !== lastFixtureIdRef.current &&
-      selectedFixtureData.home_team &&
-      selectedFixtureData.away_team
+      newFixtureId !== lastFixtureIdRef.current ||
+      storeHomeTeamName !== homeTeamNameValue ||
+      storeAwayTeamName !== awayTeamNameValue
     ) {
-      const homeTeamNameValue = selectedFixtureData.home_team?.name || "";
-      const awayTeamNameValue = selectedFixtureData.away_team?.name || "";
-      const homeTeamId = String(selectedFixtureData.home_team?.id || "");
-      const awayTeamId = String(selectedFixtureData.away_team?.id || "");
       orchestrator.matchState?.setupMatch?.({
-        fixtureId: selectedFixtureData.id,
+        fixtureId: newFixtureId,
         homeTeamName: homeTeamNameValue,
         awayTeamName: awayTeamNameValue,
         homeTeamId,
-        awayTeamId
+        awayTeamId,
       });
-      lastFixtureIdRef.current = selectedFixtureData.id;
-      // Deep state log: store after setupMatch runs
+      lastFixtureIdRef.current = newFixtureId;
       setTimeout(() => {
         const storeState = useMatchStore.getState();
         console.log('[useRefereeStateOrchestrator] 🟢 Store snapshot immediately after setupMatch:', {
@@ -45,9 +76,9 @@ export const useRefereeStateOrchestrator = () => {
         });
       }, 0);
       console.log(
-        "[useRefereeStateOrchestrator] setupMatch called on fixture change:",
+        "[useRefereeStateOrchestrator] setupMatch called on fixture/team data change:",
         {
-          fixtureId: selectedFixtureData.id,
+          fixtureId: newFixtureId,
           homeTeamName: homeTeamNameValue,
           awayTeamName: awayTeamNameValue,
           homeTeamId,
@@ -55,9 +86,12 @@ export const useRefereeStateOrchestrator = () => {
         }
       );
     }
+  // Must trigger if fixture data, home/away name (either in store or fixture), or setupMatch reference changes
   }, [
     orchestrator.baseState.selectedFixtureData,
-    orchestrator.matchState?.setupMatch
+    orchestrator.matchState?.setupMatch,
+    storeHomeTeamName,
+    storeAwayTeamName
   ]);
 
   // Get enhanced handlers
