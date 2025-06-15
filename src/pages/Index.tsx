@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import Dashboard from "@/components/Dashboard";
 import Teams from "@/components/Teams";
@@ -15,7 +14,6 @@ import PullToRefreshIndicator from "@/components/PullToRefreshIndicator";
 import { usePullToRefresh } from "@/hooks/usePullToRefresh";
 import UnifiedContainer from "@/components/shared/UnifiedContainer";
 import MobileBottomSpacer from "@/components/shared/MobileBottomSpacer";
-import { LanguageProvider } from "@/contexts/LanguageContext";
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -135,40 +133,37 @@ const Index = () => {
   };
 
   return (
-    <LanguageProvider>
-      <AuthProvider>
-        <NavigationProvider onTabChange={setActiveTab}>
-          <div className="min-h-screen min-h-dvh safe-x pull-to-refresh-container">
-            {/* Pull to refresh indicator */}
-            <PullToRefreshIndicator
-              pullDistance={pullToRefresh.pullDistance}
-              isRefreshing={pullToRefresh.isRefreshing}
-              canRefresh={pullToRefresh.canRefresh}
-              isActive={pullToRefresh.isActive}
-              progress={pullToRefresh.progress}
-            />
+    <AuthProvider>
+      <NavigationProvider onTabChange={setActiveTab}>
+        <div className="min-h-screen min-h-dvh safe-x pull-to-refresh-container">
+          {/* Pull to refresh indicator */}
+          <PullToRefreshIndicator
+            pullDistance={pullToRefresh.pullDistance}
+            isRefreshing={pullToRefresh.isRefreshing}
+            canRefresh={pullToRefresh.canRefresh}
+            isActive={pullToRefresh.isActive}
+            progress={pullToRefresh.progress}
+          />
 
-            {/* Main content with pull animation */}
-            <div 
-              className="pull-content"
-              style={{
-                transform: pullToRefresh.isActive ? 
-                  `translateY(${Math.min(pullToRefresh.pullDistance * 0.5, 30)}px)` : 
-                  'translateY(0px)'
-              }}
-            >
-              {renderContent()}
-            </div>
-
-            <Navigation activeTab={activeTab} onTabChange={setActiveTab} />
-            <PWAInstallButton />
-            <PWAPromptToast />
+          {/* Main content with pull animation */}
+          <div 
+            className="pull-content"
+            style={{
+              transform: pullToRefresh.isActive ? 
+                `translateY(${Math.min(pullToRefresh.pullDistance * 0.5, 30)}px)` : 
+                'translateY(0px)'
+            }}
+          >
+            {renderContent()}
           </div>
-        </NavigationProvider>
-      </AuthProvider>
-    </LanguageProvider>
+
+          <Navigation activeTab={activeTab} onTabChange={setActiveTab} />
+          <PWAInstallButton />
+          <PWAPromptToast />
+        </div>
+      </NavigationProvider>
+    </AuthProvider>
   );
 };
 
 export default Index;
-

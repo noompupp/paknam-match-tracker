@@ -1,11 +1,10 @@
-
 import { useState, useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { SecureAuthProvider, useSecureAuth } from "@/contexts/SecureAuthContext";
 import { AuthProvider } from "@/contexts/AuthContext"; // Keep for backward compatibility
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
-// import { LanguageProvider } from "@/contexts/LanguageContext"; ← REMOVE THIS LINE
+import { LanguageProvider } from "@/contexts/LanguageContext"; // ADD BACK THIS LINE
 import SecureLogin from "@/components/auth/SecureLogin";
 import RoleBasedNavigation from "@/components/auth/RoleBasedNavigation";
 import RoleGuard from "@/components/auth/RoleGuard";
@@ -96,14 +95,14 @@ function App() {
         enableSystem
         disableTransitionOnChange
       >
-        {/* <LanguageProvider> ← REMOVE THIS */}
+        <LanguageProvider> {/* RESTORE LanguageProvider HERE */}
           <SecureAuthProvider>
             <AuthProvider>
               <AppContent />
               <Toaster />
             </AuthProvider>
           </SecureAuthProvider>
-        {/* </LanguageProvider> ← REMOVE THIS */}
+        </LanguageProvider>
       </ThemeProvider>
     </QueryClientProvider>
   );
