@@ -48,6 +48,12 @@ const RefereeToolsContent = () => {
     setSelectedTimePlayer,
     events,
     saveAttempts,
+    resetScore,
+    resetEvents,
+    resetCards,
+    resetTracking,
+    resetGoals,
+    addEvent,
     // --- THE FOLLOWING REFS ARE NOT NEEDED AS WE USE DATA HANDLERS ---
     // handleSaveMatch,
     // handleResetMatch,
@@ -61,7 +67,6 @@ const RefereeToolsContent = () => {
     removePlayer,
     addPlayer,
     handleManualRefresh,
-    // --- REMOVED unused: resetScore, resetEvents, resetCards, resetTracking, resetGoals, addEvent ---
     playersForTimeTracker,
     forceRefresh,
   } = useRefereeStateOrchestrator();
@@ -70,7 +75,7 @@ const RefereeToolsContent = () => {
   const { syncStatus, forceSync, pendingChanges } = useIntelligentSyncManager();
 
   // --- Integrate new match data handlers (dialog, save, reset) ---
-  // Supplying only the necessary arguments from orchestrator (DO NOT supply removed fields)
+  // Supplying all required arguments from orchestrator
   const {
     handleSaveMatch,
     handleResetMatchData,
@@ -86,13 +91,12 @@ const RefereeToolsContent = () => {
       ? saveAttempts
       : () => {}, // fallback no-op if not available
     resetTimer,
-    // The following lines are removed:
-    // resetScore,
-    // resetEvents,
-    // resetCards,
-    // resetTracking,
-    // resetGoals,
-    // addEvent,
+    resetScore,
+    resetEvents,
+    resetCards,
+    resetTracking,
+    resetGoals,
+    addEvent,
     forceRefresh,
   });
 
