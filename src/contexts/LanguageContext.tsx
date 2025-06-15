@@ -197,7 +197,7 @@ const translations = {
     'nav.referee': 'ผู้ตัดสิน',
     'nav.login': 'เข้าสู่ระบบ',
     'nav.signOut': 'ออกจากระบบ',
-    
+
     // Common actions
     'common.save': 'บันทึก',
     'common.cancel': 'ยกเลิก',
@@ -210,14 +210,14 @@ const translations = {
     'common.loading': 'กำลังโหลด...',
     'common.error': 'ข้อผิดพลาด',
     'common.success': 'สำเร็จ',
-    
+
     // Page titles
     'page.dashboard': 'แดชบอร์ด',
     'page.teams': 'ทีม',
     'page.results': 'ผลการแข่งขัน',
     'page.fixtures': 'ตารางแข่งขัน',
     'page.referee': 'เครื่องมือผู้ตัดสิน',
-    
+
     // Dashboard
     'dashboard.leagueTable': 'ตารางลีก',
     'dashboard.topScorers': 'นักเตะทำประตูสูงสุด',
@@ -226,139 +226,205 @@ const translations = {
     'dashboard.upcomingFixtures': 'การแข่งขันที่จะมาถึง',
     'dashboard.viewAll': 'ดูทั้งหมด',
     'dashboard.noData': 'ไม่มีข้อมูล',
-    
+
     // Teams
     'teams.squad': 'ทีม',
     'teams.players': 'นักเตะ',
     'teams.viewSquad': 'ดูทีม',
     'teams.playerCount': '{count} นักเตะ',
-    
+
     // Match status
-    'match.completed': 'เสร็จสิ้น',
-    'match.live': 'สด',
+    'match.completed': 'จบการแข่งขัน',
+    'match.live': 'กำลังแข่ง',
     'match.scheduled': 'กำหนดการ',
     'match.fullTime': 'จบเกม',
     'match.vs': 'VS',
-    
-    // Referee tools
+
+    // Referee tools - Top nav/tabs
     'referee.title': 'เครื่องมือผู้ตัดสิน',
-    'referee.subtitle': 'จัดการเหตุการณ์และสถิตินักเตะในการแข่งขัน',
-    'referee.cardsManagement': 'จัดการใบเหลืองใบแดง',
+    'referee.subtitle': 'จัดการแมตช์และสถิตินักเตะ',
+    'referee.cardsManagement': 'จัดการใบเหลือง-แดง',
     'referee.scoreManagement': 'จัดการคะแนน',
     'referee.timeTracking': 'ติดตามเวลา',
     'referee.matchSummary': 'สรุปการแข่งขัน',
     'referee.ready': 'พร้อม',
-    'referee.issues': 'ปัญหา',
+    'referee.issues': 'มีปัญหา',
     'referee.save': 'บันทึกทันที',
     'referee.saving': 'กำลังบันทึก...',
     'referee.export': 'ส่งออก',
     'referee.cardsAutoSaveEnhanced': 'การบันทึกใบเหลืองใบแดงอัตโนมัติ (ขั้นสูง)',
-    'referee.cardsAutoSaveTip': 'มีการบันทึกข้อมูลใบเหลืองใบแดงอัตโนมัติทุก 3 นาทีและซิงค์กับฐานข้อมูล',
-    'referee.loadingFixtures': 'กำลังโหลดข้อมูลการแข่งขัน...',
+    'referee.cardsAutoSaveTip': 'มีการบันทึกใบเหลืองใบแดงอัตโนมัติทุก 3 นาที พร้อมซิงค์ฐานข้อมูล',
+    'referee.loadingFixtures': 'กำลังโหลดตารางแข่งขัน...',
     'referee.matchSelection': 'เลือกแมตช์',
     'referee.homeTeam': 'ทีมเหย้า',
     'referee.awayTeam': 'ทีมเยือน',
     'referee.cancel': 'ยกเลิก',
     // Tab labels
-    'referee.tab.timer': 'จับเวลา',
-    'referee.tab.score': 'คะแนน',
+    'referee.tab.timer': 'เวลา',
+    'referee.tab.score': 'สกอร์',
     'referee.tab.cards': 'ใบเหลือง-แดง',
     'referee.tab.summary': 'สรุป',
-    
+    'referee.tab.playerTime': 'เวลาในสนาม',
+
     // Match events
     'event.goal': 'ประตู',
     'event.assist': 'แอสซิสต์',
     'event.yellowCard': 'ใบเหลือง',
     'event.redCard': 'ใบแดง',
     'event.substitution': 'เปลี่ยนตัว',
-    
+
     // Forms
     'form.selectPlayer': 'เลือกนักเตะ',
     'form.selectTeam': 'เลือกทีม',
-    'form.matchTime': 'เวลาแมตช์',
-    'form.required': 'ฟิลด์นี้จำเป็น',
-    
+    'form.matchTime': 'เวลาแข่งขัน',
+    'form.required': 'จำเป็นต้องระบุ',
+
     // Time
     'time.minute': 'นาที',
     'time.minutes': 'นาที',
-    'time.halfTime': 'ครึ่งเวลา',
+    'time.halfTime': 'พักครึ่ง',
     'time.firstHalf': 'ครึ่งแรก',
     'time.secondHalf': 'ครึ่งหลัง',
-    'time.overtime': 'เวลาพิเศษ',
-    
+    'time.overtime': 'ต่อเวลา',
+
     // Messages
-    'message.signInRequired': 'กรุณาเข้าสู่ระบบเพื่อเข้าถึงฟีเจอร์นี้',
+    'message.signInRequired': 'กรุณาเข้าสู่ระบบเพื่อใช้ฟีเจอร์นี้',
     'message.matchSaved': 'บันทึกข้อมูลแมตช์เรียบร้อยแล้ว',
-    'message.matchReset': 'รีเซ็ตแมตช์แล้ว',
-    'message.playerAdded': 'เพิ่มนักเตะในการติดตามแล้ว',
+    'message.matchReset': 'รีเซ็ตแมตช์เรียบร้อย',
+    'message.playerAdded': 'เพิ่มนักเตะในการติดตามเรียบร้อย',
     'message.playerRemoved': 'ลบนักเตะออกจากการติดตามแล้ว',
-    
+
     // Language
     'language.english': 'English',
     'language.thai': 'ไทย',
     'language.changeLanguage': 'เปลี่ยนภาษา',
 
-    // Referee tools (expand with all missing keys, based on English list above)
+    // Referee tools (expanded: all unique keys, none duplicated)
     'referee.noMatchSelected': 'ยังไม่ได้เลือกแมตช์',
-    'referee.selectMatchTooltip': 'เลือกแมตช์เพื่อใช้งานเครื่องมือผู้ตัดสิน',
-    'referee.quickActions': 'ทางลัด',
-    'referee.quickGoals': 'เพิ่มประตูด่วน',
+    'referee.selectMatchTooltip': 'กรุณาเลือกแมตช์เพื่อใช้งานเครื่องมือนี้',
+    'referee.quickActions': 'การทำงานด่วน',
+    'referee.quickGoals': 'บันทึกประตูด่วน',
     'referee.matchData': 'ข้อมูลการแข่งขัน',
-    'referee.unsavedChanges': 'ข้อมูลยังไม่ได้บันทึก',
-    'referee.completed': 'เสร็จสิ้น',
-    'referee.live': 'กำลังแข่ง',
+    'referee.unsavedChanges': 'ข้อมูลยังไม่บันทึก',
+    'referee.completed': 'จบแล้ว',
+    'referee.live': 'กำลังแข่งขัน',
     'referee.paused': 'หยุดชั่วคราว',
     'referee.start': 'เริ่ม',
     'referee.pause': 'หยุด',
     'referee.reset': 'รีเซ็ต',
-    'referee.scheduled': 'กำหนดการ',
-    'referee.scored': 'มีคะแนน',
-    'referee.dataReady': 'ข้อมูลถูกต้อง',
-    'referee.dataIssues': 'ข้อมูลมีปัญหา',
+    'referee.scheduled': 'รอแข่ง',
+    'referee.scored': 'มีสกอร์',
+    'referee.dataReady': 'ข้อมูลครบถ้วน',
+    'referee.dataIssues': 'ข้อมูลไม่ครบถ้วน',
     'referee.matchTeamsVs': '{home} พบ {away}',
-    'referee.playerTimeTracking': 'ติดตามเวลานักเตะ',
-    'referee.noPlayersTracked': 'ยังไม่มีนักเตะถูกติดตาม',
+    'referee.playerTimeTracking': 'ติดตามเวลาผู้เล่นในสนาม',
+    'referee.noPlayersTracked': 'ยังไม่มีนักเตะที่ติดตาม',
     'referee.players': '{count} คน',
-    'referee.totalMinutes': '{count} นาทีรวม',
-    // Warnings
-    'referee.sevenPlayerLimitExceeded': 'เกินจำนวนผู้เล่น 7 คน!',
-    'referee.currentPlayersOnField': 'ขณะนี้มี {count} คนในสนาม',
-    'referee.limit': 'เกินขีดจำกัด',
-    'referee.approachingLimit': 'ใกล้ถึงขีดจำกัด',
-    'referee.sClassHalfLimit': 'S-Class จำกัดไม่เกิน 20 นาทีต่อครึ่งเวลา',
-
+    'referee.totalMinutes': '{count} นาที (รวม)',
     'referee.saveAll': 'บันทึกทั้งหมด',
     'referee.exportSummary': 'ส่งออก',
     'referee.goal': '{count} ประตู',
     'referee.goals': '{count} ประตู',
     'referee.card': '{count} ใบ',
     'referee.cards': '{count} ใบ',
-    'referee.playerTime': '{count} เวลานักเตะ',
-    'referee.playerTimes': '{count} เวลานักเตะ',
-    'referee.unsaved': '{count} ยังไม่บันทึก',
+    'referee.playerTime': '{count} รายการเวลา',
+    'referee.playerTimes': '{count} รายการเวลา',
+    'referee.unsaved': '{count} ยังไม่ได้บันทึก',
 
-    'referee.chooseMatchPlaceholder': 'เลือกแมตช์ที่ต้องการจัดการ...',
-    'referee.selectFixture': 'เลือกแมตช์',
-    'referee.matchSelectionTitle': 'เลือกแมตช์',
-    
+    // NEW: Timer section and time tracker
+    'referee.matchTimer': 'นาฬิกาแข่งขัน',
+    'referee.timer': 'เวลา',
+    'referee.timerPaused': 'หยุด',
+    'referee.timerRunning': 'กำลังเดิน',
+    'referee.startTimer': 'เริ่มจับเวลา',
+    'referee.pauseTimer': 'หยุดเวลา',
+    'referee.resumeTimer': 'ดำเนินการต่อ',
+    'referee.resetTimer': 'รีเซ็ตเวลา',
+    'referee.currentTime': 'เวลาปัจจุบัน',
+    'referee.matchDate': 'วันที่แข่ง',
+    'referee.phaseFirst': 'ครึ่งแรก',
+    'referee.phaseSecond': 'ครึ่งหลัง',
+    'referee.phaseOvertime': 'ต่อเวลา',
+    'referee.timeOnField': 'เวลาในสนาม',
+
     // 7-a-side validation & alerts
-    'referee.rulesClear': 'กฎ 7 คน: ปลอดภัยทุกประการ',
+    'referee.rulesClear': 'กฎ 7 คน: ทุกอย่างถูกต้อง',
     'referee.onField': '{count}/{limit} ในสนาม',
     'referee.currentHalf': 'ครึ่งที่ {half} - {time}',
     'referee.playersOnField': 'ผู้เล่นในสนาม',
-    'referee.totalTracked': 'ติดตามทั้งหมด',
-    'referee.criticalViolations': 'ตรวจพบการละเมิดกฎร้ายแรง',
+    'referee.totalTracked': 'ผู้เล่นที่ติดตาม',
+    'referee.criticalViolations': 'พบการละเมิดกฎรุนแรง',
     'referee.immediateAction': 'ต้องดำเนินการทันที',
-    'referee.exceededLimit': 'เกินขีดจำกัด',
-    'referee.approachingLimit': 'ใกล้ถึงขีดจำกัด',
-    'referee.needsMoreTime': 'ต้องการเวลาเพิ่ม',
-    'referee.allClear': 'ปลอดภัย',
-    'referee.substituteNow': 'ต้องเปลี่ยนตัวทันที',
-    'referee.mustSubstitute': 'ผู้เล่น S-Class จำกัดไม่เกิน 20 นาทีต่อครึ่งเวลา - ต้องเปลี่ยนตัว',
-    'referee.needsMoreToReachMinimum': 'ต้องการอีก {time} เพื่อครบขั้นต่ำ',
+    'referee.sevenPlayerLimitExceeded': 'มีผู้เล่นเกิน 7 คนในสนาม!',
+    'referee.currentPlayersOnField': 'ขณะนี้มี {count} คนในสนาม',
+    'referee.limit': 'จำกัด',
+    'referee.exceededLimit': 'เกินขีด',
+    'referee.approachingLimit': 'ใกล้ถึงขีด',
+    'referee.sClassHalfLimit': 'ผู้เล่น S-Class จำกัดเวลา 20 นาที/ครึ่ง',
+    'referee.mustSubstitute': 'S-Class จำกัด 20 นาทีต่อครึ่ง - ต้องเปลี่ยนตัว',
+    'referee.needsMoreTime': 'ขาดเวลา',
+    'referee.needsMoreToReachMinimum': 'ต้องอีก {time} เพื่อขั้นต่ำ',
     'referee.playersOnFieldLabel': 'ในสนาม',
     'referee.totalTrackedLabel': 'ติดตาม',
     'referee.time': '{time}',
+    'referee.allClear': 'ปลอดภัย',
+    'referee.substituteNow': 'ต้องเปลี่ยนตัวทันที',
+
+    // Match selection & fixture
+    'referee.chooseMatchPlaceholder': 'เลือกแมตช์ที่จัดการ...',
+    'referee.selectFixture': 'เลือกแมตช์',
+    'referee.matchSelectionTitle': 'เลือกแมตช์',
+
+    // Card/score summary
+    'referee.scoreSummary': 'สรุปผลคะแนน',
+    'referee.cardsSummary': 'สรุปใบเหลือง-แดง',
+    'referee.goalsSummary': 'สรุปประตู',
+    'referee.unsavedCardChanges': 'มีใบเหลือง-แดงที่ยังไม่ได้บันทึก',
+    'referee.unsavedGoalChanges': 'มีประตูที่ยังไม่ได้บันทึก',
+    'referee.unsavedPlayerTimeChanges': 'มีเวลาผู้เล่นที่ยังไม่ได้บันทึก',
+
+    // Score & goal recording
+    'referee.recordGoal': 'บันทึกประตู',
+    'referee.openGoalEntryWizard': 'เปิดตัวช่วยบันทึกประตู',
+    'referee.recordGoalsFor': 'บันทึกประตูของ {home} vs {away}',
+    'referee.goalEntryWizardDesc': 'ใช้ตัวช่วยเพื่อบันทึกประตูและรายละเอียด',
+    'referee.detailedGoalEntry': 'บันทึกประตูแบบละเอียด',
+
+    // Player Time
+    'referee.selectStartingSquad': 'เลือกตัวจริง ({count} คน)',
+    'referee.selectTeam': 'เลือกทีม',
+    'referee.trackedPlayers': 'ผู้เล่นที่ติดตาม',
+    'referee.addPlayerToTracking': 'เพิ่มผู้เล่นเข้าสู่การติดตาม',
+    'referee.removePlayerFromTracking': 'ลบผู้เล่นออกจากการติดตาม',
+    'referee.toggleTime': 'สลับสถานะเวลา',
+    'referee.playerTimeValidation': 'การตรวจสอบเวลาในสนาม',
+    'referee.trackedTime': 'เวลาที่ติดตาม',
+    'referee.startingSquadSelected': 'เลือกตัวจริงเรียบร้อยแล้ว',
+    'referee.requiredPlayersOnField': 'ต้องมีผู้เล่นในสนาม {count} คนเสมอ',
+
+    // Substitution
+    'referee.manageSubstitution': 'จัดการเปลี่ยนตัว',
+    'referee.makeSubstitution': 'เปลี่ยนตัว',
+    'referee.substitutePlayer': 'เปลี่ยนตัวผู้เล่น',
+    'referee.confirmSubstitution': 'ยืนยันการเปลี่ยนตัว',
+    'referee.substituteSuccess': 'เปลี่ยนตัวเรียบร้อยแล้ว',
+
+    // Labels for summary + data views
+    'referee.matchStatus': 'สถานะแมตช์',
+    'referee.score': 'สกอร์',
+    'referee.summary': 'สรุป',
+    'referee.team': 'ทีม',
+    'referee.player': 'นักเตะ',
+    'referee.minute': 'นาที',
+    'referee.recordedAt': 'บันทึกที่',
+
+    // Miscellaneous - refs
+    'referee.officials': 'ผู้ตัดสิน',
+    'referee.matchOfficials': 'คณะกรรมการ',
+    'referee.referee': 'กรรมการ',
+    'referee.assistantReferee': 'ไลน์แมน',
+    'referee.fourthOfficial': 'ผู้ช่วยที่ 4',
+    // End of Thai object
   }
 };
 
