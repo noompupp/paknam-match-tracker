@@ -1,10 +1,8 @@
-
 import React from "react";
 import { ComponentPlayer } from "../../../hooks/useRefereeState";
 import { useMatchStore } from "@/stores/useMatchStore";
 import { useGlobalBatchSaveManager } from "@/hooks/useGlobalBatchSaveManager";
 import { useAutoSave } from "@/hooks/useAutoSave";
-import ScoreTabDisplay from "./ScoreTabDisplay";
 import UnsavedChangesIndicator from "./UnsavedChangesIndicator";
 import SimplifiedGoalRecording from "./SimplifiedGoalRecording";
 import GoalsSummary from "./GoalsSummary";
@@ -115,17 +113,6 @@ const ScoreTabContainer = ({
 
   return (
     <div className="space-y-6">
-      <ScoreTabDisplay
-        homeTeamName={homeTeamName}
-        awayTeamName={awayTeamName}
-        homeScore={homeScore}
-        awayScore={awayScore}
-        matchTime={matchTime}
-        isRunning={isRunning}
-        hasUnsavedChanges={hasUnsavedChanges}
-        formatTime={formatTime}
-      />
-
       {goals.length > 0 && (
         <GoalsSummary goals={goals} formatTime={formatTime} />
       )}
