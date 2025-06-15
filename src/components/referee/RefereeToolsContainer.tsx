@@ -11,6 +11,9 @@ import { useNavigate } from "react-router-dom"; // for redirect after finish
 // Import useMatchDataHandlers (for reset/save/dialog logic)
 import { useMatchDataHandlers } from "./hooks/handlers/useMatchDataHandlers";
 
+// Import Supabase
+import { supabase } from "@/integrations/supabase/client";
+
 const RefereeToolsContent = () => {
   const {
     fixtures,
@@ -113,21 +116,41 @@ const RefereeToolsContent = () => {
 
   const handleFinishDialogCancel = () => setFinishDialogOpen(false);
 
-  // Confirmed: Save & finalize, then exit
+  // This will:
+  // 1. Save match
+  // 2. Set fixture status to 'completed'
+  // 3. Navigate to results with summary dialog for fixture open
   const handleFinishDialogConfirm = async () => {
     setFinishLoading(true);
-    // First: Save (if needed)
     try {
       if (typeof handleSaveMatch === "function") {
         await handleSaveMatch();
       }
-      // TODO: Optionally, set a "finalized" status in database if available
+
+      // 2. Update fixture status to 'completed' in Supabase
+      if (selectedFixtureData?.id) {
+        const { error } = await supabase
+          .from("fixtures")
+          .update({ status: "completed" })
+          .eq("id", selectedFixtureData.id);
+
+        if (error) {
+          console.error("Failed to update fixture status:", error);
+          // We'll show a toast here if you want (could be improved later)
+        }
+      }
 
       setFinishDialogOpen(false);
       setFinishLoading(false);
 
-      // Option 1: Redirect to dashboard (root "/")
-      navigate("/");
+      // 3. Navigate to results and enable the summary for this fixture
+      // We'll use location state so Results knows which dialog to show.
+      navigate("/", {
+        state: {
+          activeTab: "results",
+          openSummaryFixtureId: selectedFixtureData?.id
+        }
+      });
     } catch (e) {
       // handle error (show message/toast, but don't exit)
       setFinishLoading(false);
@@ -163,6 +186,7 @@ const RefereeToolsContent = () => {
         onCancel={handleFinishDialogCancel}
         onConfirm={handleFinishDialogConfirm}
         loading={finishLoading}
+        // Pass updated confirmation dialog text via props if you want to customize more
       />
       <main className="container mx-auto px-4 py-6 space-y-6 min-h-screen">
         {/* Sync banners */}
@@ -232,11 +256,9 @@ const RefereeToolsContent = () => {
             addPlayer={handleAddPlayer}
             removePlayer={handleRemovePlayer}
             togglePlayerTime={handleTogglePlayerTime}
-            // <-- correct, via useMatchDataHandlers
             onSaveMatch={handleSaveMatch}
-            // <-- correct dialog-based handler
             onResetMatch={handleResetMatchData}
-            onFinishMatch={handleFinishMatch} // <-- Add this callback!
+            onFinishMatch={handleFinishMatch}
             onDataRefresh={handleManualRefresh}
           />
         )}

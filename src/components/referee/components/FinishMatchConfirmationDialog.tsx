@@ -1,4 +1,3 @@
-
 import React from "react";
 import {
   AlertDialog,
@@ -42,14 +41,14 @@ const FinishMatchConfirmationDialog = ({
         <AlertDialogDescription asChild>
           <div>
             <div className="mb-4">
-              <b>Are you sure you want to finalize and exit?</b><br />
+              <b>Are you sure you want to finish this match and view the summary?</b><br />
               This will:
             </div>
             <ul className="list-disc pl-6 mb-2 space-y-1 text-left">
               <li>Save all current match data and events</li>
               <li>Mark the match as <b>completed</b></li>
               <li>Prevent further edits to this fixture</li>
-              <li>Return you to the dashboard</li>
+              <li>Show you the Match Summary</li>
             </ul>
             <div>This action is recommended <b>after all details are complete</b> for official reporting.</div>
           </div>
@@ -68,7 +67,7 @@ const FinishMatchConfirmationDialog = ({
           disabled={loading}
           autoFocus
         >
-          {loading ? "Finalizing..." : "Finish & Exit"}
+          {loading ? "Finalizing..." : "Finish & View Summary"}
         </AlertDialogAction>
       </AlertDialogFooter>
     </AlertDialogContent>
