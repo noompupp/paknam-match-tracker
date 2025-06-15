@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Target } from "lucide-react";
@@ -13,8 +12,6 @@ interface GoalsTabProps {
   matchTime: number;
   formatTime: (seconds: number) => string;
   onGoalAssigned: (goalData: any) => void;
-  homeScore: number;
-  awayScore: number;
   showGoalWizard: boolean;
   onCancelGoalWizard: () => void;
 }
@@ -26,8 +23,6 @@ const GoalsTab = ({
   matchTime,
   formatTime,
   onGoalAssigned,
-  homeScore,
-  awayScore,
   showGoalWizard,
   onCancelGoalWizard
 }: GoalsTabProps) => {
@@ -36,8 +31,6 @@ const GoalsTab = ({
       {/* Database-driven scoreboard */}
       <ScoreDisplay 
         selectedFixtureData={selectedFixtureData}
-        localHomeScore={homeScore}
-        localAwayScore={awayScore}
         showLocal={true}
       />
 

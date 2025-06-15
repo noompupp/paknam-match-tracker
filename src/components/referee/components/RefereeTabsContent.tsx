@@ -76,8 +76,6 @@ const RefereeTabsContent = (props: RefereeTabsContentProps) => {
         </div>
         <ScoreTab
           selectedFixtureData={props.selectedFixtureData}
-          homeScore={props.homeScore}
-          awayScore={props.awayScore}
           matchTime={props.matchTime}
           isRunning={props.isRunning}
           homeTeamPlayers={props.homeTeamPlayers}
