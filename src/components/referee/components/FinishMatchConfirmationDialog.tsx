@@ -10,7 +10,7 @@ import {
   AlertDialogAction,
   AlertDialogCancel,
 } from "@/components/ui/alert-dialog";
-import { checkCircle } from "lucide-react";
+import { CheckCircle } from "lucide-react"; // <-- FIXED: Proper capitalization
 
 interface FinishMatchConfirmationDialogProps {
   open: boolean;
@@ -33,10 +33,7 @@ const FinishMatchConfirmationDialog = ({
       <AlertDialogHeader>
         <div className="flex items-center gap-2 mb-2">
           <span>
-            <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2l4 -4" />
-              <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth={2} fill="none" />
-            </svg>
+            <CheckCircle className="w-6 h-6 text-primary" />
           </span>
           <AlertDialogTitle>
             Finish &amp; Exit This Match

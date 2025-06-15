@@ -61,12 +61,7 @@ const RefereeToolsContent = () => {
     removePlayer,
     addPlayer,
     handleManualRefresh,
-    resetScore,
-    resetEvents,
-    resetCards,
-    resetTracking,
-    resetGoals,
-    addEvent,
+    // --- REMOVED unused: resetScore, resetEvents, resetCards, resetTracking, resetGoals, addEvent ---
     playersForTimeTracker,
     forceRefresh,
   } = useRefereeStateOrchestrator();
