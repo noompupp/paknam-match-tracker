@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -36,8 +37,8 @@ export const useLatestCompleteFixtures = () => {
         .from('fixtures')
         .select('match_date')
         .eq('status', 'completed')
-        .neq('home_score', null)
-        .neq('away_score', null)
+        .not('home_score', 'is', null)
+        .not('away_score', 'is', null)
         .order('match_date', { ascending: false })
         .limit(1)
         .maybeSingle();
@@ -53,8 +54,8 @@ export const useLatestCompleteFixtures = () => {
         .select('*')
         .eq('status', 'completed')
         .eq('match_date', latestDate)
-        .neq('home_score', null)
-        .neq('away_score', null)
+        .not('home_score', 'is', null)
+        .not('away_score', 'is', null)
         .order('id', { ascending: true })
         .limit(3);
 
