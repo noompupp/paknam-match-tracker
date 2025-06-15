@@ -7,6 +7,8 @@ interface Props {
   onToggleTimer: () => void;
   onSaveMatch: () => void;
   onResetMatch: () => void;
+  onFinishMatch?: () => void;
+  isSaving?: boolean;
 }
 
 const ScoreTabMatchControlsSection = ({
@@ -14,12 +16,16 @@ const ScoreTabMatchControlsSection = ({
   onToggleTimer,
   onSaveMatch,
   onResetMatch,
+  onFinishMatch,
+  isSaving
 }: Props) => (
   <MatchControlsSection
     isRunning={isRunning}
     onToggleTimer={onToggleTimer}
     onSaveMatch={onSaveMatch}
     onResetMatch={onResetMatch}
+    onFinishMatch={onFinishMatch}
+    isSaving={isSaving}
   />
 );
 

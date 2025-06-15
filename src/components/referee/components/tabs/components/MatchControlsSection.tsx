@@ -1,3 +1,4 @@
+
 import { Play, Pause, RotateCcw, Save } from "lucide-react";
 import RefereeCard from "../../../shared/RefereeCard";
 import RefereeButton from "../../../shared/RefereeButton";
@@ -50,7 +51,12 @@ const MatchControlsSection = ({
 
         {/* --- Finish & Exit Button --- */}
         <Button
-          onClick={onFinishMatch}
+          onClick={() => {
+            console.log("🟢 Finish & Exit pressed");
+            if (onFinishMatch) {
+              onFinishMatch();
+            }
+          }}
           variant="default"
           size="lg"
           className="w-full flex items-center justify-center gap-2 font-semibold ring-2 ring-primary/10"

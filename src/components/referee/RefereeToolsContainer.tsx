@@ -6,11 +6,10 @@ import { useIntelligentSyncManager } from "./hooks/useIntelligentSyncManager";
 import { MatchSaveStatusProvider } from "./hooks/useMatchSaveStatus";
 import { useState } from "react";
 import FinishMatchConfirmationDialog from "./components/FinishMatchConfirmationDialog";
-import { useNavigate } from "react-router-dom"; // for redirect after finish
-
-// Import useMatchDataHandlers (for reset/save/dialog logic)
+import { useNavigate } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
+// Import useMatchDataHandlers
 import { useMatchDataHandlers } from "./hooks/handlers/useMatchDataHandlers";
-
 // Import Supabase
 import { supabase } from "@/integrations/supabase/client";
 
@@ -104,56 +103,74 @@ const RefereeToolsContent = () => {
   });
 
   const navigate = useNavigate();
-
-  // --- STATE: Finish & Exit Modal ---
+  const { toast } = useToast();
   const [finishDialogOpen, setFinishDialogOpen] = useState(false);
   const [finishLoading, setFinishLoading] = useState(false);
 
-  // --- HANDLER: Finish & Exit Logic ---
+  // --- handler: Begin finish flow ---
   const handleFinishMatch = async () => {
+    console.log("🔵 handleFinishMatch called");
     setFinishDialogOpen(true);
   };
 
-  const handleFinishDialogCancel = () => setFinishDialogOpen(false);
+  // --- cancel dialog handler ---
+  const handleFinishDialogCancel = () => {
+    console.log("🟡 handleFinishDialogCancel called");
+    setFinishDialogOpen(false);
+  };
 
-  // This will:
-  // 1. Save match
-  // 2. Set fixture status to 'completed'
-  // 3. Navigate to results with summary dialog for fixture open
+  // --- confirm dialog handler ---
   const handleFinishDialogConfirm = async () => {
     setFinishLoading(true);
+    console.log("🔴 handleFinishDialogConfirm called");
     try {
       if (typeof handleSaveMatch === "function") {
+        console.log("⬛ Calling handleSaveMatch...");
         await handleSaveMatch();
+        console.log("🟩 handleSaveMatch complete");
       }
 
-      // 2. Update fixture status to 'completed' in Supabase
+      // 2. Set fixture status to 'completed'
       if (selectedFixtureData?.id) {
+        console.log("⬛ Updating fixture status to 'completed' for id", selectedFixtureData.id);
         const { error } = await supabase
           .from("fixtures")
           .update({ status: "completed" })
           .eq("id", selectedFixtureData.id);
 
         if (error) {
-          console.error("Failed to update fixture status:", error);
-          // We'll show a toast here if you want (could be improved later)
+          console.error("❌ Failed to update fixture status:", error.message || error);
+          toast({
+            title: "Failed to set match to completed",
+            description: `Attempt to mark match as completed failed: ${error.message || "Unknown error"}`,
+            variant: "destructive"
+          });
+        } else {
+          console.log("🟩 Fixture status update succeeded");
         }
+      } else {
+        console.warn("⚠️ selectedFixtureData?.id unavailable, could not update fixture status.");
       }
-
       setFinishDialogOpen(false);
       setFinishLoading(false);
 
-      // 3. Navigate to results and enable the summary for this fixture
-      // We'll use location state so Results knows which dialog to show.
+      // 3. Navigate to results & open summary for this fixture
       navigate("/", {
         state: {
           activeTab: "results",
           openSummaryFixtureId: selectedFixtureData?.id
         }
       });
+      console.log("🟩 Navigated to results with openSummaryFixtureId", selectedFixtureData?.id);
+
     } catch (e) {
-      // handle error (show message/toast, but don't exit)
       setFinishLoading(false);
+      console.error("❌ Error in handleFinishDialogConfirm:", e);
+      toast({
+        title: "Error finalizing match",
+        description: e?.message || "Unknown error",
+        variant: "destructive"
+      });
     }
   };
 
@@ -186,7 +203,6 @@ const RefereeToolsContent = () => {
         onCancel={handleFinishDialogCancel}
         onConfirm={handleFinishDialogConfirm}
         loading={finishLoading}
-        // Pass updated confirmation dialog text via props if you want to customize more
       />
       <main className="container mx-auto px-4 py-6 space-y-6 min-h-screen">
         {/* Sync banners */}
