@@ -42,14 +42,12 @@ export const useRefereeStateOrchestrator = () => {
     const awayTeamName = resolveTeamName(storeAwayTeamName, fixtureAway);
 
     const homeTeamId = String(
-      selectedFixtureData.home_team?.id ||
       selectedFixtureData.home_team?.__id__ ||
       selectedFixtureData.home_team_id ||
       storeHomeTeamId ||
       ""
     );
     const awayTeamId = String(
-      selectedFixtureData.away_team?.id ||
       selectedFixtureData.away_team?.__id__ ||
       selectedFixtureData.away_team_id ||
       storeAwayTeamId ||

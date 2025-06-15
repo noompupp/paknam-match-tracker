@@ -47,10 +47,22 @@ const Dashboard = ({ onNavigateToResults, onNavigateToFixtures }: DashboardProps
   };
 
   const handleFixturePreview = (fixture: any) => {
-    // Ensure fixture has required properties for Fixture type
+    // Transform the database fixture data to match the Fixture type
     const fixtureWithRequiredProps: Fixture = {
-      ...fixture,
+      id: fixture.id,
+      home_team_id: fixture.home_team_id || '',
+      away_team_id: fixture.away_team_id || '',
+      match_date: fixture.match_date,
       match_time: fixture.time || fixture.match_time || '18:00:00',
+      home_score: fixture.home_score,
+      away_score: fixture.away_score,
+      status: fixture.status as 'scheduled' | 'live' | 'completed' | 'postponed',
+      venue: fixture.venue,
+      created_at: fixture.created_at,
+      updated_at: fixture.updated_at,
+      __id__: fixture.__id__,
+      home_team: fixture.home_team,
+      away_team: fixture.away_team,
     };
     setSelectedFixture(fixtureWithRequiredProps);
     setIsPreviewModalOpen(true);
@@ -74,9 +86,21 @@ const Dashboard = ({ onNavigateToResults, onNavigateToFixtures }: DashboardProps
 
   // Transform upcoming fixtures to ensure they have the required match_time property
   const transformedUpcomingFixtures = upcomingFixtures?.map(fixture => ({
-    ...fixture,
+    id: fixture.id,
+    home_team_id: fixture.home_team_id || '',
+    away_team_id: fixture.away_team_id || '',
+    match_date: fixture.match_date,
     match_time: fixture.time || fixture.match_time || '18:00:00',
-  })) as Fixture[] | undefined;
+    home_score: fixture.home_score,
+    away_score: fixture.away_score,
+    status: fixture.status as 'scheduled' | 'live' | 'completed' | 'postponed',
+    venue: fixture.venue,
+    created_at: fixture.created_at,
+    updated_at: fixture.updated_at,
+    __id__: fixture.__id__,
+    home_team: fixture.home_team,
+    away_team: fixture.away_team,
+  }));
 
   return (
     <>
