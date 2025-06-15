@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Dashboard from "@/components/Dashboard";
 import Teams from "@/components/Teams";
 import Fixtures from "@/components/Fixtures";
@@ -15,10 +15,11 @@ import PullToRefreshIndicator from "@/components/PullToRefreshIndicator";
 import { usePullToRefresh } from "@/hooks/usePullToRefresh";
 import UnifiedContainer from "@/components/shared/UnifiedContainer";
 import MobileBottomSpacer from "@/components/shared/MobileBottomSpacer";
+import { LanguageProvider } from "@/contexts/LanguageContext";
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
-  
+
   // Pull to refresh functionality
   const pullToRefresh = usePullToRefresh({
     threshold: 80,
@@ -44,14 +45,14 @@ const Index = () => {
         const safeAreaBottom = parseInt(getComputedStyle(document.documentElement)
           .getPropertyValue('--safe-area-inset-bottom').replace('px', '')) || 0;
         const totalOffset = navHeight + safeAreaBottom + 20; // Extra padding for better UX
-        
+
         const elementPosition = element.getBoundingClientRect().top + window.scrollY - totalOffset;
-        
+
         window.scrollTo({
           top: Math.max(0, elementPosition),
           behavior: 'smooth'
         });
-        
+
         // Add visual feedback
         element.classList.add('highlight-section');
         setTimeout(() => {
@@ -134,37 +135,40 @@ const Index = () => {
   };
 
   return (
-    <AuthProvider>
-      <NavigationProvider onTabChange={setActiveTab}>
-        <div className="min-h-screen min-h-dvh safe-x pull-to-refresh-container">
-          {/* Pull to refresh indicator */}
-          <PullToRefreshIndicator
-            pullDistance={pullToRefresh.pullDistance}
-            isRefreshing={pullToRefresh.isRefreshing}
-            canRefresh={pullToRefresh.canRefresh}
-            isActive={pullToRefresh.isActive}
-            progress={pullToRefresh.progress}
-          />
-          
-          {/* Main content with pull animation */}
-          <div 
-            className="pull-content"
-            style={{
-              transform: pullToRefresh.isActive ? 
-                `translateY(${Math.min(pullToRefresh.pullDistance * 0.5, 30)}px)` : 
-                'translateY(0px)'
-            }}
-          >
-            {renderContent()}
+    <LanguageProvider>
+      <AuthProvider>
+        <NavigationProvider onTabChange={setActiveTab}>
+          <div className="min-h-screen min-h-dvh safe-x pull-to-refresh-container">
+            {/* Pull to refresh indicator */}
+            <PullToRefreshIndicator
+              pullDistance={pullToRefresh.pullDistance}
+              isRefreshing={pullToRefresh.isRefreshing}
+              canRefresh={pullToRefresh.canRefresh}
+              isActive={pullToRefresh.isActive}
+              progress={pullToRefresh.progress}
+            />
+
+            {/* Main content with pull animation */}
+            <div 
+              className="pull-content"
+              style={{
+                transform: pullToRefresh.isActive ? 
+                  `translateY(${Math.min(pullToRefresh.pullDistance * 0.5, 30)}px)` : 
+                  'translateY(0px)'
+              }}
+            >
+              {renderContent()}
+            </div>
+
+            <Navigation activeTab={activeTab} onTabChange={setActiveTab} />
+            <PWAInstallButton />
+            <PWAPromptToast />
           </div>
-          
-          <Navigation activeTab={activeTab} onTabChange={setActiveTab} />
-          <PWAInstallButton />
-          <PWAPromptToast />
-        </div>
-      </NavigationProvider>
-    </AuthProvider>
+        </NavigationProvider>
+      </AuthProvider>
+    </LanguageProvider>
   );
 };
 
 export default Index;
+
