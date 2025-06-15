@@ -3,6 +3,16 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useSecureAuth } from "@/contexts/SecureAuthContext";
 
+/** Local type until codegen is updated */
+export interface PlayerRating {
+  id: number;
+  fixture_id: number;
+  player_id: number;
+  rater_id: string;
+  rating: number;
+  created_at: string;
+}
+
 /**
  * Hook to fetch ratings for the active fixture.
  */
@@ -10,7 +20,7 @@ export function usePlayerRatings(fixtureId: number | null) {
   const { user } = useSecureAuth();
   const queryKey = ["player_ratings", fixtureId, user?.id];
 
-  const query = useQuery({
+  const query = useQuery<PlayerRating[]>({
     queryKey,
     enabled: !!fixtureId && !!user,
     queryFn: async () => {
@@ -22,7 +32,8 @@ export function usePlayerRatings(fixtureId: number | null) {
         .eq("rater_id", user.id);
 
       if (error) throw error;
-      return data || [];
+      // Defensive: data could be unknown/null, so ensure correct typing
+      return (data ?? []) as PlayerRating[];
     },
     staleTime: 2 * 60 * 1000,
   });
@@ -63,7 +74,8 @@ export function useSubmitPlayerRating() {
           { onConflict: "fixture_id,player_id,rater_id", ignoreDuplicates: false }
         );
       if (error) throw error;
-      return data?.[0];
+      // Defensive: data is an array, take the first element
+      return (data?.[0] ?? null) as PlayerRating | null;
     },
     onSuccess: (data, vars) => {
       // Refresh rating queries for fixture after submit

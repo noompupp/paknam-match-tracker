@@ -6,7 +6,7 @@ import UnifiedPageHeader from "@/components/shared/UnifiedPageHeader";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Button } from "@/components/ui/button";
 import { useSecureAuth } from "@/contexts/SecureAuthContext";
-import { usePlayerRatings, useSubmitPlayerRating } from "@/hooks/usePlayerRatings";
+import { usePlayerRatings, useSubmitPlayerRating, PlayerRating } from "@/hooks/usePlayerRatings";
 import { useToast } from "@/hooks/use-toast";
 
 // Enhanced StarRating with debug/info
@@ -69,6 +69,18 @@ const TeamOfTheWeek: React.FC = () => {
     refetch: refetchRatings,
   } = usePlayerRatings(fixture?.id || null);
 
+  // Type helper: Ensures that a value is a PlayerRating object
+  function isPlayerRating(obj: unknown): obj is PlayerRating {
+    if (!obj || typeof obj !== "object") return false;
+    // 'player_id' and 'rating' are the fields we care about
+    return (
+      "player_id" in obj &&
+      typeof (obj as any).player_id === "number" &&
+      "rating" in obj &&
+      typeof (obj as any).rating === "number"
+    );
+  }
+
   const submitMutation = useSubmitPlayerRating();
 
   React.useEffect(() => {
@@ -76,7 +88,7 @@ const TeamOfTheWeek: React.FC = () => {
       // Pre-fill localRatings with user's submitted ratings for players in this fixture
       const nextRatings: { [k: string]: number } = {};
       for (const r of userRatings) {
-        if (r && typeof r.player_id !== "undefined") {
+        if (isPlayerRating(r)) {
           nextRatings[String(r.player_id)] = r.rating;
         }
       }
@@ -246,12 +258,19 @@ const TeamOfTheWeek: React.FC = () => {
                             disabled={submitMutation.isPending || !canRatePlayer(player.team_id)}
                           />
                         </span>
+                        {/* Only show your rating if available and valid */}
                         {!!userRatings &&
-                          Number(userRatings.find((r) => r.player_id === player.player_id)?.rating) > 0 && (
-                            <span className="ml-2 text-green-700 font-medium">
-                              {t("rating.yourRating")}: {userRatings.find((r) => r.player_id === player.player_id)?.rating}
-                            </span>
-                          )}
+                          (() => {
+                            // Get the PlayerRating object if present
+                            const found = Array.isArray(userRatings)
+                              ? userRatings.find((r) => isPlayerRating(r) && r.player_id === player.player_id)
+                              : undefined;
+                            return found && isPlayerRating(found) && found.rating > 0 ? (
+                              <span className="ml-2 text-green-700 font-medium">
+                                {t("rating.yourRating")}: {found.rating}
+                              </span>
+                            ) : null;
+                          })()}
                       </li>
                     ))}
                   </ul>
