@@ -8,7 +8,7 @@ interface TrackedPlayersListProps {
   allPlayers: ProcessedPlayer[];
   formatTime: (seconds: number) => string;
   onTogglePlayerTime: (playerId: number) => void;
-  onRemovePlayer: (playerId: number) => void;
+  // onRemovePlayer prop removed
   matchTime?: number;
   pendingSubstitutionPlayerId?: number | null;
   substitutionManager?: {
@@ -23,7 +23,7 @@ const TrackedPlayersList = ({
   allPlayers,
   formatTime,
   onTogglePlayerTime,
-  onRemovePlayer,
+  // Removed onRemovePlayer from destructure
   matchTime = 0,
   pendingSubstitutionPlayerId = null,
   substitutionManager
@@ -49,7 +49,7 @@ const TrackedPlayersList = ({
             playerInfo={playerInfo}
             formatTime={formatTime}
             onTogglePlayerTime={onTogglePlayerTime}
-            onRemovePlayer={onRemovePlayer}
+            // Removed onRemovePlayer
             trackedPlayers={trackedPlayers}
             matchTime={matchTime}
             isPendingSubstitution={isPendingSubstitution}
@@ -62,3 +62,4 @@ const TrackedPlayersList = ({
 };
 
 export default TrackedPlayersList;
+

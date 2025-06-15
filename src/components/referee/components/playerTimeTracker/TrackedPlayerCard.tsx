@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { UserMinus, ArrowRightLeft } from "lucide-react";
+import { ArrowRightLeft } from "lucide-react";
 import { PlayerTime } from "@/types/database";
 import { ProcessedPlayer } from "@/utils/refereeDataProcessor";
 import PlayerRoleBadge from "@/components/ui/player-role-badge";
@@ -13,7 +13,6 @@ interface TrackedPlayerCardProps {
   playerInfo?: ProcessedPlayer;
   formatTime: (seconds: number) => string;
   onTogglePlayerTime: (playerId: number) => void;
-  onRemovePlayer: (playerId: number) => void;
   trackedPlayers?: PlayerTime[];
   matchTime?: number;
   isPendingSubstitution?: boolean;
@@ -29,7 +28,6 @@ const TrackedPlayerCard = ({
   playerInfo,
   formatTime,
   onTogglePlayerTime,
-  onRemovePlayer,
   trackedPlayers = [],
   matchTime = 0,
   isPendingSubstitution = false,
@@ -217,16 +215,6 @@ const TrackedPlayerCard = ({
             <span className="sm:hidden">
               {buttonProps.text.split(' ')[0]}
             </span>
-          </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => onRemovePlayer(player.id)}
-            className="h-7 w-7 p-0"
-            disabled={!removal.canRemove || isPendingSubstitution}
-            title={!removal.canRemove ? removal.reason : 'Remove player from squad'}
-          >
-            <UserMinus className="h-3 w-3" />
           </Button>
         </div>
       </div>

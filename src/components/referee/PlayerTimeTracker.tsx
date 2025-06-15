@@ -1,4 +1,3 @@
-
 import { Card, CardContent } from "@/components/ui/card";
 import { PlayerTime } from "@/types/database";
 import { ProcessedPlayer } from "@/utils/refereeDataProcessor";
@@ -17,7 +16,6 @@ interface PlayerTimeTrackerProps {
   onPlayerSelect: (value: string) => void;
   onTimeTeamChange: (value: string) => void;
   onAddPlayer: () => void;
-  onRemovePlayer: (playerId: number) => void;
   onTogglePlayerTime: (playerId: number) => void;
   formatTime: (seconds: number) => string;
   matchTime?: number;
@@ -34,7 +32,6 @@ const PlayerTimeTracker = ({
   onPlayerSelect,
   onTimeTeamChange,
   onAddPlayer,
-  onRemovePlayer,
   onTogglePlayerTime,
   formatTime,
   matchTime = 0,
@@ -82,7 +79,6 @@ const PlayerTimeTracker = ({
             allPlayers={allPlayers}
             formatTime={formatTime}
             onTogglePlayerTime={onTogglePlayerTime}
-            onRemovePlayer={onRemovePlayer}
           />
         </CardContent>
       </Card>

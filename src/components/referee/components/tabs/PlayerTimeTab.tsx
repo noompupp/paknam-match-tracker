@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -164,13 +163,6 @@ const PlayerTimeTab = ({
                         ) : (
                           <Play className="h-3 w-3" />
                         )}
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        onClick={() => removePlayer(player.id)}
-                      >
-                        <UserMinus className="h-3 w-3" />
                       </Button>
                     </div>
                   </div>

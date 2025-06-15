@@ -216,7 +216,6 @@ const EnhancedPlayerTimeTracker = ({
             allPlayers={allPlayers}
             formatTime={formatTime}
             onTogglePlayerTime={handleTogglePlayerTime}
-            onRemovePlayer={handlePlayerRemove}
             matchTime={matchTime}
             pendingSubstitutionPlayerId={substitutionManager.pendingSubstitution?.outgoingPlayerId || null}
             substitutionManager={substitutionManager}
