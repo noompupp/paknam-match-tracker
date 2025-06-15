@@ -20,19 +20,19 @@ export interface CoreSlice {
 // Add to your coreSlice
 export const createCoreSlice = (set: any, get: any, api: any): CoreSlice => ({
   setupMatch: ({ fixtureId, homeTeamName, awayTeamName, homeTeamId, awayTeamId }) => {
-    set((state: any) => ({
-      fixtureId,
-      homeTeamName,
-      awayTeamName,
-      homeTeamId: homeTeamId || state.homeTeamId || "",
-      awayTeamId: awayTeamId || state.awayTeamId || ""
-    }));
-    console.log("[MATCH SETUP] Store initialized:", {
-      fixtureId,
-      homeTeamName,
-      awayTeamName,
-      homeTeamId,
-      awayTeamId
+    set((state: any) => {
+      // Always immediately set both home/away names on setup
+      const next = {
+        fixtureId,
+        homeTeamName: homeTeamName || "",
+        awayTeamName: awayTeamName || "",
+        homeTeamId: homeTeamId || state.homeTeamId || "",
+        awayTeamId: awayTeamId || state.awayTeamId || "",
+      };
+      // Debug: log new state snapshot for verification
+      console.log("[MATCH SETUP] State updated via setupMatch:", next);
+      // Defensive: prevent accidental undefined propagation
+      return next;
     });
   },
   setFixtureId: (fixtureId: number) => {

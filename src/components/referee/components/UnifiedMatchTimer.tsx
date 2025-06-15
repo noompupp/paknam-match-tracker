@@ -32,11 +32,9 @@ const UnifiedMatchTimer = ({
 
   // Get live scores direct from match store for local-first updates!
   const { homeScore, awayScore, homeTeamName, awayTeamName, goals, hasUnsavedChanges, lastUpdated } = useMatchStore();
-
-  // DEBUG: Print state on every render
-  console.log('[UnifiedMatchTimer] 🔍 Store state snapshot on render:', {
-    homeScore, awayScore, homeTeamName, awayTeamName, matchTime, goals, isRunning, hasUnsavedChanges, lastUpdated,
-    fixtureData: selectedFixtureData
+  // Debug: log every render with focus on team names and scores
+  console.log('[UnifiedMatchTimer v2] Current ZUSTAND STATE:', {
+    homeScore, awayScore, homeTeamName, awayTeamName, goals, hasUnsavedChanges, lastUpdated, matchTime
   });
 
   if (selectedFixtureData) {
@@ -98,7 +96,8 @@ const UnifiedMatchTimer = ({
               {dateFormatter(selectedFixtureData.match_date)} • {selectedFixtureData.match_time}
             </div>
             <div className="text-xs text-muted-foreground">
-              {selectedFixtureData.home_team?.name} {t("referee.matchTeamsVs.connector", "vs")} {selectedFixtureData.away_team?.name}
+              {/* Always reference up-to-date store team names to guarantee sync */}
+              {(homeTeamName || selectedFixtureData.home_team?.name || t("referee.homeTeam"))} {t("referee.matchTeamsVs.connector", "vs")} {(awayTeamName || selectedFixtureData.away_team?.name || t("referee.awayTeam"))}
             </div>
           </div>
         )}
@@ -110,7 +109,7 @@ const UnifiedMatchTimer = ({
               {/* Home Team */}
               <div className="text-center min-w-0 flex-1">
                 <div className="text-sm font-medium text-muted-foreground truncate">
-                  {selectedFixtureData.home_team?.name || t("referee.homeTeam")}
+                  {homeTeamName || selectedFixtureData.home_team?.name || t("referee.homeTeam")}
                 </div>
                 <div className="text-3xl font-bold text-primary">{homeScore}</div>
               </div>
@@ -137,7 +136,7 @@ const UnifiedMatchTimer = ({
               {/* Away Team */}
               <div className="text-center min-w-0 flex-1">
                 <div className="text-sm font-medium text-muted-foreground truncate">
-                  {selectedFixtureData.away_team?.name || t("referee.awayTeam")}
+                  {awayTeamName || selectedFixtureData.away_team?.name || t("referee.awayTeam")}
                 </div>
                 <div className="text-3xl font-bold text-primary">{awayScore}</div>
               </div>

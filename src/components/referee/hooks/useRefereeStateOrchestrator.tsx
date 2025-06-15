@@ -6,7 +6,7 @@ import { useEffect, useRef } from "react";
 export const useRefereeStateOrchestrator = () => {
   // Get all integrated state
   const orchestrator = useRefereeStateIntegration();
-  // Use match store directly for homeScore/awayScore to avoid accidental drift/duplicate
+  // Use match store directly for homeScore/awayScore/team names
   const { homeScore, awayScore, homeTeamName, awayTeamName } = useMatchStore();
 
   // Track last fixture id in a ref to avoid duplicate calls
