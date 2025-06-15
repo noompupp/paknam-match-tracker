@@ -1,10 +1,10 @@
-
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from '@tanstack/react-query';
 import { PlayerTimeTrackerPlayer } from "../useRefereeState";
 import { unifiedRefereeService } from "@/services/fixtures";
 import { matchResetService } from "@/services/fixtures";
 import { useResetState } from "@/hooks/useResetState";
+import { useMatchSaveStatus } from "../useMatchSaveStatus";
 
 interface UseMatchDataHandlersProps {
   selectedFixtureData: any;
@@ -29,12 +29,16 @@ export const useMatchDataHandlers = (props: UseMatchDataHandlersProps) => {
   const queryClient = useQueryClient();
   const resetState = useResetState({ fixtureId: props.selectedFixtureData?.id });
 
+  // Add saving status context API
+  const { setPhase, reset: resetSaveStatus } = useMatchSaveStatus();
+
   const handleSaveMatch = async () => {
     if (!props.selectedFixtureData) return;
     
     props.setSaveAttempts(prev => prev + 1);
     
     try {
+      setPhase("validating", { statusMessage: "Validating match data..." });
       console.log('💾 useMatchDataHandlers: Starting unified match save...');
       
       toast({
@@ -42,6 +46,8 @@ export const useMatchDataHandlers = (props: UseMatchDataHandlersProps) => {
         description: "Please wait while we save your match data",
       });
       
+      setPhase("saving", { statusMessage: "Saving match and player statistics...", progress: 20 });
+
       const matchData = {
         fixtureId: props.selectedFixtureData.id,
         homeScore: props.homeScore,
@@ -51,7 +57,8 @@ export const useMatchDataHandlers = (props: UseMatchDataHandlersProps) => {
           playerName: goal.playerName,
           team: goal.team,
           type: goal.type as 'goal' | 'assist',
-          time: goal.time
+          time: goal.time,
+          isOwnGoal: goal.isOwnGoal || false
         })),
         cards: [],
         playerTimes: props.playersForTimeTracker.map(player => ({
@@ -75,9 +82,12 @@ export const useMatchDataHandlers = (props: UseMatchDataHandlersProps) => {
         }
       };
 
+      setPhase("saving", { statusMessage: "Saving match to server ...", progress: 40 });
+
       const result = await unifiedRefereeService.saveCompleteMatchData(matchData);
       
       if (result.success) {
+        setPhase("cache", { statusMessage: "Syncing cache...", progress: 70 });
         props.addEvent('Save', `Match saved successfully: ${result.message}`, props.matchTime);
         
         // Enhanced cache invalidation
@@ -95,14 +105,19 @@ export const useMatchDataHandlers = (props: UseMatchDataHandlersProps) => {
         resetState.clearResetState();
         
         if (props.forceRefresh) {
+          setPhase("refreshing", { statusMessage: "Refreshing local data...", progress: 85 });
           await props.forceRefresh();
         }
+        
+        setPhase("success", { statusMessage: result.message, progress: 100 });
+        setTimeout(resetSaveStatus, 1500);
         
         toast({
           title: "✅ Match Saved Successfully!",
           description: result.message,
         });
       } else {
+        setPhase("error", { statusMessage: "Save completed with errors", errorMessage: (result.errors && result.errors[0]) || "Unknown error", progress: 100 });
         toast({
           title: "Save Completed with Issues",
           description: `${result.message}\n\nErrors: ${result.errors.join(', ')}`,
@@ -110,7 +125,8 @@ export const useMatchDataHandlers = (props: UseMatchDataHandlersProps) => {
         });
       }
       
-    } catch (error) {
+    } catch (error: any) {
+      setPhase("error", { statusMessage: "Critical save failure", errorMessage: error?.message || "Unknown error", progress: 100 });
       console.error('❌ useMatchDataHandlers: Failed to save match:', error);
       toast({
         title: "Save Failed",
@@ -131,9 +147,11 @@ export const useMatchDataHandlers = (props: UseMatchDataHandlersProps) => {
     }
 
     try {
+      setPhase("validating", { statusMessage: "Checking if reset is safe...", progress: 5 });
       const safetyCheck = await matchResetService.validateResetOperation(props.selectedFixtureData.id);
       
       if (!safetyCheck.canReset) {
+        setPhase("error", { statusMessage: "Cannot safely reset this match (blocked by server)", progress: 100 });
         toast({
           title: "Reset Not Safe",
           description: "Cannot safely reset this match data",
@@ -158,20 +176,20 @@ export const useMatchDataHandlers = (props: UseMatchDataHandlersProps) => {
       );
 
       if (!confirmReset) {
+        resetSaveStatus();
         return;
       }
 
-      // Start reset state tracking
       resetState.startReset(props.selectedFixtureData.id);
+      setPhase("saving", { statusMessage: "Resetting match data...", progress: 25 });
 
       toast({
         title: "Resetting Match...",
         description: "Please wait while we reset all match data",
       });
 
-      console.log('🔄 useMatchDataHandlers: Starting enhanced match data reset...');
-      
-      // Reset local state FIRST to provide immediate UI feedback
+      // Immediate UI feedback for local state
+      setPhase("saving", { statusMessage: "Resetting UI...", progress: 35 });
       props.resetTimer();
       props.resetScore();
       props.resetEvents();
@@ -179,15 +197,13 @@ export const useMatchDataHandlers = (props: UseMatchDataHandlersProps) => {
       props.resetTracking();
       props.resetGoals();
       
-      // Then reset database data
+      setPhase("saving", { statusMessage: "Resetting database...", progress: 65 });
       const resetResult = await matchResetService.resetMatchData(props.selectedFixtureData.id);
       
       if (resetResult.success) {
-        // Complete reset state with timestamp
         resetState.completeReset(resetResult.timestamp);
-        
-        // Aggressive cache invalidation with immediate refetch
-        console.log('🔄 useMatchDataHandlers: Invalidating React Query cache...');
+        setPhase("cache", { statusMessage: "Clearing cache...", progress: 80 });
+
         await queryClient.invalidateQueries({ 
           queryKey: ['fixtures'] 
         });
@@ -200,17 +216,17 @@ export const useMatchDataHandlers = (props: UseMatchDataHandlersProps) => {
         await queryClient.invalidateQueries({ 
           queryKey: ['enhancedMatchSummaryWithTeams', props.selectedFixtureData.id] 
         });
-        
-        // Remove stale data and force immediate refetch
         await queryClient.removeQueries({
           queryKey: ['enhancedMatchSummary', props.selectedFixtureData.id]
         });
         
-        // Force refresh to sync state
         if (props.forceRefresh) {
-          console.log('🔄 useMatchDataHandlers: Forcing real-time refresh...');
+          setPhase("refreshing", { statusMessage: "Refreshing local data...", progress: 90 });
           await props.forceRefresh();
         }
+        
+        setPhase("success", { statusMessage: "Match Data Reset Complete", progress: 100 });
+        setTimeout(resetSaveStatus, 1500);
         
         toast({
           title: "✅ Match Data Reset Complete",
@@ -221,21 +237,18 @@ export const useMatchDataHandlers = (props: UseMatchDataHandlersProps) => {
         
         console.log('✅ useMatchDataHandlers: Enhanced match data reset completed successfully');
       } else {
-        // Reset failed, clear reset state
         resetState.clearResetState();
-        
+        setPhase("error", { statusMessage: "Reset partial success", errorMessage: resetResult.message, progress: 100 });
         toast({
           title: "Reset Partial Success",
           description: `${resetResult.message}\n\nErrors: ${resetResult.errors.join(', ')}`,
           variant: "destructive"
         });
       }
-    } catch (error) {
-      console.error('❌ useMatchDataHandlers: Failed to reset match data:', error);
-      
-      // Reset failed, clear reset state
+    } catch (error: any) {
       resetState.clearResetState();
-      
+      setPhase("error", { statusMessage: "Reset failed", errorMessage: error?.message || "Unknown error", progress: 100 });
+      console.error('❌ useMatchDataHandlers: Failed to reset match data:', error);
       toast({
         title: "Reset Failed",
         description: "Failed to reset match data. Please try again.",
