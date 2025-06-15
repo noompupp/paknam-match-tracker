@@ -1,4 +1,3 @@
-
 import { useCallback, useRef } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useMatchStore, MatchGoal, MatchCard, MatchPlayerTime } from '@/stores/useMatchStore';
@@ -25,7 +24,8 @@ export const useGlobalBatchSaveManager = ({
     playerTimes,
     hasUnsavedChanges,
     markAsSaved,
-    getUnsavedItemsCount
+    getUnsavedItemsCount,
+    flushBatchedEvents
   } = useMatchStore();
 
   const transformGoalsToSaveFormat = useCallback((goals: MatchGoal[]) => {
@@ -74,6 +74,11 @@ export const useGlobalBatchSaveManager = ({
     if (!homeTeamData || !awayTeamData) {
       console.error('❌ GlobalBatchSaveManager: Missing team data');
       return { success: false, message: 'Missing team data' };
+    }
+
+    // NEW: Before preparing payload, first flush all batched (queued) events to local store
+    if (flushBatchedEvents) {
+      await flushBatchedEvents();
     }
 
     isSaving.current = true;
@@ -160,7 +165,8 @@ export const useGlobalBatchSaveManager = ({
     transformCardsToSaveFormat,
     transformPlayerTimesToSaveFormat,
     markAsSaved,
-    toast
+    toast,
+    flushBatchedEvents
   ]);
 
   const autoSave = useCallback(async () => {
@@ -176,6 +182,6 @@ export const useGlobalBatchSaveManager = ({
     autoSave,
     isSaving: isSaving.current,
     hasUnsavedChanges,
-    unsavedItemsCount: getUnsavedItemsCount()
+    unsavedItemsCount: getUnsavedItemsCount ? getUnsavedItemsCount() : { goals: 0, cards: 0, playerTimes: 0 }
   };
 };
