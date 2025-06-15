@@ -26,7 +26,7 @@ export function usePlayerRatings(fixtureId: number | null) {
     enabled: !!fixtureId && !!user,
     queryFn: async () => {
       if (!fixtureId || !user) return [];
-      // @ts-expect-error: player_ratings is not in the Supabase .types.ts (it's a custom table)
+      // (supabase as any) used because player_ratings is not in the Supabase .types.ts
       const { data, error } = (supabase as any)
         .from("player_ratings")
         .select("*")
@@ -63,7 +63,7 @@ export function useSubmitPlayerRating() {
       rating: number;
     }) => {
       if (!user) throw new Error("Not logged in");
-      // @ts-expect-error: player_ratings is not in Supabase typed client
+      // (supabase as any) used because player_ratings is not in Supabase typed client
       const { data, error } = (supabase as any)
         .from("player_ratings")
         .upsert(
