@@ -16,14 +16,6 @@ const GoalTypeStep = ({ selectedFixtureData, wizardData, onNext, onDataChange }:
   };
 
   const handleOwnGoalToggle = (ownGoalValue: boolean) => {
-    console.log('🎯 GoalTypeStep: Toggling own goal flag:', {
-      previousValue: isOwnGoal,
-      newValue: ownGoalValue,
-      player: selectedPlayer?.name,
-      playerTeam: selectedPlayer?.team,
-      selectedTeam: getTeamName(selectedTeam!)
-    });
-    
     onDataChange({ isOwnGoal: ownGoalValue });
   };
 

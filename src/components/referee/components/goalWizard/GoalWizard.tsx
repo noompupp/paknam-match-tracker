@@ -153,7 +153,6 @@ const GoalWizard = ({
     }
   }
 
-  // --- Enhanced handleConfirm: robust team mapping + strong unsaved feedback ---
   const handleConfirm = async () => {
     if (debounceRef.current) return;
     debounceRef.current = true;
@@ -236,7 +235,6 @@ const GoalWizard = ({
     setSyncStatus("unsaved");
     setSyncMessage("Goal added locally. Ready to save.");
 
-    // STRONGER toast for unsaved
     toast({
       title: "Goal Added (Local)",
       description: (
@@ -254,7 +252,6 @@ const GoalWizard = ({
     setCurrentStep("confirm");
   };
 
-  // ---- Save Now to DB (batchSave) ----
   const handleSaveNow = async () => {
     setSyncStatus("saving");
     setSyncMessage("Saving to database...");

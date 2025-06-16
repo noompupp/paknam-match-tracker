@@ -32,15 +32,6 @@ const ConfirmationStep = ({
   const scoringTeamName = getTeamName(selectedTeam);
   const playerTeamName = selectedPlayer.team;
 
-  console.log('✅ ConfirmationStep: Confirming goal with own goal flag:', {
-    playerName: selectedPlayer.name,
-    playerTeam: playerTeamName,
-    scoringTeam: scoringTeamName,
-    isOwnGoal,
-    needsAssist,
-    assistPlayer: assistPlayer?.name
-  });
-
   return (
     <div className="space-y-6">
       <div className="text-center">
