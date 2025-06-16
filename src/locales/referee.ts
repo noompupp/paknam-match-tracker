@@ -154,6 +154,14 @@ const referee: LocaleModule = {
     'wizard.step.goalType': 'Type',
     'wizard.step.assist': 'Assist',
     'wizard.step.confirm': 'Confirm',
+    
+    // Navigation and controls
+    'wizard.cancel': 'Cancel',
+    'wizard.back': 'Back',
+    'wizard.next': 'Next',
+    'wizard.confirm': 'Confirm',
+    'wizard.close': 'Close',
+    
     // Alerts & instructions
     'wizard.missingFields': 'Please complete all required fields before confirming.',
     'wizard.completed': 'Goal recorded successfully',
@@ -431,6 +439,14 @@ const referee: LocaleModule = {
     'wizard.step.goalType': 'ประเภท',
     'wizard.step.assist': 'แอสซิสต์',
     'wizard.step.confirm': 'ยืนยัน',
+    
+    // Navigation and controls
+    'wizard.cancel': 'ยกเลิก',
+    'wizard.back': 'ย้อนกลับ',
+    'wizard.next': 'ถัดไป',
+    'wizard.confirm': 'ยืนยัน',
+    'wizard.close': 'ปิด',
+    
     // Alerts & instructions
     'wizard.missingFields': 'กรุณากรอกข้อมูลให้ครบถ้วนก่อนยืนยัน',
     'wizard.completed': 'บันทึกประตูสำเร็จแล้ว',

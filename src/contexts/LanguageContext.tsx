@@ -22,78 +22,73 @@ interface LanguageContextType {
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
-interface LanguageProviderProps {
-  children: ReactNode;
-}
-
-/**
- * Helper for replacing {params} in a string.
- */
-function interpolate(template: string, params?: TranslationParams): string {
-  // ADDED DEBUGGING!
-  if (params && Object.keys(params).length) {
-    console.log("[i18n-interpolate] Template:", template, "Params:", params);
-  }
-  if (!params) return template;
-  // Single curly braces: {param}
-  return template.replace(/{([^}]+)}/g, (match, p1) =>
-    params[p1] !== undefined ? String(params[p1]) : match
-  );
-}
-
-export const LanguageProvider = ({ children }: LanguageProviderProps) => {
-  const [language, setLanguageState] = useState<Language>('en');
-
-  // Load language preference from localStorage on component mount
-  useEffect(() => {
-    const savedLanguage = localStorage.getItem('language') as Language;
-    if (savedLanguage && (savedLanguage === 'en' || savedLanguage === 'th')) {
-      setLanguageState(savedLanguage);
-    }
-  }, []);
-
-  // Save language preference to localStorage when it changes
-  const setLanguage = (newLanguage: Language) => {
-    setLanguageState(newLanguage);
-    localStorage.setItem('language', newLanguage);
-  };
-
-  // Enhanced translation function with fallback + interpolation support
-  const t = (
-    key: string,
-    fallback?: string,
-    params?: TranslationParams
-  ): string => {
-    let translation = translations[language]?.[key];
-    if (translation) {
-      return interpolate(translation, params);
-    }
-    // If no translation found, try English as fallback
-    if (language !== 'en') {
-      const englishTranslation = translations.en[key];
-      if (englishTranslation) {
-        return interpolate(englishTranslation, params);
-      }
-    }
-    // If still no translation, return fallback or the key itself
-    return interpolate(fallback || key, params);
-  };
-
-  return (
-    <LanguageContext.Provider value={{ language, setLanguage, t }}>
-      {children}
-    </LanguageContext.Provider>
-  );
-};
-
-export const useLanguage = (): LanguageContextType => {
+export const useLanguage = () => {
   const context = useContext(LanguageContext);
-  if (!context) {
+  if (context === undefined) {
     throw new Error('useLanguage must be used within a LanguageProvider');
   }
   return context;
 };
 
-// NOTE: This file now includes robust {param} interpolation in translations.
-// Consider refactoring if this file grows further.
+interface LanguageProviderProps {
+  children: ReactNode;
+}
 
+export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) => {
+  const [language, setLanguage] = useState<Language>('en');
+
+  // Load language from localStorage on mount
+  useEffect(() => {
+    const savedLanguage = localStorage.getItem('language') as Language;
+    if (savedLanguage && (savedLanguage === 'en' || savedLanguage === 'th')) {
+      setLanguage(savedLanguage);
+    }
+  }, []);
+
+  // Save language to localStorage when it changes
+  useEffect(() => {
+    localStorage.setItem('language', language);
+  }, [language]);
+
+  /**
+   * Translation function with parameter interpolation
+   * @param key The translation key
+   * @param fallback Fallback text if key is not found
+   * @param params Object with values to replace in the translation
+   * @returns Translated and interpolated string
+   */
+  const t = (key: string, fallback?: string, params?: TranslationParams): string => {
+    try {
+      // Get the translation from the current language or fallback to English
+      let translation = translations[language]?.[key] || translations.en?.[key] || fallback || key;
+
+      // If params are provided, replace placeholders
+      if (params && typeof translation === 'string') {
+        Object.entries(params).forEach(([paramKey, paramValue]) => {
+          const placeholder = `{${paramKey}}`;
+          const regex = new RegExp(placeholder.replace(/[{}]/g, '\\$&'), 'g');
+          translation = translation.replace(regex, String(paramValue));
+        });
+      }
+
+      return translation;
+    } catch (error) {
+      console.warn(`Translation error for key "${key}":`, error);
+      return fallback || key;
+    }
+  };
+
+  const value: LanguageContextType = {
+    language,
+    setLanguage,
+    t,
+  };
+
+  return (
+    <LanguageContext.Provider value={value}>
+      {children}
+    </LanguageContext.Provider>
+  );
+};
+
+export default LanguageContext;

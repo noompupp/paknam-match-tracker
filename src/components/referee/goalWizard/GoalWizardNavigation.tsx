@@ -1,8 +1,10 @@
 
-import React from "react";
-import PulseDotBadge from "@/components/ui/PulseDotBadge";
+import React from 'react';
+import { Button } from "@/components/ui/button";
+import { Save, Loader2, CheckCircle } from "lucide-react";
+import { useTranslation } from "@/hooks/useTranslation";
 
-interface NavigationProps {
+interface GoalWizardNavigationProps {
   isConfirmStep: boolean;
   syncStatus: "unsaved" | "saving" | "synced" | "error";
   syncMessage?: string;
@@ -15,7 +17,7 @@ interface NavigationProps {
   isSynced: boolean;
 }
 
-const GoalWizardNavigation: React.FC<NavigationProps> = ({
+const GoalWizardNavigation = ({
   isConfirmStep,
   syncStatus,
   syncMessage,
@@ -25,54 +27,73 @@ const GoalWizardNavigation: React.FC<NavigationProps> = ({
   onSaveNow,
   disableSave,
   isSaving,
-  isSynced,
-}) =>
-  isConfirmStep ? (
-    <div className="mt-4 flex flex-col gap-2">
-      <button
-        className="w-full bg-blue-600 text-white py-2 rounded disabled:opacity-60 flex items-center justify-center gap-2 font-semibold"
-        onClick={onConfirm}
-        disabled={isSaving}
-        type="button"
-        style={{ marginBottom: 0 }}
+  isSynced
+}: GoalWizardNavigationProps) => {
+  const { t } = useTranslation();
+
+  if (!isConfirmStep) {
+    return null;
+  }
+
+  return (
+    <div className="flex flex-col gap-3 pt-4 border-t">
+      {/* Primary action - Add Goal (local) */}
+      <Button 
+        onClick={onConfirm} 
+        className="w-full" 
+        size="lg"
+        disabled={isSaving || isSynced}
       >
         {isSaving ? (
-          <span className="animate-spin h-4 w-4 mr-2 border-2 border-white border-t-transparent rounded-full" />
-        ) : (
-          <span>
-            Save Goal (Local)
-            {hasUnsaved && <span className="ml-2 align-middle"><PulseDotBadge /></span>}
-          </span>
-        )}
-      </button>
-      <button
-        className={`w-full flex items-center justify-center gap-2 font-semibold py-2 rounded transition-colors ${isSaving || isSynced
-          ? "bg-green-300 text-white"
-          : hasUnsaved
-          ? "bg-red-600 text-white animate-pulse"
-          : "bg-green-600 text-white"
-        }`}
-        onClick={onSaveNow}
-        disabled={disableSave}
-        type="button"
-      >
-        {isSaving ? (
-          <span className="animate-spin h-4 w-4 mr-2 border-2 border-white border-t-transparent rounded-full" />
-        ) : (
           <>
-            <span>
-              {isSynced
-                ? "Saved"
-                : hasUnsaved
-                ? "Save & Sync Now"
-                : "No Unsaved Changes"}
-            </span>
-            {hasUnsaved && <span className="ml-2 align-middle"><PulseDotBadge /></span>}
+            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            {t('referee.saving', 'Saving...')}
           </>
+        ) : isSynced ? (
+          <>
+            <CheckCircle className="h-4 w-4 mr-2" />
+            {t('wizard.completed', 'Goal recorded successfully')}
+          </>
+        ) : (
+          t('wizard.confirmAndSaveGoal', 'Confirm & Save Goal')
         )}
-      </button>
-      {/* Additional status/indicators can be slotted in by parent */}
+      </Button>
+
+      {/* Secondary action - Save to database */}
+      {hasUnsaved && canSave && (
+        <Button 
+          onClick={onSaveNow}
+          variant="outline"
+          className="w-full"
+          disabled={disableSave}
+        >
+          {isSaving ? (
+            <>
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              {t('referee.saving', 'Saving...')}
+            </>
+          ) : (
+            <>
+              <Save className="h-4 w-4 mr-2" />
+              {t('referee.save', 'Save & Sync Now')}
+            </>
+          )}
+        </Button>
+      )}
+
+      {/* Status message */}
+      {syncMessage && (
+        <div className={`text-xs text-center p-2 rounded ${
+          syncStatus === 'error' ? 'text-red-600 bg-red-50' :
+          syncStatus === 'saving' ? 'text-blue-600 bg-blue-50' :
+          syncStatus === 'synced' ? 'text-green-600 bg-green-50' :
+          'text-gray-600 bg-gray-50'
+        }`}>
+          {syncMessage}
+        </div>
+      )}
     </div>
-  ) : null;
+  );
+};
 
 export default GoalWizardNavigation;

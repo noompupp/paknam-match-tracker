@@ -23,27 +23,38 @@ const TeamSelectionStep = ({ selectedFixtureData, onDataChange, onNext }: TeamSe
   };
 
   return (
-    <div className="space-y-4 sm:space-y-6">
+    <div className="space-y-4 sm:space-y-6 px-2 sm:px-0">
       <div className="text-center">
-        <h3 className="text-base sm:text-lg font-semibold mb-2">
+        <h3 className="text-lg sm:text-xl font-semibold mb-2 text-foreground">
           {t('wizard.whichTeamScored', 'Which team scored?')}
         </h3>
+        <p className="text-sm text-muted-foreground">
+          {t('wizard.selectScoringTeam', 'Select the team that scored the goal')}
+        </p>
       </div>
       
-      <div className="grid grid-cols-1 gap-3 sm:gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:gap-6 max-w-md mx-auto">
         <Button
           onClick={() => handleTeamSelect('home')}
           variant="outline"
-          className="h-12 sm:h-16 text-sm sm:text-lg font-medium touch-manipulation"
+          size="lg"
+          className="h-16 sm:h-20 text-base sm:text-lg font-medium touch-manipulation border-2 hover:border-primary hover:bg-primary/5 transition-all duration-200 active:scale-95"
         >
-          <span className="truncate">{getTeamName('home')}</span>
+          <div className="flex flex-col items-center gap-1">
+            <span className="font-semibold truncate max-w-full">{getTeamName('home')}</span>
+            <span className="text-xs text-muted-foreground">{t('referee.homeTeam', 'Home Team')}</span>
+          </div>
         </Button>
         <Button
           onClick={() => handleTeamSelect('away')}
           variant="outline"
-          className="h-12 sm:h-16 text-sm sm:text-lg font-medium touch-manipulation"
+          size="lg"
+          className="h-16 sm:h-20 text-base sm:text-lg font-medium touch-manipulation border-2 hover:border-primary hover:bg-primary/5 transition-all duration-200 active:scale-95"
         >
-          <span className="truncate">{getTeamName('away')}</span>
+          <div className="flex flex-col items-center gap-1">
+            <span className="font-semibold truncate max-w-full">{getTeamName('away')}</span>
+            <span className="text-xs text-muted-foreground">{t('referee.awayTeam', 'Away Team')}</span>
+          </div>
         </Button>
       </div>
     </div>
