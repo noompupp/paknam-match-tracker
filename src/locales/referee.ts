@@ -87,7 +87,6 @@ const referee: LocaleModule = {
     'referee.playersOnFieldLabel': 'Players on Field',
     'referee.totalTrackedLabel': 'Total Tracked',
     'referee.time': '{time}',
-    // Other referee strings omitted for brevity
     'referee.startingSquadTitle': 'Select Starting Squad ({count} players)',
     'referee.noSquadSelected': 'No squad selected',
     'referee.choose7Notice': 'Select 7 starting players to begin match tracking',
@@ -137,23 +136,18 @@ const referee: LocaleModule = {
     'wizard.assistInformation': 'Assist Information',
     'wizard.assistBy': 'Assist By',
     'wizard.assistTeam': 'Assist Team',
-    'wizard.regularGoalSelected': 'Regular Goal',
+    'wizard.regularGoalSelected': 'Regular Goals',
     'wizard.playerFromOtherTeam': 'Other Team Players (Own Goals)',
     'wizard.selectingOtherTeamNotice': 'Selecting a player from another team will record this as an own goal, benefiting {teamName}.',
     
     // Wizard steps
     'wizard.selectScoringTeam': 'Which team scored?',
-    'wizard.selectGoalScorer': 'Select Goal Scorer',
-    'wizard.goalType': 'Goal Type',
-    'wizard.ownGoal': 'Own Goal',
-    'wizard.normalGoal': 'Regular Goal',
     'wizard.addAssist': 'Add Assist (Optional)',
     'wizard.selectAssist': 'Select Player for Assist',
     'wizard.confirmGoal': 'Confirm Goal',
     'wizard.editGoal': 'Edit Goal Details - {time}',
     'wizard.goalEntryTime': 'Goal Entry - {time}',
-    'wizard.cancel': 'Cancel',
-    'wizard.back': 'Back',
+    
     // Step indicator
     'wizard.step.team': 'Team',
     'wizard.step.player': 'Player',
@@ -164,6 +158,7 @@ const referee: LocaleModule = {
     'wizard.missingFields': 'Please complete all required fields before confirming.',
     'wizard.completed': 'Goal recorded successfully',
     'wizard.editing': 'Editing quick goal entry',
+    
     // --- Newly added/extended translations below ---
     "referee.status.live": "LIVE",
     "referee.status.paused": "PAUSED",
@@ -216,7 +211,7 @@ const referee: LocaleModule = {
     'referee.selectStartingSquadLabel': 'Select Starting Squad (7 players)',
 
     // --- NEW BUTTON ACTION KEY ---
-    'referee.action.completeSub': 'Complete Sub', // <-- ensures presence in EN
+    'referee.action.completeSub': 'Complete Sub',
     // Misc
     'referee.playerNotFound': 'Player not found',
     'referee.teamLockMultipleTeams': 'Warning: Players from multiple teams detected. Team lock disabled.',
@@ -225,7 +220,7 @@ const referee: LocaleModule = {
     // --- ADDITIONS/NEW KEYS FOR PLAYER TIME TRACKING BADGES ---
     'referee.status.inProgress': 'IN PROGRESS',
     'referee.status.noLimits': 'NO LIMITS',
-    'referee.status.unlimitedPlaytime': 'Unlimited playtime', // Confirmed exists here
+    'referee.status.unlimitedPlaytime': 'Unlimited playtime',
     'referee.status.withinLimit': 'WITHIN LIMIT',
     'referee.action.stop': 'Stop',
     'referee.action.start': 'Start',
@@ -369,7 +364,6 @@ const referee: LocaleModule = {
     'referee.playersOnFieldLabel': 'ในสนาม',
     'referee.totalTrackedLabel': 'ติดตาม',
     'referee.time': '{time}',
-    // Other referee strings omitted for brevity — to be expanded as needed.
     'referee.startingSquadTitle': 'เลือกผู้เล่นตัวจริง ({count} คน)',
     'referee.noSquadSelected': 'ยังไม่ได้เลือกทีม',
     'referee.choose7Notice': 'เลือกนักเตะ 7 คนเพื่อเริ่มติดตามการแข่งขัน',
@@ -425,17 +419,12 @@ const referee: LocaleModule = {
 
     // Wizard steps
     'wizard.selectScoringTeam': 'ทีมใดเป็นผู้ทำประตู?',
-    'wizard.selectGoalScorer': 'เลือกผู้ทำประตู',
-    'wizard.goalType': 'ประเภทประตู',
-    'wizard.ownGoal': 'เข้าประตูตัวเอง',
-    'wizard.normalGoal': 'ประตูปกติ',
     'wizard.addAssist': 'เพิ่มแอสซิสต์ (ถ้ามี)',
     'wizard.selectAssist': 'เลือกผู้เล่นสำหรับแอสซิสต์',
     'wizard.confirmGoal': 'ยืนยันข้อมูลประตู',
     'wizard.editGoal': 'แก้ไขข้อมูลประตู - {time}',
     'wizard.goalEntryTime': 'บันทึกประตู - {time}',
-    'wizard.cancel': 'ยกเลิก',
-    'wizard.back': 'ย้อนกลับ',
+    
     // Step indicator
     'wizard.step.team': 'ทีม',
     'wizard.step.player': 'นักเตะ',
@@ -497,7 +486,7 @@ const referee: LocaleModule = {
     'referee.selectStartingSquadLabel': 'เลือกตัวจริง (7 คน)',
 
     // --- NEW BUTTON ACTION KEY ---
-    'referee.action.completeSub': 'เปลี่ยนตัวเสร็จสิ้น', // <-- ensures presence in TH
+    'referee.action.completeSub': 'เปลี่ยนตัวเสร็จสิ้น',
     // Misc
     'referee.playerNotFound': 'ไม่พบนักเตะ',
     'referee.teamLockMultipleTeams': 'มีนักเตะหลายทีม (ระบบล็อกทีมถูกปิดชั่วคราว)',
@@ -506,7 +495,7 @@ const referee: LocaleModule = {
     // --- ADDITIONS/NEW KEYS FOR PLAYER TIME TRACKING BADGES ---
     'referee.status.inProgress': 'กำลังดำเนินการ',
     'referee.status.noLimits': 'ไม่จำกัด',
-    'referee.status.unlimitedPlaytime': 'เล่นได้ไม่จำกัดเวลา', // Confirmed exists here
+    'referee.status.unlimitedPlaytime': 'เล่นได้ไม่จำกัดเวลา',
     'referee.status.withinLimit': 'ในขีดจำกัด',
     'referee.action.stop': 'หยุด',
     'referee.action.start': 'เริ่ม',
