@@ -1,3 +1,4 @@
+
 // Referee tools - expanded for full localization
 
 import { LocaleModule } from "./types";
@@ -102,6 +103,44 @@ const referee: LocaleModule = {
     'referee.recordGoalDesc': 'Use the wizard to record goals with full details',
     'referee.openGoalEntry': 'Open Goal Entry Wizard',
     'referee.recordGoalsFor': 'Record goals for {home} vs {away}',
+    
+    // Goal Wizard specific translations
+    'wizard.whichTeamScored': 'Which team scored?',
+    'wizard.selectGoalScorer': 'Select Goal Scorer',
+    'wizard.confirmGoalType': 'Confirm Goal Type',
+    'wizard.goalBenefits': 'Goal benefits',
+    'wizard.scorerTeam': 'Scorer\'s Team',
+    'wizard.goalType': 'Goal Type',
+    'wizard.regularGoal': 'Regular Goal',
+    'wizard.goalScoredForOwnTeam': 'Goal scored for player\'s own team',
+    'wizard.ownGoal': 'Own Goal',
+    'wizard.goalAccidentallyScored': 'Goal accidentally scored against player\'s own team',
+    'wizard.selected': 'Selected',
+    'wizard.ownGoalWarning': 'Own Goal Warning',
+    'wizard.ownGoalRecordedAs': 'This will be recorded as an own goal by {playerName} from {playerTeam}, which will add a point to {scoringTeam}\'s score.',
+    'wizard.continueToAssist': 'Continue to Assist Selection',
+    'wizard.continueToConfirmation': 'Continue to Confirmation',
+    'wizard.crossTeamGoalDetected': 'Cross-team Goal Detected',
+    'wizard.crossTeamGoalSuggestion': 'This player is from {playerTeam} but the goal benefits {scoringTeam}. This suggests it might be an own goal.',
+    'wizard.confirmGoalAssignment': 'Confirm Goal Assignment',
+    'wizard.reviewGoalDetails': 'Please review the goal details before saving',
+    'wizard.timeLabel': 'Time: {time}',
+    'wizard.goalSummary': 'Goal Summary',
+    'wizard.ownGoalSummary': 'Own Goal Summary',
+    'wizard.scorer': 'Scorer',
+    'wizard.ownGoalImpact': 'Own Goal Impact',
+    'wizard.ownGoalImpactBullet1': 'Goal will be added to {scoringTeam}\'s score',
+    'wizard.ownGoalImpactBullet2': '{playerName}\'s positive stats will NOT be affected',
+    'wizard.ownGoalImpactBullet3': 'Event will be recorded as an own goal in match history',
+    'wizard.backToEdit': 'Back to Edit',
+    'wizard.confirmAndSaveGoal': 'Confirm & Save Goal',
+    'wizard.assistInformation': 'Assist Information',
+    'wizard.assistBy': 'Assist By',
+    'wizard.assistTeam': 'Assist Team',
+    'wizard.regularGoalSelected': 'Regular Goal',
+    'wizard.playerFromOtherTeam': 'Other Team Players (Own Goals)',
+    'wizard.selectingOtherTeamNotice': 'Selecting a player from another team will record this as an own goal, benefiting {teamName}.',
+    
     // Wizard steps
     'wizard.selectScoringTeam': 'Which team scored?',
     'wizard.selectGoalScorer': 'Select Goal Scorer',
@@ -346,6 +385,44 @@ const referee: LocaleModule = {
     'referee.recordGoalDesc': 'ใช้วิซาร์ดเพื่อบันทึกประตูอย่างละเอียด',
     'referee.openGoalEntry': 'เปิดตัวช่วยบันทึกประตู',
     'referee.recordGoalsFor': 'บันทึกประตูสำหรับ {home} พบ {away}',
+    
+    // Goal Wizard specific translations
+    'wizard.whichTeamScored': 'ทีมใดเป็นผู้ทำประตู?',
+    'wizard.selectGoalScorer': 'เลือกผู้ทำประตู',
+    'wizard.confirmGoalType': 'ยืนยันประเภทประตู',
+    'wizard.goalBenefits': 'ประตูเข้าให้',
+    'wizard.scorerTeam': 'ทีมของผู้ทำประตู',
+    'wizard.goalType': 'ประเภทประตู',
+    'wizard.regularGoal': 'ประตูปกติ',
+    'wizard.goalScoredForOwnTeam': 'ประตูที่ทำให้ทีมตัวเอง',
+    'wizard.ownGoal': 'เข้าประตูตัวเอง',
+    'wizard.goalAccidentallyScored': 'ประตูที่เข้าโดยไม่ได้ตั้งใจในประตูทีมตัวเอง',
+    'wizard.selected': 'เลือกแล้ว',
+    'wizard.ownGoalWarning': 'คำเตือนประตูตัวเอง',
+    'wizard.ownGoalRecordedAs': 'จะบันทึกเป็นประตูตัวเองโดย {playerName} จาก {playerTeam} ซึ่งจะเพิ่มคะแนนให้ {scoringTeam}',
+    'wizard.continueToAssist': 'ไปขั้นตอนแอสซิสต์',
+    'wizard.continueToConfirmation': 'ไปขั้นตอนยืนยัน',
+    'wizard.crossTeamGoalDetected': 'ตรวจพบประตูข้ามทีม',
+    'wizard.crossTeamGoalSuggestion': 'นักเตะคนนี้จาก {playerTeam} แต่ประตูเข้าให้ {scoringTeam} อาจเป็นประตูตัวเอง',
+    'wizard.confirmGoalAssignment': 'ยืนยันการบันทึกประตู',
+    'wizard.reviewGoalDetails': 'กรุณาตรวจสอบรายละเอียดประตูก่อนบันทึก',
+    'wizard.timeLabel': 'เวลา: {time}',
+    'wizard.goalSummary': 'สรุปประตู',
+    'wizard.ownGoalSummary': 'สรุปประตูตัวเอง',
+    'wizard.scorer': 'ผู้ทำประตู',
+    'wizard.ownGoalImpact': 'ผลกระทบประตูตัวเอง',
+    'wizard.ownGoalImpactBullet1': 'ประตูจะเพิ่มให้ {scoringTeam}',
+    'wizard.ownGoalImpactBullet2': 'สถิติเชิงบวกของ {playerName} จะไม่ได้รับผลกระทบ',
+    'wizard.ownGoalImpactBullet3': 'เหตุการณ์จะบันทึกเป็นประตูตัวเองในประวัติการแข่งขัน',
+    'wizard.backToEdit': 'กลับไปแก้ไข',
+    'wizard.confirmAndSaveGoal': 'ยืนยันและบันทึกประตู',
+    'wizard.assistInformation': 'ข้อมูลแอสซิสต์',
+    'wizard.assistBy': 'แอสซิสต์โดย',
+    'wizard.assistTeam': 'ทีมแอสซิสต์',
+    'wizard.regularGoalSelected': 'ประตูปกติ',
+    'wizard.playerFromOtherTeam': 'นักเตะทีมอื่น (ประตูตัวเอง)',
+    'wizard.selectingOtherTeamNotice': 'การเลือกนักเตะจากทีมอื่นจะบันทึกเป็นประตูตัวเอง เข้าให้ {teamName}',
+
     // Wizard steps
     'wizard.selectScoringTeam': 'ทีมใดเป็นผู้ทำประตู?',
     'wizard.selectGoalScorer': 'เลือกผู้ทำประตู',
@@ -503,5 +580,3 @@ const referee: LocaleModule = {
 };
 
 export default referee;
-
-// NOTE: This file is 500+ lines long. Please consider refactoring for maintainability if you plan additional changes.

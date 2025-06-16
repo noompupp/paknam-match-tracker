@@ -11,6 +11,7 @@ import PlayerSelectionStep from "./goalWizard/PlayerSelectionStep";
 import GoalTypeStep from "./goalWizard/GoalTypeStep";
 import AssistStep from "./goalWizard/AssistStep";
 import ConfirmationStep from "./goalWizard/ConfirmationStep";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface QuickGoal {
   id: number | string;
@@ -48,6 +49,7 @@ const GoalEntryWizard = ({
   initialTeam,
   editingGoal
 }: GoalEntryWizardProps) => {
+  const { t } = useTranslation();
   const [currentStep, setCurrentStep] = useState<WizardStep>(initialTeam ? 'player' : 'team');
   const [wizardData, setWizardData] = useState<GoalWizardData>({
     selectedTeam: initialTeam || null,
@@ -58,8 +60,8 @@ const GoalEntryWizard = ({
   });
 
   const isEditMode = !!editingGoal;
-  const homeTeamName = selectedFixtureData?.home_team?.name || 'Home Team';
-  const awayTeamName = selectedFixtureData?.away_team?.name || 'Away Team';
+  const homeTeamName = selectedFixtureData?.home_team?.name || t('referee.homeTeam', 'Home Team');
+  const awayTeamName = selectedFixtureData?.away_team?.name || t('referee.awayTeam', 'Away Team');
 
   // Initialize wizard data when editing a goal
   useEffect(() => {
@@ -198,46 +200,62 @@ const GoalEntryWizard = ({
 
   return (
     <Card className="w-full max-w-2xl mx-auto">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
+      <CardHeader className="pb-4">
+        <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
           {isEditMode ? (
             <>
-              <Edit className="h-5 w-5 text-orange-600" />
-              Edit Goal Details - {displayTime}
+              <Edit className="h-4 w-4 sm:h-5 sm:w-5 text-orange-600" />
+              <span className="truncate">
+                {t('wizard.editGoal', 'Edit Goal Details - {time}', { time: displayTime })}
+              </span>
             </>
           ) : (
             <>
-              <Target className="h-5 w-5" />
-              Goal Entry - {displayTime}
+              <Target className="h-4 w-4 sm:h-5 sm:w-5" />
+              <span className="truncate">
+                {t('wizard.goalEntryTime', 'Goal Entry - {time}', { time: displayTime })}
+              </span>
             </>
           )}
         </CardTitle>
-        <StepIndicator currentStep={currentStep} isOwnGoal={wizardData.isOwnGoal} />
+        
+        {/* Mobile-optimized step indicator */}
+        <div className="mt-2">
+          <StepIndicator currentStep={currentStep} isOwnGoal={wizardData.isOwnGoal} />
+        </div>
         
         {isEditMode && editingGoal && (
-          <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
+          <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 mt-3">
             <div className="text-sm font-medium text-orange-800">
-              Editing Quick Goal from {displayTime}
+              {t('wizard.editing', 'Editing quick goal entry')} - {displayTime}
             </div>
-            <div className="text-xs text-orange-700">
-              Team: {wizardData.selectedTeam === 'home' ? homeTeamName : awayTeamName}
+            <div className="text-xs text-orange-700 mt-1">
+              {t('wizard.goalBenefits', 'Goal benefits')}: {wizardData.selectedTeam === 'home' ? homeTeamName : awayTeamName}
             </div>
           </div>
         )}
       </CardHeader>
       
-      <CardContent className="space-y-6">
+      <CardContent className="space-y-4 sm:space-y-6 px-4 sm:px-6">
         {renderCurrentStep()}
 
-        {/* Navigation */}
-        <div className="flex justify-between pt-4 border-t">
-          <Button onClick={onCancel} variant="ghost">
-            Cancel
+        {/* Mobile-optimized navigation */}
+        <div className="flex flex-col sm:flex-row justify-between gap-3 pt-4 border-t">
+          <Button 
+            onClick={onCancel} 
+            variant="ghost" 
+            className="order-2 sm:order-1 w-full sm:w-auto"
+          >
+            {t('wizard.cancel', 'Cancel')}
           </Button>
           {canGoBack && (
-            <Button onClick={handleBack} variant="outline">
+            <Button 
+              onClick={handleBack} 
+              variant="outline"
+              className="order-1 sm:order-2 w-full sm:w-auto"
+            >
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Back
+              {t('wizard.back', 'Back')}
             </Button>
           )}
         </div>
