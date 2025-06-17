@@ -1,13 +1,15 @@
 
-import { Badge } from "@/components/ui/badge";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Users, Play } from "lucide-react";
-import PlayerRowItem from "./PlayerRowItem";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Badge } from "@/components/ui/badge";
+import { ArrowLeft, Users, Check } from "lucide-react";
+import { ProcessedPlayer } from "@/utils/refereeDataProcessor";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface PlayerSelectionPanelProps {
   teamName: string;
-  players: any[];
+  players: ProcessedPlayer[];
   selectedPlayerIds: Set<number>;
   requiredPlayers: number;
   onPlayerToggle: (playerId: number, checked: boolean) => void;
@@ -24,84 +26,109 @@ const PlayerSelectionPanel = ({
   onPlayerToggle,
   onBack,
   onStart,
-  isValidSelection,
+  isValidSelection
 }: PlayerSelectionPanelProps) => {
-  const selectedCount = selectedPlayerIds.size;
+  const { t } = useTranslation();
+
+  console.log('🎯 PlayerSelectionPanel Debug:', {
+    teamName,
+    playersCount: players.length,
+    selectedCount: selectedPlayerIds.size,
+    requiredPlayers,
+    isValidSelection,
+    selectedIds: Array.from(selectedPlayerIds)
+  });
 
   return (
-    <div className="flex-1 overflow-hidden flex flex-col min-h-0">
-      {/* Header Section - Fixed */}
-      <div className="flex-shrink-0 space-y-3 pb-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Badge variant="outline" className="text-lg px-3 py-1">
-              {teamName}
-            </Badge>
-          </div>
-          <div className="flex items-center gap-2">
-            <Badge
-              variant={isValidSelection ? "default" : "secondary"}
-              className="text-sm"
-            >
-              {selectedCount}/{requiredPlayers} selected
-            </Badge>
-          </div>
+    <div className="flex flex-col h-full">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-4">
+        <Button variant="ghost" onClick={onBack} className="p-2">
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+        <div className="text-center flex-1">
+          <h3 className="font-semibold">{teamName}</h3>
+          <p className="text-sm text-muted-foreground">
+            {t('referee.selectPlayers', 'Select {count} players').replace('{count}', String(requiredPlayers))}
+          </p>
         </div>
-
-        {selectedCount === requiredPlayers && (
-          <Alert>
-            <Users className="h-4 w-4" />
-            <AlertDescription>
-              Perfect! You have selected exactly {requiredPlayers} players for the starting squad.
-            </AlertDescription>
-          </Alert>
-        )}
+        <Badge variant={isValidSelection ? "default" : "secondary"}>
+          {selectedPlayerIds.size}/{requiredPlayers}
+        </Badge>
       </div>
 
-      {/* Players List - Scrollable */}
-      <div className="flex-1 overflow-y-auto space-y-2 pr-2 min-h-0">
-        {players.map((player) => {
-          const isSelected = selectedPlayerIds.has(player.id);
-          const canSelect = isSelected || selectedPlayerIds.size < requiredPlayers;
-
-          return (
-            <PlayerRowItem
-              key={player.id}
-              player={player}
-              isSelected={isSelected}
-              canSelect={canSelect}
-              onToggle={() => onPlayerToggle(player.id, !isSelected)}
-            />
-          );
-        })}
-      </div>
-
-      {/* Action Buttons - Fixed at bottom */}
-      <div className="flex-shrink-0 pt-3 border-t bg-background">
-        {/* Responsive stack: vertical on xs (below 375px), horizontal otherwise */}
-        <div className="
-          flex gap-2
-          flex-col xs:flex-row
-          [@media(max-width:375px)]:flex-col
-        ">
-          <Button
-            variant="outline"
-            onClick={onBack}
-            className="flex-1 w-full"
-          >
-            Back to Team Selection
-          </Button>
-          <Button
-            onClick={onStart}
-            disabled={!isValidSelection}
-            className="flex-1 w-full"
-          >
-            <Play className="h-4 w-4 mr-2" />
-            {/* Short label on mobile, long on desktop */}
-            <span className="block [@media(max-width:375px)]:hidden">Start Match Tracking</span>
-            <span className="hidden [@media(max-width:375px)]:block">Start Match</span>
-          </Button>
+      {/* Player List */}
+      <ScrollArea className="flex-1 mb-4">
+        <div className="space-y-2">
+          {players.map((player) => {
+            const isSelected = selectedPlayerIds.has(player.id);
+            const canSelect = isSelected || selectedPlayerIds.size < requiredPlayers;
+            
+            return (
+              <div
+                key={player.id}
+                className={`flex items-center space-x-3 p-3 rounded-lg border transition-colors ${
+                  isSelected 
+                    ? 'bg-primary/10 border-primary' 
+                    : canSelect 
+                    ? 'hover:bg-muted cursor-pointer' 
+                    : 'opacity-50 cursor-not-allowed'
+                }`}
+                onClick={() => {
+                  if (canSelect) {
+                    console.log('🔄 Player clicked:', { playerId: player.id, isSelected, canSelect });
+                    onPlayerToggle(player.id, !isSelected);
+                  }
+                }}
+              >
+                <Checkbox
+                  checked={isSelected}
+                  onCheckedChange={(checked) => {
+                    if (canSelect) {
+                      console.log('☑️ Checkbox changed:', { playerId: player.id, checked, canSelect });
+                      onPlayerToggle(player.id, checked === true);
+                    }
+                  }}
+                  disabled={!canSelect}
+                />
+                <div className="flex-1">
+                  <div className="font-medium">{player.name}</div>
+                  <div className="text-sm text-muted-foreground">
+                    {player.position} {player.number && `#${player.number}`}
+                  </div>
+                </div>
+                {isSelected && (
+                  <Check className="h-4 w-4 text-primary" />
+                )}
+              </div>
+            );
+          })}
         </div>
+      </ScrollArea>
+
+      {/* Footer */}
+      <div className="flex flex-col gap-3 pt-4 border-t">
+        <div className="text-center text-sm text-muted-foreground">
+          {isValidSelection 
+            ? t('referee.readyToStart', 'Ready to start the match!')
+            : t('referee.selectMorePlayers', 'Select {count} more players').replace(
+                '{count}', 
+                String(requiredPlayers - selectedPlayerIds.size)
+              )
+          }
+        </div>
+        <Button 
+          onClick={() => {
+            console.log('🚀 Start match clicked:', { isValidSelection, selectedCount: selectedPlayerIds.size });
+            onStart();
+          }}
+          disabled={!isValidSelection}
+          className="w-full"
+          size="lg"
+        >
+          <Users className="h-4 w-4 mr-2" />
+          {t('referee.startMatch', 'Start Match')}
+        </Button>
       </div>
     </div>
   );

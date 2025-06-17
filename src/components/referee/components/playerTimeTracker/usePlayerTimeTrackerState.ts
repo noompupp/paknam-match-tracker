@@ -1,8 +1,10 @@
+
 import { useState } from "react";
-import { PlayerTime } from "@/types/database";
+import { PlayerTime } from "@/types/playerTime";
 import { ProcessedPlayer } from "@/utils/refereeDataProcessor";
 import { useToast } from "@/hooks/use-toast";
-import { usePlayerTimeHandlers } from "../../hooks/handlers/usePlayerTimeHandlers";
+import { usePlayerOperations } from "@/hooks/playerTracking/playerOperations";
+import { useSubstitutionManager } from "@/hooks/playerTracking/substitutionManager";
 import { 
   validatePlayerCount, 
   validateTeamLock, 
@@ -24,13 +26,13 @@ export interface UsePlayerTimeTrackerStateProps {
 }
 
 export const usePlayerTimeTrackerState = ({
-  trackedPlayers,
+  trackedPlayers: externalTrackedPlayers,
   allPlayers,
   homeTeamPlayers,
   awayTeamPlayers,
-  onAddPlayer,
-  onRemovePlayer,
-  onTogglePlayerTime,
+  onAddPlayer: externalOnAddPlayer,
+  onRemovePlayer: externalOnRemovePlayer,
+  onTogglePlayerTime: externalOnTogglePlayerTime,
   formatTime,
   matchTime = 0,
   selectedFixtureData
@@ -39,82 +41,137 @@ export const usePlayerTimeTrackerState = ({
   const { toast } = useToast();
   const { t, language } = useTranslation();
 
-  // Adapter: convert PlayerTime to ProcessedPlayer for onAddPlayer
-  const addPlayerAdapter = (player: PlayerTime, time: number) => {
-    // Try to find the ProcessedPlayer by id
-    const found = allPlayers.find(p => p.id === player.id);
-    if (found) {
-      return Promise.resolve(onAddPlayer(found));
+  // Use internal player operations for complete control
+  const {
+    trackedPlayers: internalTrackedPlayers,
+    addPlayer: internalAddPlayer,
+    removePlayer: internalRemovePlayer,
+    togglePlayerTime: internalTogglePlayerTime
+  } = usePlayerOperations();
+
+  const substitutionManager = useSubstitutionManager();
+
+  // Use internal tracked players if available, fallback to external
+  const effectiveTrackedPlayers = internalTrackedPlayers.length > 0 
+    ? internalTrackedPlayers 
+    : externalTrackedPlayers;
+
+  console.log('🎯 usePlayerTimeTrackerState Debug:', {
+    internalCount: internalTrackedPlayers.length,
+    externalCount: externalTrackedPlayers.length,
+    effectiveCount: effectiveTrackedPlayers.length,
+    useInternal: internalTrackedPlayers.length > 0
+  });
+
+  const handleAddPlayer = async (player: ProcessedPlayer) => {
+    console.log('🔄 usePlayerTimeTrackerState: Adding player:', player);
+    
+    try {
+      // Add to internal tracking
+      const result = internalAddPlayer(player, matchTime);
+      
+      if (result) {
+        // Also call external handler for coordination
+        externalOnAddPlayer(player);
+        
+        toast({
+          title: t("referee.playerAdded", "Player Added"),
+          description: t("referee.playerAddedDesc", `${player.name} added to tracking`),
+        });
+        
+        console.log('✅ usePlayerTimeTrackerState: Player added successfully');
+      }
+      
+      return result;
+    } catch (error) {
+      console.error('❌ usePlayerTimeTrackerState: Failed to add player:', error);
+      toast({
+        title: t("referee.error", "Error"),
+        description: t("referee.addPlayerFailed", "Failed to add player"),
+        variant: "destructive"
+      });
     }
-    // Fallback: Construct a minimal ProcessedPlayer
-    const fallbackProcessedPlayer: ProcessedPlayer = {
-      id: player.id,
-      name: player.name,
-      team: player.team,
-      team_id: "",
-      number: "",
-      position: "Player",
-      role: "Starter",
-    };
-    return Promise.resolve(onAddPlayer(fallbackProcessedPlayer));
   };
 
-  const handlersProps = {
-    selectedFixtureData,
-    matchTime,
-    playersForTimeTracker: trackedPlayers,
-    addPlayer: addPlayerAdapter,
-    removePlayer: onRemovePlayer,
-    togglePlayerTime: async (playerId: number, time: number) => onTogglePlayerTime(playerId),
-    addEvent: (type: string, description: string, time: number) => {
-      console.log(`Event: ${type} - ${description} at ${time}`);
-    }
-  };
-
-  const { 
-    handleAddPlayer, 
-    handleRemovePlayer, 
-    handleTogglePlayerTime,
-    handleUndoSubOut,
-    substitutionManager 
-  } = usePlayerTimeHandlers(handlersProps);
-
-  const playerCountValidation = validatePlayerCount(trackedPlayers, t);
-  const teamLockValidation = validateTeamLock(trackedPlayers, t);
-
-  const handleStartMatch = (selectedPlayers: ProcessedPlayer[], team: 'home' | 'away') => {
-    console.log('🚀 Starting match with initial squad:', {
-      team,
-      playerCount: selectedPlayers.length,
-      players: selectedPlayers.map(p => p.name)
-    });
-    selectedPlayers.forEach(player => {
-      onAddPlayer(player);
-    });
-  };
-
-  const handlePlayerRemove = (playerId: number) => {
-    const removal = canRemovePlayer(playerId, trackedPlayers, t);
+  const handleRemovePlayer = (playerId: number) => {
+    console.log('🗑️ usePlayerTimeTrackerState: Removing player:', playerId);
+    
+    const removal = canRemovePlayer(playerId, effectiveTrackedPlayers, t);
     if (!removal.canRemove) {
       toast({
-        title: t('referee.cannotRemovePlayer'),
-        description: removal.reason
-          ? t('referee.removePlayerReason').replace('{reason}', removal.reason)
-          : "",
+        title: t('referee.cannotRemovePlayer', 'Cannot Remove Player'),
+        description: removal.reason || t('referee.removePlayerReason', 'Unable to remove player at this time'),
         variant: "destructive"
       });
       return;
     }
-    handleRemovePlayer(playerId);
+    
+    internalRemovePlayer(playerId);
+    externalOnRemovePlayer(playerId);
+    
+    toast({
+      title: t("referee.playerRemoved", "Player Removed"),
+      description: t("referee.playerRemovedDesc", "Player removed from tracking"),
+    });
   };
 
-  const isMatchStarted = trackedPlayers.length > 0;
+  const handleTogglePlayerTime = async (playerId: number) => {
+    console.log('⏯️ usePlayerTimeTrackerState: Toggling player time:', playerId);
+    
+    try {
+      const result = internalTogglePlayerTime(playerId, matchTime);
+      
+      if (result) {
+        externalOnTogglePlayerTime(playerId);
+        
+        const action = result.isPlaying ? "started" : "stopped";
+        toast({
+          title: t("referee.timeUpdated", "Time Updated"),
+          description: t("referee.timeUpdatedDesc", `Player time ${action}`),
+        });
+      }
+      
+      return result;
+    } catch (error) {
+      console.error('❌ usePlayerTimeTrackerState: Failed to toggle player time:', error);
+      toast({
+        title: t("referee.error", "Error"),
+        description: t("referee.toggleTimeFailed", "Failed to toggle player time"),
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleStartMatch = (selectedPlayers: ProcessedPlayer[], team: 'home' | 'away') => {
+    console.log('🚀 usePlayerTimeTrackerState: Starting match with squad:', {
+      team,
+      playerCount: selectedPlayers.length,
+      players: selectedPlayers.map(p => p.name)
+    });
+    
+    selectedPlayers.forEach(player => {
+      handleAddPlayer(player);
+    });
+    
+    toast({
+      title: t("referee.matchStarted", "Match Started"),
+      description: t("referee.matchStartedDesc", `Started tracking ${selectedPlayers.length} players`),
+    });
+  };
+
+  const handleUndoSubOut = async (playerId: number) => {
+    console.log('↩️ usePlayerTimeTrackerState: Undoing sub out:', playerId);
+    await handleTogglePlayerTime(playerId);
+  };
+
+  const playerCountValidation = validatePlayerCount(effectiveTrackedPlayers, t);
+  const teamLockValidation = validateTeamLock(effectiveTrackedPlayers, t);
+  const isMatchStarted = effectiveTrackedPlayers.length > 0;
 
   return {
     showInitialSelection,
     setShowInitialSelection,
     handleStartMatch,
-    handlePlayerRemove,
     handleAddPlayer,
     handleRemovePlayer,
     handleTogglePlayerTime,
@@ -124,11 +181,11 @@ export const usePlayerTimeTrackerState = ({
     substitutionManager,
     t,
     language,
-    trackedPlayers,
+    trackedPlayers: effectiveTrackedPlayers,
     allPlayers,
     homeTeamPlayers,
     awayTeamPlayers,
-    onTogglePlayerTime,
+    onTogglePlayerTime: handleTogglePlayerTime,
     formatTime,
     matchTime,
     selectedFixtureData,

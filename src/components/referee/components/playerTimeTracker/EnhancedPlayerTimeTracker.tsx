@@ -1,7 +1,7 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import SevenASideValidationPanel from "../SevenASideValidationPanel";
-import { PlayerTime } from "@/types/database";
+import { PlayerTime } from "@/types/playerTime";
 import { ProcessedPlayer } from "@/utils/refereeDataProcessor";
 import { usePlayerTimeTrackerState, UsePlayerTimeTrackerStateProps } from "./usePlayerTimeTrackerState";
 import PlayerTimeTrackerAlerts from "./PlayerTimeTrackerAlerts";
@@ -13,14 +13,19 @@ interface EnhancedPlayerTimeTrackerProps extends UsePlayerTimeTrackerStateProps 
 const EnhancedPlayerTimeTracker = (props: EnhancedPlayerTimeTrackerProps) => {
   const state = usePlayerTimeTrackerState(props);
 
-  console.log('🎯 EnhancedPlayerTimeTracker Debug (Refactored):', {
-    trackedCount: state.trackedPlayers.length,
+  console.log('🎯 EnhancedPlayerTimeTracker Debug (Fixed Integration):', {
+    propsTrackedCount: props.trackedPlayers.length,
+    stateTrackedCount: state.trackedPlayers.length,
     activeCount: state.playerCountValidation.activeCount,
     isValid: state.playerCountValidation.isValid,
     teamLocked: state.teamLockValidation.isLocked,
     lockedTeam: state.teamLockValidation.lockedTeam,
     pendingSubstitution: state.substitutionManager.pendingSubstitution,
-    substitutionType: state.substitutionManager.isSubOutInitiated ? 'modal' : 'streamlined'
+    substitutionType: state.substitutionManager.isSubOutInitiated ? 'modal' : 'streamlined',
+    showInitialSelection: state.showInitialSelection,
+    isMatchStarted: state.isMatchStarted,
+    homePlayersCount: state.homeTeamPlayers?.length || 0,
+    awayPlayersCount: state.awayTeamPlayers?.length || 0
   });
 
   return (
@@ -75,6 +80,3 @@ const EnhancedPlayerTimeTracker = (props: EnhancedPlayerTimeTrackerProps) => {
 };
 
 export default EnhancedPlayerTimeTracker;
-
-// NOTE: This file was refactored. Consider also refactoring other large files for maintainability.
-

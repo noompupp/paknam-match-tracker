@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ProcessedPlayer } from "@/utils/refereeDataProcessor";
@@ -28,6 +29,15 @@ const InitialPlayerSelection = ({
 
   const REQUIRED_PLAYERS = 7;
 
+  console.log('🎯 InitialPlayerSelection Debug:', {
+    isOpen,
+    selectedTeam,
+    selectedPlayerIds: Array.from(selectedPlayerIds),
+    homePlayersCount: homeTeamPlayers.length,
+    awayPlayersCount: awayTeamPlayers.length,
+    requiredPlayers: REQUIRED_PLAYERS
+  });
+
   const getAvailablePlayers = () => {
     if (selectedTeam === 'home') return homeTeamPlayers;
     if (selectedTeam === 'away') return awayTeamPlayers;
@@ -38,23 +48,44 @@ const InitialPlayerSelection = ({
   const isValidSelection = selectedPlayerIds.size === REQUIRED_PLAYERS;
 
   const handlePlayerToggle = (playerId: number, checked: boolean) => {
+    console.log('🔄 InitialPlayerSelection: Player toggle:', { playerId, checked });
+    
     setSelectedPlayerIds((prev) => {
       const newSelected = new Set(prev);
       if (checked && newSelected.size < REQUIRED_PLAYERS) {
         newSelected.add(playerId);
+        console.log('✅ Added player to selection:', playerId);
       } else if (!checked) {
         newSelected.delete(playerId);
+        console.log('➖ Removed player from selection:', playerId);
+      } else {
+        console.log('⚠️ Cannot add player - limit reached');
       }
+      
+      console.log('📊 Current selection count:', newSelected.size);
       return newSelected;
     });
   };
 
   const handleStartMatch = () => {
-    if (!selectedTeam || !isValidSelection) return;
+    if (!selectedTeam || !isValidSelection) {
+      console.warn('❌ InitialPlayerSelection: Invalid selection state:', {
+        selectedTeam,
+        isValidSelection,
+        selectedCount: selectedPlayerIds.size
+      });
+      return;
+    }
 
     const selectedPlayers = availablePlayers.filter(player =>
       selectedPlayerIds.has(player.id)
     );
+
+    console.log('🚀 InitialPlayerSelection: Starting match with players:', {
+      team: selectedTeam,
+      playerCount: selectedPlayers.length,
+      players: selectedPlayers.map(p => ({ id: p.id, name: p.name }))
+    });
 
     onStartMatch(selectedPlayers, selectedTeam);
 
@@ -65,6 +96,7 @@ const InitialPlayerSelection = ({
   };
 
   const handleCancel = () => {
+    console.log('❌ InitialPlayerSelection: Cancelled');
     setSelectedTeam(null);
     setSelectedPlayerIds(new Set());
     onClose();
@@ -80,7 +112,7 @@ const InitialPlayerSelection = ({
       <DialogContent className="w-full max-w-2xl h-[90vh] max-h-[90vh] overflow-hidden flex flex-col p-0 sm:p-6 sm:h-auto sm:max-h-[80vh]">
         <DialogHeader className="p-4 sm:p-0 flex-shrink-0">
           <DialogTitle className="flex items-center gap-2">
-            {t('referee.startingSquadTitle').replace('{count}', String(REQUIRED_PLAYERS))}
+            {t('referee.startingSquadTitle', 'Select Starting Squad ({count} players)').replace('{count}', String(REQUIRED_PLAYERS))}
           </DialogTitle>
         </DialogHeader>
 
@@ -90,7 +122,10 @@ const InitialPlayerSelection = ({
               homeTeamPlayers={homeTeamPlayers}
               awayTeamPlayers={awayTeamPlayers}
               getTeamName={getTeamName}
-              onSelect={setSelectedTeam}
+              onSelect={(team) => {
+                console.log('🎯 Team selected:', team);
+                setSelectedTeam(team);
+              }}
             />
           ) : (
             <PlayerSelectionPanel
@@ -99,7 +134,11 @@ const InitialPlayerSelection = ({
               selectedPlayerIds={selectedPlayerIds}
               requiredPlayers={REQUIRED_PLAYERS}
               onPlayerToggle={handlePlayerToggle}
-              onBack={() => setSelectedTeam(null)}
+              onBack={() => {
+                console.log('🔙 Back to team selection');
+                setSelectedTeam(null);
+                setSelectedPlayerIds(new Set());
+              }}
               onStart={handleStartMatch}
               isValidSelection={isValidSelection}
             />
