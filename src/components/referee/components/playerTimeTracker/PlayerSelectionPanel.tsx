@@ -40,9 +40,9 @@ const PlayerSelectionPanel = ({
   });
 
   return (
-    <div className="flex flex-col h-full">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-4">
+    <div className="flex flex-col h-full max-h-full">
+      {/* Header - Fixed */}
+      <div className="flex items-center justify-between mb-4 flex-shrink-0">
         <Button variant="ghost" onClick={onBack} className="p-2">
           <ArrowLeft className="h-4 w-4" />
         </Button>
@@ -57,57 +57,59 @@ const PlayerSelectionPanel = ({
         </Badge>
       </div>
 
-      {/* Player List */}
-      <ScrollArea className="flex-1 mb-4">
-        <div className="space-y-2">
-          {players.map((player) => {
-            const isSelected = selectedPlayerIds.has(player.id);
-            const canSelect = isSelected || selectedPlayerIds.size < requiredPlayers;
-            
-            return (
-              <div
-                key={player.id}
-                className={`flex items-center space-x-3 p-3 rounded-lg border transition-colors ${
-                  isSelected 
-                    ? 'bg-primary/10 border-primary' 
-                    : canSelect 
-                    ? 'hover:bg-muted cursor-pointer' 
-                    : 'opacity-50 cursor-not-allowed'
-                }`}
-                onClick={() => {
-                  if (canSelect) {
-                    console.log('🔄 Player clicked:', { playerId: player.id, isSelected, canSelect });
-                    onPlayerToggle(player.id, !isSelected);
-                  }
-                }}
-              >
-                <Checkbox
-                  checked={isSelected}
-                  onCheckedChange={(checked) => {
+      {/* Scrollable Player List - This is the key fix */}
+      <div className="flex-1 min-h-0 mb-4">
+        <ScrollArea className="h-full">
+          <div className="space-y-2 pr-4">
+            {players.map((player) => {
+              const isSelected = selectedPlayerIds.has(player.id);
+              const canSelect = isSelected || selectedPlayerIds.size < requiredPlayers;
+              
+              return (
+                <div
+                  key={player.id}
+                  className={`flex items-center space-x-3 p-3 rounded-lg border transition-colors ${
+                    isSelected 
+                      ? 'bg-primary/10 border-primary' 
+                      : canSelect 
+                      ? 'hover:bg-muted cursor-pointer' 
+                      : 'opacity-50 cursor-not-allowed'
+                  }`}
+                  onClick={() => {
                     if (canSelect) {
-                      console.log('☑️ Checkbox changed:', { playerId: player.id, checked, canSelect });
-                      onPlayerToggle(player.id, checked === true);
+                      console.log('🔄 Player clicked:', { playerId: player.id, isSelected, canSelect });
+                      onPlayerToggle(player.id, !isSelected);
                     }
                   }}
-                  disabled={!canSelect}
-                />
-                <div className="flex-1">
-                  <div className="font-medium">{player.name}</div>
-                  <div className="text-sm text-muted-foreground">
-                    {player.position} {player.number && `#${player.number}`}
+                >
+                  <Checkbox
+                    checked={isSelected}
+                    onCheckedChange={(checked) => {
+                      if (canSelect) {
+                        console.log('☑️ Checkbox changed:', { playerId: player.id, checked, canSelect });
+                        onPlayerToggle(player.id, checked === true);
+                      }
+                    }}
+                    disabled={!canSelect}
+                  />
+                  <div className="flex-1">
+                    <div className="font-medium">{player.name}</div>
+                    <div className="text-sm text-muted-foreground">
+                      {player.position} {player.number && `#${player.number}`}
+                    </div>
                   </div>
+                  {isSelected && (
+                    <Check className="h-4 w-4 text-primary" />
+                  )}
                 </div>
-                {isSelected && (
-                  <Check className="h-4 w-4 text-primary" />
-                )}
-              </div>
-            );
-          })}
-        </div>
-      </ScrollArea>
+              );
+            })}
+          </div>
+        </ScrollArea>
+      </div>
 
-      {/* Footer */}
-      <div className="flex flex-col gap-3 pt-4 border-t">
+      {/* Footer - Fixed */}
+      <div className="flex flex-col gap-3 pt-4 border-t flex-shrink-0">
         <div className="text-center text-sm text-muted-foreground">
           {isValidSelection 
             ? t('referee.readyToStart', 'Ready to start the match!')

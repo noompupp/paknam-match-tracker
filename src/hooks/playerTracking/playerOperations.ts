@@ -23,7 +23,7 @@ export const usePlayerOperations = () => {
     const existingPlayer = trackedPlayers.find(p => p.id === player.id);
     if (existingPlayer) {
       console.warn(`⚠️ PlayerOperations: Player ${player.name} is already being tracked`);
-      return null;
+      return existingPlayer; // Return existing instead of null to avoid issues
     }
 
     // Convert to PlayerTime if it's a ProcessedPlayer

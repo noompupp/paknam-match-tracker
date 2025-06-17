@@ -87,9 +87,10 @@ const InitialPlayerSelection = ({
       players: selectedPlayers.map(p => ({ id: p.id, name: p.name }))
     });
 
+    // Call the onStartMatch callback
     onStartMatch(selectedPlayers, selectedTeam);
 
-    // Reset state
+    // Reset state and close
     setSelectedTeam(null);
     setSelectedPlayerIds(new Set());
     onClose();
@@ -109,14 +110,14 @@ const InitialPlayerSelection = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleCancel}>
-      <DialogContent className="w-full max-w-2xl h-[90vh] max-h-[90vh] overflow-hidden flex flex-col p-0 sm:p-6 sm:h-auto sm:max-h-[80vh]">
-        <DialogHeader className="p-4 sm:p-0 flex-shrink-0">
+      <DialogContent className="w-full max-w-2xl h-[85vh] max-h-[85vh] flex flex-col p-0">
+        <DialogHeader className="p-6 pb-0 flex-shrink-0">
           <DialogTitle className="flex items-center gap-2">
             {t('referee.startingSquadTitle', 'Select Starting Squad ({count} players)').replace('{count}', String(REQUIRED_PLAYERS))}
           </DialogTitle>
         </DialogHeader>
 
-        <div className="flex-1 overflow-hidden flex flex-col px-4 sm:px-0">
+        <div className="flex-1 min-h-0 px-6 pb-6">
           {!selectedTeam ? (
             <TeamSelectionPanel
               homeTeamPlayers={homeTeamPlayers}
@@ -144,9 +145,6 @@ const InitialPlayerSelection = ({
             />
           )}
         </div>
-
-        {/* Mobile Safe Area Bottom Padding */}
-        <div className="h-4 sm:h-0 flex-shrink-0"></div>
       </DialogContent>
     </Dialog>
   );

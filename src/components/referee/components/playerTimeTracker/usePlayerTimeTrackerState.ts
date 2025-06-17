@@ -3,7 +3,6 @@ import { useState } from "react";
 import { PlayerTime } from "@/types/playerTime";
 import { ProcessedPlayer } from "@/utils/refereeDataProcessor";
 import { useToast } from "@/hooks/use-toast";
-import { usePlayerOperations } from "@/hooks/playerTracking/playerOperations";
 import { useSubstitutionManager } from "@/hooks/playerTracking/substitutionManager";
 import { 
   validatePlayerCount, 
@@ -41,48 +40,33 @@ export const usePlayerTimeTrackerState = ({
   const { toast } = useToast();
   const { t, language } = useTranslation();
 
-  // Use internal player operations for complete control
-  const {
-    trackedPlayers: internalTrackedPlayers,
-    addPlayer: internalAddPlayer,
-    removePlayer: internalRemovePlayer,
-    togglePlayerTime: internalTogglePlayerTime
-  } = usePlayerOperations();
-
   const substitutionManager = useSubstitutionManager();
 
-  // Use internal tracked players if available, fallback to external
-  const effectiveTrackedPlayers = internalTrackedPlayers.length > 0 
-    ? internalTrackedPlayers 
-    : externalTrackedPlayers;
+  // SIMPLIFIED ARCHITECTURE: Use external tracked players directly
+  // This ensures the modal selections properly flow through the system
+  const effectiveTrackedPlayers = externalTrackedPlayers;
 
-  console.log('🎯 usePlayerTimeTrackerState Debug:', {
-    internalCount: internalTrackedPlayers.length,
-    externalCount: externalTrackedPlayers.length,
-    effectiveCount: effectiveTrackedPlayers.length,
-    useInternal: internalTrackedPlayers.length > 0
+  console.log('🎯 usePlayerTimeTrackerState Debug (Simplified):', {
+    trackedCount: effectiveTrackedPlayers.length,
+    allPlayersCount: allPlayers.length,
+    homePlayersCount: homeTeamPlayers?.length || 0,
+    awayPlayersCount: awayTeamPlayers?.length || 0,
+    showInitialSelection
   });
 
   const handleAddPlayer = async (player: ProcessedPlayer) => {
     console.log('🔄 usePlayerTimeTrackerState: Adding player:', player);
     
     try {
-      // Add to internal tracking
-      const result = internalAddPlayer(player, matchTime);
+      // Use external handler directly for proper integration
+      externalOnAddPlayer(player);
       
-      if (result) {
-        // Also call external handler for coordination
-        externalOnAddPlayer(player);
-        
-        toast({
-          title: t("referee.playerAdded", "Player Added"),
-          description: t("referee.playerAddedDesc", `${player.name} added to tracking`),
-        });
-        
-        console.log('✅ usePlayerTimeTrackerState: Player added successfully');
-      }
+      toast({
+        title: t("referee.playerAdded", "Player Added"),
+        description: t("referee.playerAddedDesc", `${player.name} added to tracking`),
+      });
       
-      return result;
+      console.log('✅ usePlayerTimeTrackerState: Player added successfully');
     } catch (error) {
       console.error('❌ usePlayerTimeTrackerState: Failed to add player:', error);
       toast({
@@ -106,7 +90,6 @@ export const usePlayerTimeTrackerState = ({
       return;
     }
     
-    internalRemovePlayer(playerId);
     externalOnRemovePlayer(playerId);
     
     toast({
@@ -119,19 +102,16 @@ export const usePlayerTimeTrackerState = ({
     console.log('⏯️ usePlayerTimeTrackerState: Toggling player time:', playerId);
     
     try {
-      const result = internalTogglePlayerTime(playerId, matchTime);
+      externalOnTogglePlayerTime(playerId);
       
-      if (result) {
-        externalOnTogglePlayerTime(playerId);
-        
-        const action = result.isPlaying ? "started" : "stopped";
+      const player = effectiveTrackedPlayers.find(p => p.id === playerId);
+      if (player) {
+        const action = player.isPlaying ? "stopped" : "started";
         toast({
           title: t("referee.timeUpdated", "Time Updated"),
           description: t("referee.timeUpdatedDesc", `Player time ${action}`),
         });
       }
-      
-      return result;
     } catch (error) {
       console.error('❌ usePlayerTimeTrackerState: Failed to toggle player time:', error);
       toast({
@@ -149,6 +129,7 @@ export const usePlayerTimeTrackerState = ({
       players: selectedPlayers.map(p => p.name)
     });
     
+    // Add all selected players to tracking
     selectedPlayers.forEach(player => {
       handleAddPlayer(player);
     });
