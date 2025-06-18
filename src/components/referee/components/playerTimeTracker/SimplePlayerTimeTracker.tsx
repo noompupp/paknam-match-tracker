@@ -16,7 +16,7 @@ interface SimplePlayerTimeTrackerProps {
   selectedTimeTeam: string;
   onPlayerSelect: (value: string) => void;
   onTimeTeamChange: (value: string) => void;
-  onAddPlayer: () => void;
+  onAddPlayer: (player: ProcessedPlayer) => void;
   onTogglePlayerTime: (playerId: number) => void;
   formatTime: (seconds: number) => string;
   matchTime?: number;
@@ -48,6 +48,22 @@ const SimplePlayerTimeTracker = ({
     allPlayersCount: allPlayers.length
   });
 
+  // Create a wrapper function that handles the player selection and calls onAddPlayer
+  const handleAddPlayer = () => {
+    if (!selectedPlayer || !selectedTimeTeam) return;
+    
+    const availablePlayers = selectedTimeTeam === 'home' 
+      ? homeTeamPlayers || []
+      : selectedTimeTeam === 'away' 
+      ? awayTeamPlayers || []
+      : allPlayers;
+    
+    const player = availablePlayers.find(p => p.id.toString() === selectedPlayer);
+    if (player) {
+      onAddPlayer(player);
+    }
+  };
+
   return (
     <div className="space-y-4">
       {/* Enhanced 7-a-Side Validation Panel */}
@@ -74,7 +90,7 @@ const SimplePlayerTimeTracker = ({
             awayTeamPlayers={awayTeamPlayers}
             onPlayerSelect={onPlayerSelect}
             onTimeTeamChange={onTimeTeamChange}
-            onAddPlayer={onAddPlayer}
+            onAddPlayer={handleAddPlayer}
           />
 
           {/* Tracked Players List */}

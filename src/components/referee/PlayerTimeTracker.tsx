@@ -12,7 +12,7 @@ interface PlayerTimeTrackerProps {
   selectedTimeTeam: string;
   onPlayerSelect: (value: string) => void;
   onTimeTeamChange: (value: string) => void;
-  onAddPlayer: () => void;
+  onAddPlayer: (player: ProcessedPlayer) => void;
   onTogglePlayerTime: (playerId: number) => void;
   formatTime: (seconds: number) => string;
   matchTime?: number;
