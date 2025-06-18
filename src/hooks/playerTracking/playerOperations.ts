@@ -57,22 +57,6 @@ export const usePlayerOperations = () => {
     return newPlayerTime;
   };
 
-  const addMultiplePlayers = (players: ProcessedPlayer[], matchTime: number) => {
-    console.log('🎯 PlayerOperations: Adding multiple players:', { playerCount: players.length, matchTime });
-    
-    const addedPlayers: PlayerTime[] = [];
-    
-    players.forEach(player => {
-      const result = addPlayer(player, matchTime);
-      if (result) {
-        addedPlayers.push(result);
-      }
-    });
-    
-    console.log(`✅ PlayerOperations: Successfully added ${addedPlayers.length} players to tracking`);
-    return addedPlayers;
-  };
-
   const removePlayer = (playerId: number) => {
     console.log('🗑️ PlayerOperations: Removing player:', playerId);
     
@@ -107,16 +91,25 @@ export const usePlayerOperations = () => {
     setTrackedPlayers(prev => prev.map(player => {
       if (player.id === playerId) {
         const newIsPlaying = !player.isPlaying;
+        
+        // If stopping, add current session to total time
+        const additionalTime = player.isPlaying && player.startTime !== null 
+          ? matchTime - player.startTime 
+          : 0;
+        
         updatedPlayer = {
           ...player,
           isPlaying: newIsPlaying,
-          startTime: newIsPlaying ? matchTime : null
+          startTime: newIsPlaying ? matchTime : null,
+          totalTime: player.totalTime + (player.isPlaying ? additionalTime : 0)
         };
 
         console.log('✅ PlayerOperations: Player time toggled:', {
           playerId,
           newIsPlaying,
-          playerName: player.name
+          playerName: player.name,
+          additionalTime,
+          newTotalTime: updatedPlayer.totalTime
         });
 
         // Clear role-based stop when manually toggling
@@ -153,7 +146,6 @@ export const usePlayerOperations = () => {
     roleBasedStops,
     setRoleBasedStops,
     addPlayer,
-    addMultiplePlayers,
     removePlayer,
     togglePlayerTime,
     resetTracking

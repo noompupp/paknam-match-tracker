@@ -1,12 +1,12 @@
+
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRightLeft } from "lucide-react";
-import { PlayerTime } from "@/types/database";
+import { Play, Pause } from "lucide-react";
+import { PlayerTime } from "@/types/playerTime";
 import { ProcessedPlayer } from "@/utils/refereeDataProcessor";
 import PlayerRoleBadge from "@/components/ui/player-role-badge";
 import PlayerStatusBadge from "@/components/ui/player-status-badge";
-import { canRemovePlayer } from "./playerValidationUtils";
-import { isSecondHalf, getCurrentHalfTime } from "@/utils/timeUtils";
+import { getCurrentHalfTime } from "@/utils/timeUtils";
 import { useTranslation } from "@/hooks/useTranslation";
 
 interface TrackedPlayerCardProps {
@@ -16,12 +16,6 @@ interface TrackedPlayerCardProps {
   onTogglePlayerTime: (playerId: number) => void;
   trackedPlayers?: PlayerTime[];
   matchTime?: number;
-  isPendingSubstitution?: boolean;
-  substitutionManager?: {
-    pendingSubstitution: any;
-    hasPendingSubstitution: boolean;
-    isSubOutInitiated: boolean;
-  };
 }
 
 const TrackedPlayerCard = ({
@@ -29,145 +23,45 @@ const TrackedPlayerCard = ({
   playerInfo,
   formatTime,
   onTogglePlayerTime,
-  trackedPlayers = [],
-  matchTime = 0,
-  isPendingSubstitution = false,
-  substitutionManager
+  matchTime = 0
 }: TrackedPlayerCardProps) => {
   const { t } = useTranslation();
   const role = playerInfo?.role || 'Starter';
 
-  // Check if player can be removed
-  const removal = canRemovePlayer(player.id, trackedPlayers);
-
   // Calculate current half time for status badge
   const currentHalfTime = getCurrentHalfTime(matchTime);
+  
+  // Calculate total playing time
+  const currentPlayingTime = player.isPlaying && player.startTime !== null 
+    ? matchTime - player.startTime 
+    : 0;
+  const totalTime = player.totalTime + currentPlayingTime;
 
-  // Check if this is a player who has played before (potential substitution candidate)
-  const hasPlayedBefore = player.totalTime > 0;
-  const isSubstitutionCandidate = hasPlayedBefore;
-
-  // Check if there's a pending streamlined substitution that this player can complete
-  const canCompleteStreamlinedSub = substitutionManager?.hasPendingSubstitution && 
-                                   !substitutionManager?.isSubOutInitiated && 
-                                   player.isPlaying && 
-                                   player.id !== substitutionManager?.pendingSubstitution?.outgoingPlayerId;
-
-  console.log('👤 Rendering tracked player with dual-behavior substitution status:', {
+  console.log('👤 Rendering tracked player:', {
     name: player.name,
     role,
-    canRemove: removal.canRemove,
     isPlaying: player.isPlaying,
-    hasPlayedBefore,
-    isSubstitutionCandidate,
-    isPendingSubstitution,
-    canCompleteStreamlinedSub,
-    substitutionType: substitutionManager?.isSubOutInitiated ? 'modal' : 'streamlined',
-    currentHalfTime,
-    totalTime: player.totalTime
+    totalTime: player.totalTime,
+    currentPlayingTime,
+    combinedTime: totalTime
   });
 
-  // Determine button text and styling based on dual-behavior logic
-  const getButtonProps = () => {
-    if (isPendingSubstitution) {
-      if (substitutionManager?.isSubOutInitiated) {
-        return {
-          text: t("referee.action.subOut", "Substituted Out"),
-          variant: "outline" as const,
-          icon: <ArrowRightLeft className="h-3 w-3" />
-        };
-      } else {
-        return {
-          text: t("referee.action.subIn", "Pending Sub In"),
-          variant: "outline" as const,
-          icon: <ArrowRightLeft className="h-3 w-3" />
-        };
-      }
-    }
-
-    // Show completion indicator for streamlined substitutions
-    if (canCompleteStreamlinedSub) {
-      return {
-        text: t("referee.action.completeSub", "Complete Sub"),
-        variant: "destructive" as const,
-        icon: <ArrowRightLeft className="h-3 w-3" />
-      };
-    }
-
-    // Show substitution buttons for players who have played before
-    if (isSubstitutionCandidate) {
-      if (player.isPlaying) {
-        return {
-          text: t("referee.action.subOut", "Sub Out"),
-          variant: "destructive" as const,
-          icon: <ArrowRightLeft className="h-3 w-3" />
-        };
-      } else {
-        return {
-          text: t("referee.action.subIn", "Sub In"),
-          variant: "default" as const,
-          icon: <ArrowRightLeft className="h-3 w-3" />
-        };
-      }
-    }
-
-    // For new players (no previous time), show Start/Stop
-    if (player.isPlaying) {
-      return {
-        text: t("referee.action.stop", "Stop"),
-        variant: "destructive" as const,
-        icon: null
-      };
-    } else {
-      return {
-        text: t("referee.action.start", "Start"),
-        variant: "default" as const,
-        icon: null
-      };
-    }
-  };
-
-  const buttonProps = getButtonProps();
-
-  // 👇 Add clarity for ON/OFF state by applying reduced opacity & muted bg to inactive players
-  const isActive = player.isPlaying;
-
   return (
-    <div
-      className={`p-2 sm:p-3 rounded-md border bg-card hover:shadow-sm transition-all
-        ${isPendingSubstitution ? 'border-orange-300 bg-orange-50/50' : ''}
-        ${canCompleteStreamlinedSub ? 'border-green-300 bg-green-50/50' : ''}
-        ${!isActive && !isPendingSubstitution && !canCompleteStreamlinedSub ? 'opacity-40 bg-muted/60' : 'opacity-100'}
-      `}
-      tabIndex={0}
-      aria-label={
-        isActive
-          ? `${player.name} is currently playing`
-          : `${player.name} is not on the field`
-      }
-    >
+    <div className={`p-2 sm:p-3 rounded-md border bg-card hover:shadow-sm transition-all ${
+      !player.isPlaying ? 'opacity-60 bg-muted/30' : 'opacity-100'
+    }`}>
       <div className="flex items-center gap-2 sm:gap-3">
         
-        {/* Compact player number */}
+        {/* Player number */}
         <div className="w-6 h-6 sm:w-8 sm:h-8 bg-primary/10 rounded-full flex items-center justify-center text-xs font-bold text-primary flex-shrink-0">
           {playerInfo?.number || '?'}
         </div>
 
-        {/* Player info - optimized for space */}
+        {/* Player info */}
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1.5 mb-0.5">
             <span className="font-medium text-sm truncate">{player.name}</span>
             <PlayerRoleBadge role={role} size="sm" />
-            {isPendingSubstitution && (
-              <Badge variant="outline" className="text-xs px-1.5 py-0 h-4 border-orange-300 text-orange-700">
-                {substitutionManager?.isSubOutInitiated ? t("referee.action.subOut", "Out") : t("referee.action.subIn", "Pending In")}
-              </Badge>
-            )}
-            {canCompleteStreamlinedSub && (
-              <Badge variant="outline" className="text-xs px-1.5 py-0 h-4 border-green-300 text-green-700">
-                {t("referee.action.completeSub", "Complete Sub")}
-              </Badge>
-            )}
           </div>
           <div className="flex items-center gap-2">
             <span className="text-xs text-muted-foreground truncate">{player.team}</span>
@@ -183,13 +77,13 @@ const TrackedPlayerCard = ({
         {/* Timer and Status Display */}
         <div className="text-right flex-shrink-0 flex flex-col items-end gap-1">
           <div className="font-mono text-sm sm:text-base font-bold leading-tight">
-            {formatTime(player.totalTime)}
+            {formatTime(totalTime)}
           </div>
           
-          {/* Dynamic Player Status Badge */}
+          {/* Player Status Badge */}
           <PlayerStatusBadge
             role={role}
-            totalTime={player.totalTime}
+            totalTime={totalTime}
             currentHalfTime={currentHalfTime}
             isPlaying={player.isPlaying}
             matchTime={matchTime}
@@ -197,26 +91,25 @@ const TrackedPlayerCard = ({
           />
         </div>
 
-        {/* Compact action buttons */}
+        {/* Action button */}
         <div className="flex gap-1 flex-shrink-0">
           <Button
             size="sm"
-            variant={buttonProps.variant}
+            variant={player.isPlaying ? "destructive" : "default"}
             onClick={() => onTogglePlayerTime(player.id)}
-            className={`h-7 px-2 text-xs ${canCompleteStreamlinedSub ? 'animate-pulse' : ''}`}
-            disabled={isPendingSubstitution && substitutionManager?.isSubOutInitiated}
+            className="h-7 px-2 text-xs"
           >
-            {buttonProps.icon && (
-              <span className="sm:hidden mr-1">
-                {buttonProps.icon}
-              </span>
+            {player.isPlaying ? (
+              <>
+                <Pause className="h-3 w-3 sm:mr-1" />
+                <span className="hidden sm:inline">{t("referee.action.stop", "Stop")}</span>
+              </>
+            ) : (
+              <>
+                <Play className="h-3 w-3 sm:mr-1" />
+                <span className="hidden sm:inline">{t("referee.action.start", "Start")}</span>
+              </>
             )}
-            <span className="hidden sm:inline">
-              {buttonProps.text}
-            </span>
-            <span className="sm:hidden">
-              {buttonProps.text.split(' ')[0]}
-            </span>
           </Button>
         </div>
       </div>
@@ -225,7 +118,7 @@ const TrackedPlayerCard = ({
       <div className="sm:hidden mt-2">
         <PlayerStatusBadge
           role={role}
-          totalTime={player.totalTime}
+          totalTime={totalTime}
           currentHalfTime={currentHalfTime}
           isPlaying={player.isPlaying}
           matchTime={matchTime}
@@ -236,5 +129,3 @@ const TrackedPlayerCard = ({
 };
 
 export default TrackedPlayerCard;
-
-// NOTE: This file is 239 lines long. Please consider refactoring for maintainability if you plan further changes.

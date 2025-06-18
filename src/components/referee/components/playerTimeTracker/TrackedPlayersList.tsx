@@ -1,5 +1,6 @@
+
 import TrackedPlayerCard from "./TrackedPlayerCard";
-import { PlayerTime } from "@/types/database";
+import { PlayerTime } from "@/types/playerTime";
 import { ProcessedPlayer } from "@/utils/refereeDataProcessor";
 import { useTranslation } from "@/hooks/useTranslation";
 
@@ -8,14 +9,7 @@ interface TrackedPlayersListProps {
   allPlayers: ProcessedPlayer[];
   formatTime: (seconds: number) => string;
   onTogglePlayerTime: (playerId: number) => void;
-  // onRemovePlayer prop removed
   matchTime?: number;
-  pendingSubstitutionPlayerId?: number | null;
-  substitutionManager?: {
-    pendingSubstitution: any;
-    hasPendingSubstitution: boolean;
-    isSubOutInitiated: boolean;
-  };
 }
 
 const TrackedPlayersList = ({
@@ -23,10 +17,7 @@ const TrackedPlayersList = ({
   allPlayers,
   formatTime,
   onTogglePlayerTime,
-  // Removed onRemovePlayer from destructure
-  matchTime = 0,
-  pendingSubstitutionPlayerId = null,
-  substitutionManager
+  matchTime = 0
 }: TrackedPlayersListProps) => {
   const { t } = useTranslation();
 
@@ -42,7 +33,6 @@ const TrackedPlayersList = ({
     <div className="space-y-2">
       {trackedPlayers.map((player) => {
         const playerInfo = allPlayers.find(p => p.id === player.id);
-        const isPendingSubstitution = pendingSubstitutionPlayerId === player.id;
         
         return (
           <TrackedPlayerCard
@@ -51,11 +41,8 @@ const TrackedPlayersList = ({
             playerInfo={playerInfo}
             formatTime={formatTime}
             onTogglePlayerTime={onTogglePlayerTime}
-            // Removed onRemovePlayer
             trackedPlayers={trackedPlayers}
             matchTime={matchTime}
-            isPendingSubstitution={isPendingSubstitution}
-            substitutionManager={substitutionManager}
           />
         );
       })}
