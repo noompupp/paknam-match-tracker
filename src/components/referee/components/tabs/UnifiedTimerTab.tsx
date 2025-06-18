@@ -2,7 +2,7 @@
 import { Separator } from "@/components/ui/separator";
 import { Users } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
-import PlayerTimeTracker from "../playerTimeTracker/PlayerTimeTracker";
+import PlayerTimeTracker from "../../PlayerTimeTracker";
 import UnifiedMatchTimer from "../UnifiedMatchTimer";
 import { ComponentPlayer } from "../../hooks/useRefereeState";
 import { PlayerTime } from "@/types/database";
