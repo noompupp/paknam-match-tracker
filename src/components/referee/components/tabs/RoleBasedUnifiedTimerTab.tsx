@@ -1,8 +1,9 @@
+
 import { Separator } from "@/components/ui/separator";
 import { Users, Lock } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Card, CardContent } from "@/components/ui/card";
-import EnhancedPlayerTimeTracker from "../playerTimeTracker/EnhancedPlayerTimeTracker";
+import PlayerTimeTracker from "../playerTimeTracker/PlayerTimeTracker";
 import UnifiedMatchTimer from "../UnifiedMatchTimer";
 import { ComponentPlayer } from "../../hooks/useRefereeState";
 import { PlayerTime } from "@/types/database";
@@ -109,13 +110,16 @@ const RoleBasedUnifiedTimerTab = ({
           <h3 className="text-lg font-semibold">Player Time Tracking</h3>
         </div>
         
-        <EnhancedPlayerTimeTracker
+        <PlayerTimeTracker
           trackedPlayers={trackedPlayers}
+          selectedPlayer=""
           allPlayers={allPlayers}
           homeTeamPlayers={homeTeamPlayers}
           awayTeamPlayers={awayTeamPlayers}
+          selectedTimeTeam="all"
+          onPlayerSelect={() => {}}
+          onTimeTeamChange={() => {}}
           onAddPlayer={onAddPlayer}
-          onRemovePlayer={onRemovePlayer}
           onTogglePlayerTime={onTogglePlayerTime}
           formatTime={formatTime}
           matchTime={matchTime}
