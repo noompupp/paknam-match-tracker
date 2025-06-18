@@ -42,11 +42,10 @@ export const usePlayerTimeTrackerState = ({
 
   const substitutionManager = useSubstitutionManager();
 
-  // SIMPLIFIED ARCHITECTURE: Use external tracked players directly
-  // This ensures the modal selections properly flow through the system
+  // Use external tracked players directly for proper integration
   const effectiveTrackedPlayers = externalTrackedPlayers;
 
-  console.log('🎯 usePlayerTimeTrackerState Debug (Simplified):', {
+  console.log('🎯 usePlayerTimeTrackerState Debug (Enhanced Integration):', {
     trackedCount: effectiveTrackedPlayers.length,
     allPlayersCount: allPlayers.length,
     homePlayersCount: homeTeamPlayers?.length || 0,
@@ -72,6 +71,31 @@ export const usePlayerTimeTrackerState = ({
       toast({
         title: t("referee.error", "Error"),
         description: t("referee.addPlayerFailed", "Failed to add player"),
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleAddMultiplePlayers = async (players: ProcessedPlayer[]) => {
+    console.log('🔄 usePlayerTimeTrackerState: Adding multiple players:', { count: players.length });
+    
+    try {
+      // Add each player individually through the external handler
+      for (const player of players) {
+        externalOnAddPlayer(player);
+      }
+      
+      toast({
+        title: t("referee.playersAdded", "Players Added"),
+        description: t("referee.playersAddedDesc", `${players.length} players added to tracking`),
+      });
+      
+      console.log('✅ usePlayerTimeTrackerState: Multiple players added successfully');
+    } catch (error) {
+      console.error('❌ usePlayerTimeTrackerState: Failed to add multiple players:', error);
+      toast({
+        title: t("referee.error", "Error"),
+        description: t("referee.addPlayersFailed", "Failed to add players"),
         variant: "destructive"
       });
     }
@@ -126,13 +150,14 @@ export const usePlayerTimeTrackerState = ({
     console.log('🚀 usePlayerTimeTrackerState: Starting match with squad:', {
       team,
       playerCount: selectedPlayers.length,
-      players: selectedPlayers.map(p => p.name)
+      players: selectedPlayers.map(p => ({ id: p.id, name: p.name }))
     });
     
-    // Add all selected players to tracking
-    selectedPlayers.forEach(player => {
-      handleAddPlayer(player);
-    });
+    // Add all selected players to tracking using the new batch function
+    handleAddMultiplePlayers(selectedPlayers);
+    
+    // Close the modal
+    setShowInitialSelection(false);
     
     toast({
       title: t("referee.matchStarted", "Match Started"),
@@ -154,6 +179,7 @@ export const usePlayerTimeTrackerState = ({
     setShowInitialSelection,
     handleStartMatch,
     handleAddPlayer,
+    handleAddMultiplePlayers,
     handleRemovePlayer,
     handleTogglePlayerTime,
     handleUndoSubOut,

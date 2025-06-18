@@ -23,7 +23,7 @@ export const usePlayerOperations = () => {
     const existingPlayer = trackedPlayers.find(p => p.id === player.id);
     if (existingPlayer) {
       console.warn(`⚠️ PlayerOperations: Player ${player.name} is already being tracked`);
-      return existingPlayer; // Return existing instead of null to avoid issues
+      return existingPlayer;
     }
 
     // Convert to PlayerTime if it's a ProcessedPlayer
@@ -55,6 +55,22 @@ export const usePlayerOperations = () => {
     
     console.log(`🎯 PlayerOperations: Successfully added ${player.name} to tracking`);
     return newPlayerTime;
+  };
+
+  const addMultiplePlayers = (players: ProcessedPlayer[], matchTime: number) => {
+    console.log('🎯 PlayerOperations: Adding multiple players:', { playerCount: players.length, matchTime });
+    
+    const addedPlayers: PlayerTime[] = [];
+    
+    players.forEach(player => {
+      const result = addPlayer(player, matchTime);
+      if (result) {
+        addedPlayers.push(result);
+      }
+    });
+    
+    console.log(`✅ PlayerOperations: Successfully added ${addedPlayers.length} players to tracking`);
+    return addedPlayers;
   };
 
   const removePlayer = (playerId: number) => {
@@ -137,6 +153,7 @@ export const usePlayerOperations = () => {
     roleBasedStops,
     setRoleBasedStops,
     addPlayer,
+    addMultiplePlayers,
     removePlayer,
     togglePlayerTime,
     resetTracking

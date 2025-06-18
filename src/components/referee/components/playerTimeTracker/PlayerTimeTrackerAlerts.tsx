@@ -1,8 +1,6 @@
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
-import { AlertTriangle, Lock, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { AlertTriangle, Info, Users } from "lucide-react";
 
 interface PlayerTimeTrackerAlertsProps {
   playerCountValidation: any;
@@ -15,71 +13,46 @@ const PlayerTimeTrackerAlerts = ({
   playerCountValidation,
   teamLockValidation,
   substitutionManager,
-  t,
-}: PlayerTimeTrackerAlertsProps) => (
-  <>
-    {/* Dual-Behavior Pending Substitution Alert */}
-    {substitutionManager.hasPendingSubstitution && (
-      <Alert>
+  t
+}: PlayerTimeTrackerAlertsProps) => {
+  
+  // Show validation alerts
+  if (!playerCountValidation.isValid) {
+    return (
+      <Alert variant="destructive">
         <AlertTriangle className="h-4 w-4" />
         <AlertDescription>
-          <div className="flex items-center justify-between">
-            <span>
-              {substitutionManager.isSubOutInitiated
-                ? t("referee.substitutionAlertOut").replace(
-                    "{name}",
-                    substitutionManager.pendingSubstitution?.outgoingPlayerName || ""
-                  )
-                : t("referee.substitutionAlertIn").replace(
-                    "{name}",
-                    substitutionManager.pendingSubstitution?.outgoingPlayerName || ""
-                  )
-              }
-            </span>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={substitutionManager.cancelPendingSubstitution}
-              className="ml-2 h-6 w-6 p-0"
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
+          {playerCountValidation.message}
         </AlertDescription>
       </Alert>
-    )}
+    );
+  }
 
-    {/* Player Count Alert */}
-    {!playerCountValidation.isValid && (
-      <Alert variant={playerCountValidation.severity === 'error' ? 'destructive' : 'default'}>
-        <AlertTriangle className="h-4 w-4" />
-        <AlertDescription>
-          <div className="flex items-center justify-between">
-            <span>{playerCountValidation.message}</span>
-            <Badge variant={playerCountValidation.isValid ? 'default' : 'destructive'}>
-              {t("referee.playerOnFieldBadge").replace(
-                "{count}",
-                `${playerCountValidation.activeCount}`
-              )}
-            </Badge>
-          </div>
-        </AlertDescription>
-      </Alert>
-    )}
-
-    {/* Team Lock Status */}
-    {teamLockValidation.isLocked && (
+  // Show team lock info
+  if (teamLockValidation.isLocked && teamLockValidation.lockedTeam) {
+    return (
       <Alert>
-        <Lock className="h-4 w-4" />
+        <Users className="h-4 w-4" />
         <AlertDescription>
-          <div className="flex items-center justify-between">
-            <span>{teamLockValidation.message}</span>
-            <Badge variant="outline">{t("referee.teamLockedBadge")}</Badge>
-          </div>
+          {t('referee.teamLocked', 'Team locked to: {team}').replace('{team}', teamLockValidation.lockedTeam)}
         </AlertDescription>
       </Alert>
-    )}
-  </>
-);
+    );
+  }
+
+  // Show substitution alerts
+  if (substitutionManager.pendingSubstitution) {
+    return (
+      <Alert>
+        <Info className="h-4 w-4" />
+        <AlertDescription>
+          {t('referee.pendingSubstitution', 'Substitution in progress...')}
+        </AlertDescription>
+      </Alert>
+    );
+  }
+
+  return null;
+};
 
 export default PlayerTimeTrackerAlerts;

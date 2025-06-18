@@ -87,17 +87,15 @@ const InitialPlayerSelection = ({
       players: selectedPlayers.map(p => ({ id: p.id, name: p.name }))
     });
 
-    // Call the onStartMatch callback
+    // Call the onStartMatch callback with the selected players
     onStartMatch(selectedPlayers, selectedTeam);
 
     // Reset state and close
-    setSelectedTeam(null);
-    setSelectedPlayerIds(new Set());
-    onClose();
+    handleClose();
   };
 
-  const handleCancel = () => {
-    console.log('❌ InitialPlayerSelection: Cancelled');
+  const handleClose = () => {
+    console.log('🔄 InitialPlayerSelection: Resetting state and closing');
     setSelectedTeam(null);
     setSelectedPlayerIds(new Set());
     onClose();
@@ -109,7 +107,7 @@ const InitialPlayerSelection = ({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleCancel}>
+    <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="w-full max-w-2xl h-[85vh] max-h-[85vh] flex flex-col p-0">
         <DialogHeader className="p-6 pb-0 flex-shrink-0">
           <DialogTitle className="flex items-center gap-2">

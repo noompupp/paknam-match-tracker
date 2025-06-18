@@ -57,7 +57,7 @@ const PlayerSelectionPanel = ({
         </Badge>
       </div>
 
-      {/* Scrollable Player List - This is the key fix */}
+      {/* Scrollable Player List */}
       <div className="flex-1 min-h-0 mb-4">
         <ScrollArea className="h-full">
           <div className="space-y-2 pr-4">
@@ -77,7 +77,7 @@ const PlayerSelectionPanel = ({
                   }`}
                   onClick={() => {
                     if (canSelect) {
-                      console.log('🔄 Player clicked:', { playerId: player.id, isSelected, canSelect });
+                      console.log('🔄 Player row clicked:', { playerId: player.id, isSelected, canSelect });
                       onPlayerToggle(player.id, !isSelected);
                     }
                   }}
