@@ -1,4 +1,5 @@
 
+import { useState } from "react";
 import { Separator } from "@/components/ui/separator";
 import { Users, Lock } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -43,6 +44,10 @@ const RoleBasedUnifiedTimerTab = ({
 }: RoleBasedUnifiedTimerTabProps) => {
   const isMobile = useIsMobile();
   const { canAccessTimerControls, isLoading } = useRoleBasedAccess(selectedFixtureData?.id);
+
+  // Local state for player selection
+  const [selectedPlayer, setSelectedPlayer] = useState("");
+  const [selectedTimeTeam, setSelectedTimeTeam] = useState("home");
 
   // Calculate current phase for 7-a-side timer
   const HALF_DURATION = 25 * 60; // 25 minutes in seconds
@@ -112,13 +117,13 @@ const RoleBasedUnifiedTimerTab = ({
         
         <PlayerTimeTracker
           trackedPlayers={trackedPlayers}
-          selectedPlayer=""
+          selectedPlayer={selectedPlayer}
           allPlayers={allPlayers}
           homeTeamPlayers={homeTeamPlayers}
           awayTeamPlayers={awayTeamPlayers}
-          selectedTimeTeam="all"
-          onPlayerSelect={() => {}}
-          onTimeTeamChange={() => {}}
+          selectedTimeTeam={selectedTimeTeam}
+          onPlayerSelect={setSelectedPlayer}
+          onTimeTeamChange={setSelectedTimeTeam}
           onAddPlayer={onAddPlayer}
           onTogglePlayerTime={onTogglePlayerTime}
           formatTime={formatTime}

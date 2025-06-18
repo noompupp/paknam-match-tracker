@@ -20,10 +20,11 @@ interface PlayerTimeTrackerProps {
 }
 
 const PlayerTimeTracker = (props: PlayerTimeTrackerProps) => {
-  console.log('⏱️ PlayerTimeTracker Main Component:', {
+  console.log('⏱️ PlayerTimeTracker (Restored Original):', {
     trackedCount: props.trackedPlayers.length,
     selectedPlayer: props.selectedPlayer,
-    selectedTimeTeam: props.selectedTimeTeam
+    selectedTimeTeam: props.selectedTimeTeam,
+    availablePlayersCount: props.allPlayers.length
   });
 
   return <SimplePlayerTimeTracker {...props} />;
