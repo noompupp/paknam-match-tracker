@@ -1,8 +1,6 @@
 
 import { useState } from "react";
-import { PlayerTime } from "@/types/playerTime";
-import { ProcessedPlayer } from "@/utils/refereeDataProcessor";
-import { convertProcessedPlayerToPlayerTime } from "@/types/playerTime";
+import { PlayerTime } from "@/types/database";
 import { PlayerHalfTimes } from "./types";
 
 export const usePlayerOperations = () => {
@@ -11,31 +9,26 @@ export const usePlayerOperations = () => {
   const [playerHalfTimes, setPlayerHalfTimes] = useState<Map<number, PlayerHalfTimes>>(new Map());
   const [roleBasedStops, setRoleBasedStops] = useState<Map<number, boolean>>(new Map());
 
-  const addPlayer = (player: ProcessedPlayer | PlayerTime, matchTime: number) => {
-    console.log('🎯 PlayerOperations: Adding player:', { player, matchTime });
-    
-    if (!player) {
-      console.warn('❌ PlayerOperations: Cannot add null/undefined player');
-      return null;
-    }
+  const addPlayer = (player: any, matchTime: number) => {
+    if (!player) return null;
 
     // Check if player is already being tracked
     const existingPlayer = trackedPlayers.find(p => p.id === player.id);
     if (existingPlayer) {
-      console.warn(`⚠️ PlayerOperations: Player ${player.name} is already being tracked`);
-      return existingPlayer;
+      console.warn(`Player ${player.name} is already being tracked`);
+      return null;
     }
 
-    // Convert to PlayerTime if it's a ProcessedPlayer
-    const newPlayerTime: PlayerTime = 'team_id' in player 
-      ? convertProcessedPlayerToPlayerTime(player as ProcessedPlayer, matchTime)
-      : player as PlayerTime;
+    const newPlayerTime: PlayerTime = {
+      id: player.id,
+      name: player.name,
+      team: player.team,
+      totalTime: 0,
+      isPlaying: true,
+      startTime: matchTime
+    };
 
-    setTrackedPlayers(prev => {
-      const updated = [...prev, newPlayerTime];
-      console.log('✅ PlayerOperations: Updated tracked players:', updated.length);
-      return updated;
-    });
+    setTrackedPlayers(prev => [...prev, newPlayerTime]);
     
     // Initialize half times tracking
     setPlayerHalfTimes(prev => {
@@ -53,19 +46,13 @@ export const usePlayerOperations = () => {
     
     setSelectedPlayer("");
     
-    console.log(`🎯 PlayerOperations: Successfully added ${player.name} to tracking`);
+    console.log(`🎯 Role-based timer: Added ${player.name} (${player.role || 'Starter'}) to tracking`);
     return newPlayerTime;
   };
 
   const removePlayer = (playerId: number) => {
-    console.log('🗑️ PlayerOperations: Removing player:', playerId);
-    
     const player = trackedPlayers.find(p => p.id === playerId);
-    setTrackedPlayers(prev => {
-      const updated = prev.filter(p => p.id !== playerId);
-      console.log('✅ PlayerOperations: Updated tracked players after removal:', updated.length);
-      return updated;
-    });
+    setTrackedPlayers(prev => prev.filter(p => p.id !== playerId));
     
     // Remove half times tracking
     setPlayerHalfTimes(prev => {
@@ -85,32 +72,15 @@ export const usePlayerOperations = () => {
   };
 
   const togglePlayerTime = (playerId: number, matchTime: number) => {
-    console.log('⏯️ PlayerOperations: Toggling player time:', { playerId, matchTime });
-    
     let updatedPlayer = null;
     setTrackedPlayers(prev => prev.map(player => {
       if (player.id === playerId) {
         const newIsPlaying = !player.isPlaying;
-        
-        // If stopping, add current session to total time
-        const additionalTime = player.isPlaying && player.startTime !== null 
-          ? matchTime - player.startTime 
-          : 0;
-        
         updatedPlayer = {
           ...player,
           isPlaying: newIsPlaying,
-          startTime: newIsPlaying ? matchTime : null,
-          totalTime: player.totalTime + (player.isPlaying ? additionalTime : 0)
+          startTime: newIsPlaying ? matchTime : null
         };
-
-        console.log('✅ PlayerOperations: Player time toggled:', {
-          playerId,
-          newIsPlaying,
-          playerName: player.name,
-          additionalTime,
-          newTotalTime: updatedPlayer.totalTime
-        });
 
         // Clear role-based stop when manually toggling
         if (newIsPlaying) {
@@ -129,7 +99,6 @@ export const usePlayerOperations = () => {
   };
 
   const resetTracking = () => {
-    console.log('🔄 PlayerOperations: Resetting all tracking');
     setTrackedPlayers([]);
     setSelectedPlayer("");
     setPlayerHalfTimes(new Map());

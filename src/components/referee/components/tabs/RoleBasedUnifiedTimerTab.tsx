@@ -1,10 +1,8 @@
-
-import { useState } from "react";
 import { Separator } from "@/components/ui/separator";
 import { Users, Lock } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Card, CardContent } from "@/components/ui/card";
-import PlayerTimeTracker from "../../PlayerTimeTracker";
+import EnhancedPlayerTimeTracker from "../playerTimeTracker/EnhancedPlayerTimeTracker";
 import UnifiedMatchTimer from "../UnifiedMatchTimer";
 import { ComponentPlayer } from "../../hooks/useRefereeState";
 import { PlayerTime } from "@/types/database";
@@ -44,10 +42,6 @@ const RoleBasedUnifiedTimerTab = ({
 }: RoleBasedUnifiedTimerTabProps) => {
   const isMobile = useIsMobile();
   const { canAccessTimerControls, isLoading } = useRoleBasedAccess(selectedFixtureData?.id);
-
-  // Local state for player selection
-  const [selectedPlayer, setSelectedPlayer] = useState("");
-  const [selectedTimeTeam, setSelectedTimeTeam] = useState("home");
 
   // Calculate current phase for 7-a-side timer
   const HALF_DURATION = 25 * 60; // 25 minutes in seconds
@@ -115,16 +109,13 @@ const RoleBasedUnifiedTimerTab = ({
           <h3 className="text-lg font-semibold">Player Time Tracking</h3>
         </div>
         
-        <PlayerTimeTracker
+        <EnhancedPlayerTimeTracker
           trackedPlayers={trackedPlayers}
-          selectedPlayer={selectedPlayer}
           allPlayers={allPlayers}
           homeTeamPlayers={homeTeamPlayers}
           awayTeamPlayers={awayTeamPlayers}
-          selectedTimeTeam={selectedTimeTeam}
-          onPlayerSelect={setSelectedPlayer}
-          onTimeTeamChange={setSelectedTimeTeam}
           onAddPlayer={onAddPlayer}
+          onRemovePlayer={onRemovePlayer}
           onTogglePlayerTime={onTogglePlayerTime}
           formatTime={formatTime}
           matchTime={matchTime}
