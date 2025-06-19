@@ -1,7 +1,7 @@
 
 import { useRefereeStateOrchestrator } from "./useRefereeStateOrchestrator";
 import { useIntelligentSyncManager } from "./useIntelligentSyncManager";
-import { useMatchDataHandlers } from "./hooks/handlers/useMatchDataHandlers";
+import { useMatchDataHandlers } from "./handlers/useMatchDataHandlers";
 import { useTranslation } from "@/hooks/useTranslation";
 
 export const useRefereeToolsState = () => {
