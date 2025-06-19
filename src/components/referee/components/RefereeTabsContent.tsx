@@ -1,3 +1,4 @@
+
 import { TabsContent } from "@/components/ui/tabs";
 import { ComponentPlayer } from "../hooks/useRefereeState";
 import ScoreTab from "./tabs/ScoreTab";
@@ -50,14 +51,14 @@ interface RefereeTabsContentProps {
   onOpenGoalWizard: () => void;
   onAssignGoal: (player: ComponentPlayer) => void;
   onAddCard: (playerName: string, team: string, cardType: 'yellow' | 'red', time: number) => void;
-  onAddPlayer: (player: ProcessedPlayer) => void;
+  onAddPlayer: (player: ComponentPlayer) => void;
   onRemovePlayer: (playerId: number) => void;
   onTogglePlayerTime: (playerId: number) => void;
   onExportSummary: () => void;
   // Removed: homeScore and awayScore
 }
 
-const RefereeTabsContent = (props: any) => {
+const RefereeTabsContent = (props: RefereeTabsContentProps) => {
   const { t } = useTranslation();
 
   // Get live up-to-date scores directly from the store
@@ -104,6 +105,7 @@ const RefereeTabsContent = (props: any) => {
           trackedPlayers={props.trackedPlayers}
           onToggleTimer={props.onToggleTimer}
           onResetMatch={props.onResetMatch}
+          // CRITICAL FIX: Pass the correct player tracking handlers
           onAddPlayer={props.onAddPlayer}
           onRemovePlayer={props.onRemovePlayer}
           onTogglePlayerTime={props.onTogglePlayerTime}

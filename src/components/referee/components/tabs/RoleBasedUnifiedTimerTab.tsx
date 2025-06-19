@@ -1,3 +1,4 @@
+
 import { Separator } from "@/components/ui/separator";
 import { Users, Lock } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -20,7 +21,7 @@ interface RoleBasedUnifiedTimerTabProps {
   trackedPlayers: PlayerTime[];
   onToggleTimer: () => void;
   onResetMatch: () => void;
-  onAddPlayer: (player: ProcessedPlayer) => void;
+  onAddPlayer: (player: ComponentPlayer) => void;
   onRemovePlayer: (playerId: number) => void;
   onTogglePlayerTime: (playerId: number) => void;
 }
@@ -114,6 +115,7 @@ const RoleBasedUnifiedTimerTab = ({
           allPlayers={allPlayers}
           homeTeamPlayers={homeTeamPlayers}
           awayTeamPlayers={awayTeamPlayers}
+          // CRITICAL FIX: Pass the correct handlers that will modify the tracked players
           onAddPlayer={onAddPlayer}
           onRemovePlayer={onRemovePlayer}
           onTogglePlayerTime={onTogglePlayerTime}

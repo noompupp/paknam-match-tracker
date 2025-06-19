@@ -48,7 +48,7 @@ interface RefereeMainContentProps {
   onDataRefresh: () => void;
 }
 
-const RefereeMainContent = (props: any) => {
+const RefereeMainContent = (props: RefereeMainContentProps) => {
   // Remove all workflowConfig and coordination logic.
   const handleAddGoal = (team: 'home' | 'away') => {
     console.log('🎯 Adding goal for team:', team);
@@ -108,22 +108,22 @@ const RefereeMainContent = (props: any) => {
           setSelectedTimePlayer={props.setSelectedTimePlayer}
           setSelectedTimeTeam={props.setSelectedTimeTeam}
           events={props.events}
-          // Correct prop: wire up Pause/Start
+          // CRITICAL FIX: Pass the correct handlers from props
           onToggleTimer={props.toggleTimer}
-          // CRITICAL FIX: Use the enhanced reset logic from parent, not resetTimer
           onResetMatch={props.onResetMatch}
           onSaveMatch={props.onSaveMatch}
           onDataRefresh={props.onDataRefresh}
-          onExportSummary={() => {}} // Add a no-op to satisfy required prop, adjust based on real usage if needed
-          onAddGoal={() => {}}
-          onRemoveGoal={() => {}}
-          onQuickGoal={() => {}}
-          onOpenGoalWizard={() => {}}
-          onAssignGoal={() => {}}
-          onAddCard={() => {}}
-          onAddPlayer={() => {}}
-          onRemovePlayer={() => {}}
-          onTogglePlayerTime={() => {}}
+          onExportSummary={handleExportSummary}
+          onAddGoal={handleAddGoal}
+          onRemoveGoal={handleRemoveGoal}
+          onQuickGoal={handleQuickGoal}
+          onOpenGoalWizard={handleOpenGoalWizard}
+          onAssignGoal={props.assignGoal}
+          onAddCard={handleAddCard}
+          // CRITICAL FIX: Pass the actual player tracking handlers from props
+          onAddPlayer={props.addPlayer}
+          onRemovePlayer={props.removePlayer}
+          onTogglePlayerTime={props.togglePlayerTime}
         />
       </Tabs>
     </div>
