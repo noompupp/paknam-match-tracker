@@ -629,6 +629,51 @@ export type Database = {
         }
         Relationships: []
       }
+      player_ratings: {
+        Row: {
+          created_at: string | null
+          fixture_id: number
+          id: number
+          player_id: number
+          rater_id: string
+          rating: number
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          fixture_id: number
+          id?: number
+          player_id: number
+          rater_id: string
+          rating: number
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          fixture_id?: number
+          id?: number
+          player_id?: number
+          rater_id?: string
+          rating?: number
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "player_ratings_fixture_id_fkey"
+            columns: ["fixture_id"]
+            isOneToOne: false
+            referencedRelation: "fixtures"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "player_ratings_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       player_time_tracking: {
         Row: {
           created_at: string | null
