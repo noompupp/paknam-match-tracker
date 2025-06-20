@@ -1,3 +1,4 @@
+
 import { Badge } from "@/components/ui/badge";
 import { Clock, AlertTriangle, CheckCircle, Timer } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -6,7 +7,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 interface PlayerStatusBadgeProps {
   role: string;
   totalTime: number;
-  currentHalfTime: number;
+  currentHalfTime: number; // This should be the ACTUAL time played in current half
   isPlaying: boolean;
   matchTime: number;
   className?: string;
@@ -15,16 +16,24 @@ interface PlayerStatusBadgeProps {
 const PlayerStatusBadge = ({
   role,
   totalTime,
-  currentHalfTime,
+  currentHalfTime, // This is now the actual player time in current half
   isPlaying,
   matchTime,
   className
 }: PlayerStatusBadgeProps) => {
   const { t, language } = useTranslation();
+  
   const getStatusInfo = () => {
     const roleNormalized = role.toLowerCase();
 
-    // S-class players: 20 minutes per half limit
+    console.log('🎯 PlayerStatusBadge calculation (FIXED):', {
+      role,
+      currentHalfTime: `${Math.floor(currentHalfTime / 60)}:${String(currentHalfTime % 60).padStart(2, '0')}`,
+      totalTime: `${Math.floor(totalTime / 60)}:${String(totalTime % 60).padStart(2, '0')}`,
+      matchTime: `${Math.floor(matchTime / 60)}:${String(matchTime % 60).padStart(2, '0')}`
+    });
+
+    // S-class players: 20 minutes per half limit (1200 seconds)
     if (roleNormalized === 's-class') {
       const limitSeconds = 20 * 60; // 20 minutes
       const warningThreshold = 18 * 60; // 18 minutes
@@ -33,16 +42,16 @@ const PlayerStatusBadge = ({
 
       if (currentHalfTime >= limitSeconds) {
         return {
-          label: t("referee.limit", t("referee.limit")), // fallback for history
+          label: t("referee.limit", "LIMIT EXCEEDED"),
           variant: "destructive" as const,
           icon: AlertTriangle,
-          description: `20/20min`
+          description: `${currentHalfMin}/20min`
         };
       }
 
       if (currentHalfTime >= warningThreshold) {
         return {
-          label: t("referee.approachingLimit", t("referee.status.inProgress")),
+          label: t("referee.approachingLimit", "APPROACHING LIMIT"),
           variant: "secondary" as const,
           icon: Timer,
           description: `${currentHalfMin}/20min`
@@ -89,7 +98,7 @@ const PlayerStatusBadge = ({
       };
     }
 
-    // Captain players: no limits (show "Unlimited playtime" from translation)
+    // Captain players: no limits
     return {
       label: t("referee.status.noLimits", "NO LIMITS"),
       variant: "outline" as const,

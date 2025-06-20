@@ -21,7 +21,7 @@ import { useSubstitutionManager } from "./playerTracking/substitutionManager";
 import { generateRoleBasedNotifications } from "./playerTracking/notificationsGenerator";
 import { getPlayersNeedingAttention } from "./playerTracking/validationUtils";
 
-export const usePlayerTracking = (isTimerRunning: boolean) => {
+export const usePlayerTracking = (isTimerRunning: boolean, matchTime: number = 0) => {
   const {
     trackedPlayers,
     selectedPlayer,
@@ -39,16 +39,16 @@ export const usePlayerTracking = (isTimerRunning: boolean) => {
 
   const substitutionManager = useSubstitutionManager();
 
-  // Use the time updater
-  useTimeUpdater(isTimerRunning, trackedPlayers, setTrackedPlayers, setPlayerHalfTimes);
+  // Use the time updater with matchTime
+  useTimeUpdater(isTimerRunning, trackedPlayers, setTrackedPlayers, setPlayerHalfTimes, matchTime);
 
   // Helper functions that use the extracted utilities
-  const getPlayersNeedingAttentionForMatch = (allPlayers: any[], matchTime: number) => {
-    return getPlayersNeedingAttention(trackedPlayers, allPlayers, matchTime, playerHalfTimes);
+  const getPlayersNeedingAttentionForMatch = (allPlayers: any[], currentMatchTime: number) => {
+    return getPlayersNeedingAttention(trackedPlayers, allPlayers, currentMatchTime, playerHalfTimes);
   };
 
-  const getRoleBasedNotifications = (allPlayers: any[], matchTime: number) => {
-    return generateRoleBasedNotifications(trackedPlayers, allPlayers, matchTime, playerHalfTimes, roleBasedStops);
+  const getRoleBasedNotifications = (allPlayers: any[], currentMatchTime: number) => {
+    return generateRoleBasedNotifications(trackedPlayers, allPlayers, currentMatchTime, playerHalfTimes, roleBasedStops);
   };
 
   return {

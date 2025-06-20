@@ -5,19 +5,22 @@ import { AlertTriangle, Clock, Users, Shield, Target } from "lucide-react"
 import { ComponentPlayer } from "../hooks/useRefereeState"
 import PlayerRoleBadge from "@/components/ui/player-role-badge"
 import { useTranslation } from "@/hooks/useTranslation";
+import { isSecondHalf } from "@/utils/timeUtils";
 
 interface SevenASideValidationPanelProps {
   trackedPlayers: any[]
   allPlayers: ComponentPlayer[]
   matchTime: number
   formatTime: (seconds: number) => string
+  playerHalfTimes?: Map<number, { firstHalf: number; secondHalf: number }>
 }
 
 const SevenASideValidationPanel = ({ 
   trackedPlayers, 
   allPlayers, 
   matchTime, 
-  formatTime 
+  formatTime,
+  playerHalfTimes = new Map()
 }: SevenASideValidationPanelProps) => {
   const { t } = useTranslation();
   const SEVEN_PLAYER_LIMIT = 7
@@ -26,34 +29,52 @@ const SevenASideValidationPanel = ({
   const STARTER_MIN_TOTAL = 10 * 60 // 10 minutes minimum
   const HALF_DURATION = 25 * 60 // 25 minutes per half
 
-  const currentHalf = matchTime <= HALF_DURATION ? 1 : 2
-  const currentHalfTime = currentHalf === 1 ? matchTime : matchTime - HALF_DURATION
+  const currentHalf = isSecondHalf(matchTime) ? 2 : 1
+
+  console.log('🏟️ SevenASideValidationPanel (FIXED) - Match Analysis:', {
+    matchTime: formatTime(matchTime),
+    currentHalf,
+    trackedPlayersCount: trackedPlayers.length,
+    halfTimesMapSize: playerHalfTimes.size
+  });
 
   // Active players validation
   const activePlayers = trackedPlayers.filter(p => p.isPlaying)
   const sevenPlayerViolation = activePlayers.length > SEVEN_PLAYER_LIMIT
 
-  // S-Class time violations - Fixed to use "role" field
+  // S-Class time violations - FIXED to use actual player half times
   const sClassIssues = trackedPlayers
     .map(player => {
       const playerInfo = allPlayers.find(p => p.id === player.id)
       const role = playerInfo?.position?.toLowerCase() || 'starter'
       
       if (role === 's-class' && player.isPlaying) {
-        const halfTime = currentHalf === 1 ? currentHalfTime : 
-          Math.max(0, player.totalTime - Math.min(HALF_DURATION, player.totalTime))
+        // Get actual half times from the tracking map
+        const halfTimes = playerHalfTimes.get(player.id) || { firstHalf: 0, secondHalf: 0 };
+        const currentHalfTime = currentHalf === 1 ? halfTimes.firstHalf : halfTimes.secondHalf;
         
-        if (halfTime >= S_CLASS_HALF_LIMIT) {
-          return { player, type: 'exceeded', halfTime, role, severity: 'critical' }
-        } else if (halfTime >= S_CLASS_WARNING_THRESHOLD) {
-          return { player, type: 'warning', halfTime, role, severity: 'warning' }
+        console.log(`🔍 S-Class check for ${player.name}:`, {
+          currentHalf,
+          currentHalfTime: formatTime(currentHalfTime),
+          firstHalfTime: formatTime(halfTimes.firstHalf),
+          secondHalfTime: formatTime(halfTimes.secondHalf),
+          limit: formatTime(S_CLASS_HALF_LIMIT),
+          warningThreshold: formatTime(S_CLASS_WARNING_THRESHOLD)
+        });
+        
+        if (currentHalfTime >= S_CLASS_HALF_LIMIT) {
+          console.log('🚨 S-Class VIOLATION detected:', player.name);
+          return { player, type: 'exceeded', halfTime: currentHalfTime, role, severity: 'critical' }
+        } else if (currentHalfTime >= S_CLASS_WARNING_THRESHOLD) {
+          console.log('⚠️ S-Class WARNING detected:', player.name);
+          return { player, type: 'warning', halfTime: currentHalfTime, role, severity: 'warning' }
         }
       }
       return null
     })
     .filter(Boolean)
 
-  // Starter minimum time warnings - Fixed to use "role" field
+  // Starter minimum time warnings - Keep existing logic
   const starterIssues = trackedPlayers
     .map(player => {
       const playerInfo = allPlayers.find(p => p.id === player.id)
@@ -74,34 +95,33 @@ const SevenASideValidationPanel = ({
   const hasViolations = sevenPlayerViolation || sClassIssues.length > 0 || starterIssues.length > 0
   const hasCriticalIssues = sevenPlayerViolation || sClassIssues.some(issue => issue.severity === 'critical')
 
+  console.log('🎯 Validation Summary:', {
+    hasViolations,
+    hasCriticalIssues,
+    sevenPlayerViolation,
+    sClassIssuesCount: sClassIssues.length,
+    starterIssuesCount: starterIssues.length,
+    activePlayers: activePlayers.length
+  });
+
   if (!hasViolations) {
     return (
       <Card className="border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950/50">
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-green-800 dark:text-green-200">
             <Shield className="h-4 w-4" />
-            {t('referee.rulesClear')}
+            {t('referee.rulesClear', 'All Rules Compliant ✅')}
           </CardTitle>
         </CardHeader>
         <CardContent className="pt-0">
           <div className="flex items-center gap-4 text-sm text-green-700 dark:text-green-300">
             <div className="flex items-center gap-1">
               <Users className="h-3 w-3" />
-              <span>
-                {t('referee.onField')
-                  .replace('{count}', activePlayers.length.toString())
-                  .replace('{limit}', SEVEN_PLAYER_LIMIT.toString())
-                }
-              </span>
+              <span>{activePlayers.length}/{SEVEN_PLAYER_LIMIT} players on field</span>
             </div>
             <div className="flex items-center gap-1">
               <Clock className="h-3 w-3" />
-              <span>
-                {t('referee.currentHalf')
-                  .replace('{half}', currentHalf.toString())
-                  .replace('{time}', formatTime(currentHalfTime))
-                }
-              </span>
+              <span>Half {currentHalf} - {formatTime(matchTime)}</span>
             </div>
           </div>
         </CardContent>
@@ -117,9 +137,9 @@ const SevenASideValidationPanel = ({
           <AlertTriangle className="h-4 w-4" />
           <AlertDescription>
             <div className="flex items-center justify-between">
-              <span className="font-bold">{t('referee.criticalViolations')}</span>
+              <span className="font-bold">{t('referee.criticalViolations', 'CRITICAL RULE VIOLATIONS!')}</span>
               <Badge variant="destructive" className="animate-bounce">
-                {t('referee.immediateAction')}
+                {t('referee.immediateAction', 'IMMEDIATE ACTION REQUIRED')}
               </Badge>
             </div>
           </AlertDescription>
@@ -133,13 +153,8 @@ const SevenASideValidationPanel = ({
           <AlertDescription>
             <div className="flex items-center justify-between">
               <div>
-                <span className="font-bold text-lg">
-                  {t('referee.sevenPlayerLimitExceeded')}
-                </span>
-                <p className="text-sm mt-1">
-                  {t('referee.currentPlayersOnField')
-                    .replace('{count}', activePlayers.length.toString())}
-                </p>
+                <span className="font-bold text-lg">7-Player Limit Exceeded!</span>
+                <p className="text-sm mt-1">Currently {activePlayers.length} players on field</p>
               </div>
               <Badge variant="destructive" className="text-lg px-3 py-1">
                 {activePlayers.length}/{SEVEN_PLAYER_LIMIT}
@@ -164,10 +179,7 @@ const SevenASideValidationPanel = ({
                 <div>
                   <span className="font-bold">{issue.player.name}</span>
                   <p className="text-sm">
-                    {t('referee.currentHalf')
-                      .replace('{half}', currentHalf.toString())
-                      .replace('{time}', formatTime(issue.halfTime))}
-                    {" / "}{formatTime(S_CLASS_HALF_LIMIT)}
+                    Half {currentHalf} time: {formatTime(issue.halfTime)} / {formatTime(S_CLASS_HALF_LIMIT)}
                   </p>
                 </div>
               </div>
@@ -175,21 +187,21 @@ const SevenASideValidationPanel = ({
                 <Clock className="h-3 w-3" />
                 <Badge variant={issue.severity === 'critical' ? 'destructive' : 'secondary'}>
                   {issue.type === 'exceeded'
-                    ? t('referee.exceededLimit')
-                    : t('referee.approachingLimit')}
+                    ? t('referee.exceededLimit', 'LIMIT EXCEEDED')
+                    : t('referee.approachingLimit', 'APPROACHING LIMIT')}
                 </Badge>
               </div>
             </div>
             {issue.type === 'exceeded' && (
               <p className="text-sm mt-2 font-medium">
-                ⚠️ {t('referee.mustSubstitute')}
+                ⚠️ {t('referee.mustSubstitute', 'Must substitute immediately - 20min/half limit exceeded')}
               </p>
             )}
           </AlertDescription>
         </Alert>
       ))}
 
-      {/* Starter Minimum Time Warnings */}
+      {/* Starter minimum time warnings */}
       {starterIssues.map((issue, index) => (
         <Alert key={index} className="border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/50">
           <Target className="h-4 w-4" />
@@ -225,7 +237,7 @@ const SevenASideValidationPanel = ({
             </div>
             <div>
               <div className="text-2xl font-bold">
-                {t('referee.currentHalf').replace('{half}', currentHalf.toString()).replace('{time}', formatTime(currentHalfTime))}
+                {t('referee.currentHalf').replace('{half}', currentHalf.toString()).replace('{time}', formatTime(matchTime))}
               </div>
             </div>
             <div>

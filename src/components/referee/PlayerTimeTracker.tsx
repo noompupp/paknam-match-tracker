@@ -1,3 +1,4 @@
+
 import { Card, CardContent } from "@/components/ui/card";
 import { PlayerTime } from "@/types/database";
 import { ProcessedPlayer } from "@/utils/refereeDataProcessor";
@@ -20,6 +21,7 @@ interface PlayerTimeTrackerProps {
   formatTime: (seconds: number) => string;
   matchTime?: number;
   selectedFixtureData?: any;
+  playerHalfTimes?: Map<number, { firstHalf: number; secondHalf: number }>; // Add this prop
 }
 
 const PlayerTimeTracker = ({
@@ -35,23 +37,28 @@ const PlayerTimeTracker = ({
   onTogglePlayerTime,
   formatTime,
   matchTime = 0,
-  selectedFixtureData
+  selectedFixtureData,
+  playerHalfTimes = new Map() // Add default value
 }: PlayerTimeTrackerProps) => {
   
-  console.log('⏱️ PlayerTimeTracker Debug (Role-Based):');
-  console.log('  - Selected team:', selectedTimeTeam);
-  console.log('  - Home team players:', homeTeamPlayers?.length || 0);
-  console.log('  - Away team players:', awayTeamPlayers?.length || 0);
-  console.log('  - Tracked players:', trackedPlayers.length);
+  console.log('⏱️ PlayerTimeTracker Debug (FIXED with Half Times):', {
+    selectedTeam: selectedTimeTeam,
+    homeTeamPlayers: homeTeamPlayers?.length || 0,
+    awayTeamPlayers: awayTeamPlayers?.length || 0,
+    trackedPlayers: trackedPlayers.length,
+    matchTime: `${Math.floor(matchTime / 60)}:${String(matchTime % 60).padStart(2, '0')}`,
+    halfTimesMapSize: playerHalfTimes.size
+  });
 
   return (
     <div className="space-y-4">
-      {/* Enhanced 7-a-Side Validation Panel */}
+      {/* Enhanced 7-a-Side Validation Panel - NOW WITH HALF TIMES */}
       <SevenASideValidationPanel
         trackedPlayers={trackedPlayers}
         allPlayers={allPlayers}
         matchTime={matchTime}
         formatTime={formatTime}
+        playerHalfTimes={playerHalfTimes}
       />
 
       <Card className="card-shadow-lg">
@@ -79,6 +86,8 @@ const PlayerTimeTracker = ({
             allPlayers={allPlayers}
             formatTime={formatTime}
             onTogglePlayerTime={onTogglePlayerTime}
+            playerHalfTimes={playerHalfTimes}
+            matchTime={matchTime}
           />
         </CardContent>
       </Card>
