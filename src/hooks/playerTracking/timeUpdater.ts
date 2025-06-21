@@ -1,59 +1,106 @@
 
-import { useEffect } from "react";
+import { useEffect, useRef, useCallback } from "react";
 import { PlayerTime } from "@/types/database";
-import { isSecondHalf } from "@/utils/timeUtils";
+import { TimerSynchronizer } from "./timerSynchronizer";
 
 export const useTimeUpdater = (
   isTimerRunning: boolean,
   trackedPlayers: PlayerTime[],
   setTrackedPlayers: React.Dispatch<React.SetStateAction<PlayerTime[]>>,
   setPlayerHalfTimes: React.Dispatch<React.SetStateAction<Map<number, { firstHalf: number; secondHalf: number }>>>,
-  matchTime: number // Add matchTime parameter to know which half we're in
+  matchTime: number
 ) => {
+  const timerSynchronizer = useRef(TimerSynchronizer.getInstance());
+  const hookId = useRef(`timer-${Date.now()}-${Math.random()}`);
+  
+  // Use refs to always get the latest values without stale closures
+  const latestValues = useRef({
+    isTimerRunning,
+    trackedPlayers,
+    matchTime,
+    setTrackedPlayers,
+    setPlayerHalfTimes
+  });
+
+  // Update refs with latest values
+  useEffect(() => {
+    latestValues.current = {
+      isTimerRunning,
+      trackedPlayers,
+      matchTime,
+      setTrackedPlayers,
+      setPlayerHalfTimes
+    };
+  });
+
+  // Memoized timer callback to prevent recreation on every render
+  const timerCallback = useCallback(() => {
+    const { 
+      isTimerRunning: currentIsRunning, 
+      trackedPlayers: currentPlayers, 
+      matchTime: currentMatchTime,
+      setTrackedPlayers: currentSetPlayers,
+      setPlayerHalfTimes: currentSetHalfTimes
+    } = latestValues.current;
+
+    if (!currentIsRunning || currentPlayers.length === 0) {
+      return;
+    }
+
+    console.log('🔄 Timer update tick - Fresh values:', {
+      isRunning: currentIsRunning,
+      playersCount: currentPlayers.length,
+      matchTime: `${Math.floor(currentMatchTime / 60)}:${String(currentMatchTime % 60).padStart(2, '0')}`,
+      activePlayers: currentPlayers.filter(p => p.isPlaying).length
+    });
+
+    // Update tracked players
+    currentSetPlayers(prevPlayers => {
+      return prevPlayers.map(player => {
+        if (player.isPlaying) {
+          const newTotalTime = player.totalTime + 1;
+          return { 
+            ...player, 
+            totalTime: newTotalTime
+          };
+        }
+        return player;
+      });
+    });
+
+    // Update half times with fresh data
+    currentSetHalfTimes(prevHalfTimes => {
+      const newMap = new Map(prevHalfTimes);
+      const { updatedHalfTimes } = TimerSynchronizer.calculatePlayerTimeUpdates(
+        currentPlayers,
+        prevHalfTimes,
+        currentMatchTime
+      );
+      return updatedHalfTimes;
+    });
+  }, []); // Empty dependency array since we use refs for latest values
+
   useEffect(() => {
     if (isTimerRunning) {
-      const interval = setInterval(() => {
-        setTrackedPlayers(prev => prev.map(player => {
-          if (player.isPlaying) {
-            const newTotalTime = player.totalTime + 1;
-            return { 
-              ...player, 
-              totalTime: newTotalTime
-            };
-          }
-          return player;
-        }));
+      console.log('🎯 Subscribing to timer synchronizer:', {
+        hookId: hookId.current,
+        playersCount: trackedPlayers.length,
+        matchTime: `${Math.floor(matchTime / 60)}:${String(matchTime % 60).padStart(2, '0')}`
+      });
 
-        // Update half times tracking based on current match time
-        setPlayerHalfTimes(prev => {
-          const newMap = new Map(prev);
-          trackedPlayers.forEach(player => {
-            if (player.isPlaying) {
-              const halfTimes = newMap.get(player.id) || { firstHalf: 0, secondHalf: 0 };
-              const currentHalf = isSecondHalf(matchTime) ? 2 : 1;
-              
-              if (currentHalf === 1) {
-                halfTimes.firstHalf += 1;
-              } else {
-                halfTimes.secondHalf += 1;
-              }
-              
-              newMap.set(player.id, halfTimes);
-              
-              console.log('⏱️ Updated half times for', player.name, ':', {
-                currentHalf,
-                firstHalf: `${Math.floor(halfTimes.firstHalf / 60)}:${String(halfTimes.firstHalf % 60).padStart(2, '0')}`,
-                secondHalf: `${Math.floor(halfTimes.secondHalf / 60)}:${String(halfTimes.secondHalf % 60).padStart(2, '0')}`,
-                totalTime: `${Math.floor((player.totalTime + 1) / 60)}:${String((player.totalTime + 1) % 60).padStart(2, '0')}`,
-                matchTime: `${Math.floor(matchTime / 60)}:${String(matchTime % 60).padStart(2, '0')}`
-              });
-            }
-          });
-          return newMap;
-        });
-      }, 1000);
+      const unsubscribe = timerSynchronizer.current.subscribe(
+        hookId.current,
+        timerCallback
+      );
 
-      return () => clearInterval(interval);
+      return unsubscribe;
     }
-  }, [isTimerRunning, trackedPlayers, setTrackedPlayers, setPlayerHalfTimes, matchTime]);
+  }, [isTimerRunning, timerCallback]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      console.log('🧹 Cleaning up timer subscriber:', hookId.current);
+    };
+  }, []);
 };

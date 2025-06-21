@@ -39,7 +39,7 @@ export const usePlayerTracking = (isTimerRunning: boolean, matchTime: number = 0
 
   const substitutionManager = useSubstitutionManager();
 
-  // Use the time updater with matchTime
+  // Use the improved time updater with better synchronization
   useTimeUpdater(isTimerRunning, trackedPlayers, setTrackedPlayers, setPlayerHalfTimes, matchTime);
 
   // Helper functions that use the extracted utilities
@@ -50,6 +50,14 @@ export const usePlayerTracking = (isTimerRunning: boolean, matchTime: number = 0
   const getRoleBasedNotifications = (allPlayers: any[], currentMatchTime: number) => {
     return generateRoleBasedNotifications(trackedPlayers, allPlayers, currentMatchTime, playerHalfTimes, roleBasedStops);
   };
+
+  console.log('🎯 usePlayerTracking - Enhanced with fixed timer synchronization:', {
+    matchTime: `${Math.floor(matchTime / 60)}:${String(matchTime % 60).padStart(2, '0')}`,
+    trackedPlayersCount: trackedPlayers.length,
+    playerHalfTimesSize: playerHalfTimes?.size || 0,
+    isRunning: isTimerRunning,
+    activePlayersCount: trackedPlayers.filter(p => p.isPlaying).length
+  });
 
   return {
     trackedPlayers,

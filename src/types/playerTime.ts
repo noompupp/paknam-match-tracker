@@ -20,3 +20,10 @@ export interface EnhancedPlayerTime {
     half: 1 | 2;
   }>;
 }
+
+// New interface for timer update parameters to avoid stale closures
+export interface TimerUpdateParams {
+  matchTime: number;
+  isSecondHalf: boolean;
+  currentHalf: 1 | 2;
+}
