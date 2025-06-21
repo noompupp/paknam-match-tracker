@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRightLeft } from "lucide-react";
@@ -22,6 +23,7 @@ interface TrackedPlayerCardProps {
     hasPendingSubstitution: boolean;
     isSubOutInitiated: boolean;
   };
+  playerHalfTimes?: Map<number, { firstHalf: number; secondHalf: number }>; // Add this prop
 }
 
 const TrackedPlayerCard = ({
@@ -32,7 +34,8 @@ const TrackedPlayerCard = ({
   trackedPlayers = [],
   matchTime = 0,
   isPendingSubstitution = false,
-  substitutionManager
+  substitutionManager,
+  playerHalfTimes = new Map() // Add default value
 }: TrackedPlayerCardProps) => {
   const { t } = useTranslation();
   const role = playerInfo?.role || 'Starter';
@@ -40,8 +43,9 @@ const TrackedPlayerCard = ({
   // Check if player can be removed
   const removal = canRemovePlayer(player.id, trackedPlayers);
 
-  // Calculate current half time for status badge
-  const currentHalfTime = getCurrentHalfTime(matchTime);
+  // Get the actual current half time for this specific player from playerHalfTimes
+  const playerHalfData = playerHalfTimes.get(player.id) || { firstHalf: 0, secondHalf: 0 };
+  const currentHalfTime = isSecondHalf(matchTime) ? playerHalfData.secondHalf : playerHalfData.firstHalf;
 
   // Check if this is a player who has played before (potential substitution candidate)
   const hasPlayedBefore = player.totalTime > 0;
@@ -64,7 +68,8 @@ const TrackedPlayerCard = ({
     canCompleteStreamlinedSub,
     substitutionType: substitutionManager?.isSubOutInitiated ? 'modal' : 'streamlined',
     currentHalfTime,
-    totalTime: player.totalTime
+    totalTime: player.totalTime,
+    playerHalfData
   });
 
   // Determine button text and styling based on dual-behavior logic
@@ -186,7 +191,7 @@ const TrackedPlayerCard = ({
             {formatTime(player.totalTime)}
           </div>
           
-          {/* Dynamic Player Status Badge */}
+          {/* Dynamic Player Status Badge - now using the corrected currentHalfTime */}
           <PlayerStatusBadge
             role={role}
             totalTime={player.totalTime}
@@ -221,7 +226,7 @@ const TrackedPlayerCard = ({
         </div>
       </div>
 
-      {/* Mobile-only status display */}
+      {/* Mobile-only status display - now using the corrected currentHalfTime */}
       <div className="sm:hidden mt-2">
         <PlayerStatusBadge
           role={role}
@@ -236,5 +241,3 @@ const TrackedPlayerCard = ({
 };
 
 export default TrackedPlayerCard;
-
-// NOTE: This file is 239 lines long. Please consider refactoring for maintainability if you plan further changes.
