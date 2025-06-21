@@ -1,3 +1,4 @@
+
 import TrackedPlayerCard from "./TrackedPlayerCard";
 import { PlayerTime } from "@/types/database";
 import { ProcessedPlayer } from "@/utils/refereeDataProcessor";
@@ -8,7 +9,7 @@ interface TrackedPlayersListProps {
   allPlayers: ProcessedPlayer[];
   formatTime: (seconds: number) => string;
   onTogglePlayerTime: (playerId: number) => void;
-  // onRemovePlayer prop removed
+  playerHalfTimes?: Map<number, { firstHalf: number; secondHalf: number }>; // Add this prop
   matchTime?: number;
   pendingSubstitutionPlayerId?: number | null;
   substitutionManager?: {
@@ -23,7 +24,7 @@ const TrackedPlayersList = ({
   allPlayers,
   formatTime,
   onTogglePlayerTime,
-  // Removed onRemovePlayer from destructure
+  playerHalfTimes = new Map(), // Add default value
   matchTime = 0,
   pendingSubstitutionPlayerId = null,
   substitutionManager
@@ -51,11 +52,11 @@ const TrackedPlayersList = ({
             playerInfo={playerInfo}
             formatTime={formatTime}
             onTogglePlayerTime={onTogglePlayerTime}
-            // Removed onRemovePlayer
             trackedPlayers={trackedPlayers}
             matchTime={matchTime}
             isPendingSubstitution={isPendingSubstitution}
             substitutionManager={substitutionManager}
+            playerHalfTimes={playerHalfTimes} // Pass the prop to TrackedPlayerCard
           />
         );
       })}
