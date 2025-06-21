@@ -73,13 +73,28 @@ export const useRefereeEnhancedHandlers = ({
     console.log('✅ useRefereeEnhancedHandlers: Enhanced reset completed with state coordination');
   };
 
-  // Create wrapper functions that handle matchTime internally for basic operations
+  // FIXED: Create wrapper functions that properly handle matchTime parameter
   const handleAddPlayer = (player: ComponentPlayer) => {
-    matchState.addPlayer(player, baseState.matchTime);
+    console.log('👤 Enhanced Handlers - Adding player with matchTime:', {
+      playerId: player.id,
+      playerName: player.name,
+      matchTime: baseState.matchTime,
+      matchTimeFormatted: `${Math.floor(baseState.matchTime / 60)}:${String(baseState.matchTime % 60).padStart(2, '0')}`
+    });
+    
+    // Pass both player and matchTime to the underlying function
+    return matchState.addPlayer(player, baseState.matchTime);
   };
 
   const handleTogglePlayerTime = (playerId: number) => {
-    matchState.togglePlayerTime(playerId, baseState.matchTime);
+    console.log('⏱️ Enhanced Handlers - Toggling player time with matchTime:', {
+      playerId,
+      matchTime: baseState.matchTime,
+      matchTimeFormatted: `${Math.floor(baseState.matchTime / 60)}:${String(baseState.matchTime % 60).padStart(2, '0')}`
+    });
+    
+    // CRITICAL FIX: Pass both playerId and matchTime to the underlying function
+    return matchState.togglePlayerTime(playerId, baseState.matchTime);
   };
 
   return {

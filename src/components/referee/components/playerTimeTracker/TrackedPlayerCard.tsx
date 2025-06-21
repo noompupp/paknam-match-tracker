@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRightLeft } from "lucide-react";
@@ -23,7 +22,7 @@ interface TrackedPlayerCardProps {
     hasPendingSubstitution: boolean;
     isSubOutInitiated: boolean;
   };
-  playerHalfTimes?: Map<number, { firstHalf: number; secondHalf: number }>; // Add this prop
+  playerHalfTimes?: Map<number, { firstHalf: number; secondHalf: number }>;
 }
 
 const TrackedPlayerCard = ({
@@ -35,7 +34,7 @@ const TrackedPlayerCard = ({
   matchTime = 0,
   isPendingSubstitution = false,
   substitutionManager,
-  playerHalfTimes = new Map() // Add default value
+  playerHalfTimes = new Map()
 }: TrackedPlayerCardProps) => {
   const { t } = useTranslation();
   const role = playerInfo?.role || 'Starter';
@@ -57,19 +56,24 @@ const TrackedPlayerCard = ({
                                    player.isPlaying && 
                                    player.id !== substitutionManager?.pendingSubstitution?.outgoingPlayerId;
 
-  console.log('👤 Rendering tracked player with dual-behavior substitution status:', {
+  // DEBUGGING: Log player card render with detailed timer information
+  console.log('🎴 TrackedPlayerCard - Rendering with FULL timer debugging:', {
+    playerId: player.id,
     name: player.name,
     role,
-    canRemove: removal.canRemove,
     isPlaying: player.isPlaying,
-    hasPlayedBefore,
-    isSubstitutionCandidate,
-    isPendingSubstitution,
-    canCompleteStreamlinedSub,
-    substitutionType: substitutionManager?.isSubOutInitiated ? 'modal' : 'streamlined',
-    currentHalfTime,
     totalTime: player.totalTime,
-    playerHalfData
+    totalTimeFormatted: formatTime(player.totalTime),
+    matchTime,
+    matchTimeFormatted: `${Math.floor(matchTime / 60)}:${String(matchTime % 60).padStart(2, '0')}`,
+    currentHalf: isSecondHalf(matchTime) ? 2 : 1,
+    playerHalfData,
+    currentHalfTime,
+    currentHalfTimeFormatted: formatTime(currentHalfTime),
+    hasPlayedBefore,
+    canRemove: removal.canRemove,
+    halfTimesMapSize: playerHalfTimes.size,
+    halfTimesMapHasPlayer: playerHalfTimes.has(player.id)
   });
 
   // Determine button text and styling based on dual-behavior logic
@@ -134,8 +138,21 @@ const TrackedPlayerCard = ({
 
   const buttonProps = getButtonProps();
 
-  // 👇 Add clarity for ON/OFF state by applying reduced opacity & muted bg to inactive players
+  // Apply reduced opacity & muted bg to inactive players
   const isActive = player.isPlaying;
+
+  // DEBUGGING: Enhanced click handler with logging
+  const handleToggleClick = () => {
+    console.log('🖱️ TrackedPlayerCard - Button clicked with debugging:', {
+      playerId: player.id,
+      playerName: player.name,
+      currentIsPlaying: player.isPlaying,
+      matchTime,
+      buttonAction: buttonProps.text
+    });
+    
+    onTogglePlayerTime(player.id);
+  };
 
   return (
     <div
@@ -191,7 +208,7 @@ const TrackedPlayerCard = ({
             {formatTime(player.totalTime)}
           </div>
           
-          {/* Dynamic Player Status Badge - now using the corrected currentHalfTime */}
+          {/* Dynamic Player Status Badge - using the corrected currentHalfTime */}
           <PlayerStatusBadge
             role={role}
             totalTime={player.totalTime}
@@ -202,12 +219,12 @@ const TrackedPlayerCard = ({
           />
         </div>
 
-        {/* Compact action buttons */}
+        {/* Compact action buttons - FIXED: Use enhanced click handler */}
         <div className="flex gap-1 flex-shrink-0">
           <Button
             size="sm"
             variant={buttonProps.variant}
-            onClick={() => onTogglePlayerTime(player.id)}
+            onClick={handleToggleClick}
             className={`h-7 px-2 text-xs ${canCompleteStreamlinedSub ? 'animate-pulse' : ''}`}
             disabled={isPendingSubstitution && substitutionManager?.isSubOutInitiated}
           >
@@ -226,7 +243,7 @@ const TrackedPlayerCard = ({
         </div>
       </div>
 
-      {/* Mobile-only status display - now using the corrected currentHalfTime */}
+      {/* Mobile-only status display - using the corrected currentHalfTime */}
       <div className="sm:hidden mt-2">
         <PlayerStatusBadge
           role={role}

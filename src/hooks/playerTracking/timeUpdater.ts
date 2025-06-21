@@ -33,7 +33,7 @@ export const useTimeUpdater = (
     };
   });
 
-  // Memoized timer callback to prevent recreation on every render
+  // Memoized timer callback with ENHANCED debugging
   const timerCallback = useCallback(() => {
     const { 
       isTimerRunning: currentIsRunning, 
@@ -47,18 +47,39 @@ export const useTimeUpdater = (
       return;
     }
 
-    console.log('🔄 Timer update tick - Fresh values:', {
+    const activePlayersForDebugging = currentPlayers.filter(p => p.isPlaying);
+    
+    console.log('🔄 Timer Tick - ENHANCED debugging for S-Class bug:', {
       isRunning: currentIsRunning,
       playersCount: currentPlayers.length,
-      matchTime: `${Math.floor(currentMatchTime / 60)}:${String(currentMatchTime % 60).padStart(2, '0')}`,
-      activePlayers: currentPlayers.filter(p => p.isPlaying).length
+      activePlayersCount: activePlayersForDebugging.length,
+      matchTime: currentMatchTime,
+      matchTimeFormatted: `${Math.floor(currentMatchTime / 60)}:${String(currentMatchTime % 60).padStart(2, '0')}`,
+      activePlayers: activePlayersForDebugging.map(p => ({
+        id: p.id,
+        name: p.name,
+        totalTime: p.totalTime,
+        isPlaying: p.isPlaying,
+        totalTimeFormatted: `${Math.floor(p.totalTime / 60)}:${String(p.totalTime % 60).padStart(2, '0')}`
+      }))
     });
 
-    // Update tracked players
+    // Update tracked players with detailed logging
     currentSetPlayers(prevPlayers => {
       return prevPlayers.map(player => {
         if (player.isPlaying) {
           const newTotalTime = player.totalTime + 1;
+          
+          console.log('⏱️ Timer Update - Player time increment:', {
+            playerId: player.id,
+            playerName: player.name,
+            oldTotalTime: player.totalTime,
+            newTotalTime,
+            increment: 1,
+            oldTimeFormatted: `${Math.floor(player.totalTime / 60)}:${String(player.totalTime % 60).padStart(2, '0')}`,
+            newTimeFormatted: `${Math.floor(newTotalTime / 60)}:${String(newTotalTime % 60).padStart(2, '0')}`
+          });
+          
           return { 
             ...player, 
             totalTime: newTotalTime
@@ -68,7 +89,7 @@ export const useTimeUpdater = (
       });
     });
 
-    // Update half times with fresh data
+    // Update half times with fresh data and enhanced logging
     currentSetHalfTimes(prevHalfTimes => {
       const newMap = new Map(prevHalfTimes);
       const { updatedHalfTimes } = TimerSynchronizer.calculatePlayerTimeUpdates(
@@ -76,16 +97,31 @@ export const useTimeUpdater = (
         prevHalfTimes,
         currentMatchTime
       );
+      
+      console.log('📊 Timer Update - Half times update:', {
+        originalMapSize: prevHalfTimes.size,
+        updatedMapSize: updatedHalfTimes.size,
+        matchTime: currentMatchTime,
+        matchTimeFormatted: `${Math.floor(currentMatchTime / 60)}:${String(currentMatchTime % 60).padStart(2, '0')}`,
+        playersWithHalfTimes: Array.from(updatedHalfTimes.entries()).map(([id, times]) => ({
+          playerId: id,
+          firstHalf: `${Math.floor(times.firstHalf / 60)}:${String(times.firstHalf % 60).padStart(2, '0')}`,
+          secondHalf: `${Math.floor(times.secondHalf / 60)}:${String(times.secondHalf % 60).padStart(2, '0')}`
+        }))
+      });
+      
       return updatedHalfTimes;
     });
   }, []); // Empty dependency array since we use refs for latest values
 
   useEffect(() => {
     if (isTimerRunning) {
-      console.log('🎯 Subscribing to timer synchronizer:', {
+      console.log('🎯 Timer Subscription - Enhanced with S-Class debugging:', {
         hookId: hookId.current,
         playersCount: trackedPlayers.length,
-        matchTime: `${Math.floor(matchTime / 60)}:${String(matchTime % 60).padStart(2, '0')}`
+        activePlayersCount: trackedPlayers.filter(p => p.isPlaying).length,
+        matchTime: `${Math.floor(matchTime / 60)}:${String(matchTime % 60).padStart(2, '0')}`,
+        trackedPlayerNames: trackedPlayers.map(p => `${p.name}(${p.isPlaying ? 'ON' : 'OFF'})`)
       });
 
       const unsubscribe = timerSynchronizer.current.subscribe(
@@ -94,6 +130,8 @@ export const useTimeUpdater = (
       );
 
       return unsubscribe;
+    } else {
+      console.log('⏸️ Timer Not Running - No subscription active');
     }
   }, [isTimerRunning, timerCallback]);
 
