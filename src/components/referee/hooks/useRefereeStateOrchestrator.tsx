@@ -146,7 +146,7 @@ export const useRefereeStateOrchestrator = () => {
     }
   }, [storeHomeTeamName, storeAwayTeamName, lastUpdated]);
 
-  console.log('🎯 useRefereeStateOrchestrator Summary (Database-Driven Scores):', {
+  console.log('🎯 useRefereeStateOrchestrator Summary (Database-Driven Scores) - FIXED WITH HALF TIMES:', {
     selectedFixture: orchestrator.baseState.selectedFixture,
     hasSelectedFixtureData: !!orchestrator.baseState.selectedFixtureData,
     totalMembers: orchestrator.baseState.members?.length || 0,
@@ -161,7 +161,15 @@ export const useRefereeStateOrchestrator = () => {
     timeFilteredPlayersCount: orchestrator.teamSelection.getTimeFilteredPlayers().length,
     databaseDrivenScore: { homeScore: orchestrator.scoreState.homeScore, awayScore: orchestrator.scoreState.awayScore },
     hasRealTimeSync: !!orchestrator.scoreState.forceRefresh,
-    storeHomeTeamName, storeAwayTeamName, lastUpdated
+    storeHomeTeamName, storeAwayTeamName, lastUpdated,
+    // ADDED: Half times tracking
+    playerHalfTimesSize: orchestrator.matchState.playerHalfTimes?.size || 0,
+    halfTimesDebug: orchestrator.matchState.playerHalfTimes ? 
+      Array.from(orchestrator.matchState.playerHalfTimes.entries()).slice(0, 3).map(([id, times]) => ({
+        playerId: id,
+        firstHalf: `${Math.floor(times.firstHalf / 60)}:${String(times.firstHalf % 60).padStart(2, '0')}`,
+        secondHalf: `${Math.floor(times.secondHalf / 60)}:${String(times.secondHalf % 60).padStart(2, '0')}`
+      })) : []
   });
 
   return {
@@ -213,10 +221,11 @@ export const useRefereeStateOrchestrator = () => {
     setSelectedTeam: orchestrator.matchState.setSelectedTeam,
     setSelectedCardType: orchestrator.matchState.setSelectedCardType,
     
-    // Time tracking
+    // Time tracking - FIXED: Add playerHalfTimes
     trackedPlayers: orchestrator.matchState.trackedPlayers,
     selectedTimePlayer: orchestrator.matchState.selectedTimePlayer,
     setSelectedTimePlayer: orchestrator.matchState.setSelectedTimePlayer,
+    playerHalfTimes: orchestrator.matchState.playerHalfTimes, // ADDED
     
     // Events
     events: orchestrator.matchState.events,
