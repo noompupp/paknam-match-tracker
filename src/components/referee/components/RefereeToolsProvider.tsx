@@ -1,11 +1,11 @@
 
 import { MatchSaveStatusProvider } from "../hooks/useMatchSaveStatus";
-import RefereeToolsContent from "./RefereeToolsContent";
+import RefereeToolsContainer from "../RefereeToolsContainer";
 
 const RefereeToolsProvider = () => {
   return (
     <MatchSaveStatusProvider>
-      <RefereeToolsContent />
+      <RefereeToolsContainer />
     </MatchSaveStatusProvider>
   );
 };

@@ -1,8 +1,8 @@
 
-import RefereeToolsContainer from "./referee/RefereeToolsContainer";
+import RefereeToolsProvider from "./referee/components/RefereeToolsProvider";
 
 const RefereeTools = () => {
-  return <RefereeToolsContainer />;
+  return <RefereeToolsProvider />;
 };
 
 export default RefereeTools;
