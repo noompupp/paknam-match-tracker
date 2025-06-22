@@ -41,7 +41,7 @@ const RefereeToolsContainer = () => {
         <MatchSelection
           fixtures={state.fixtures}
           selectedFixture={state.selectedFixture}
-          onFixtureSelect={state.setSelectedFixture}
+          onFixtureChange={state.setSelectedFixture}
         />
       </div>
     );
@@ -120,7 +120,6 @@ const RefereeToolsContainer = () => {
             matchTime={state.matchTime}
             isRunning={state.isRunning}
             onToggleTimer={state.toggleTimer}
-            onResetTimer={state.resetTimer}
             formatTime={state.formatTime}
             selectedFixtureData={state.selectedFixtureData}
             homeScore={state.homeScore}
@@ -131,7 +130,6 @@ const RefereeToolsContainer = () => {
         <TabsContent value="score">
           <ScoreTab
             selectedFixtureData={state.selectedFixtureData}
-            goals={state.goals}
             onSaveMatch={state.handleSaveMatch}
             saveAttempts={state.saveAttempts}
             matchTime={state.matchTime}
@@ -143,17 +141,10 @@ const RefereeToolsContainer = () => {
 
         <TabsContent value="goals">
           <GoalsTab
-            selectedGoalPlayer={state.selectedGoalPlayer}
-            selectedGoalType={state.selectedGoalType}
-            selectedGoalTeam={state.selectedGoalTeam}
-            setSelectedGoalPlayer={state.setSelectedGoalPlayer}
-            setSelectedGoalType={state.setSelectedGoalType}
-            setSelectedGoalTeam={state.setSelectedGoalTeam}
-            onAssignGoal={state.handleAssignGoal}
-            getGoalFilteredPlayers={state.getGoalFilteredPlayers}
             selectedFixtureData={state.selectedFixtureData}
             formatTime={state.formatTime}
             matchTime={state.matchTime}
+            onAssignGoal={state.handleAssignGoal}
           />
         </TabsContent>
 
@@ -183,8 +174,8 @@ const RefereeToolsContainer = () => {
             selectedTeam={state.selectedTeam}
             selectedCardType={state.selectedCardType}
             onPlayerSelect={state.setSelectedPlayer}
-            onTeamSelect={state.setSelectedTeam}
-            onCardTypeSelect={state.setSelectedCardType}
+            onTeamChange={state.setSelectedTeam}
+            onCardTypeChange={state.setSelectedCardType}
             onAddCard={state.handleAddCard}
             allPlayers={state.allPlayers}
             homeTeamPlayers={state.homeTeamPlayers}

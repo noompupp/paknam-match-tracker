@@ -54,8 +54,8 @@ interface RefereeTabsContentProps {
   onAddPlayer: (player: ComponentPlayer) => void;
   onRemovePlayer: (playerId: number) => void;
   onTogglePlayerTime: (playerId: number) => void;
-  onExportSummary: () => void;
   // Removed: homeScore and awayScore
+  // Removed: onExportSummary
 }
 
 const RefereeTabsContent = (props: RefereeTabsContentProps) => {
@@ -146,17 +146,9 @@ const RefereeTabsContent = (props: RefereeTabsContentProps) => {
       <TabsContent value="summary" className="space-y-6">
         <div className="flex justify-between items-center">
           <h3 className="text-lg font-semibold">{t('referee.matchSummary')}</h3>
-          <div className="flex gap-2">
-            <SaveNowButton onSave={props.onSaveMatch}>
-              {t('referee.save')}
-            </SaveNowButton>
-            <SaveNowButton 
-              onSave={props.onExportSummary} 
-              variant="outline"
-            >
-              {t('referee.export')}
-            </SaveNowButton>
-          </div>
+          <SaveNowButton onSave={props.onSaveMatch}>
+            {t('referee.save')}
+          </SaveNowButton>
         </div>
         {/* UnifiedMatchTimer for quick timer controls in summary */}
         <UnifiedMatchTimer
@@ -179,8 +171,7 @@ const RefereeTabsContent = (props: RefereeTabsContentProps) => {
           events={props.events}
           allPlayers={props.allPlayers}
           formatTime={props.formatTime}
-          onExportSummary={props.onExportSummary}
-          // No need for homeScore/awayScore here as EnhancedMatchSummary uses the live store already.
+          // Removed onExportSummary as it's not expected by SummaryTabProps
         />
       </TabsContent>
     </>
