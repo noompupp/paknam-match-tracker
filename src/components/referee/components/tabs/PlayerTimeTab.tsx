@@ -1,88 +1,177 @@
-
-import { useTranslation } from "@/hooks/useTranslation";
-import PlayerTimeTracker from "../../PlayerTimeTracker";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { Timer, Users, Play, Pause, UserMinus } from "lucide-react";
+import { ProcessedPlayer } from "@/utils/refereeDataProcessor";
 
 interface PlayerTimeTabProps {
+  allPlayers: ProcessedPlayer[];
+  homeTeamPlayers?: ProcessedPlayer[];
+  awayTeamPlayers?: ProcessedPlayer[];
   trackedPlayers: any[];
   selectedTimePlayer: string;
-  setSelectedTimePlayer: (value: string) => void;
-  allPlayers: any[];
-  homeTeamPlayers: any[];
-  awayTeamPlayers: any[];
   selectedTimeTeam: string;
-  setSelectedTimeTeam: (value: string) => void;
-  handleAddPlayer: (player: any) => void; // FIXED: Accept player parameter
-  handleTogglePlayerTime: (playerId: number) => void;
-  formatTime: (seconds: number) => string;
   matchTime: number;
-  selectedFixtureData: any;
-  playerHalfTimes?: Map<number, { firstHalf: number; secondHalf: number }>;
+  setSelectedTimePlayer: (value: string) => void;
+  setSelectedTimeTeam: (value: string) => void;
+  addPlayer: (player: any) => void;
+  removePlayer: (playerId: number) => void;
+  togglePlayerTime: (playerId: number) => void;
+  formatTime: (seconds: number) => string;
 }
 
 const PlayerTimeTab = ({
-  trackedPlayers,
-  selectedTimePlayer,
-  setSelectedTimePlayer,
   allPlayers,
   homeTeamPlayers,
   awayTeamPlayers,
+  trackedPlayers,
+  selectedTimePlayer,
   selectedTimeTeam,
-  setSelectedTimeTeam,
-  handleAddPlayer,
-  handleTogglePlayerTime,
-  formatTime,
   matchTime,
-  selectedFixtureData,
-  playerHalfTimes = new Map()
+  setSelectedTimePlayer,
+  setSelectedTimeTeam,
+  addPlayer,
+  removePlayer,
+  togglePlayerTime,
+  formatTime
 }: PlayerTimeTabProps) => {
-  const { t } = useTranslation();
+  const availablePlayers = selectedTimeTeam === 'home' 
+    ? homeTeamPlayers || []
+    : selectedTimeTeam === 'away' 
+    ? awayTeamPlayers || []
+    : allPlayers;
 
-  // FIXED: Create wrapper function that finds the selected player and calls handleAddPlayer with it
-  const handleAddPlayerWrapper = () => {
+  const handleAddPlayer = () => {
     if (!selectedTimePlayer) return;
     
-    // Find the selected player from the appropriate team
-    let player;
-    if (selectedTimeTeam === 'home' && homeTeamPlayers) {
-      player = homeTeamPlayers.find(p => p.id.toString() === selectedTimePlayer);
-    } else if (selectedTimeTeam === 'away' && awayTeamPlayers) {
-      player = awayTeamPlayers.find(p => p.id.toString() === selectedTimePlayer);
-    }
-    
-    // Fallback to all players if not found
-    if (!player) {
-      player = allPlayers.find(p => p.id.toString() === selectedTimePlayer);
-    }
-    
+    const player = availablePlayers.find(p => p.id.toString() === selectedTimePlayer);
     if (player) {
-      handleAddPlayer(player);
+      addPlayer({
+        id: player.id,
+        name: player.name,
+        team: player.team,
+        startTime: matchTime,
+        isPlaying: true,
+        totalTime: 0
+      });
     }
   };
 
-  console.log('🎯 PlayerTimeTab - Props flow check with half times:', {
-    trackedCount: trackedPlayers.length,
-    halfTimesSize: playerHalfTimes.size,
-    halfTimesReceived: !!playerHalfTimes
-  });
-
   return (
     <div className="space-y-6">
-      <PlayerTimeTracker
-        trackedPlayers={trackedPlayers}
-        selectedPlayer={selectedTimePlayer}
-        allPlayers={allPlayers}
-        homeTeamPlayers={homeTeamPlayers}
-        awayTeamPlayers={awayTeamPlayers}
-        selectedTimeTeam={selectedTimeTeam}
-        onPlayerSelect={setSelectedTimePlayer}
-        onTimeTeamChange={setSelectedTimeTeam}
-        onAddPlayer={handleAddPlayerWrapper} // FIXED: Pass wrapper function
-        onTogglePlayerTime={handleTogglePlayerTime}
-        formatTime={formatTime}
-        matchTime={matchTime}
-        selectedFixtureData={selectedFixtureData}
-        playerHalfTimes={playerHalfTimes}
-      />
+      {/* Player Selection */}
+      <Card className="referee-card">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Timer className="h-5 w-5" />
+            Add Player to Track
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Team</label>
+              <Select value={selectedTimeTeam} onValueChange={setSelectedTimeTeam}>
+                <SelectTrigger className="referee-select">
+                  <SelectValue placeholder="Select team" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="home">Home Team</SelectItem>
+                  <SelectItem value="away">Away Team</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Player</label>
+              <Select value={selectedTimePlayer} onValueChange={setSelectedTimePlayer}>
+                <SelectTrigger className="referee-select">
+                  <SelectValue placeholder="Select player" />
+                </SelectTrigger>
+                <SelectContent>
+                  {availablePlayers.map((player) => (
+                    <SelectItem key={player.id} value={player.id.toString()}>
+                      {player.name} ({player.team})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex items-end">
+              <Button
+                onClick={handleAddPlayer}
+                disabled={!selectedTimePlayer || !selectedTimeTeam}
+                className="w-full referee-button-primary"
+              >
+                <Users className="h-4 w-4 mr-2" />
+                Track Player
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Tracked Players */}
+      <Card className="referee-card">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Play className="h-5 w-5" />
+            Tracked Players ({trackedPlayers.length})
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {trackedPlayers.length === 0 ? (
+            <div className="text-center py-8">
+              <Timer className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+              <p className="text-muted-foreground">No players being tracked</p>
+              <p className="text-sm text-muted-foreground mt-1">
+                Add players above to start tracking their playing time
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {trackedPlayers.map((player) => (
+                <div key={player.id} className="flex items-center justify-between p-3 border rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <div>
+                      <p className="font-medium">{player.name}</p>
+                      <p className="text-sm text-muted-foreground">{player.team}</p>
+                    </div>
+                    <Badge variant={player.isPlaying ? "default" : "secondary"}>
+                      {player.isPlaying ? "Playing" : "Benched"}
+                    </Badge>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <div className="text-right">
+                      <p className="font-mono text-sm">
+                        {formatTime(player.totalTime + (player.isPlaying ? matchTime - player.startTime : 0))}
+                      </p>
+                      <p className="text-xs text-muted-foreground">Total Time</p>
+                    </div>
+
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => togglePlayerTime(player.id)}
+                      >
+                        {player.isPlaying ? (
+                          <Pause className="h-3 w-3" />
+                        ) : (
+                          <Play className="h-3 w-3" />
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 };

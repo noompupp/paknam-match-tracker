@@ -54,15 +54,15 @@ interface RefereeTabsContentProps {
   onAddPlayer: (player: ComponentPlayer) => void;
   onRemovePlayer: (playerId: number) => void;
   onTogglePlayerTime: (playerId: number) => void;
+  onExportSummary: () => void;
   // Removed: homeScore and awayScore
-  // Removed: onExportSummary
 }
 
 const RefereeTabsContent = (props: RefereeTabsContentProps) => {
   const { t } = useTranslation();
 
   // Get live up-to-date scores directly from the store
-  const { homeScore, awayScore, lastUpdated } = useMatchStore();
+  const { homeScore, awayScore } = useMatchStore();
 
   return (
     <>
@@ -146,9 +146,17 @@ const RefereeTabsContent = (props: RefereeTabsContentProps) => {
       <TabsContent value="summary" className="space-y-6">
         <div className="flex justify-between items-center">
           <h3 className="text-lg font-semibold">{t('referee.matchSummary')}</h3>
-          <SaveNowButton onSave={props.onSaveMatch}>
-            {t('referee.save')}
-          </SaveNowButton>
+          <div className="flex gap-2">
+            <SaveNowButton onSave={props.onSaveMatch}>
+              {t('referee.save')}
+            </SaveNowButton>
+            <SaveNowButton 
+              onSave={props.onExportSummary} 
+              variant="outline"
+            >
+              {t('referee.export')}
+            </SaveNowButton>
+          </div>
         </div>
         {/* UnifiedMatchTimer for quick timer controls in summary */}
         <UnifiedMatchTimer
@@ -164,8 +172,6 @@ const RefereeTabsContent = (props: RefereeTabsContentProps) => {
         />
         <SummaryTab
           selectedFixtureData={props.selectedFixtureData}
-          homeScore={homeScore}
-          awayScore={awayScore}
           matchTime={props.matchTime}
           goals={props.goals}
           cards={props.cards}
@@ -173,11 +179,8 @@ const RefereeTabsContent = (props: RefereeTabsContentProps) => {
           events={props.events}
           allPlayers={props.allPlayers}
           formatTime={props.formatTime}
-          handleSaveMatch={props.onSaveMatch}
-          saveAttempts={0} // Default value since it's not passed from props
-          handleResetMatch={props.onResetMatch}
-          // Pass playerHalfTimes as empty Map since it's not available in props
-          playerHalfTimes={new Map()}
+          onExportSummary={props.onExportSummary}
+          // No need for homeScore/awayScore here as EnhancedMatchSummary uses the live store already.
         />
       </TabsContent>
     </>

@@ -149,7 +149,7 @@ export const useRefereeStateOrchestrator = () => {
     }
   }, [storeHomeTeamName, storeAwayTeamName, lastUpdated]);
 
-  console.log('🎯 useRefereeStateOrchestrator Summary (Database-Driven Scores) - FIXED WITH HALF TIMES:', {
+  console.log('🎯 useRefereeStateOrchestrator Summary (Database-Driven Scores):', {
     selectedFixture: orchestrator.baseState.selectedFixture,
     hasSelectedFixtureData: !!orchestrator.baseState.selectedFixtureData,
     totalMembers: orchestrator.baseState.members?.length || 0,
@@ -164,58 +164,37 @@ export const useRefereeStateOrchestrator = () => {
     timeFilteredPlayersCount: orchestrator.teamSelection.getTimeFilteredPlayers().length,
     databaseDrivenScore: { homeScore: orchestrator.scoreState.homeScore, awayScore: orchestrator.scoreState.awayScore },
     hasRealTimeSync: !!orchestrator.scoreState.forceRefresh,
-    storeHomeTeamName, storeAwayTeamName, lastUpdated,
-    // ADDED: Half times tracking
-    playerHalfTimesSize: orchestrator.matchState.playerHalfTimes?.size || 0,
-    halfTimesDebug: orchestrator.matchState.playerHalfTimes ? 
-      Array.from(orchestrator.matchState.playerHalfTimes.entries()).slice(0, 3).map(([id, times]) => ({
-        playerId: id,
-        firstHalf: `${Math.floor(times.firstHalf / 60)}:${String(times.firstHalf % 60).padStart(2, '0')}`,
-        secondHalf: `${Math.floor(times.secondHalf / 60)}:${String(times.secondHalf % 60).padStart(2, '0')}`
-      })) : []
+    storeHomeTeamName, storeAwayTeamName, lastUpdated
   });
 
   return {
-    // Base state
     fixtures: orchestrator.baseState.fixtures,
     fixturesLoading: orchestrator.baseState.fixturesLoading,
     selectedFixture: orchestrator.baseState.selectedFixture,
     setSelectedFixture: orchestrator.baseState.setSelectedFixture,
     selectedFixtureData: orchestrator.baseState.selectedFixtureData,
     enhancedPlayersData: orchestrator.playerData.enhancedPlayersData,
-    
-    // Player data
     allPlayers: orchestrator.playerData.allPlayers,
     homeTeamPlayers: orchestrator.playerData.homeTeamPlayers,
     awayTeamPlayers: orchestrator.playerData.awayTeamPlayers,
     playersForTimeTracker: orchestrator.playerData.playersForTimeTracker,
     playersNeedingAttention: orchestrator.playersNeedingAttention,
-    
-    // Team selections
     selectedGoalTeam: orchestrator.teamSelection.selectedGoalTeam,
     setSelectedGoalTeam: orchestrator.teamSelection.setSelectedGoalTeam,
     selectedTimeTeam: orchestrator.teamSelection.selectedTimeTeam,
     setSelectedTimeTeam: orchestrator.teamSelection.setSelectedTimeTeam,
     getGoalFilteredPlayers: orchestrator.teamSelection.getGoalFilteredPlayers,
     getTimeFilteredPlayers: orchestrator.teamSelection.getTimeFilteredPlayers,
-    
-    // Timer
     matchTime: orchestrator.baseState.matchTime,
     isRunning: orchestrator.baseState.isRunning,
     formatTime: orchestrator.baseState.formatTime,
-    
-    // Store-synced scores (NEVER block on permissions/loading!)
     homeScore,
     awayScore,
-    
-    // Goals
     goals: orchestrator.matchState.goals,
     selectedGoalPlayer: orchestrator.matchState.selectedGoalPlayer,
     selectedGoalType: orchestrator.matchState.selectedGoalType,
     setSelectedGoalPlayer: orchestrator.matchState.setSelectedGoalPlayer,
     setSelectedGoalType: orchestrator.matchState.setSelectedGoalType,
-    
-    // Cards
     cards: orchestrator.matchState.cards,
     selectedPlayer: orchestrator.matchState.selectedPlayer,
     selectedTeam: orchestrator.matchState.selectedTeam,
@@ -223,28 +202,17 @@ export const useRefereeStateOrchestrator = () => {
     setSelectedPlayer: orchestrator.matchState.setSelectedPlayer,
     setSelectedTeam: orchestrator.matchState.setSelectedTeam,
     setSelectedCardType: orchestrator.matchState.setSelectedCardType,
-    
-    // Time tracking - FIXED: Add playerHalfTimes
     trackedPlayers: orchestrator.matchState.trackedPlayers,
     selectedTimePlayer: orchestrator.matchState.selectedTimePlayer,
     setSelectedTimePlayer: orchestrator.matchState.setSelectedTimePlayer,
-    playerHalfTimes: orchestrator.matchState.playerHalfTimes || new Map(), // ADDED with fallback
-    
-    // Events
     events: orchestrator.matchState.events,
-
-    // Reset functions and event logger
     resetScore: orchestrator.scoreState.resetScore,
     resetEvents: orchestrator.matchState.resetEvents,
     resetCards: orchestrator.matchState.resetCards,
     resetTracking: orchestrator.matchState.resetTracking,
     resetGoals: orchestrator.matchState.resetGoals,
     addEvent: orchestrator.matchState.addEvent,
-
-    // Save attempts
     saveAttempts: orchestrator.baseState.saveAttempts,
-
-    // Enhanced handlers
     handleSaveMatch: enhancedHandlers.handleSaveMatch,
     handleResetMatch: enhancedHandlers.handleResetMatch,
     handleAssignGoal: enhancedHandlers.handleAssignGoal,

@@ -70,6 +70,10 @@ const RefereeMainContent = (props: RefereeMainContentProps) => {
     console.log('🎯 Adding card:', { playerName, team, cardType, time });
   };
 
+  const handleExportSummary = () => {
+    console.log('🎯 Exporting summary');
+  };
+
   return (
     <div className="space-y-6">
       <RefereeMatchHeader selectedFixtureData={props.selectedFixtureData} />
@@ -109,6 +113,7 @@ const RefereeMainContent = (props: RefereeMainContentProps) => {
           onResetMatch={props.onResetMatch}
           onSaveMatch={props.onSaveMatch}
           onDataRefresh={props.onDataRefresh}
+          onExportSummary={handleExportSummary}
           onAddGoal={handleAddGoal}
           onRemoveGoal={handleRemoveGoal}
           onQuickGoal={handleQuickGoal}

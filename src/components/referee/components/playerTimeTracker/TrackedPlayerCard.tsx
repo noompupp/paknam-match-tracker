@@ -42,7 +42,7 @@ const TrackedPlayerCard = ({
   // Check if player can be removed
   const removal = canRemovePlayer(player.id, trackedPlayers);
 
-  // CRITICAL FIX: Get the actual current half time for this specific player from playerHalfTimes
+  // Get the actual current half time for this specific player from playerHalfTimes
   const playerHalfData = playerHalfTimes.get(player.id) || { firstHalf: 0, secondHalf: 0 };
   const currentHalfTime = isSecondHalf(matchTime) ? playerHalfData.secondHalf : playerHalfData.firstHalf;
 
@@ -56,31 +56,25 @@ const TrackedPlayerCard = ({
                                    player.isPlaying && 
                                    player.id !== substitutionManager?.pendingSubstitution?.outgoingPlayerId;
 
-  // CRITICAL DEBUG: Enhanced debugging for S-Class players specifically
-  if (role.toLowerCase() === 's-class') {
-    console.log('🚨 S-CLASS PLAYER DEBUG - TrackedPlayerCard rendering with DETAILED timer information:', {
-      playerId: player.id,
-      name: player.name,
-      role,
-      isPlaying: player.isPlaying,
-      totalTime: player.totalTime,
-      totalTimeFormatted: formatTime(player.totalTime),
-      matchTime,
-      matchTimeFormatted: `${Math.floor(matchTime / 60)}:${String(matchTime % 60).padStart(2, '0')}`,
-      currentHalf: isSecondHalf(matchTime) ? 2 : 1,
-      playerHalfTimesMapExists: !!playerHalfTimes,
-      playerHalfTimesMapSize: playerHalfTimes.size,
-      playerHalfTimesHasThisPlayer: playerHalfTimes.has(player.id),
-      playerHalfData,
-      currentHalfTime,
-      currentHalfTimeFor20MinLimit: `${Math.floor(currentHalfTime / 60)}:${String(currentHalfTime % 60).padStart(2, '0')}`,
-      halfTimesMapContents: Array.from(playerHalfTimes.entries()).map(([id, times]) => ({
-        playerId: id,
-        firstHalf: `${Math.floor(times.firstHalf / 60)}:${String(times.firstHalf % 60).padStart(2, '0')}`,
-        secondHalf: `${Math.floor(times.secondHalf / 60)}:${String(times.secondHalf % 60).padStart(2, '0')}`
-      }))
-    });
-  }
+  // DEBUGGING: Log player card render with detailed timer information
+  console.log('🎴 TrackedPlayerCard - Rendering with FULL timer debugging:', {
+    playerId: player.id,
+    name: player.name,
+    role,
+    isPlaying: player.isPlaying,
+    totalTime: player.totalTime,
+    totalTimeFormatted: formatTime(player.totalTime),
+    matchTime,
+    matchTimeFormatted: `${Math.floor(matchTime / 60)}:${String(matchTime % 60).padStart(2, '0')}`,
+    currentHalf: isSecondHalf(matchTime) ? 2 : 1,
+    playerHalfData,
+    currentHalfTime,
+    currentHalfTimeFormatted: formatTime(currentHalfTime),
+    hasPlayedBefore,
+    canRemove: removal.canRemove,
+    halfTimesMapSize: playerHalfTimes.size,
+    halfTimesMapHasPlayer: playerHalfTimes.has(player.id)
+  });
 
   // Determine button text and styling based on dual-behavior logic
   const getButtonProps = () => {
@@ -214,7 +208,7 @@ const TrackedPlayerCard = ({
             {formatTime(player.totalTime)}
           </div>
           
-          {/* CRITICAL FIX: Dynamic Player Status Badge - using the corrected currentHalfTime */}
+          {/* Dynamic Player Status Badge - using the corrected currentHalfTime */}
           <PlayerStatusBadge
             role={role}
             totalTime={player.totalTime}
@@ -249,7 +243,7 @@ const TrackedPlayerCard = ({
         </div>
       </div>
 
-      {/* Mobile-only status display - CRITICAL FIX: using the corrected currentHalfTime */}
+      {/* Mobile-only status display - using the corrected currentHalfTime */}
       <div className="sm:hidden mt-2">
         <PlayerStatusBadge
           role={role}

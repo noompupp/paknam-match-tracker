@@ -2,6 +2,7 @@
 // --- REFACTORED: compose behavior via focused hooks ---
 import { useToast } from "@/hooks/use-toast";
 import { useResetState } from "@/hooks/useResetState";
+import { useMatchSaveStatus } from "../useMatchSaveStatus";
 import { UseMatchDataHandlersProps } from "./types";
 import { useCacheManager } from "./useCacheManager";
 import { useResetConfirmationDialog } from "./useResetConfirmationDialog";
@@ -14,6 +15,7 @@ export const useMatchDataHandlers = (props: UseMatchDataHandlersProps) => {
   const resetState = useResetState({ fixtureId: props.selectedFixtureData?.id });
   const cacheManager = useCacheManager();
   const { ResetDialog, showResetDialog } = useResetConfirmationDialog();
+  const { setPhase, reset: resetSaveStatus } = useMatchSaveStatus();
 
   // Compose save handler with everything it needs
   const { handleSaveMatch } = useMatchSaveHandler({
@@ -28,7 +30,7 @@ export const useMatchDataHandlers = (props: UseMatchDataHandlersProps) => {
     resetState,
     cacheManager,
     showResetDialog,
-    resetSaveStatus: () => {}, // Provide no-op function since we removed the context dependency
+    resetSaveStatus,
     forceRefresh: props.forceRefresh
   });
 
