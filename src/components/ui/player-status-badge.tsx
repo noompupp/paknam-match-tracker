@@ -3,34 +3,69 @@ import { Badge } from "@/components/ui/badge";
 import { Clock, AlertTriangle, CheckCircle, Timer } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/hooks/useTranslation";
+import { isSecondHalf, getCurrentHalfTime } from "@/utils/timeUtils";
 
 interface PlayerStatusBadgeProps {
   role: string;
   totalTime: number;
-  currentHalfTime: number; // This should be the ACTUAL time played in current half
+  currentHalfTime?: number; // Optional - will calculate if not provided
   isPlaying: boolean;
   matchTime: number;
   className?: string;
+  playerId?: number; // For debugging
+  playerHalfTimes?: Map<number, { firstHalf: number; secondHalf: number }>; // For fallback
 }
 
 const PlayerStatusBadge = ({
   role,
   totalTime,
-  currentHalfTime, // This is now the actual player time in current half
+  currentHalfTime,
   isPlaying,
   matchTime,
-  className
+  className,
+  playerId,
+  playerHalfTimes = new Map()
 }: PlayerStatusBadgeProps) => {
   const { t, language } = useTranslation();
+  
+  // CRITICAL FIX: Calculate current half time directly if not provided
+  const actualCurrentHalfTime = (() => {
+    if (currentHalfTime !== undefined) {
+      return currentHalfTime;
+    }
+    
+    // Fallback 1: Try to get from playerHalfTimes map
+    if (playerId && playerHalfTimes.has(playerId)) {
+      const halfTimes = playerHalfTimes.get(playerId)!;
+      return isSecondHalf(matchTime) ? halfTimes.secondHalf : halfTimes.firstHalf;
+    }
+    
+    // Fallback 2: Calculate based on match progression (rough estimate)
+    // This is a simplified calculation - in a real scenario, we'd need more context
+    const halfDuration = 25 * 60; // 25 minutes per half
+    if (isSecondHalf(matchTime)) {
+      // For second half, estimate based on how much time they've been playing
+      // This is approximate and should ideally be replaced with proper tracking
+      return Math.min(totalTime, getCurrentHalfTime(matchTime));
+    } else {
+      // For first half, use total time (assuming they started at beginning)
+      return Math.min(totalTime, matchTime);
+    }
+  })();
   
   const getStatusInfo = () => {
     const roleNormalized = role.toLowerCase();
 
-    console.log('🎯 PlayerStatusBadge calculation (FIXED):', {
+    console.log('🎯 PlayerStatusBadge calculation (REAL-TIME FIXED):', {
+      playerId,
       role,
-      currentHalfTime: `${Math.floor(currentHalfTime / 60)}:${String(currentHalfTime % 60).padStart(2, '0')}`,
+      providedCurrentHalfTime: currentHalfTime,
+      actualCurrentHalfTime,
       totalTime: `${Math.floor(totalTime / 60)}:${String(totalTime % 60).padStart(2, '0')}`,
-      matchTime: `${Math.floor(matchTime / 60)}:${String(matchTime % 60).padStart(2, '0')}`
+      matchTime: `${Math.floor(matchTime / 60)}:${String(matchTime % 60).padStart(2, '0')}`,
+      currentHalf: isSecondHalf(matchTime) ? 2 : 1,
+      hasPlayerHalfTimes: playerHalfTimes.size > 0,
+      isPlaying
     });
 
     // S-class players: 20 minutes per half limit (1200 seconds)
@@ -38,9 +73,9 @@ const PlayerStatusBadge = ({
       const limitSeconds = 20 * 60; // 20 minutes
       const warningThreshold = 18 * 60; // 18 minutes
 
-      const currentHalfMin = Math.floor(currentHalfTime / 60);
+      const currentHalfMin = Math.floor(actualCurrentHalfTime / 60);
 
-      if (currentHalfTime >= limitSeconds) {
+      if (actualCurrentHalfTime >= limitSeconds) {
         return {
           label: t("referee.limit", "LIMIT EXCEEDED"),
           variant: "destructive" as const,
@@ -49,7 +84,7 @@ const PlayerStatusBadge = ({
         };
       }
 
-      if (currentHalfTime >= warningThreshold) {
+      if (actualCurrentHalfTime >= warningThreshold) {
         return {
           label: t("referee.approachingLimit", "APPROACHING LIMIT"),
           variant: "secondary" as const,

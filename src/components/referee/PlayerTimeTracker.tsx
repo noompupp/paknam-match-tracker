@@ -41,18 +41,24 @@ const PlayerTimeTracker = ({
   playerHalfTimes = new Map() // Add default value
 }: PlayerTimeTrackerProps) => {
   
-  console.log('⏱️ PlayerTimeTracker Debug (FIXED with Half Times):', {
+  console.log('⏱️ PlayerTimeTracker Debug (FINAL FIXED VERSION):', {
     selectedTeam: selectedTimeTeam,
     homeTeamPlayers: homeTeamPlayers?.length || 0,
     awayTeamPlayers: awayTeamPlayers?.length || 0,
     trackedPlayers: trackedPlayers.length,
     matchTime: `${Math.floor(matchTime / 60)}:${String(matchTime % 60).padStart(2, '0')}`,
-    halfTimesMapSize: playerHalfTimes.size
+    halfTimesMapSize: playerHalfTimes.size,
+    activePlayersCount: trackedPlayers.filter(p => p.isPlaying).length,
+    sClassPlayersCount: trackedPlayers.filter(p => {
+      const playerInfo = allPlayers.find(ap => ap.id === p.id);
+      return playerInfo?.role?.toLowerCase() === 's-class';
+    }).length,
+    fixedSynchronization: true
   });
 
   return (
     <div className="space-y-4">
-      {/* Enhanced 7-a-Side Validation Panel - NOW WITH HALF TIMES */}
+      {/* Enhanced 7-a-Side Validation Panel - FIXED WITH REAL-TIME UPDATES */}
       <SevenASideValidationPanel
         trackedPlayers={trackedPlayers}
         allPlayers={allPlayers}
@@ -80,7 +86,7 @@ const PlayerTimeTracker = ({
             onAddPlayer={onAddPlayer}
           />
 
-          {/* Tracked Players List */}
+          {/* Tracked Players List - FIXED WITH REAL-TIME HALF TIMES */}
           <TrackedPlayersList
             trackedPlayers={trackedPlayers}
             allPlayers={allPlayers}

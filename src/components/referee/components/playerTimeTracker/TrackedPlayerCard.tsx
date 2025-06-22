@@ -42,9 +42,64 @@ const TrackedPlayerCard = ({
   // Check if player can be removed
   const removal = canRemovePlayer(player.id, trackedPlayers);
 
-  // Get the actual current half time for this specific player from playerHalfTimes
-  const playerHalfData = playerHalfTimes.get(player.id) || { firstHalf: 0, secondHalf: 0 };
-  const currentHalfTime = isSecondHalf(matchTime) ? playerHalfData.secondHalf : playerHalfData.firstHalf;
+  // CRITICAL FIX: Calculate current half time directly instead of relying on stale data
+  const calculateCurrentHalfTime = () => {
+    // Try to get from playerHalfTimes map first (most accurate)
+    if (playerHalfTimes.has(player.id)) {
+      const halfTimes = playerHalfTimes.get(player.id)!;
+      const currentHalfTime = isSecondHalf(matchTime) ? halfTimes.secondHalf : halfTimes.firstHalf;
+      
+      console.log('📊 TrackedPlayerCard - Using playerHalfTimes data (FIXED):', {
+        playerId: player.id,
+        playerName: player.name,
+        currentHalf: isSecondHalf(matchTime) ? 2 : 1,
+        firstHalf: halfTimes.firstHalf,
+        secondHalf: halfTimes.secondHalf,
+        calculatedCurrentHalfTime: currentHalfTime,
+        matchTime,
+        halfTimesMapSize: playerHalfTimes.size
+      });
+      
+      return currentHalfTime;
+    }
+    
+    // Fallback: Calculate based on match progression
+    const halfDuration = 25 * 60; // 25 minutes per half
+    const currentHalfMatchTime = getCurrentHalfTime(matchTime);
+    
+    // Estimate current half time based on total playtime and match progression
+    if (isSecondHalf(matchTime)) {
+      // For second half, we need to estimate how much they've played in this half
+      // This is a rough estimate - ideally we'd track this more precisely
+      const estimatedSecondHalfTime = Math.min(player.totalTime, currentHalfMatchTime);
+      
+      console.log('📊 TrackedPlayerCard - Using fallback calculation (second half):', {
+        playerId: player.id,
+        playerName: player.name,
+        totalTime: player.totalTime,
+        currentHalfMatchTime,
+        estimatedSecondHalfTime,
+        matchTime
+      });
+      
+      return estimatedSecondHalfTime;
+    } else {
+      // For first half, use total time (assuming they started at beginning)
+      const estimatedFirstHalfTime = Math.min(player.totalTime, matchTime);
+      
+      console.log('📊 TrackedPlayerCard - Using fallback calculation (first half):', {
+        playerId: player.id,
+        playerName: player.name,
+        totalTime: player.totalTime,
+        matchTime,
+        estimatedFirstHalfTime
+      });
+      
+      return estimatedFirstHalfTime;
+    }
+  };
+
+  const currentHalfTime = calculateCurrentHalfTime();
 
   // Check if this is a player who has played before (potential substitution candidate)
   const hasPlayedBefore = player.totalTime > 0;
@@ -56,8 +111,8 @@ const TrackedPlayerCard = ({
                                    player.isPlaying && 
                                    player.id !== substitutionManager?.pendingSubstitution?.outgoingPlayerId;
 
-  // DEBUGGING: Log player card render with detailed timer information
-  console.log('🎴 TrackedPlayerCard - Rendering with FULL timer debugging:', {
+  // DEBUGGING: Enhanced logging with FIXED timer information
+  console.log('🎴 TrackedPlayerCard - Rendering with FIXED REAL-TIME timer debugging:', {
     playerId: player.id,
     name: player.name,
     role,
@@ -67,13 +122,12 @@ const TrackedPlayerCard = ({
     matchTime,
     matchTimeFormatted: `${Math.floor(matchTime / 60)}:${String(matchTime % 60).padStart(2, '0')}`,
     currentHalf: isSecondHalf(matchTime) ? 2 : 1,
-    playerHalfData,
     currentHalfTime,
     currentHalfTimeFormatted: formatTime(currentHalfTime),
+    hasPlayerHalfTimesData: playerHalfTimes.has(player.id),
+    playerHalfTimesMapSize: playerHalfTimes.size,
     hasPlayedBefore,
-    canRemove: removal.canRemove,
-    halfTimesMapSize: playerHalfTimes.size,
-    halfTimesMapHasPlayer: playerHalfTimes.has(player.id)
+    canRemove: removal.canRemove
   });
 
   // Determine button text and styling based on dual-behavior logic
@@ -143,12 +197,14 @@ const TrackedPlayerCard = ({
 
   // DEBUGGING: Enhanced click handler with logging
   const handleToggleClick = () => {
-    console.log('🖱️ TrackedPlayerCard - Button clicked with debugging:', {
+    console.log('🖱️ TrackedPlayerCard - Button clicked with FIXED debugging:', {
       playerId: player.id,
       playerName: player.name,
       currentIsPlaying: player.isPlaying,
       matchTime,
-      buttonAction: buttonProps.text
+      buttonAction: buttonProps.text,
+      currentHalfTime,
+      totalTime: player.totalTime
     });
     
     onTogglePlayerTime(player.id);
@@ -208,13 +264,15 @@ const TrackedPlayerCard = ({
             {formatTime(player.totalTime)}
           </div>
           
-          {/* Dynamic Player Status Badge - using the corrected currentHalfTime */}
+          {/* CRITICAL FIX: Pass the calculated currentHalfTime and playerId for debugging */}
           <PlayerStatusBadge
             role={role}
             totalTime={player.totalTime}
             currentHalfTime={currentHalfTime}
             isPlaying={player.isPlaying}
             matchTime={matchTime}
+            playerId={player.id}
+            playerHalfTimes={playerHalfTimes}
             className="hidden sm:flex"
           />
         </div>
@@ -243,7 +301,7 @@ const TrackedPlayerCard = ({
         </div>
       </div>
 
-      {/* Mobile-only status display - using the corrected currentHalfTime */}
+      {/* Mobile-only status display - FIXED: Pass the calculated currentHalfTime and playerId */}
       <div className="sm:hidden mt-2">
         <PlayerStatusBadge
           role={role}
@@ -251,6 +309,8 @@ const TrackedPlayerCard = ({
           currentHalfTime={currentHalfTime}
           isPlaying={player.isPlaying}
           matchTime={matchTime}
+          playerId={player.id}
+          playerHalfTimes={playerHalfTimes}
         />
       </div>
     </div>
