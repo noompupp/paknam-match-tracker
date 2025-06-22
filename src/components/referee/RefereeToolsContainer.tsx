@@ -34,10 +34,12 @@ const RefereeToolsContainer = () => {
   if (!state.selectedFixtureData) {
     return (
       <div className="container mx-auto p-4 max-w-4xl">
-        <RefereeHeader />
+        <RefereeHeader 
+          saveAttempts={state.saveAttempts || 0}
+          playersNeedingAttention={state.playersNeedingAttention || []}
+        />
         <MatchSelection
           fixtures={state.fixtures}
-          fixturesLoading={state.fixturesLoading}
           selectedFixture={state.selectedFixture}
           onFixtureSelect={state.setSelectedFixture}
         />
@@ -60,7 +62,10 @@ const RefereeToolsContainer = () => {
 
   return (
     <div className="container mx-auto p-4 max-w-4xl space-y-6">
-      <RefereeHeader />
+      <RefereeHeader 
+        saveAttempts={state.saveAttempts || 0}
+        playersNeedingAttention={state.playersNeedingAttention || []}
+      />
       
       <Tabs defaultValue="timer" className="w-full">
         <TabsList className="grid w-full grid-cols-6 mb-6">
@@ -114,8 +119,8 @@ const RefereeToolsContainer = () => {
           <UnifiedTimerTab
             matchTime={state.matchTime}
             isRunning={state.isRunning}
-            toggleTimer={state.toggleTimer}
-            resetTimer={state.resetTimer}
+            onToggleTimer={state.toggleTimer}
+            onResetTimer={state.resetTimer}
             formatTime={state.formatTime}
             selectedFixtureData={state.selectedFixtureData}
             homeScore={state.homeScore}
@@ -125,35 +130,30 @@ const RefereeToolsContainer = () => {
 
         <TabsContent value="score">
           <ScoreTab
-            homeScore={state.homeScore}
-            awayScore={state.awayScore}
             selectedFixtureData={state.selectedFixtureData}
             goals={state.goals}
-            handleSaveMatch={state.handleSaveMatch}
+            onSaveMatch={state.handleSaveMatch}
             saveAttempts={state.saveAttempts}
             matchTime={state.matchTime}
             formatTime={state.formatTime}
-            handleResetMatch={state.handleResetMatch}
-            forceRefresh={state.forceRefresh}
+            onResetMatch={state.handleResetMatch}
+            onForceRefresh={state.forceRefresh}
           />
         </TabsContent>
 
         <TabsContent value="goals">
           <GoalsTab
-            goals={state.goals}
             selectedGoalPlayer={state.selectedGoalPlayer}
             selectedGoalType={state.selectedGoalType}
             selectedGoalTeam={state.selectedGoalTeam}
             setSelectedGoalPlayer={state.setSelectedGoalPlayer}
             setSelectedGoalType={state.setSelectedGoalType}
             setSelectedGoalTeam={state.setSelectedGoalTeam}
-            handleAssignGoal={state.handleAssignGoal}
+            onAssignGoal={state.handleAssignGoal}
             getGoalFilteredPlayers={state.getGoalFilteredPlayers}
             selectedFixtureData={state.selectedFixtureData}
             formatTime={state.formatTime}
             matchTime={state.matchTime}
-            homeScore={state.homeScore}
-            awayScore={state.awayScore}
           />
         </TabsContent>
 
@@ -172,7 +172,7 @@ const RefereeToolsContainer = () => {
             formatTime={state.formatTime}
             matchTime={state.matchTime}
             selectedFixtureData={state.selectedFixtureData}
-            playerHalfTimes={state.playerHalfTimes} // FIXED: Pass the prop
+            playerHalfTimes={state.playerHalfTimes}
           />
         </TabsContent>
 
@@ -182,10 +182,10 @@ const RefereeToolsContainer = () => {
             selectedPlayer={state.selectedPlayer}
             selectedTeam={state.selectedTeam}
             selectedCardType={state.selectedCardType}
-            setSelectedPlayer={state.setSelectedPlayer}
-            setSelectedTeam={state.setSelectedTeam}
-            setSelectedCardType={state.setSelectedCardType}
-            handleAddCard={state.handleAddCard}
+            onPlayerSelect={state.setSelectedPlayer}
+            onTeamSelect={state.setSelectedTeam}
+            onCardTypeSelect={state.setSelectedCardType}
+            onAddCard={state.handleAddCard}
             allPlayers={state.allPlayers}
             homeTeamPlayers={state.homeTeamPlayers}
             awayTeamPlayers={state.awayTeamPlayers}
@@ -210,7 +210,7 @@ const RefereeToolsContainer = () => {
             saveAttempts={state.saveAttempts}
             handleResetMatch={state.handleResetMatch}
             allPlayers={state.allPlayers}
-            playerHalfTimes={state.playerHalfTimes} // FIXED: Pass to summary as well
+            playerHalfTimes={state.playerHalfTimes}
           />
         </TabsContent>
       </Tabs>
