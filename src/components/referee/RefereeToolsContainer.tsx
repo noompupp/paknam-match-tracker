@@ -122,8 +122,6 @@ const RefereeToolsContainer = () => {
             onToggleTimer={state.toggleTimer}
             formatTime={state.formatTime}
             selectedFixtureData={state.selectedFixtureData}
-            homeScore={state.homeScore}
-            awayScore={state.awayScore}
           />
         </TabsContent>
 
@@ -131,7 +129,6 @@ const RefereeToolsContainer = () => {
           <ScoreTab
             selectedFixtureData={state.selectedFixtureData}
             onSaveMatch={state.handleSaveMatch}
-            saveAttempts={state.saveAttempts}
             matchTime={state.matchTime}
             formatTime={state.formatTime}
             onResetMatch={state.handleResetMatch}
@@ -144,7 +141,6 @@ const RefereeToolsContainer = () => {
             selectedFixtureData={state.selectedFixtureData}
             formatTime={state.formatTime}
             matchTime={state.matchTime}
-            onAssignGoal={state.handleAssignGoal}
           />
         </TabsContent>
 
@@ -176,7 +172,6 @@ const RefereeToolsContainer = () => {
             onPlayerSelect={state.setSelectedPlayer}
             onTeamChange={state.setSelectedTeam}
             onCardTypeChange={state.setSelectedCardType}
-            onAddCard={state.handleAddCard}
             allPlayers={state.allPlayers}
             homeTeamPlayers={state.homeTeamPlayers}
             awayTeamPlayers={state.awayTeamPlayers}

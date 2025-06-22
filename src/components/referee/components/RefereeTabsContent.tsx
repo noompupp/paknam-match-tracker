@@ -62,7 +62,7 @@ const RefereeTabsContent = (props: RefereeTabsContentProps) => {
   const { t } = useTranslation();
 
   // Get live up-to-date scores directly from the store
-  const { homeScore, awayScore } = useMatchStore();
+  const { homeScore, awayScore, lastUpdated } = useMatchStore();
 
   return (
     <>
@@ -164,6 +164,8 @@ const RefereeTabsContent = (props: RefereeTabsContentProps) => {
         />
         <SummaryTab
           selectedFixtureData={props.selectedFixtureData}
+          homeScore={homeScore}
+          awayScore={awayScore}
           matchTime={props.matchTime}
           goals={props.goals}
           cards={props.cards}
@@ -171,7 +173,11 @@ const RefereeTabsContent = (props: RefereeTabsContentProps) => {
           events={props.events}
           allPlayers={props.allPlayers}
           formatTime={props.formatTime}
-          // Removed onExportSummary as it's not expected by SummaryTabProps
+          handleSaveMatch={props.onSaveMatch}
+          saveAttempts={0} // Default value since it's not passed from props
+          handleResetMatch={props.onResetMatch}
+          // Pass playerHalfTimes as empty Map since it's not available in props
+          playerHalfTimes={new Map()}
         />
       </TabsContent>
     </>
