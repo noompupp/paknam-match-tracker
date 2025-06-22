@@ -11,12 +11,12 @@ interface PlayerTimeTabProps {
   awayTeamPlayers: any[];
   selectedTimeTeam: string;
   setSelectedTimeTeam: (value: string) => void;
-  handleAddPlayer: () => void;
+  handleAddPlayer: (player: any) => void; // FIXED: Accept player parameter
   handleTogglePlayerTime: (playerId: number) => void;
   formatTime: (seconds: number) => string;
   matchTime: number;
   selectedFixtureData: any;
-  playerHalfTimes?: Map<number, { firstHalf: number; secondHalf: number }>; // FIXED: Add this prop
+  playerHalfTimes?: Map<number, { firstHalf: number; secondHalf: number }>;
 }
 
 const PlayerTimeTab = ({
@@ -33,9 +33,31 @@ const PlayerTimeTab = ({
   formatTime,
   matchTime,
   selectedFixtureData,
-  playerHalfTimes = new Map() // FIXED: Add this prop with default
+  playerHalfTimes = new Map()
 }: PlayerTimeTabProps) => {
   const { t } = useTranslation();
+
+  // FIXED: Create wrapper function that finds the selected player and calls handleAddPlayer with it
+  const handleAddPlayerWrapper = () => {
+    if (!selectedTimePlayer) return;
+    
+    // Find the selected player from the appropriate team
+    let player;
+    if (selectedTimeTeam === 'home' && homeTeamPlayers) {
+      player = homeTeamPlayers.find(p => p.id.toString() === selectedTimePlayer);
+    } else if (selectedTimeTeam === 'away' && awayTeamPlayers) {
+      player = awayTeamPlayers.find(p => p.id.toString() === selectedTimePlayer);
+    }
+    
+    // Fallback to all players if not found
+    if (!player) {
+      player = allPlayers.find(p => p.id.toString() === selectedTimePlayer);
+    }
+    
+    if (player) {
+      handleAddPlayer(player);
+    }
+  };
 
   console.log('🎯 PlayerTimeTab - Props flow check with half times:', {
     trackedCount: trackedPlayers.length,
@@ -54,12 +76,12 @@ const PlayerTimeTab = ({
         selectedTimeTeam={selectedTimeTeam}
         onPlayerSelect={setSelectedTimePlayer}
         onTimeTeamChange={setSelectedTimeTeam}
-        onAddPlayer={handleAddPlayer}
+        onAddPlayer={handleAddPlayerWrapper} // FIXED: Pass wrapper function
         onTogglePlayerTime={handleTogglePlayerTime}
         formatTime={formatTime}
         matchTime={matchTime}
         selectedFixtureData={selectedFixtureData}
-        playerHalfTimes={playerHalfTimes} // FIXED: Pass the prop
+        playerHalfTimes={playerHalfTimes}
       />
     </div>
   );
