@@ -13,10 +13,14 @@ import CardsTab from "./components/tabs/CardsTab";
 import SummaryTab from "./components/tabs/SummaryTab";
 import { Badge } from "@/components/ui/badge";
 import { Clock, Users, Target, FileText, AlertTriangle } from "lucide-react";
+import { useState } from "react";
 
 const RefereeToolsContainer = () => {
   const { t } = useTranslation();
   const state = useRefereeStateOrchestrator();
+
+  // Local state for GoalsTab
+  const [showGoalWizard, setShowGoalWizard] = useState(false);
 
   // Debug the half times at this level
   console.log('🎯 RefereeToolsContainer - Half times state check:', {
@@ -122,6 +126,14 @@ const RefereeToolsContainer = () => {
             onToggleTimer={state.toggleTimer}
             formatTime={state.formatTime}
             selectedFixtureData={state.selectedFixtureData}
+            allPlayers={state.allPlayers}
+            homeTeamPlayers={state.homeTeamPlayers}
+            awayTeamPlayers={state.awayTeamPlayers}
+            trackedPlayers={state.trackedPlayers}
+            onResetMatch={state.handleResetMatch}
+            onAddPlayer={state.handleAddPlayer}
+            onRemovePlayer={state.handleRemovePlayer}
+            onTogglePlayerTime={state.handleTogglePlayerTime}
           />
         </TabsContent>
 
@@ -132,7 +144,12 @@ const RefereeToolsContainer = () => {
             matchTime={state.matchTime}
             formatTime={state.formatTime}
             onResetMatch={state.handleResetMatch}
-            onForceRefresh={state.forceRefresh}
+            forceRefresh={state.forceRefresh}
+            isRunning={state.isRunning}
+            homeTeamPlayers={state.homeTeamPlayers}
+            awayTeamPlayers={state.awayTeamPlayers}
+            onToggleTimer={state.toggleTimer}
+            onAssignGoal={state.handleAssignGoal}
           />
         </TabsContent>
 
@@ -141,6 +158,14 @@ const RefereeToolsContainer = () => {
             selectedFixtureData={state.selectedFixtureData}
             formatTime={state.formatTime}
             matchTime={state.matchTime}
+            homeTeamPlayers={state.homeTeamPlayers}
+            awayTeamPlayers={state.awayTeamPlayers}
+            onGoalAssigned={(goalData) => {
+              console.log('Goal assigned:', goalData);
+              setShowGoalWizard(false);
+            }}
+            showGoalWizard={showGoalWizard}
+            onCancelGoalWizard={() => setShowGoalWizard(false)}
           />
         </TabsContent>
 
