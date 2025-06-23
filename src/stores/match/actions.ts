@@ -42,8 +42,8 @@ export interface MatchActions {
   clearPlayerTimes: () => void;
   getActivePlayersCount: () => number;
   updateAllPlayerTimes?: () => void;
-  startPlayerTime?: (playerId: number, time: number) => void;
-  stopPlayerTime?: (playerId: number, time: number) => void;
+  startPlayerTime?: (playerTimeId: string) => void;
+  stopPlayerTime?: (playerTimeId: string) => void;
   
   // Enhanced goal management methods
   addGoal: (goalData: Omit<MatchGoal, 'id' | 'timestamp' | 'synced'>) => MatchGoal;
