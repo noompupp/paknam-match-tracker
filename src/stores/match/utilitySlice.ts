@@ -15,6 +15,14 @@ export interface UtilitySlice extends Pick<
   | 'triggerUIUpdate'
   | 'resetState'
   | 'flushBatchedEvents'
+  | 'getActivePlayersCount'
+  | 'syncAllToDatabase'
+  | 'addAssist'
+  | 'undoGoal'
+  | 'getUnassignedGoalsCount'
+  | 'getUnassignedGoals'
+  | 'markAsSaved'
+  | 'getUnsavedItemsCount'
 > {}
 
 // Dummy implementations (replace logic as needed)
@@ -24,7 +32,7 @@ export const createUtilitySlice: StateCreator<
   [],
   UtilitySlice
 > = (set, get) => ({
-  // Simulate async database loads/syncs -- just resolve immediately for now
+  // Database operations
   loadPlayerTimesFromDatabase: async (fixtureId: number) => {
     console.log('🗄️ loadPlayerTimesFromDatabase called (stub)', fixtureId);
     return;
@@ -41,7 +49,12 @@ export const createUtilitySlice: StateCreator<
     console.log('🗄️ syncCardsToDatabase called (stub)', fixtureId);
     return;
   },
-  // Utility actions
+  syncAllToDatabase: async (fixtureId: number) => {
+    console.log('🗄️ syncAllToDatabase called (stub)', fixtureId);
+    return;
+  },
+  
+  // Player time utilities
   clearPlayerTimes: () => {
     set((state) => ({
       ...state,
@@ -49,6 +62,49 @@ export const createUtilitySlice: StateCreator<
     }));
     console.log('Player times cleared');
   },
+  getActivePlayersCount: () => {
+    const state = get();
+    return state.playerTimes.filter(pt => pt.isActive).length;
+  },
+  
+  // Goal utilities
+  addAssist: (assistData) => {
+    const state = get();
+    const newAssist = {
+      ...assistData,
+      id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      timestamp: Date.now(),
+      synced: false,
+      type: 'assist' as const
+    };
+    
+    set((state) => ({
+      ...state,
+      goals: [...state.goals, newAssist],
+      hasUnsavedChanges: true,
+      lastUpdated: Date.now()
+    }));
+    
+    return newAssist;
+  },
+  undoGoal: (goalId: string) => {
+    set((state) => ({
+      ...state,
+      goals: state.goals.filter(g => g.id !== goalId),
+      hasUnsavedChanges: true,
+      lastUpdated: Date.now()
+    }));
+  },
+  getUnassignedGoalsCount: () => {
+    const state = get();
+    return state.goals.filter(g => !g.playerId).length;
+  },
+  getUnassignedGoals: () => {
+    const state = get();
+    return state.goals.filter(g => !g.playerId);
+  },
+  
+  // Event management
   addEvent: (type: string, description: string, time: number) => {
     set((state) => ({
       ...state,
@@ -67,6 +123,8 @@ export const createUtilitySlice: StateCreator<
     }));
     console.log('Event added', { type, description, time });
   },
+  
+  // UI and state management
   triggerUIUpdate: () => {
     set((state) => ({ ...state, lastUpdated: Date.now() }));
     console.log('Forced UI update');
@@ -82,9 +140,36 @@ export const createUtilitySlice: StateCreator<
       events: [],
       hasUnsavedChanges: false,
       lastUpdated: Date.now(),
+      homeTeamName: '',
+      awayTeamName: '',
+      homeTeamId: '',
+      awayTeamId: '',
+      matchTime: 0,
+      isRunning: false,
+      phase: 'scheduled'
     }));
     console.log('State fully reset');
   },
+  markAsSaved: () => {
+    set((state) => ({
+      ...state,
+      hasUnsavedChanges: false,
+      goals: state.goals.map(g => ({ ...g, synced: true })),
+      cards: state.cards.map(c => ({ ...c, synced: true })),
+      playerTimes: state.playerTimes.map(pt => ({ ...pt, synced: true })),
+      lastUpdated: Date.now()
+    }));
+  },
+  getUnsavedItemsCount: () => {
+    const state = get();
+    return {
+      goals: state.goals.filter(g => !g.synced).length,
+      cards: state.cards.filter(c => !c.synced).length,
+      playerTimes: state.playerTimes.filter(pt => !pt.synced).length
+    };
+  },
+  
+  // Batch operations
   flushBatchedEvents: async () => {
     console.log('flushBatchedEvents called (stub)');
     return;

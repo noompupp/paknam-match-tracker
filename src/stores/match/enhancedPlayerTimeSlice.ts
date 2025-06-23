@@ -1,4 +1,3 @@
-
 import { StateCreator } from 'zustand';
 import { MatchState } from './types';
 import { MatchActions } from './actions';
@@ -183,22 +182,27 @@ export const createEnhancedPlayerTimeSlice: StateCreator<
   syncPlayerTimesToDatabase: async (fixtureId: number) => {
     const state = get();
     const unsyncedPlayerTimes = state.playerTimes.filter(pt => !pt.synced);
-    
+
     if (unsyncedPlayerTimes.length === 0) {
       console.log('✅ No unsynced player times to save');
       return;
     }
-    
+
     try {
       console.log('💾 Syncing', unsyncedPlayerTimes.length, 'player time records to database');
-      
-      // This would typically call an API to save the player times
-      // For now, we'll just mark them as synced
+
+      for (const playerTime of unsyncedPlayerTimes) {
+        // Simulate database sync - replace with actual implementation
+        console.log('Syncing player time:', playerTime);
+      }
+
+      // Mark all player times as synced
       set((state) => ({
         playerTimes: state.playerTimes.map(pt => ({ ...pt, synced: true })),
+        hasUnsavedChanges: state.goals.some(g => !g.synced) || state.cards.some(c => !c.synced),
         lastUpdated: Date.now()
       }));
-      
+
       console.log('✅ Player time sync completed successfully');
     } catch (error) {
       console.error('❌ Error syncing player times to database:', error);

@@ -1,3 +1,4 @@
+
 import { MatchGoal, MatchCard, MatchPlayerTime } from './types';
 
 export interface MatchActions {
@@ -14,6 +15,15 @@ export interface MatchActions {
   setLastUpdated: (lastUpdated: number) => void;
   setHasUnsavedChanges: (hasUnsavedChanges: boolean) => void;
 
+  // Setup method
+  setupMatch?: (params: {
+    fixtureId: number;
+    homeTeamName: string;
+    awayTeamName: string;
+    homeTeamId: string;
+    awayTeamId: string;
+  }) => void;
+
   // Card management methods
   addCard: (card: Omit<MatchCard, 'id' | 'timestamp' | 'synced'>) => MatchCard;
   removeCard: (cardId: string) => void;
@@ -28,6 +38,12 @@ export interface MatchActions {
   getPlayerTimesByPlayerId: (playerId: number) => MatchPlayerTime[];
   getUnsavedPlayerTimesCount: () => number;
   syncPlayerTimesToDatabase: (fixtureId: number) => Promise<void>;
+  loadPlayerTimesFromDatabase: (fixtureId: number) => Promise<void>;
+  clearPlayerTimes: () => void;
+  getActivePlayersCount: () => number;
+  updateAllPlayerTimes?: () => void;
+  startPlayerTime?: (playerId: number, time: number) => void;
+  stopPlayerTime?: (playerId: number, time: number) => void;
   
   // Enhanced goal management methods
   addGoal: (goalData: Omit<MatchGoal, 'id' | 'timestamp' | 'synced'>) => MatchGoal;
@@ -36,4 +52,28 @@ export interface MatchActions {
   getUnsavedGoalsCount: () => number;
   syncGoalsToDatabase: (fixtureId: number) => Promise<void>;
   syncScoresFromDatabase: (fixtureId: number) => Promise<void>;
+  addAssist: (assistData: Omit<MatchGoal, 'id' | 'timestamp' | 'synced'>) => MatchGoal;
+  undoGoal: (goalId: string) => void;
+  getUnassignedGoalsCount: () => number;
+  getUnassignedGoals: () => MatchGoal[];
+
+  // Event management
+  addEvent: (type: string, description: string, time: number) => void;
+  
+  // UI and state management
+  triggerUIUpdate: () => void;
+  resetState: () => void;
+  markAsSaved?: () => void;
+  
+  // Batch operations
+  flushBatchedEvents: () => Promise<void>;
+  syncAllToDatabase: (fixtureId: number) => Promise<void>;
+  optimizedBatchSync?: (fixtureId: number) => Promise<void>;
+
+  // Utility methods for counting and status
+  getUnsavedItemsCount?: () => {
+    goals: number;
+    cards: number;
+    playerTimes: number;
+  };
 }

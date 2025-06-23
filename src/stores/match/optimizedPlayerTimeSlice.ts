@@ -20,7 +20,7 @@ export const createOptimizedPlayerTimeSlice: StateCreator<
       
       // Update any active player times before syncing
       if (typeof get().updateAllPlayerTimes === 'function') {
-        get().updateAllPlayerTimes();
+        get().updateAllPlayerTimes?.();
       }
       
       // Sync goals
@@ -51,7 +51,7 @@ export const createOptimizedPlayerTimeSlice: StateCreator<
       
       // Update any active player times before syncing
       if (typeof get().updateAllPlayerTimes === 'function') {
-        get().updateAllPlayerTimes();
+        get().updateAllPlayerTimes?.();
       }
       
       // Sync goals
