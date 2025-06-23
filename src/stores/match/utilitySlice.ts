@@ -23,6 +23,7 @@ export interface UtilitySlice extends Pick<
   | 'getUnassignedGoals'
   | 'markAsSaved'
   | 'getUnsavedItemsCount'
+  | 'getPlayerTimesByPlayerId'
 > {}
 
 // Dummy implementations (replace logic as needed)
@@ -65,6 +66,10 @@ export const createUtilitySlice: StateCreator<
   getActivePlayersCount: () => {
     const state = get();
     return state.playerTimes.filter(pt => pt.isActive || pt.isPlaying).length;
+  },
+  getPlayerTimesByPlayerId: (playerId: number) => {
+    const state = get();
+    return state.playerTimes.filter(pt => pt.playerId === playerId);
   },
   
   // Goal utilities
