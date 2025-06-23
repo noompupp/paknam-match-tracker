@@ -985,6 +985,14 @@ export type Database = {
         }
         Returns: Json
       }
+      sync_all_match_participation: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
+      update_match_participation: {
+        Args: { p_fixture_id: number }
+        Returns: Json
+      }
       validate_fixture_score: {
         Args: { home_score: number; away_score: number }
         Returns: boolean

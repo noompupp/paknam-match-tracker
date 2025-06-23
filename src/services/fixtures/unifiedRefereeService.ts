@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { updateFixtureScore } from './scoreUpdateService';
 import { assignGoalToPlayer } from './simplifiedGoalAssignmentService';
@@ -7,6 +6,7 @@ import { cardsApi } from '@/services/cardsApi';
 import { playerTimeTrackingService } from './playerTimeTrackingService';
 import { enhancedDuplicatePreventionService } from './enhancedDuplicatePreventionService';
 import { enhancedMemberStatsService } from '@/services/enhancedMemberStatsService';
+import { matchParticipationService } from './matchParticipationService';
 import { operationLoggingService } from '@/services/operationLoggingService';
 import { inputValidationService } from '@/services/security/inputValidationService';
 import { securityMonitoringService } from '@/services/security/securityMonitoringService';
@@ -59,7 +59,7 @@ export interface MatchDataToSave {
 
 export const unifiedRefereeService = {
   async saveCompleteMatchData(matchData: MatchDataToSave): Promise<UnifiedSaveResult> {
-    console.log('💾 UnifiedRefereeService: Starting match data save with own goal support...', {
+    console.log('💾 UnifiedRefereeService: Starting match data save with match participation tracking...', {
       fixture: matchData.fixtureId,
       homeScore: matchData.homeScore,
       awayScore: matchData.awayScore,
@@ -104,6 +104,7 @@ export const unifiedRefereeService = {
     let goalsAssigned = 0;
     let cardsCreated = 0;
     let playerTimesUpdated = 0;
+    let matchParticipationUpdated = false;
 
     try {
       // First, cleanup any existing duplicates
@@ -316,16 +317,45 @@ export const unifiedRefereeService = {
         }
       }
 
+      // CRITICAL: Update match participation based on actual playtime
+      if (playerTimesUpdated > 0) {
+        try {
+          console.log('📊 Updating match participation for players with playtime...');
+          const participationResult = await matchParticipationService.updateMatchParticipation(matchData.fixtureId);
+          
+          if (participationResult.success) {
+            matchParticipationUpdated = true;
+            console.log(`✅ Match participation updated for ${participationResult.playersUpdated} players`);
+            
+            await operationLoggingService.logOperation({
+              operation_type: 'match_participation_update',
+              table_name: 'members',
+              record_id: matchData.fixtureId.toString(),
+              payload: { fixture_id: matchData.fixtureId, players_updated: participationResult.playersUpdated },
+              success: true
+            });
+          } else {
+            const errorMsg = `Failed to update match participation: ${participationResult.message}`;
+            errors.push(errorMsg);
+            console.error('❌', errorMsg);
+          }
+        } catch (error) {
+          const errorMsg = `Critical error updating match participation: ${error instanceof Error ? error.message : 'Unknown error'}`;
+          errors.push(errorMsg);
+          console.error('❌', errorMsg);
+        }
+      }
+
       // Final cleanup of any duplicates that might have been created
       console.log('🧹 Final duplicate cleanup...');
       await enhancedDuplicatePreventionService.cleanupAllDuplicateEvents();
 
       const success = errors.length === 0;
       const message = success 
-        ? `Match data saved successfully with own goal support: Score updated, ${goalsAssigned} goals/assists assigned, ${cardsCreated} cards created, ${playerTimesUpdated} player times saved`
+        ? `Match data saved successfully with participation tracking: Score updated, ${goalsAssigned} goals/assists assigned, ${cardsCreated} cards created, ${playerTimesUpdated} player times saved, ${matchParticipationUpdated ? 'match participation updated' : 'no participation update needed'}`
         : `Match data partially saved with ${errors.length} errors`;
 
-      // Log the final result with security monitoring
+      // Log the final result with enhanced tracking
       await operationLoggingService.logOperation({
         operation_type: 'referee_match_save_complete',
         table_name: 'fixtures',
@@ -333,13 +363,15 @@ export const unifiedRefereeService = {
         payload: {
           fixture_id: matchData.fixtureId,
           total_errors: errors.length,
-          own_goals_processed: matchData.goals.filter(g => g.isOwnGoal).length
+          own_goals_processed: matchData.goals.filter(g => g.isOwnGoal).length,
+          match_participation_updated: matchParticipationUpdated
         },
         result: {
           score_updated: scoreUpdated,
           goals_assigned: goalsAssigned,
           cards_created: cardsCreated,
-          player_times_updated: playerTimesUpdated
+          player_times_updated: playerTimesUpdated,
+          match_participation_updated: matchParticipationUpdated
         },
         error_message: errors.length > 0 ? errors.join('; ') : null,
         success
@@ -354,12 +386,13 @@ export const unifiedRefereeService = {
         });
       }
 
-      console.log(success ? '✅' : '⚠️', 'UnifiedRefereeService save completed with own goal support:', {
+      console.log(success ? '✅' : '⚠️', 'UnifiedRefereeService save completed with match participation tracking:', {
         success,
         scoreUpdated,
         goalsAssigned,
         cardsCreated,
         playerTimesUpdated,
+        matchParticipationUpdated,
         errorsCount: errors.length
       });
 
