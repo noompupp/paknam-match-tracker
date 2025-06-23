@@ -64,7 +64,7 @@ export const createUtilitySlice: StateCreator<
   },
   getActivePlayersCount: () => {
     const state = get();
-    return state.playerTimes.filter(pt => pt.isActive).length;
+    return state.playerTimes.filter(pt => pt.isActive || pt.isPlaying).length;
   },
   
   // Goal utilities

@@ -34,6 +34,7 @@ export interface MatchPlayerTime {
   team?: 'home' | 'away'; // Add team property for compatibility
   totalTime: number;
   isPlaying?: boolean; // Add isPlaying property for compatibility
+  isActive?: boolean; // Add isActive property for compatibility
   startTime?: number; // Add startTime property for compatibility
   periods: Array<{
     start_time: number;
@@ -66,4 +67,7 @@ export interface MatchState {
   events: MatchEvent[];
   hasUnsavedChanges: boolean;
   lastUpdated: number;
+  matchTime?: number; // Add missing properties
+  isRunning?: boolean;
+  phase?: string;
 }

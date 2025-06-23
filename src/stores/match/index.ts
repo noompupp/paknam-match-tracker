@@ -13,6 +13,7 @@ import { createAutoSyncSlice, AutoSyncSlice } from './autoSyncSlice';
 import { createGoalSlice } from './goalSlice';
 import { createOptimizedPlayerTimeSlice } from './optimizedPlayerTimeSlice';
 import { createUtilitySlice } from './utilitySlice';
+import { createCoreSlice } from './coreSlice';
 
 // Compose the store with auto-sync functionality
 type MatchStore = MatchState & MatchActions & EnhancedCoreSlice & AutoSyncSlice;
@@ -20,6 +21,7 @@ type MatchStore = MatchState & MatchActions & EnhancedCoreSlice & AutoSyncSlice;
 export const useMatchStore = create<MatchStore>()(
   subscribeWithSelector((set, get, api) => ({
     ...createInitialState(),
+    ...createCoreSlice(set, get, api),
     ...createEnhancedGoalSlice(set, get, api),
     ...createGoalSlice(set, get, api),
     ...createEnhancedCardSlice(set, get, api),

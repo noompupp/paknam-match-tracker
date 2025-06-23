@@ -1,3 +1,4 @@
+
 import { StateCreator } from 'zustand';
 import { MatchState } from './types';
 import { MatchActions } from './actions';
@@ -29,6 +30,7 @@ export const createEnhancedPlayerTimeSlice: StateCreator<
       timestamp: Date.now(),
       synced: false,
       isPlaying: false,
+      isActive: true,
       startTime: Date.now()
     };
 
