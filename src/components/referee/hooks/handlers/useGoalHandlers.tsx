@@ -19,7 +19,7 @@ interface UseGoalHandlersProps {
 
 export const useGoalHandlers = (props: UseGoalHandlersProps) => {
   const { toast } = useToast();
-  const { syncScoresFromDatabase } = useMatchStore();
+  const matchStore = useMatchStore();
 
   const handleAddGoal = (team: 'home' | 'away', additionalParam?: any) => {
     console.log('⚽ useGoalHandlers: Adding goal for team:', team);
@@ -187,7 +187,9 @@ export const useGoalHandlers = (props: UseGoalHandlersProps) => {
         
         // Sync scores from database to ensure consistency
         console.log('🔄 useGoalHandlers: Syncing scores from database after goal assignment');
-        await syncScoresFromDatabase(props.selectedFixtureData.id);
+        if (matchStore.syncScoresFromDatabase) {
+          await matchStore.syncScoresFromDatabase(props.selectedFixtureData.id);
+        }
         
         // Trigger refresh if available
         if (props.forceRefresh) {

@@ -16,7 +16,7 @@ export const useRealTimeScoreSync = ({
   syncInterval = 5000 // 5 seconds
 }: UseRealTimeScoreSyncProps = {}) => {
   const { toast } = useToast();
-  const { syncScoresFromDatabase } = useMatchStore();
+  const matchStore = useMatchStore();
   const [isLoading, setIsLoading] = useState(false);
   const [lastSyncTime, setLastSyncTime] = useState<Date | null>(null);
   const [syncErrors, setSyncErrors] = useState<string[]>([]);
@@ -34,8 +34,10 @@ export const useRealTimeScoreSync = ({
     try {
       console.log('🔄 useRealTimeScoreSync: Starting score synchronization for fixture:', fixtureId);
       
-      // Sync scores from database to store
-      await syncScoresFromDatabase(fixtureId);
+      // Use the syncScoresFromDatabase method if available
+      if (matchStore.syncScoresFromDatabase) {
+        await matchStore.syncScoresFromDatabase(fixtureId);
+      }
       
       // Verify synchronization
       const verification = await realTimeScoreService.verifyScoreSync(fixtureId);
@@ -77,7 +79,7 @@ export const useRealTimeScoreSync = ({
     } finally {
       setIsLoading(false);
     }
-  }, [fixtureId, syncScoresFromDatabase, toast]);
+  }, [fixtureId, matchStore, toast]);
 
   // Force score update in database based on goal events
   const forceScoreUpdate = useCallback(async (): Promise<void> => {
@@ -95,7 +97,9 @@ export const useRealTimeScoreSync = ({
       
       if (result.success) {
         // Sync the updated scores back to the store
-        await syncScoresFromDatabase(fixtureId);
+        if (matchStore.syncScoresFromDatabase) {
+          await matchStore.syncScoresFromDatabase(fixtureId);
+        }
         
         setLastSyncTime(new Date());
         
@@ -123,7 +127,7 @@ export const useRealTimeScoreSync = ({
     } finally {
       setIsLoading(false);
     }
-  }, [fixtureId, syncScoresFromDatabase, toast]);
+  }, [fixtureId, matchStore, toast]);
 
   // Auto-sync effect
   useEffect(() => {
@@ -142,9 +146,7 @@ export const useRealTimeScoreSync = ({
   }, [autoSync, fixtureId, syncInterval, syncScores]);
 
   // Initial sync on mount
-  useEffect(()
-
- => {
+  useEffect(() => {
     if (fixtureId) {
       console.log('🔄 useRealTimeScoreSync: Performing initial score sync on mount');
       syncScores(false);
