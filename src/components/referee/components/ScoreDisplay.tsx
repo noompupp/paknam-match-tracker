@@ -1,95 +1,127 @@
 
-import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import React from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Trophy, Target, AlertCircle, AlertTriangle } from "lucide-react";
+import { RefreshCw, AlertTriangle } from "lucide-react";
 import { useMatchStore } from "@/stores/useMatchStore";
-import { useGlobalBatchSaveManager } from "@/hooks/useGlobalBatchSaveManager";
-import PulseDotBadge from "@/components/ui/PulseDotBadge";
-
-// Displayed props _ignore_ manualScore. Always show match store scores. Optionally, show DB sync warning.
+import { useRealTimeScoreSync } from "@/hooks/useRealTimeScoreSync";
 
 interface ScoreDisplayProps {
   selectedFixtureData: any;
   showLocal?: boolean;
+  showControls?: boolean;
 }
 
-const ScoreDisplay = ({
-  selectedFixtureData,
-  showLocal = false
+const ScoreDisplay = ({ 
+  selectedFixtureData, 
+  showLocal = false, 
+  showControls = true 
 }: ScoreDisplayProps) => {
   const { homeScore, awayScore } = useMatchStore();
-
-  // Unsaved changes indicator from batch save manager
-  const homeTeamId = selectedFixtureData?.home_team?.__id__ || selectedFixtureData?.home_team_id || "";
-  const awayTeamId = selectedFixtureData?.away_team?.__id__ || selectedFixtureData?.away_team_id || "";
-  const homeTeamName = selectedFixtureData?.home_team?.name || 'Home Team';
-  const awayTeamName = selectedFixtureData?.away_team?.name || 'Away Team';
-  const batchSaveManager = useGlobalBatchSaveManager({
-    homeTeamData: { id: homeTeamId, name: homeTeamName },
-    awayTeamData: { id: awayTeamId, name: awayTeamName }
+  const { 
+    syncScores, 
+    forceScoreUpdate, 
+    isLoading, 
+    lastSyncTime, 
+    hasSyncErrors 
+  } = useRealTimeScoreSync({
+    fixtureId: selectedFixtureData?.id,
+    autoSync: false // Manual sync for better control
   });
-
-  const hasUnsaved =
-    batchSaveManager.hasUnsavedChanges &&
-    (batchSaveManager.unsavedItemsCount.goals > 0 ||
-      batchSaveManager.unsavedItemsCount.cards > 0 ||
-      batchSaveManager.unsavedItemsCount.playerTimes > 0);
 
   if (!selectedFixtureData) {
     return (
       <Card>
-        <CardContent className="flex items-center justify-center py-8">
-          <AlertCircle className="h-8 w-8 text-muted-foreground mr-2" />
-          <span className="text-muted-foreground">No fixture selected</span>
+        <CardContent className="p-4 text-center text-muted-foreground">
+          No fixture selected
         </CardContent>
       </Card>
     );
   }
 
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Trophy className="h-5 w-5" />
-          Match Score
-        </CardTitle>
+  const handleManualSync = async () => {
+    await syncScores(true);
+  };
 
-        {hasUnsaved && (
-          <div className="mt-2 flex items-center gap-2">
-            <Badge variant="destructive" className="flex items-center gap-1 text-xs text-red-800 bg-red-50 ring-2 ring-red-300 animate-pulse">
-              <AlertTriangle className="h-3 w-3 mr-1 text-red-600" />
-              Unsaved
-              <PulseDotBadge className="ml-1" />
-              Changes
-            </Badge>
-            <span className="text-red-600 text-xs font-semibold">Save to database soon!</span>
-          </div>
-        )}
-      </CardHeader>
-      <CardContent>
-        <div className="text-center space-y-4">
-          <div className="grid grid-cols-3 items-center gap-4">
-            <div className="text-center">
-              <h3 className="font-semibold text-lg mb-2">
-                {selectedFixtureData.home_team?.name || 'Home'}
+  const handleForceUpdate = async () => {
+    await forceScoreUpdate();
+  };
+
+  return (
+    <Card className="border-2">
+      <CardContent className="p-6">
+        <div className="space-y-4">
+          {/* Score Display */}
+          <div className="flex items-center justify-between text-center">
+            <div className="flex-1">
+              <h3 className="text-sm font-medium text-muted-foreground mb-1">
+                {selectedFixtureData.home_team?.name || 'Home Team'}
               </h3>
-              <div className="text-4xl font-bold text-blue-600">
-                {homeScore}
+              <div className="text-4xl font-bold text-primary">
+                {showLocal ? homeScore : (selectedFixtureData.home_score ?? homeScore)}
               </div>
             </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-muted-foreground">VS</div>
+            
+            <div className="mx-4 text-center">
+              <div className="text-2xl font-bold text-muted-foreground mb-1">VS</div>
+              {hasSyncErrors && (
+                <Badge variant="destructive" className="text-xs">
+                  <AlertTriangle className="h-3 w-3 mr-1" />
+                  Sync Issue
+                </Badge>
+              )}
             </div>
-            <div className="text-center">
-              <h3 className="font-semibold text-lg mb-2">
-                {selectedFixtureData.away_team?.name || 'Away'}
+            
+            <div className="flex-1">
+              <h3 className="text-sm font-medium text-muted-foreground mb-1">
+                {selectedFixtureData.away_team?.name || 'Away Team'}
               </h3>
-              <div className="text-4xl font-bold text-red-600">
-                {awayScore}
+              <div className="text-4xl font-bold text-primary">
+                {showLocal ? awayScore : (selectedFixtureData.away_score ?? awayScore)}
               </div>
             </div>
           </div>
+
+          {/* Sync Status */}
+          <div className="text-center space-y-2">
+            <div className="text-xs text-muted-foreground">
+              {showLocal ? 'Local Score (from goal events)' : 'Database Score (real-time synced)'}
+            </div>
+            
+            {lastSyncTime && (
+              <div className="text-xs text-muted-foreground">
+                Last synced: {lastSyncTime.toLocaleTimeString()}
+              </div>
+            )}
+          </div>
+
+          {/* Control Buttons */}
+          {showControls && (
+            <div className="flex gap-2 justify-center">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleManualSync}
+                disabled={isLoading}
+                className="flex items-center gap-2"
+              >
+                <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+                Sync Scores
+              </Button>
+              
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleForceUpdate}
+                disabled={isLoading}
+                className="flex items-center gap-2"
+              >
+                <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+                Force Update
+              </Button>
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>

@@ -4,6 +4,7 @@ import { MatchState } from './types';
 import { MatchActions } from './actions';
 import { generateId } from './utils';
 import { assignGoalToPlayer } from '@/services/fixtures/simplifiedGoalAssignmentService';
+import { realTimeScoreService } from '@/services/fixtures/realTimeScoreService';
 
 export interface EnhancedGoalSlice {
   addGoal: MatchActions['addGoal'];
@@ -11,6 +12,7 @@ export interface EnhancedGoalSlice {
   updateGoal: (goalId: string, updates: Partial<any>) => void;
   getUnsavedGoalsCount: MatchActions['getUnsavedGoalsCount'];
   syncGoalsToDatabase: (fixtureId: number) => Promise<void>;
+  syncScoresFromDatabase: (fixtureId: number) => Promise<void>;
 }
 
 export const createEnhancedGoalSlice: StateCreator<
@@ -175,7 +177,7 @@ export const createEnhancedGoalSlice: StateCreator<
     }
 
     try {
-      console.log('💾 Syncing', unsyncedGoals.length, 'goal records to database with standardized own goal support');
+      console.log('💾 Syncing', unsyncedGoals.length, 'goal records to database with real-time score updates');
 
       for (const goal of unsyncedGoals) {
         await assignGoalToPlayer({
@@ -185,9 +187,13 @@ export const createEnhancedGoalSlice: StateCreator<
           teamId: goal.teamId.toString(),
           eventTime: goal.time,
           type: goal.type,
-          isOwnGoal: goal.isOwnGoal || false // Pass standardized own goal flag
+          isOwnGoal: goal.isOwnGoal || false
         });
       }
+
+      // Trigger real-time score update after all goals are synced
+      console.log('🔄 Triggering real-time score update after goal sync');
+      await realTimeScoreService.updateFixtureScoreRealTime(fixtureId);
 
       // Mark all goals as synced
       set((state) => ({
@@ -196,10 +202,43 @@ export const createEnhancedGoalSlice: StateCreator<
         lastUpdated: Date.now()
       }));
 
-      console.log('✅ Goal sync completed successfully with standardized own goal support');
+      console.log('✅ Goal sync completed successfully with real-time score updates');
     } catch (error) {
       console.error('❌ Error syncing goals to database:', error);
       throw error;
+    }
+  },
+
+  syncScoresFromDatabase: async (fixtureId: number) => {
+    try {
+      console.log('🔄 Syncing scores from database for fixture:', fixtureId);
+      
+      const verification = await realTimeScoreService.verifyScoreSync(fixtureId);
+      
+      if (verification.isInSync) {
+        // Update store with database scores
+        set((state) => ({
+          homeScore: verification.fixtureScores.home,
+          awayScore: verification.fixtureScores.away,
+          lastUpdated: Date.now()
+        }));
+        
+        console.log('✅ Scores synced from database:', verification.fixtureScores);
+      } else {
+        console.warn('⚠️ Score synchronization discrepancy detected:', verification.discrepancy);
+        
+        // Force update to calculated scores (from goal events)
+        set((state) => ({
+          homeScore: verification.calculatedScores.home,
+          awayScore: verification.calculatedScores.away,
+          lastUpdated: Date.now()
+        }));
+        
+        // Trigger real-time update to fix the database
+        await realTimeScoreService.updateFixtureScoreRealTime(fixtureId);
+      }
+    } catch (error) {
+      console.error('❌ Error syncing scores from database:', error);
     }
   }
 });

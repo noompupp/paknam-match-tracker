@@ -2,6 +2,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { assignGoalToPlayer } from './fixtures/simplifiedGoalAssignmentService';
 import { enhancedDuplicatePreventionService } from './fixtures/enhancedDuplicatePreventionService';
 import { enhancedOwnGoalService } from './fixtures/enhancedOwnGoalService';
+import { realTimeScoreService } from './fixtures/realTimeScoreService';
 import { logMatchEventModification } from "./modificationLogService";
 
 interface UnifiedGoalData {
@@ -30,7 +31,7 @@ interface UnifiedGoalResult {
 
 export const unifiedGoalService = {
   async addGoal(data: UnifiedGoalData): Promise<UnifiedGoalResult> {
-    console.log('🎯 Unified Goal Service: Processing goal with enhanced validation:', data);
+    console.log('🎯 Unified Goal Service: Processing goal with real-time score update:', data);
     
     try {
       // Enhanced input validation
@@ -74,10 +75,13 @@ export const unifiedGoalService = {
         };
       }
 
+      let goalResult: any;
+      let scoreUpdateResult: any;
+
       // Route to appropriate service based on own goal flag
       if (data.isOwnGoal) {
         console.log('🥅 Unified Goal Service: Routing to enhanced own goal service');
-        const ownGoalResult = await enhancedOwnGoalService.addOwnGoal({
+        goalResult = await enhancedOwnGoalService.addOwnGoal({
           fixtureId: data.fixtureId,
           playerId: data.playerId,
           playerName: data.playerName.trim(),
@@ -88,18 +92,19 @@ export const unifiedGoalService = {
           awayTeam: data.awayTeam
         });
 
+        // Own goal service handles its own score updates
         return {
-          success: ownGoalResult.success,
-          goalEventId: ownGoalResult.goalEventId,
-          scoreUpdated: ownGoalResult.scoreUpdated,
-          homeScore: ownGoalResult.homeScore,
-          awayScore: ownGoalResult.awayScore,
-          message: ownGoalResult.message,
-          error: ownGoalResult.error
+          success: goalResult.success,
+          goalEventId: goalResult.goalEventId,
+          scoreUpdated: goalResult.scoreUpdated,
+          homeScore: goalResult.homeScore,
+          awayScore: goalResult.awayScore,
+          message: goalResult.message,
+          error: goalResult.error
         };
       } else {
         console.log('⚽ Unified Goal Service: Routing to regular goal assignment service');
-        const goalResult = await assignGoalToPlayer({
+        goalResult = await assignGoalToPlayer({
           fixtureId: data.fixtureId,
           playerId: data.playerId,
           playerName: data.playerName.trim(),
@@ -109,12 +114,14 @@ export const unifiedGoalService = {
           isOwnGoal: false
         });
 
-        // Update fixture score for regular goals
-        const scoreUpdateResult = await this.updateFixtureScoreForRegularGoal(
-          data.fixtureId,
-          data.homeTeam,
-          data.awayTeam
-        );
+        // For regular goals, trigger real-time score update
+        if (goalResult.success && data.goalType === 'goal') {
+          console.log('🔄 Unified Goal Service: Triggering real-time score update for regular goal');
+          scoreUpdateResult = await realTimeScoreService.updateFixtureScoreRealTime(data.fixtureId);
+        } else {
+          // For assists, no score update needed
+          scoreUpdateResult = { success: true, homeScore: 0, awayScore: 0 };
+        }
 
         return {
           success: goalResult.success,
@@ -122,7 +129,7 @@ export const unifiedGoalService = {
           scoreUpdated: scoreUpdateResult.success,
           homeScore: scoreUpdateResult.homeScore,
           awayScore: scoreUpdateResult.awayScore,
-          message: `${data.goalType === 'goal' ? 'Goal' : 'Assist'} recorded for ${data.playerName}${scoreUpdateResult.success ? ' and score updated' : ''}`
+          message: `${data.goalType === 'goal' ? 'Goal' : 'Assist'} recorded for ${data.playerName}${scoreUpdateResult.success && data.goalType === 'goal' ? ' and score updated in real-time' : ''}`
         };
       }
 

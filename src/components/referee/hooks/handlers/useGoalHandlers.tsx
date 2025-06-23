@@ -3,6 +3,7 @@ import { useToast } from "@/hooks/use-toast";
 import { ComponentPlayer } from "../useRefereeState";
 import { unifiedGoalService } from "@/services/unifiedGoalService";
 import { getValidatedTeamId, normalizeTeamIdForDatabase, validateTeamData } from "@/utils/teamIdMapping";
+import { useMatchStore } from "@/stores/useMatchStore";
 
 interface UseGoalHandlersProps {
   selectedFixtureData: any;
@@ -18,6 +19,7 @@ interface UseGoalHandlersProps {
 
 export const useGoalHandlers = (props: UseGoalHandlersProps) => {
   const { toast } = useToast();
+  const { syncScoresFromDatabase } = useMatchStore();
 
   const handleAddGoal = (team: 'home' | 'away', additionalParam?: any) => {
     console.log('⚽ useGoalHandlers: Adding goal for team:', team);
@@ -42,7 +44,7 @@ export const useGoalHandlers = (props: UseGoalHandlersProps) => {
   };
 
   const handleAssignGoal = async (player: ComponentPlayer, isOwnGoal: boolean = false) => {
-    console.log('🎯 useGoalHandlers: Starting goal assignment with enhanced own goal support:', {
+    console.log('🎯 useGoalHandlers: Starting goal assignment with real-time score sync:', {
       player: player.name,
       team: player.team,
       type: props.selectedGoalType,
@@ -126,8 +128,8 @@ export const useGoalHandlers = (props: UseGoalHandlersProps) => {
         description: `Adding ${isOwnGoal ? 'own goal' : props.selectedGoalType} for ${player.name}`,
       });
 
-      // Use unified goal service with proper isOwnGoal parameter
-      console.log('🚀 useGoalHandlers: Calling unified goal service with own goal support:', {
+      // Use unified goal service with real-time score updates
+      console.log('🚀 useGoalHandlers: Calling unified goal service with real-time sync:', {
         fixtureId: props.selectedFixtureData.id,
         playerId: player.id,
         playerName: player.name,
@@ -150,16 +152,16 @@ export const useGoalHandlers = (props: UseGoalHandlersProps) => {
         eventTime: props.matchTime,
         homeTeam,
         awayTeam,
-        isOwnGoal // Critical: Include the isOwnGoal parameter
+        isOwnGoal
       });
 
-      console.log('📊 useGoalHandlers: Unified goal service result:', result);
+      console.log('📊 useGoalHandlers: Unified goal service result with real-time sync:', result);
 
       if (!result.success) {
         throw new Error(result.error || 'Goal assignment failed');
       }
 
-      // Update local score if it's a goal (not assist)
+      // Update local score in store and sync with database
       if (props.selectedGoalType === 'goal') {
         const isHomeTeam = player.team === homeTeam.name;
         let scoringTeam: 'home' | 'away';
@@ -172,21 +174,27 @@ export const useGoalHandlers = (props: UseGoalHandlersProps) => {
           scoringTeam = isHomeTeam ? 'home' : 'away';
         }
         
-        console.log('📊 useGoalHandlers: Updating local score with own goal logic:', {
+        console.log('📊 useGoalHandlers: Updating local score and syncing with database:', {
           scoringTeam,
           player: player.name,
           isHomeTeam,
-          isOwnGoal
+          isOwnGoal,
+          databaseScores: { home: result.homeScore, away: result.awayScore }
         });
         
+        // Add goal to local store
         props.addGoal(scoringTeam);
         
-        // Trigger immediate score refresh to sync with database
+        // Sync scores from database to ensure consistency
+        console.log('🔄 useGoalHandlers: Syncing scores from database after goal assignment');
+        await syncScoresFromDatabase(props.selectedFixtureData.id);
+        
+        // Trigger refresh if available
         if (props.forceRefresh) {
-          console.log('🔄 useGoalHandlers: Triggering immediate score refresh after goal assignment');
+          console.log('🔄 useGoalHandlers: Triggering force refresh after database sync');
           setTimeout(() => {
             props.forceRefresh?.();
-          }, 100); // Small delay to ensure database write completes
+          }, 100);
         }
       }
 
@@ -198,10 +206,10 @@ export const useGoalHandlers = (props: UseGoalHandlersProps) => {
 
       toast({
         title: `${props.selectedGoalType === 'goal' ? (isOwnGoal ? 'Own Goal' : 'Goal') : 'Assist'} Assigned!`,
-        description: `${props.selectedGoalType === 'goal' ? (isOwnGoal ? 'Own goal' : 'Goal') : 'Assist'} assigned to ${player.name} and ${props.selectedGoalType === 'goal' ? 'score updated with real-time sync' : 'stats updated'}`,
+        description: `${props.selectedGoalType === 'goal' ? (isOwnGoal ? 'Own goal' : 'Goal') : 'Assist'} assigned to ${player.name} and ${props.selectedGoalType === 'goal' ? 'score updated in real-time' : 'stats updated'}`,
       });
 
-      console.log('✅ useGoalHandlers: Goal assignment completed with immediate score sync and own goal support');
+      console.log('✅ useGoalHandlers: Goal assignment completed with real-time score synchronization');
       return result;
 
     } catch (error) {

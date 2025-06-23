@@ -10,6 +10,7 @@ import { matchParticipationService } from './matchParticipationService';
 import { operationLoggingService } from '@/services/operationLoggingService';
 import { inputValidationService } from '@/services/security/inputValidationService';
 import { securityMonitoringService } from '@/services/security/securityMonitoringService';
+import { realTimeScoreService } from './realTimeScoreService';
 
 export interface UnifiedSaveResult {
   success: boolean;
@@ -33,7 +34,7 @@ export interface MatchDataToSave {
     team: string;
     type: 'goal' | 'assist';
     time: number;
-    isOwnGoal?: boolean; // CRITICAL: Add own goal support
+    isOwnGoal?: boolean;
   }>;
   cards: Array<{
     playerId: number;
@@ -59,7 +60,7 @@ export interface MatchDataToSave {
 
 export const unifiedRefereeService = {
   async saveCompleteMatchData(matchData: MatchDataToSave): Promise<UnifiedSaveResult> {
-    console.log('💾 UnifiedRefereeService: Starting match data save with match participation tracking...', {
+    console.log('💾 UnifiedRefereeService: Starting match data save with real-time score sync...', {
       fixture: matchData.fixtureId,
       homeScore: matchData.homeScore,
       awayScore: matchData.awayScore,
@@ -111,45 +112,7 @@ export const unifiedRefereeService = {
       console.log('🧹 Cleaning up existing duplicates before save...');
       await enhancedDuplicatePreventionService.cleanupAllDuplicateEvents();
 
-      // 1. Update fixture score with validation
-      try {
-        console.log('📊 Updating fixture score...');
-        const scoreValidation = await inputValidationService.validateFixtureScore(
-          matchData.homeScore, 
-          matchData.awayScore
-        );
-        
-        if (!scoreValidation.isValid) {
-          throw new Error(scoreValidation.error);
-        }
-        
-        await updateFixtureScore(matchData.fixtureId, matchData.homeScore, matchData.awayScore);
-        scoreUpdated = true;
-        console.log('✅ Fixture score updated successfully');
-        
-        await operationLoggingService.logOperation({
-          operation_type: 'fixture_score_update',
-          table_name: 'fixtures',
-          record_id: matchData.fixtureId.toString(),
-          payload: { home_score: matchData.homeScore, away_score: matchData.awayScore },
-          success: true
-        });
-      } catch (error) {
-        const errorMsg = `Failed to update score: ${error instanceof Error ? error.message : 'Unknown error'}`;
-        errors.push(errorMsg);
-        console.error('❌', errorMsg);
-        
-        await operationLoggingService.logOperation({
-          operation_type: 'fixture_score_update',
-          table_name: 'fixtures',
-          record_id: matchData.fixtureId.toString(),
-          payload: { home_score: matchData.homeScore, away_score: matchData.awayScore },
-          error_message: errorMsg,
-          success: false
-        });
-      }
-
-      // 2. Process goals with own goal support
+      // 1. Process goals with real-time score updates
       const memberStatsUpdates = new Map<number, { goals: number; assists: number }>();
       
       for (const goal of matchData.goals) {
@@ -165,7 +128,7 @@ export const unifiedRefereeService = {
           // Resolve team ID to string format
           const teamId = goal.team === matchData.homeTeam.name ? matchData.homeTeam.id : matchData.awayTeam.id;
           
-          // CRITICAL: Use enhanced own goal service for own goals
+          // Use enhanced own goal service for own goals
           if (goal.type === 'goal' && goal.isOwnGoal) {
             console.log('🥅 Processing own goal with enhanced service...');
             
@@ -202,7 +165,7 @@ export const unifiedRefereeService = {
                 teamId,
                 eventTime: goal.time,
                 type: goal.type,
-                isOwnGoal: false // Explicitly set for regular goals
+                isOwnGoal: false
               });
               goalsAssigned++;
               
@@ -229,6 +192,33 @@ export const unifiedRefereeService = {
         }
       }
 
+      // Trigger real-time score update after processing all goals
+      if (goalsAssigned > 0) {
+        try {
+          console.log('🔄 Triggering real-time score update after goal processing...');
+          const scoreResult = await realTimeScoreService.updateFixtureScoreRealTime(matchData.fixtureId);
+          
+          if (scoreResult.success) {
+            scoreUpdated = true;
+            console.log(`✅ Real-time score updated to ${scoreResult.homeScore}-${scoreResult.awayScore}`);
+            
+            await operationLoggingService.logOperation({
+              operation_type: 'real_time_score_update',
+              table_name: 'fixtures',
+              record_id: matchData.fixtureId.toString(),
+              payload: { home_score: scoreResult.homeScore, away_score: scoreResult.awayScore },
+              success: true
+            });
+          } else {
+            throw new Error(scoreResult.error || 'Real-time score update failed');
+          }
+        } catch (error) {
+          const errorMsg = `Failed to update score in real-time: ${error instanceof Error ? error.message : 'Unknown error'}`;
+          errors.push(errorMsg);
+          console.error('❌', errorMsg);
+        }
+      }
+
       // Update member stats using the enhanced service (SKIP own goal scorers)
       for (const [playerId, stats] of memberStatsUpdates) {
         try {
@@ -250,7 +240,7 @@ export const unifiedRefereeService = {
         }
       }
 
-      // 3. Create cards with validation and duplicate prevention
+      // 2. Create cards with validation and duplicate prevention
       for (const card of matchData.cards) {
         try {
           console.log(`🟨 Creating ${card.type} card for ${card.playerName}...`);
@@ -281,7 +271,7 @@ export const unifiedRefereeService = {
         }
       }
 
-      // 4. Save player time tracking data with validation
+      // 3. Save player time tracking data with validation
       for (const playerTime of matchData.playerTimes) {
         try {
           console.log(`⏱️ Saving time data for ${playerTime.playerName}...`);
@@ -317,7 +307,7 @@ export const unifiedRefereeService = {
         }
       }
 
-      // CRITICAL: Update match participation based on actual playtime
+      // 4. Update match participation based on actual playtime
       if (playerTimesUpdated > 0) {
         try {
           console.log('📊 Updating match participation for players with playtime...');
@@ -352,7 +342,7 @@ export const unifiedRefereeService = {
 
       const success = errors.length === 0;
       const message = success 
-        ? `Match data saved successfully with participation tracking: Score updated, ${goalsAssigned} goals/assists assigned, ${cardsCreated} cards created, ${playerTimesUpdated} player times saved, ${matchParticipationUpdated ? 'match participation updated' : 'no participation update needed'}`
+        ? `Match data saved successfully with real-time score sync: Score updated, ${goalsAssigned} goals/assists assigned, ${cardsCreated} cards created, ${playerTimesUpdated} player times saved, ${matchParticipationUpdated ? 'match participation updated' : 'no participation update needed'}`
         : `Match data partially saved with ${errors.length} errors`;
 
       // Log the final result with enhanced tracking
@@ -364,7 +354,8 @@ export const unifiedRefereeService = {
           fixture_id: matchData.fixtureId,
           total_errors: errors.length,
           own_goals_processed: matchData.goals.filter(g => g.isOwnGoal).length,
-          match_participation_updated: matchParticipationUpdated
+          match_participation_updated: matchParticipationUpdated,
+          real_time_score_updated: scoreUpdated
         },
         result: {
           score_updated: scoreUpdated,
@@ -386,7 +377,7 @@ export const unifiedRefereeService = {
         });
       }
 
-      console.log(success ? '✅' : '⚠️', 'UnifiedRefereeService save completed with match participation tracking:', {
+      console.log(success ? '✅' : '⚠️', 'UnifiedRefereeService save completed with real-time score sync:', {
         success,
         scoreUpdated,
         goalsAssigned,
