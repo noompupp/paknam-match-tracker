@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { SecureAuthProvider, useSecureAuth } from "@/contexts/SecureAuthContext";
+import { AutoLogoutProvider } from "@/contexts/AutoLogoutContext";
 import { AuthProvider } from "@/contexts/AuthContext"; // Keep for backward compatibility
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
 import { LanguageProvider } from "@/contexts/LanguageContext";
@@ -75,19 +76,27 @@ const AppContent = () => {
           </RoleGuard>
         );
       case "rating":
-        return <React.Suspense fallback={<div>Loading...</div>}><TeamOfTheWeek /></React.Suspense>;
+        return (
+          <RoleGuard requiredRole="referee_rater">
+            <React.Suspense fallback={<div>Loading...</div>}>
+              <TeamOfTheWeek />
+            </React.Suspense>
+          </RoleGuard>
+        );
       default:
         return <Dashboard onNavigateToResults={handleNavigateToResults} />;
     }
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <main className="pb-20">
-        {renderContent()}
-      </main>
-      <RoleBasedNavigation activeTab={activeTab} onTabChange={setActiveTab} />
-    </div>
+    <AutoLogoutProvider inactivityTimeout={30 * 60 * 1000} checkInterval={60 * 1000}>
+      <div className="min-h-screen bg-background">
+        <main className="pb-20">
+          {renderContent()}
+        </main>
+        <RoleBasedNavigation activeTab={activeTab} onTabChange={setActiveTab} />
+      </div>
+    </AutoLogoutProvider>
   );
 };
 

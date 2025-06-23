@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -34,17 +35,34 @@ export const SecureAuthProvider = ({ children }: SecureAuthProviderProps) => {
         setUser(session?.user ?? null);
         setLoading(false);
 
-        // Log authentication events for security monitoring
+        // Enhanced logging for security monitoring
         if (session?.user) {
           setTimeout(() => {
             operationLoggingService.logOperation({
               operation_type: `auth_${event}`,
               table_name: 'auth.users',
               record_id: session.user.id,
-              payload: { event, user_id: session.user.id },
+              payload: { 
+                event, 
+                user_id: session.user.id,
+                session_expires_at: session.expires_at,
+                token_hash: session.access_token ? 'present' : 'missing'
+              },
               success: true
             });
           }, 0);
+        }
+
+        // Handle token refresh events for enhanced security
+        if (event === 'TOKEN_REFRESHED') {
+          console.log('🔐 Token refreshed successfully');
+        }
+
+        // Handle sign out events
+        if (event === 'SIGNED_OUT') {
+          console.log('🔐 User signed out');
+          setSession(null);
+          setUser(null);
         }
       }
     );

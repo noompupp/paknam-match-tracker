@@ -1,7 +1,8 @@
+
 import React, { useEffect, useRef } from 'react';
 import { useSecureAuth } from "@/contexts/SecureAuthContext";
 import { Button } from "@/components/ui/button";
-import { Home, Calendar, Trophy, Flag, LogOut, User, Lock, Users, Star } from "lucide-react";
+import { Home, Calendar, Trophy, Flag, Users, Star } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { usePlatformDetection } from "@/hooks/usePlatformDetection";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -12,31 +13,11 @@ interface RoleBasedNavigationProps {
 }
 
 const RoleBasedNavigation = ({ activeTab, onTabChange }: RoleBasedNavigationProps) => {
-  const { user, signOut } = useSecureAuth();
+  const { user } = useSecureAuth();
   const { toast } = useToast();
   const { isStandalone, isMobile } = usePlatformDetection();
   const { t } = useTranslation();
   const textRefs = useRef<(HTMLSpanElement | null)[]>([]);
-
-  const handleSignOut = async () => {
-    try {
-      await signOut();
-      toast({
-        title: "Signed Out",
-        description: "You have been successfully signed out.",
-      });
-    } catch (error) {
-      toast({
-        title: "Sign Out Error",
-        description: "Failed to sign out. Please try again.",
-        variant: "destructive"
-      });
-    }
-  };
-
-  const handleSignIn = () => {
-    onTabChange('auth');
-  };
 
   const handleProtectedTabClick = (tabId: string) => {
     if (!user) {
@@ -73,10 +54,9 @@ const RoleBasedNavigation = ({ activeTab, onTabChange }: RoleBasedNavigationProp
     { id: "teams", label: t('nav.teams'), icon: Users },
     { id: "results", label: t('nav.results'), icon: Trophy },
     { id: "fixtures", label: t('nav.fixtures'), icon: Calendar },
-    { id: "rating", label: t('nav.rating'), icon: Star }, // NEW "Rating" tab
   ];
 
-  // Protected navigation items for authenticated users
+  // Protected navigation items for authenticated users with specific roles
   const protectedNavItems = [
     { 
       id: "referee", 
@@ -84,6 +64,13 @@ const RoleBasedNavigation = ({ activeTab, onTabChange }: RoleBasedNavigationProp
       icon: Flag, 
       requiredRole: "referee",
       description: "Access referee tools and match management"
+    },
+    { 
+      id: "rating", 
+      label: t('nav.rating'), 
+      icon: Star, 
+      requiredRole: "referee_rater",
+      description: "Access player rating and team of the week features"
     },
   ];
 
@@ -128,7 +115,7 @@ const RoleBasedNavigation = ({ activeTab, onTabChange }: RoleBasedNavigationProp
             );
           })}
 
-          {/* Protected navigation items with visual indicators */}
+          {/* Protected navigation items with role-based access */}
           {protectedNavItems.map((item, index) => {
             const Icon = item.icon;
             const isActive = activeTab === item.id;
@@ -150,12 +137,7 @@ const RoleBasedNavigation = ({ activeTab, onTabChange }: RoleBasedNavigationProp
                 } flex-shrink-0`}
                 title={isAccessible ? item.description : "Sign in to access this feature"}
               >
-                <div className="relative">
-                  <Icon className="h-5 w-5" />
-                  {!isAccessible && (
-                    <Lock className="h-3 w-3 absolute -top-1 -right-1 text-muted-foreground/60" />
-                  )}
-                </div>
+                <Icon className="h-5 w-5" />
                 <span 
                   ref={(el) => textRefs.current[refIndex] = el}
                   className="text-xs font-medium whitespace-nowrap"
@@ -165,41 +147,6 @@ const RoleBasedNavigation = ({ activeTab, onTabChange }: RoleBasedNavigationProp
               </Button>
             );
           })}
-          
-          {/* Authentication button with enhanced UX */}
-          {user ? (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleSignOut}
-              className="mobile-nav-item transition-all duration-200 text-muted-foreground hover:text-destructive hover:bg-destructive/10 flex-shrink-0"
-              title={`Sign out (${user.email})`}
-            >
-              <LogOut className="h-5 w-5" />
-              <span 
-                ref={(el) => textRefs.current[baseNavItems.length + protectedNavItems.length] = el}
-                className="text-xs font-medium whitespace-nowrap"
-              >
-                {t('nav.signOut')}
-              </span>
-            </Button>
-          ) : (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleSignIn}
-              className="mobile-nav-item transition-all duration-200 text-muted-foreground hover:text-primary hover:bg-primary/10 flex-shrink-0"
-              title="Sign in to access referee tools"
-            >
-              <User className="h-5 w-5" />
-              <span 
-                ref={(el) => textRefs.current[baseNavItems.length + protectedNavItems.length] = el}
-                className="text-xs font-medium whitespace-nowrap"
-              >
-                {t('nav.login')}
-              </span>
-            </Button>
-          )}
         </div>
       </div>
     </nav>
@@ -207,6 +154,3 @@ const RoleBasedNavigation = ({ activeTab, onTabChange }: RoleBasedNavigationProp
 };
 
 export default RoleBasedNavigation;
-
-// NOTE: This file is getting quite long (210+ lines).
-// Consider refactoring into smaller components after this update.
