@@ -2,20 +2,21 @@
 import React from "react";
 import { useLatestCompleteFixtures } from "@/hooks/useLatestCompleteFixtures";
 import { Card, CardContent } from "@/components/ui/card";
-import { Loader2, Star, Calculator, Users, Trophy } from "lucide-react";
+import { Loader2, Calculator, Users, Trophy } from "lucide-react";
 import UnifiedPageHeader from "@/components/shared/UnifiedPageHeader";
 import { useTranslation } from "@/hooks/useTranslation";
-import { Button } from "@/components/ui/button";
 import { useSecureAuth } from "@/contexts/SecureAuthContext";
 import { useToast } from "@/hooks/use-toast";
 import RatingFixtureHeader from "./rating/RatingFixtureHeader";
 import HybridPlayerRating from "./rating/HybridPlayerRating";
+import TeamOfTheWeekDisplay from "./rating/TeamOfTheWeekDisplay";
 import { 
   useHybridPlayerRatings, 
   useApprovedPlayerRatings, 
   useApprovePlayerRating,
   useCanApproveRatings 
 } from "@/hooks/useHybridPlayerRatings";
+import { selectTeamOfTheWeek } from "@/utils/teamOfTheWeekSelection";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const TeamOfTheWeek: React.FC = () => {
@@ -55,7 +56,7 @@ const TeamOfTheWeek: React.FC = () => {
     return (
       <div className="max-w-lg mx-auto p-6 text-center">
         <p className="font-semibold text-destructive mb-2">{t("common.error")}:</p>
-        <p>{String((error || ratingsError) as any)?.message || (error || ratingsError)}</p>
+        <p>{error?.message || ratingsError?.message || "An error occurred"}</p>
       </div>
     );
   }
@@ -113,6 +114,9 @@ const TeamOfTheWeek: React.FC = () => {
   const pendingPlayerRatings = (hybridRatings || []).filter(rating => 
     !approvedMap.has(rating.player_id)
   );
+
+  // Calculate Team of the Week (7 players + 1 captain)
+  const teamOfTheWeek = selectTeamOfTheWeek(approvedPlayerRatings, approvedMap);
 
   return (
     <div className="gradient-bg min-h-screen">
@@ -215,38 +219,12 @@ const TeamOfTheWeek: React.FC = () => {
               <h3 className="text-lg font-semibold">
                 {t("rating.teamOfTheWeek")}
               </h3>
+              <span className="text-sm text-muted-foreground">
+                (7-a-side League)
+              </span>
             </div>
 
-            {approvedPlayerRatings.length > 0 ? (
-              <div className="space-y-4">
-                {/* Sort by final rating and show top performers */}
-                {approvedPlayerRatings
-                  .sort((a, b) => b.rating_data.final_rating - a.rating_data.final_rating)
-                  .slice(0, 11) // Top 11 for a full team
-                  .map((playerRating, index) => (
-                    <HybridPlayerRating
-                      key={playerRating.player_id}
-                      playerRating={playerRating}
-                      approvedRating={approvedMap.get(playerRating.player_id)}
-                      canApprove={false}
-                      onApprove={() => {}}
-                      isApproving={false}
-                    />
-                  ))}
-              </div>
-            ) : (
-              <Card>
-                <CardContent className="py-8 text-center">
-                  <Trophy className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <p className="text-muted-foreground mb-2">
-                    {t("rating.noApprovedRatings")}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    {t("rating.approveRatingsFirst")}
-                  </p>
-                </CardContent>
-              </Card>
-            )}
+            <TeamOfTheWeekDisplay teamOfTheWeek={teamOfTheWeek} />
           </TabsContent>
         </Tabs>
       </div>

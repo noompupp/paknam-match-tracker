@@ -38,7 +38,8 @@ const rating: LocaleModule = {
     "rating.matchResult": "Match Result",
     "rating.fplPoints": "FPL Points",
     "rating.cleanSheet": "Clean Sheet",
-    "rating.approvedOn": "Approved on"
+    "rating.approvedOn": "Approved on",
+    "rating.captain": "Captain"
   },
   th: {
     "rating.heading": "ให้คะแนนผู้เล่นจากนัดล่าสุด",
@@ -76,7 +77,8 @@ const rating: LocaleModule = {
     "rating.matchResult": "ผลการแข่งขัน",
     "rating.fplPoints": "คะแนน FPL",
     "rating.cleanSheet": "คลีนชีต",
-    "rating.approvedOn": "อนุมัติเมื่อ"
+    "rating.approvedOn": "อนุมัติเมื่อ",
+    "rating.captain": "กัปตันทีม"
   }
 };
 
