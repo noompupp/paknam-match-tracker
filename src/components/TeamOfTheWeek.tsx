@@ -1,103 +1,49 @@
+
 import React from "react";
 import { useLatestCompleteFixtures } from "@/hooks/useLatestCompleteFixtures";
 import { Card, CardContent } from "@/components/ui/card";
-import { Loader2, Star, StarOff } from "lucide-react";
+import { Loader2, Star, Calculator, Users, Trophy } from "lucide-react";
 import UnifiedPageHeader from "@/components/shared/UnifiedPageHeader";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Button } from "@/components/ui/button";
 import { useSecureAuth } from "@/contexts/SecureAuthContext";
-import { usePlayerRatings, useSubmitPlayerRating, PlayerRating } from "@/hooks/usePlayerRatings";
 import { useToast } from "@/hooks/use-toast";
 import RatingFixtureHeader from "./rating/RatingFixtureHeader";
-
-// Enhanced StarRating with debug/info
-const StarRating = ({
-  value,
-  onChange,
-  max = 5,
-  disabled = false,
-}: {
-  value: number;
-  onChange?: (v: number) => void;
-  max?: number;
-  disabled?: boolean;
-}) => {
-  // DEBUG for rating star rendering
-  React.useEffect(() => {
-    if (typeof value !== 'number' || value < 0) {
-      console.warn("StarRating: Invalid value prop", value);
-    }
-  }, [value]);
-
-  return (
-    <div className="flex items-center gap-0.5">
-      {[...Array(max)].map((_, i) => (
-        <button
-          type="button"
-          key={i}
-          className="p-1 rounded transition hover:bg-accent/40 disabled:cursor-not-allowed"
-          onClick={() => !disabled && onChange?.(i + 1)}
-          disabled={disabled}
-          tabIndex={-1}
-        >
-          {value > i ? (
-            <Star className="text-yellow-500 fill-yellow-400 w-5 h-5" />
-          ) : (
-            <StarOff className="text-gray-300 w-5 h-5" />
-          )}
-        </button>
-      ))}
-    </div>
-  );
-};
+import HybridPlayerRating from "./rating/HybridPlayerRating";
+import { 
+  useHybridPlayerRatings, 
+  useApprovedPlayerRatings, 
+  useApprovePlayerRating,
+  useCanApproveRatings 
+} from "@/hooks/useHybridPlayerRatings";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const TeamOfTheWeek: React.FC = () => {
   const { data, isLoading, error } = useLatestCompleteFixtures();
   const { t } = useTranslation();
   const { user } = useSecureAuth();
   const { toast } = useToast();
-  const [localRatings, setLocalRatings] = React.useState<{ [k: string]: number }>({});
-  const [hasAttemptedSubmit, setHasAttemptedSubmit] = React.useState(false);
+  const { canApprove } = useCanApproveRatings();
 
   // Currently only supporting one fixture (most recent), could be expanded
   const fixture = (data && data.length > 0) ? data[0] : null;
 
-  // Preload ratings for this fixture for the current user
+  // Fetch hybrid ratings for this fixture
   const {
-    data: userRatings,
+    data: hybridRatings,
     isLoading: ratingsLoading,
     error: ratingsError,
-    refetch: refetchRatings,
-  } = usePlayerRatings(fixture?.id || null);
+  } = useHybridPlayerRatings(fixture?.id || null);
 
-  // Type helper: Ensures that a value is a PlayerRating object
-  function isPlayerRating(obj: unknown): obj is PlayerRating {
-    if (!obj || typeof obj !== "object") return false;
-    // 'player_id' and 'rating' are the fields we care about
-    return (
-      "player_id" in obj &&
-      typeof (obj as any).player_id === "number" &&
-      "rating" in obj &&
-      typeof (obj as any).rating === "number"
-    );
-  }
+  // Fetch approved ratings
+  const {
+    data: approvedRatings,
+    isLoading: approvedLoading,
+  } = useApprovedPlayerRatings(fixture?.id || null);
 
-  const submitMutation = useSubmitPlayerRating();
+  const approveMutation = useApprovePlayerRating();
 
-  React.useEffect(() => {
-    if (Array.isArray(userRatings)) {
-      // Pre-fill localRatings with user's submitted ratings for players in this fixture
-      const nextRatings: { [k: string]: number } = {};
-      for (const r of userRatings) {
-        if (isPlayerRating(r)) {
-          nextRatings[String(r.player_id)] = r.rating;
-        }
-      }
-      setLocalRatings((prev) => ({ ...nextRatings, ...prev }));
-    }
-  }, [userRatings]);
-
-  if (isLoading) {
+  if (isLoading || ratingsLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
@@ -105,104 +51,68 @@ const TeamOfTheWeek: React.FC = () => {
     );
   }
 
-  if (error) {
+  if (error || ratingsError) {
     return (
       <div className="max-w-lg mx-auto p-6 text-center">
         <p className="font-semibold text-destructive mb-2">{t("common.error")}:</p>
-        <p>{String((error as any).message || error)}</p>
+        <p>{String((error || ratingsError) as any)?.message || (error || ratingsError)}</p>
       </div>
     );
   }
 
-  // Defensive: filter only fixtures with valid integer id!
-  const fixtures = (data ?? []).filter(
-    (fixture: any) => typeof fixture.id === "number" && !isNaN(fixture.id)
-  );
-  if ((data && fixtures.length === 0) || (!data && !isLoading)) {
-    console.warn("[TeamOfTheWeek] No valid fixtures found, check source data:", data);
-  }
-
-  // Preprocess goal events for playerId lookup and team validation
-  function getGoalPlayersWithId(goalEvents: any[]): Array<{ player_name: string; team_id: string; player_id: number; event_type: string; }> {
-    // Only events with player_id are ratable
-    return (goalEvents || [])
-      .filter(event => event && typeof event.player_id === "number" && event.player_id > 0)
-      .map(event => ({
-        player_name: event.player_name,
-        team_id: event.team_id,
-        player_id: event.player_id,
-        event_type: event.event_type,
-      }));
-  }
-
-  // Find user's team for access control
-  function getUserTeamId(): string | null {
-    if (!user) return null;
-    // Heuristic: Check user.email matches a member record (needs improved mapping)
-    // For real implementation, fetch user profile or member record by user.uid or email
-    // Here, fallback to null (admin can always rate)
-    return null;
-  }
-
-  // Prevent rating from user's own team
-  function canRatePlayer(playerTeamId: string): boolean {
-    // For now, always return true (RLS will block backend if user is not permitted)
-    // If fetching user's own team data, implement check here!
-    return true;
-  }
-
-  // Submit ALL ratings for this fixture
-  async function handleSubmitAllRatings() {
-    if (!fixture) return;
-    setHasAttemptedSubmit(true);
-    if (!user) {
-      toast({
-        title: t("common.error"),
-        description: t("message.signInRequired"),
-        variant: "destructive",
-      });
-      return;
-    }
-    const ratablePlayers = getGoalPlayersWithId(fixture.goalEvents || []);
-    // Only submit ratings for players we changed or have not submitted yet
-    const toSubmit = ratablePlayers.filter(
-      (p) => {
-        const score = localRatings[p.player_id];
-        // allow only valid ratings 1-5
-        return typeof score === "number" && score >= 1 && score <= 5;
-      }
+  if (!fixture) {
+    return (
+      <div className="gradient-bg min-h-screen">
+        <UnifiedPageHeader
+          title={t("nav.rating") || "Team of the Week"}
+          logoSize="medium"
+          showLanguageToggle={true}
+        />
+        <div className="max-w-2xl mx-auto py-6 px-2 sm:px-6">
+          <p className="text-center text-muted-foreground">
+            {t("rating.noMatches")}
+          </p>
+        </div>
+      </div>
     );
-    if (toSubmit.length === 0) {
+  }
+
+  const handleApproveRating = async (playerRating: any) => {
+    try {
+      await approveMutation.mutateAsync({
+        fixtureId: fixture.id,
+        playerId: playerRating.player_id,
+        playerName: playerRating.player_name,
+        teamId: playerRating.team_id,
+        position: playerRating.position
+      });
+
+      toast({
+        title: t("rating.approved"),
+        description: `${t("rating.ratingApprovedFor")} ${playerRating.player_name}`,
+        variant: "default",
+      });
+    } catch (err) {
       toast({
         title: t("common.error"),
-        description: t("rating.noRatingsSelected") || "Please rate at least one player before submitting.",
+        description: (err as any)?.message ?? "Failed to approve rating.",
         variant: "destructive",
       });
-      return;
     }
-    // Submit ratings one by one (supabase.upsert allows batch, but let's keep simple)
-    for (const p of toSubmit) {
-      try {
-        await submitMutation.mutateAsync({
-          fixtureId: fixture.id,
-          playerId: p.player_id,
-          rating: localRatings[p.player_id],
-        });
-      } catch (err) {
-        toast({
-          title: t("common.error"),
-          description: (err as any)?.message ?? "Failed to submit rating.",
-          variant: "destructive",
-        });
-      }
-    }
-    toast({
-      title: t("rating.submitRatings"),
-      description: t("rating.submissionSuccess") || "Your ratings have been submitted.",
-      variant: "default",
-    });
-    refetchRatings();
-  }
+  };
+
+  // Group ratings by approval status
+  const approvedMap = new Map(
+    (approvedRatings || []).map(rating => [rating.player_id, rating])
+  );
+
+  const approvedPlayerRatings = (hybridRatings || []).filter(rating => 
+    approvedMap.has(rating.player_id)
+  );
+
+  const pendingPlayerRatings = (hybridRatings || []).filter(rating => 
+    !approvedMap.has(rating.player_id)
+  );
 
   return (
     <div className="gradient-bg min-h-screen">
@@ -211,82 +121,134 @@ const TeamOfTheWeek: React.FC = () => {
         logoSize="medium"
         showLanguageToggle={true}
       />
-      <div className="max-w-2xl mx-auto py-6 px-2 sm:px-6 flex flex-col gap-8">
-        <h2 className="text-lg sm:text-2xl font-bold text-center mt-4 mb-2">
-          {t("rating.heading")}
-        </h2>
-        {fixtures.length === 0 && (
-          <p className="text-center text-muted-foreground">
-            {t("rating.noMatches")}
-          </p>
-        )}
-        {fixtures.map((fixture) => (
-          <Card key={fixture.id} className="mb-6 w-full">
-            <CardContent className="py-5">
-              {/* --- NEW FIXTURE HEADER --- */}
-              <RatingFixtureHeader fixture={fixture} className="mb-3" />
-              {/* ---- END FIXTURE HEADER ---- */}
-              {/* Ratings section */}
-              <div>
-                <div className="mb-2">
-                  <span className="font-semibold">{t("rating.goalScorers")}:</span>
-                  {/* Ratings list: group by player, show rating + allow edit */}
-                  <ul className="ml-4 mt-1 list-disc text-muted-foreground text-sm">
-                    {getGoalPlayersWithId(fixture.goalEvents || []).map((player) => (
-                      <li key={player.player_id} className="mb-2 flex flex-row items-center gap-2">
-                        <span className="font-medium">{player.player_name}</span> ({player.team_id}),
-                        <span className="text-xs ml-1">
-                          {player.event_type === "goal"
-                            ? t("rating.goal")
-                            : t("rating.assist")}
-                        </span>
-                        <span className="ml-3">
-                          <StarRating
-                            value={localRatings[player.player_id] ?? 0}
-                            onChange={(v) =>
-                              setLocalRatings((r) => ({
-                                ...r,
-                                [player.player_id]: v,
-                              }))
-                            }
-                            disabled={submitMutation.isPending || !canRatePlayer(player.team_id)}
-                          />
-                        </span>
-                        {/* Only show your rating if available and valid */}
-                        {!!userRatings &&
-                          (() => {
-                            // Get the PlayerRating object if present
-                            const found = Array.isArray(userRatings)
-                              ? userRatings.find((r) => isPlayerRating(r) && r.player_id === player.player_id)
-                              : undefined;
-                            return found && isPlayerRating(found) && found.rating > 0 ? (
-                              <span className="ml-2 text-green-700 font-medium">
-                                {t("rating.yourRating")}: {found.rating}
-                              </span>
-                            ) : null;
-                          })()}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  className="mt-2"
-                  onClick={handleSubmitAllRatings}
-                  disabled={submitMutation.isPending || !user}
-                >
-                  {submitMutation.isPending
-                    ? t("rating.submitting") || "Submitting..."
-                    : t("rating.submitRatings") || "Submit Ratings"}
-                </Button>
-                {!user && (
-                  <p className="text-xs mt-2 text-muted-foreground">{t("message.signInRequired")}</p>
-                )}
-              </div>
+      
+      <div className="max-w-4xl mx-auto py-6 px-2 sm:px-6">
+        <RatingFixtureHeader fixture={fixture} className="mb-6" />
+
+        {!user && (
+          <Card className="mb-6">
+            <CardContent className="py-4 text-center">
+              <p className="text-muted-foreground">
+                {t("message.signInRequired")}
+              </p>
             </CardContent>
           </Card>
-        ))}
+        )}
+
+        <Tabs defaultValue="ratings" className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="ratings" className="flex items-center space-x-2">
+              <Calculator className="h-4 w-4" />
+              <span>{t("rating.hybridRatings")}</span>
+            </TabsTrigger>
+            <TabsTrigger value="approved" className="flex items-center space-x-2">
+              <Trophy className="h-4 w-4" />
+              <span>{t("rating.teamOfTheWeek")}</span>
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="ratings" className="space-y-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold flex items-center space-x-2">
+                <Users className="h-5 w-5" />
+                <span>{t("rating.playerRatings")}</span>
+              </h3>
+              
+              {canApprove && (
+                <p className="text-sm text-muted-foreground">
+                  {t("rating.approveToConfirm")}
+                </p>
+              )}
+            </div>
+
+            {/* Pending Ratings */}
+            {pendingPlayerRatings.length > 0 && (
+              <div className="space-y-4">
+                <h4 className="font-medium text-muted-foreground">
+                  {t("rating.pendingApproval")} ({pendingPlayerRatings.length})
+                </h4>
+                {pendingPlayerRatings.map((playerRating) => (
+                  <HybridPlayerRating
+                    key={playerRating.player_id}
+                    playerRating={playerRating}
+                    canApprove={canApprove}
+                    onApprove={() => handleApproveRating(playerRating)}
+                    isApproving={approveMutation.isPending}
+                  />
+                ))}
+              </div>
+            )}
+
+            {/* Approved Ratings */}
+            {approvedPlayerRatings.length > 0 && (
+              <div className="space-y-4">
+                <h4 className="font-medium text-green-700">
+                  {t("rating.approved")} ({approvedPlayerRatings.length})
+                </h4>
+                {approvedPlayerRatings.map((playerRating) => (
+                  <HybridPlayerRating
+                    key={playerRating.player_id}
+                    playerRating={playerRating}
+                    approvedRating={approvedMap.get(playerRating.player_id)}
+                    canApprove={false}
+                    onApprove={() => {}}
+                    isApproving={false}
+                  />
+                ))}
+              </div>
+            )}
+
+            {(!hybridRatings || hybridRatings.length === 0) && (
+              <Card>
+                <CardContent className="py-8 text-center">
+                  <p className="text-muted-foreground">
+                    {t("rating.noPlayersToRate")}
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+
+          <TabsContent value="approved" className="space-y-4">
+            <div className="flex items-center space-x-2 mb-4">
+              <Trophy className="h-5 w-5 text-yellow-600" />
+              <h3 className="text-lg font-semibold">
+                {t("rating.teamOfTheWeek")}
+              </h3>
+            </div>
+
+            {approvedPlayerRatings.length > 0 ? (
+              <div className="space-y-4">
+                {/* Sort by final rating and show top performers */}
+                {approvedPlayerRatings
+                  .sort((a, b) => b.rating_data.final_rating - a.rating_data.final_rating)
+                  .slice(0, 11) // Top 11 for a full team
+                  .map((playerRating, index) => (
+                    <HybridPlayerRating
+                      key={playerRating.player_id}
+                      playerRating={playerRating}
+                      approvedRating={approvedMap.get(playerRating.player_id)}
+                      canApprove={false}
+                      onApprove={() => {}}
+                      isApproving={false}
+                    />
+                  ))}
+              </div>
+            ) : (
+              <Card>
+                <CardContent className="py-8 text-center">
+                  <Trophy className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <p className="text-muted-foreground mb-2">
+                    {t("rating.noApprovedRatings")}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {t("rating.approveRatingsFirst")}
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
