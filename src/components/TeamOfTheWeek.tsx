@@ -102,7 +102,7 @@ const TeamOfTheWeek: React.FC = () => {
     }
   };
 
-  // Group ratings by approval status
+  // Group ratings by approval status - fix the type issues
   const approvedMap = new Map(
     (approvedRatings || []).map(rating => [rating.player_id, rating])
   );
@@ -117,6 +117,9 @@ const TeamOfTheWeek: React.FC = () => {
 
   // Calculate Team of the Week (7 players + 1 captain)
   const teamOfTheWeek = selectTeamOfTheWeek(approvedPlayerRatings, approvedMap);
+
+  // Calculate Captain of the Week
+  const captainOfTheWeek = selectCaptainOfTheWeek(approvedPlayerRatings, approvedMap, teamOfTheWeek);
 
   return (
     <div className="gradient-bg min-h-screen">
@@ -224,7 +227,10 @@ const TeamOfTheWeek: React.FC = () => {
               </span>
             </div>
 
-            <TeamOfTheWeekDisplay teamOfTheWeek={teamOfTheWeek} />
+            <TeamOfTheWeekDisplay 
+              teamOfTheWeek={teamOfTheWeek} 
+              captainOfTheWeek={captainOfTheWeek}
+            />
           </TabsContent>
         </Tabs>
       </div>

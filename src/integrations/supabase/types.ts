@@ -9,6 +9,57 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      approved_player_ratings: {
+        Row: {
+          approved_at: string
+          approved_by: string
+          created_at: string
+          final_rating: number
+          fixture_id: number
+          fpl_rating: number
+          id: string
+          participation_rating: number
+          player_id: number
+          player_name: string
+          position: string
+          rating_data: Json
+          team_id: string
+          updated_at: string
+        }
+        Insert: {
+          approved_at?: string
+          approved_by: string
+          created_at?: string
+          final_rating: number
+          fixture_id: number
+          fpl_rating: number
+          id?: string
+          participation_rating: number
+          player_id: number
+          player_name: string
+          position?: string
+          rating_data?: Json
+          team_id: string
+          updated_at?: string
+        }
+        Update: {
+          approved_at?: string
+          approved_by?: string
+          created_at?: string
+          final_rating?: number
+          fixture_id?: number
+          fpl_rating?: number
+          id?: string
+          participation_rating?: number
+          player_id?: number
+          player_name?: string
+          position?: string
+          rating_data?: Json
+          team_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       auth_roles: {
         Row: {
           created_at: string | null
@@ -842,6 +893,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      approve_player_rating: {
+        Args: {
+          p_fixture_id: number
+          p_player_id: number
+          p_player_name: string
+          p_team_id: string
+          p_position?: string
+        }
+        Returns: Json
+      }
       assign_referee_to_role: {
         Args: {
           p_fixture_id: number

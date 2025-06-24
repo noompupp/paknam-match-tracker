@@ -6,6 +6,7 @@ import DashboardHeader from "./dashboard/DashboardHeader";
 import LeagueTable from "./dashboard/LeagueTable";
 import TopScorersCard from "./dashboard/TopScorersCard";
 import TopAssistsCard from "./dashboard/TopAssistsCard";
+import TeamOfTheWeekCard from "./dashboard/TeamOfTheWeekCard";
 import EnhancedRecentResultsCard from "./dashboard/EnhancedRecentResultsCard";
 import UpcomingFixturesCard from "./dashboard/UpcomingFixturesCard";
 import MatchPreviewModal from "./fixtures/MatchPreviewModal";
@@ -75,7 +76,7 @@ const Dashboard = ({ onNavigateToResults, onNavigateToFixtures }: DashboardProps
         <div className="max-w-7xl mx-auto container-responsive py-8 space-y-8 mobile-content-spacing">
           <LeagueTable teams={teams} isLoading={teamsLoading} />
 
-          <div className="grid md:grid-cols-2 gap-8">
+          <div className="grid md:grid-cols-3 gap-8">
             <TopScorersCard 
               topScorers={topScorers} 
               isLoading={scorersLoading} 
@@ -86,6 +87,7 @@ const Dashboard = ({ onNavigateToResults, onNavigateToFixtures }: DashboardProps
               isLoading={assistsLoading} 
               error={assistsError}
             />
+            <TeamOfTheWeekCard />
           </div>
 
           <EnhancedRecentResultsCard 
