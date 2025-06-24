@@ -16,7 +16,7 @@ import {
   useApprovePlayerRating,
   useCanApproveRatings 
 } from "@/hooks/useHybridPlayerRatings";
-import { selectTeamOfTheWeek } from "@/utils/teamOfTheWeekSelection";
+import { selectTeamOfTheWeek, selectCaptainOfTheWeek } from "@/utils/teamOfTheWeekSelection";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const TeamOfTheWeek: React.FC = () => {

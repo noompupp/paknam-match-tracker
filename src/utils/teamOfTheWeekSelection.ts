@@ -6,6 +6,12 @@ export interface TeamOfTheWeekPlayer extends PlayerRatingRow {
   approvedRating?: ApprovedRating;
 }
 
+export interface CaptainOfTheWeekPlayer extends PlayerRatingRow {
+  approvedRating?: ApprovedRating;
+  isTeamCaptain: boolean;
+  teamPerformanceScore: number;
+}
+
 /**
  * Selects Team of the Week based on 7-a-side league rules:
  * - 7 players total
@@ -80,6 +86,77 @@ export function selectTeamOfTheWeek(
     isCaptain: index === 0, // First in sorted list is captain
     approvedRating: approvedMap.get(player.player_id)
   }));
+}
+
+/**
+ * Selects Captain of the Week based on team captain role and team performance:
+ * - Must be a designated team captain (role: captain)
+ * - Must NOT be in the Team of the Week
+ * - Selected based on leadership, team performance, and bonus for multiple TOTW players
+ */
+export function selectCaptainOfTheWeek(
+  approvedPlayerRatings: PlayerRatingRow[],
+  approvedMap: Map<number, ApprovedRating>,
+  teamOfTheWeek: TeamOfTheWeekPlayer[]
+): CaptainOfTheWeekPlayer | null {
+  if (!approvedPlayerRatings || approvedPlayerRatings.length === 0) {
+    return null;
+  }
+
+  // Get team of the week player IDs for exclusion
+  const totWPlayerIds = new Set(teamOfTheWeek.map(p => p.player_id));
+
+  // For now, we'll use mock data to identify team captains since we don't have the role data
+  // In a real implementation, this would come from a database query for players with role: captain
+  const mockTeamCaptains = [
+    { player_id: 3, team_id: "team2" }, // Mike Johnson as Team Beta captain
+    { player_id: 6, team_id: "team1" }  // Alex Davis as Team Alpha captain
+  ];
+
+  // Filter approved players who are team captains and not in TOTW
+  const eligibleCaptains = approvedPlayerRatings.filter(player => {
+    const isTeamCaptain = mockTeamCaptains.some(captain => captain.player_id === player.player_id);
+    const notInTOTW = !totWPlayerIds.has(player.player_id);
+    return isTeamCaptain && notInTOTW;
+  });
+
+  if (eligibleCaptains.length === 0) {
+    return null;
+  }
+
+  // Calculate team performance scores
+  const teamPerformanceMap = new Map<string, number>();
+  
+  approvedPlayerRatings.forEach(player => {
+    const currentScore = teamPerformanceMap.get(player.team_id) || 0;
+    teamPerformanceMap.set(player.team_id, currentScore + player.rating_data.final_rating);
+  });
+
+  // Calculate bonus for teams with multiple TOTW players
+  const teamTOTWCount = new Map<string, number>();
+  teamOfTheWeek.forEach(player => {
+    const currentCount = teamTOTWCount.get(player.team_id) || 0;
+    teamTOTWCount.set(player.team_id, currentCount + 1);
+  });
+
+  // Score each eligible captain
+  const scoredCaptains = eligibleCaptains.map(player => {
+    const baseTeamPerformance = teamPerformanceMap.get(player.team_id) || 0;
+    const totWBonus = (teamTOTWCount.get(player.team_id) || 0) * 2; // 2 point bonus per TOTW player
+    const leadershipScore = player.rating_data.final_rating * 0.5; // Individual leadership contribution
+    
+    const totalScore = baseTeamPerformance + totWBonus + leadershipScore;
+
+    return {
+      ...player,
+      approvedRating: approvedMap.get(player.player_id),
+      isTeamCaptain: true,
+      teamPerformanceScore: totalScore
+    };
+  });
+
+  // Return the highest scoring captain
+  return scoredCaptains.sort((a, b) => b.teamPerformanceScore - a.teamPerformanceScore)[0] || null;
 }
 
 /**

@@ -2,13 +2,14 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Trophy, Star, Crown } from "lucide-react";
+import { Trophy, Star, Crown, Award } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
-import type { TeamOfTheWeekPlayer } from "@/utils/teamOfTheWeekSelection";
+import type { TeamOfTheWeekPlayer, CaptainOfTheWeekPlayer } from "@/utils/teamOfTheWeekSelection";
 import { formatTeamOfTheWeekByPosition } from "@/utils/teamOfTheWeekSelection";
 
 interface TeamOfTheWeekDisplayProps {
   teamOfTheWeek: TeamOfTheWeekPlayer[];
+  captainOfTheWeek: CaptainOfTheWeekPlayer | null;
 }
 
 const PlayerCard = ({ player }: { player: TeamOfTheWeekPlayer }) => {
@@ -45,6 +46,37 @@ const PlayerCard = ({ player }: { player: TeamOfTheWeekPlayer }) => {
   );
 };
 
+const CaptainOfTheWeekCard = ({ captain }: { captain: CaptainOfTheWeekPlayer }) => {
+  const { t } = useTranslation();
+  
+  return (
+    <Card className="border-blue-400 bg-gradient-to-r from-blue-100 to-indigo-100">
+      <CardHeader className="pb-2">
+        <CardTitle className="text-center flex items-center justify-center space-x-2 text-lg">
+          <Award className="h-5 w-5 text-blue-600" />
+          <span>🏆 Captain of the Week</span>
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="text-center">
+        <div className="font-bold text-xl">{captain.player_name}</div>
+        <div className="text-muted-foreground">{captain.team_name} • {captain.position}</div>
+        <Badge className="bg-blue-600 text-white mt-2">
+          Team Captain
+        </Badge>
+        <div className="flex items-center justify-center space-x-2 mt-2">
+          <Star className="h-4 w-4 text-yellow-500 fill-current" />
+          <span className="font-bold text-green-600 text-lg">
+            {captain.rating_data.final_rating.toFixed(2)}
+          </span>
+        </div>
+        <div className="text-xs text-muted-foreground mt-1">
+          Performance Score: {captain.teamPerformanceScore.toFixed(1)}
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
 const PositionSection = ({ 
   title, 
   players, 
@@ -75,7 +107,8 @@ const PositionSection = ({
 };
 
 const TeamOfTheWeekDisplay: React.FC<TeamOfTheWeekDisplayProps> = ({ 
-  teamOfTheWeek 
+  teamOfTheWeek,
+  captainOfTheWeek 
 }) => {
   const { t } = useTranslation();
   
@@ -96,7 +129,7 @@ const TeamOfTheWeekDisplay: React.FC<TeamOfTheWeekDisplayProps> = ({
   }
 
   const formation = formatTeamOfTheWeekByPosition(teamOfTheWeek);
-  const captain = teamOfTheWeek.find(p => p.isCaptain);
+  const totwCaptain = teamOfTheWeek.find(p => p.isCaptain);
 
   return (
     <div className="space-y-6">
@@ -113,88 +146,112 @@ const TeamOfTheWeekDisplay: React.FC<TeamOfTheWeekDisplayProps> = ({
         </CardHeader>
       </Card>
 
-      {/* Captain Highlight */}
-      {captain && (
-        <Card className="border-yellow-400 bg-gradient-to-r from-yellow-100 to-orange-100">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-center flex items-center justify-center space-x-2 text-lg">
-              <Crown className="h-5 w-5 text-yellow-600" />
-              <span>{t('rating.captain')}</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="text-center">
-            <div className="font-bold text-xl">{captain.player_name}</div>
-            <div className="text-muted-foreground">{captain.team_name} • {captain.position}</div>
-            <div className="flex items-center justify-center space-x-2 mt-2">
-              <Star className="h-4 w-4 text-yellow-500 fill-current" />
-              <span className="font-bold text-green-600 text-lg">
-                {captain.rating_data.final_rating.toFixed(2)}
-              </span>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Team of the Week Formation - Takes 2/3 width on large screens */}
+        <div className="lg:col-span-2 space-y-4">
+          {/* TOTW Captain Highlight */}
+          {totwCaptain && (
+            <Card className="border-yellow-400 bg-gradient-to-r from-yellow-100 to-orange-100">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-center flex items-center justify-center space-x-2 text-lg">
+                  <Crown className="h-5 w-5 text-yellow-600" />
+                  <span>TOTW {t('rating.captain')}</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="text-center">
+                <div className="font-bold text-xl">{totwCaptain.player_name}</div>
+                <div className="text-muted-foreground">{totwCaptain.team_name} • {totwCaptain.position}</div>
+                <div className="flex items-center justify-center space-x-2 mt-2">
+                  <Star className="h-4 w-4 text-yellow-500 fill-current" />
+                  <span className="font-bold text-green-600 text-lg">
+                    {totwCaptain.rating_data.final_rating.toFixed(2)}
+                  </span>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
-      {/* Formation Display */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-center text-lg">Squad Formation</CardTitle>
-          <div className="text-center text-sm text-muted-foreground">
-            {teamOfTheWeek.length}/7 Players Selected
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <PositionSection 
-            title="Goalkeeper" 
-            players={formation.goalkeeper}
-            icon={<div className="w-4 h-4 bg-green-500 rounded-full" />}
-          />
-          
-          <PositionSection 
-            title="Defenders" 
-            players={formation.defenders}
-            icon={<div className="w-4 h-4 bg-blue-500 rounded-full" />}
-          />
-          
-          <PositionSection 
-            title="Midfielders" 
-            players={formation.midfielders}
-            icon={<div className="w-4 h-4 bg-purple-500 rounded-full" />}
-          />
-          
-          <PositionSection 
-            title="Wingers" 
-            players={formation.wingers}
-            icon={<div className="w-4 h-4 bg-orange-500 rounded-full" />}
-          />
-          
-          <PositionSection 
-            title="Forwards" 
-            players={formation.forwards}
-            icon={<div className="w-4 h-4 bg-red-500 rounded-full" />}
-          />
-        </CardContent>
-      </Card>
+          {/* Formation Display */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-center text-lg">Squad Formation</CardTitle>
+              <div className="text-center text-sm text-muted-foreground">
+                {teamOfTheWeek.length}/7 Players Selected
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <PositionSection 
+                title="Goalkeeper" 
+                players={formation.goalkeeper}
+                icon={<div className="w-4 h-4 bg-green-500 rounded-full" />}
+              />
+              
+              <PositionSection 
+                title="Defenders" 
+                players={formation.defenders}
+                icon={<div className="w-4 h-4 bg-blue-500 rounded-full" />}
+              />
+              
+              <PositionSection 
+                title="Midfielders" 
+                players={formation.midfielders}
+                icon={<div className="w-4 h-4 bg-purple-500 rounded-full" />}
+              />
+              
+              <PositionSection 
+                title="Wingers" 
+                players={formation.wingers}
+                icon={<div className="w-4 h-4 bg-orange-500 rounded-full" />}
+              />
+              
+              <PositionSection 
+                title="Forwards" 
+                players={formation.forwards}
+                icon={<div className="w-4 h-4 bg-red-500 rounded-full" />}
+              />
+            </CardContent>
+          </Card>
 
-      {/* Summary Stats */}
-      <Card>
-        <CardContent className="py-4">
-          <div className="grid grid-cols-2 gap-4 text-center">
-            <div>
-              <div className="text-2xl font-bold text-green-600">
-                {teamOfTheWeek.length}
+          {/* Summary Stats */}
+          <Card>
+            <CardContent className="py-4">
+              <div className="grid grid-cols-2 gap-4 text-center">
+                <div>
+                  <div className="text-2xl font-bold text-green-600">
+                    {teamOfTheWeek.length}
+                  </div>
+                  <div className="text-sm text-muted-foreground">Players Selected</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-yellow-600">
+                    {teamOfTheWeek.reduce((acc, p) => acc + p.rating_data.final_rating, 0).toFixed(1)}
+                  </div>
+                  <div className="text-sm text-muted-foreground">Combined Rating</div>
+                </div>
               </div>
-              <div className="text-sm text-muted-foreground">Players Selected</div>
-            </div>
-            <div>
-              <div className="text-2xl font-bold text-yellow-600">
-                {teamOfTheWeek.reduce((acc, p) => acc + p.rating_data.final_rating, 0).toFixed(1)}
-              </div>
-              <div className="text-sm text-muted-foreground">Combined Rating</div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Captain of the Week - Takes 1/3 width on large screens */}
+        <div className="space-y-4">
+          {captainOfTheWeek ? (
+            <CaptainOfTheWeekCard captain={captainOfTheWeek} />
+          ) : (
+            <Card className="border-gray-200">
+              <CardContent className="py-8 text-center">
+                <Award className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <p className="text-muted-foreground mb-2">
+                  No Captain of the Week
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  No eligible team captains available
+                </p>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      </div>
     </div>
   );
 };
