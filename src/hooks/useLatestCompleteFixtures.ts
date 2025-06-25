@@ -30,32 +30,37 @@ export const useLatestCompleteFixtures = () => {
   return useQuery<LatestCompleteFixture[]>({
     queryKey: ["latest_complete_fixtures"],
     queryFn: async () => {
-      // Mock data for latest complete fixtures
-      const mockFixtures: LatestCompleteFixture[] = [
-        {
-          id: 1,
-          home_team_id: "team1",
-          away_team_id: "team2",
-          home_score: 2,
-          away_score: 1,
-          match_date: new Date().toISOString().split('T')[0],
-          status: "completed",
-          home_team: {
-            name: "Team Alpha",
-            id: "team1",
-            __id__: "team1"
-          },
-          away_team: {
-            name: "Team Beta", 
-            id: "team2",
-            __id__: "team2"
-          },
-          venue: "Main Stadium",
-          time: "18:00"
-        }
-      ];
+      const { data: fixtures, error } = await supabase
+        .from("fixtures")
+        .select(`
+          *,
+          home_team:teams!fixtures_home_team_id_fkey(name, id, __id__),
+          away_team:teams!fixtures_away_team_id_fkey(name, id, __id__)
+        `)
+        .not("home_score", "is", null)
+        .not("away_score", "is", null)
+        .eq("status", "completed")
+        .order("match_date", { ascending: false })
+        .limit(5);
 
-      return mockFixtures;
+      if (error) {
+        console.error("Error fetching fixtures:", error);
+        throw error;
+      }
+
+      return fixtures?.map(fixture => ({
+        id: fixture.id,
+        home_team_id: fixture.home_team_id,
+        away_team_id: fixture.away_team_id,
+        home_score: fixture.home_score,
+        away_score: fixture.away_score,
+        match_date: fixture.match_date,
+        status: fixture.status,
+        home_team: fixture.home_team,
+        away_team: fixture.away_team,
+        venue: fixture.venue,
+        time: fixture.time
+      })) || [];
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
   });

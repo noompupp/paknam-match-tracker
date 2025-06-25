@@ -116,6 +116,63 @@ export type Database = {
           },
         ]
       }
+      fixture_player_ratings: {
+        Row: {
+          created_at: string
+          final_rating: number | null
+          fixture_id: number
+          fpl_points: number | null
+          fpl_rating: number | null
+          id: string
+          match_result: string
+          minutes_played: number | null
+          participation_rating: number | null
+          player_id: number
+          player_name: string
+          player_position: string
+          rating_breakdown: Json | null
+          team_id: string
+          team_name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          final_rating?: number | null
+          fixture_id: number
+          fpl_points?: number | null
+          fpl_rating?: number | null
+          id?: string
+          match_result: string
+          minutes_played?: number | null
+          participation_rating?: number | null
+          player_id: number
+          player_name: string
+          player_position?: string
+          rating_breakdown?: Json | null
+          team_id: string
+          team_name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          final_rating?: number | null
+          fixture_id?: number
+          fpl_points?: number | null
+          fpl_rating?: number | null
+          id?: string
+          match_result?: string
+          minutes_played?: number | null
+          participation_rating?: number | null
+          player_id?: number
+          player_name?: string
+          player_position?: string
+          rating_breakdown?: Json | null
+          team_id?: string
+          team_name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       fixtures: {
         Row: {
           __id__: string
@@ -925,6 +982,10 @@ export type Database = {
         Args: { p_coordination_id: string; p_final_review_data?: Json }
         Returns: Json
       }
+      generate_fixture_player_ratings: {
+        Args: { p_fixture_id: number }
+        Returns: Json
+      }
       generate_league_operation_hash: {
         Args: {
           p_fixture_id: number
@@ -986,6 +1047,17 @@ export type Database = {
           status: string
           workflow_mode: string
           assigned_at: string
+        }[]
+      }
+      get_fixture_player_ratings: {
+        Args: { p_fixture_id: number }
+        Returns: {
+          player_id: number
+          player_name: string
+          team_id: string
+          team_name: string
+          player_position: string
+          rating_data: Json
         }[]
       }
       get_match_coordination_status: {

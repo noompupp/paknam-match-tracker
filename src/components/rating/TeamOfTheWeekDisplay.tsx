@@ -6,6 +6,7 @@ import { Trophy, Star, Crown, Award } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { TeamOfTheWeekPlayer, CaptainOfTheWeekPlayer } from "@/utils/teamOfTheWeekSelection";
 import { formatTeamOfTheWeekByPosition } from "@/utils/teamOfTheWeekSelection";
+import TeamOfTheWeekPitchDisplay from "./TeamOfTheWeekPitchDisplay";
 
 interface TeamOfTheWeekDisplayProps {
   teamOfTheWeek: TeamOfTheWeekPlayer[];
@@ -77,35 +78,6 @@ const CaptainOfTheWeekCard = ({ captain }: { captain: CaptainOfTheWeekPlayer }) 
   );
 };
 
-const PositionSection = ({ 
-  title, 
-  players, 
-  icon 
-}: { 
-  title: string; 
-  players: TeamOfTheWeekPlayer[];
-  icon: React.ReactNode;
-}) => {
-  if (players.length === 0) return null;
-
-  return (
-    <div className="space-y-2">
-      <div className="flex items-center space-x-2">
-        {icon}
-        <h4 className="font-medium text-sm">{title}</h4>
-        <Badge variant="secondary" className="text-xs">
-          {players.length}
-        </Badge>
-      </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-        {players.map((player) => (
-          <PlayerCard key={player.player_id} player={player} />
-        ))}
-      </div>
-    </div>
-  );
-};
-
 const TeamOfTheWeekDisplay: React.FC<TeamOfTheWeekDisplayProps> = ({ 
   teamOfTheWeek,
   captainOfTheWeek 
@@ -128,7 +100,6 @@ const TeamOfTheWeekDisplay: React.FC<TeamOfTheWeekDisplayProps> = ({
     );
   }
 
-  const formation = formatTeamOfTheWeekByPosition(teamOfTheWeek);
   const totwCaptain = teamOfTheWeek.find(p => p.isCaptain);
 
   return (
@@ -141,13 +112,13 @@ const TeamOfTheWeekDisplay: React.FC<TeamOfTheWeekDisplayProps> = ({
             <span>{t("rating.teamOfTheWeek")}</span>
           </CardTitle>
           <div className="text-sm text-muted-foreground">
-            7-a-side Formation • 7 Players + 1 Captain
+            7-a-side Formation • {teamOfTheWeek.length} Players Selected
           </div>
         </CardHeader>
       </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Team of the Week Formation - Takes 2/3 width on large screens */}
+        {/* Pitch Formation Display - Takes 2/3 width on large screens */}
         <div className="lg:col-span-2 space-y-4">
           {/* TOTW Captain Highlight */}
           {totwCaptain && (
@@ -171,62 +142,30 @@ const TeamOfTheWeekDisplay: React.FC<TeamOfTheWeekDisplayProps> = ({
             </Card>
           )}
 
-          {/* Formation Display */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-center text-lg">Squad Formation</CardTitle>
-              <div className="text-center text-sm text-muted-foreground">
-                {teamOfTheWeek.length}/7 Players Selected
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <PositionSection 
-                title="Goalkeeper" 
-                players={formation.goalkeeper}
-                icon={<div className="w-4 h-4 bg-green-500 rounded-full" />}
-              />
-              
-              <PositionSection 
-                title="Defenders" 
-                players={formation.defenders}
-                icon={<div className="w-4 h-4 bg-blue-500 rounded-full" />}
-              />
-              
-              <PositionSection 
-                title="Midfielders" 
-                players={formation.midfielders}
-                icon={<div className="w-4 h-4 bg-purple-500 rounded-full" />}
-              />
-              
-              <PositionSection 
-                title="Wingers" 
-                players={formation.wingers}
-                icon={<div className="w-4 h-4 bg-orange-500 rounded-full" />}
-              />
-              
-              <PositionSection 
-                title="Forwards" 
-                players={formation.forwards}
-                icon={<div className="w-4 h-4 bg-red-500 rounded-full" />}
-              />
-            </CardContent>
-          </Card>
+          {/* 2D Pitch Formation Display */}
+          <TeamOfTheWeekPitchDisplay teamOfTheWeek={teamOfTheWeek} />
 
           {/* Summary Stats */}
           <Card>
             <CardContent className="py-4">
-              <div className="grid grid-cols-2 gap-4 text-center">
+              <div className="grid grid-cols-3 gap-4 text-center">
                 <div>
                   <div className="text-2xl font-bold text-green-600">
                     {teamOfTheWeek.length}
                   </div>
-                  <div className="text-sm text-muted-foreground">Players Selected</div>
+                  <div className="text-sm text-muted-foreground">Players</div>
                 </div>
                 <div>
                   <div className="text-2xl font-bold text-yellow-600">
                     {teamOfTheWeek.reduce((acc, p) => acc + p.rating_data.final_rating, 0).toFixed(1)}
                   </div>
-                  <div className="text-sm text-muted-foreground">Combined Rating</div>
+                  <div className="text-sm text-muted-foreground">Total Rating</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-blue-600">
+                    {(teamOfTheWeek.reduce((acc, p) => acc + p.rating_data.final_rating, 0) / teamOfTheWeek.length).toFixed(1)}
+                  </div>
+                  <div className="text-sm text-muted-foreground">Avg Rating</div>
                 </div>
               </div>
             </CardContent>

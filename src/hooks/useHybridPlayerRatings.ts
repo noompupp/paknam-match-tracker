@@ -56,196 +56,31 @@ export function useHybridPlayerRatings(fixtureId: number | null) {
     queryFn: async () => {
       if (!fixtureId) return [];
       
-      // For now, return mock data until the database function is properly set up
-      // This simulates the structure we expect from get_fixture_player_ratings
-      const mockData: PlayerRatingRow[] = [
-        {
-          player_id: 1,
-          player_name: "John Doe",
-          team_id: "team1",
-          team_name: "Team Alpha",
-          position: "GK",
-          rating_data: {
-            player_id: 1,
-            player_name: "John Doe",
-            team_id: "team1",
-            position: "GK",
-            minutes_played: 90,
-            match_result: "win",
-            fpl_points: 8,
-            fpl_rating: 7.5,
-            participation_rating: 8.0,
-            final_rating: 7.65,
-            rating_breakdown: {
-              goals_conceded: 0,
-              clean_sheet_eligible: true
-            }
-          }
-        },
-        {
-          player_id: 2,
-          player_name: "Jane Smith",
-          team_id: "team1",
-          team_name: "Team Alpha",
-          position: "DF",
-          rating_data: {
-            player_id: 2,
-            player_name: "Jane Smith",
-            team_id: "team1",
-            position: "DF",
-            minutes_played: 90,
-            match_result: "win",
-            fpl_points: 6,
-            fpl_rating: 6.8,
-            participation_rating: 7.5,
-            final_rating: 7.01,
-            rating_breakdown: {
-              goals_conceded: 0,
-              clean_sheet_eligible: true
-            }
-          }
-        },
-        {
-          player_id: 3,
-          player_name: "Mike Johnson",
-          team_id: "team2",
-          team_name: "Team Beta",
-          position: "MF",
-          rating_data: {
-            player_id: 3,
-            player_name: "Mike Johnson",
-            team_id: "team2",
-            position: "MF",
-            minutes_played: 85,
-            match_result: "loss",
-            fpl_points: 4,
-            fpl_rating: 6.2,
-            participation_rating: 7.0,
-            final_rating: 6.44,
-            rating_breakdown: {
-              goals_conceded: 2,
-              clean_sheet_eligible: false
-            }
-          }
-        },
-        {
-          player_id: 4,
-          player_name: "Sarah Wilson",
-          team_id: "team1",
-          team_name: "Team Alpha",
-          position: "WG",
-          rating_data: {
-            player_id: 4,
-            player_name: "Sarah Wilson",
-            team_id: "team1",
-            position: "WG",
-            minutes_played: 90,
-            match_result: "win",
-            fpl_points: 10,
-            fpl_rating: 8.5,
-            participation_rating: 8.5,
-            final_rating: 8.5,
-            rating_breakdown: {
-              goals_conceded: 0,
-              clean_sheet_eligible: false
-            }
-          }
-        },
-        {
-          player_id: 5,
-          player_name: "Tom Brown",
-          team_id: "team2",
-          team_name: "Team Beta",
-          position: "FW",
-          rating_data: {
-            player_id: 5,
-            player_name: "Tom Brown",
-            team_id: "team2",
-            position: "FW",
-            minutes_played: 90,
-            match_result: "loss",
-            fpl_points: 8,
-            fpl_rating: 7.8,
-            participation_rating: 7.5,
-            final_rating: 7.71,
-            rating_breakdown: {
-              goals_conceded: 0,
-              clean_sheet_eligible: false
-            }
-          }
-        },
-        {
-          player_id: 6,
-          player_name: "Alex Davis",
-          team_id: "team1",
-          team_name: "Team Alpha",
-          position: "DF",
-          rating_data: {
-            player_id: 6,
-            player_name: "Alex Davis",
-            team_id: "team1",
-            position: "DF",
-            minutes_played: 90,
-            match_result: "win",
-            fpl_points: 5,
-            fpl_rating: 6.5,
-            participation_rating: 7.8,
-            final_rating: 6.89,
-            rating_breakdown: {
-              goals_conceded: 0,
-              clean_sheet_eligible: true
-            }
-          }
-        },
-        {
-          player_id: 7,
-          player_name: "Emma Taylor",
-          team_id: "team2",
-          team_name: "Team Beta",
-          position: "MF",
-          rating_data: {
-            player_id: 7,
-            player_name: "Emma Taylor",
-            team_id: "team2",
-            position: "MF",
-            minutes_played: 75,
-            match_result: "loss",
-            fpl_points: 3,
-            fpl_rating: 5.8,
-            participation_rating: 6.5,
-            final_rating: 6.01,
-            rating_breakdown: {
-              goals_conceded: 0,
-              clean_sheet_eligible: false
-            }
-          }
-        },
-        {
-          player_id: 8,
-          player_name: "Chris Lee",
-          team_id: "team1",
-          team_name: "Team Alpha",
-          position: "WG",
-          rating_data: {
-            player_id: 8,
-            player_name: "Chris Lee",
-            team_id: "team1",
-            position: "WG",
-            minutes_played: 60,
-            match_result: "win",
-            fpl_points: 7,
-            fpl_rating: 7.2,
-            participation_rating: 6.8,
-            final_rating: 7.08,
-            rating_breakdown: {
-              goals_conceded: 0,
-              clean_sheet_eligible: false
-            }
-          }
-        }
-      ];
+      // First, try to generate ratings if they don't exist
+      const { data: generationResult, error: generationError } = await supabase
+        .rpc('generate_fixture_player_ratings', { p_fixture_id: fixtureId });
       
-      return mockData;
+      if (generationError) {
+        console.warn('Could not generate ratings:', generationError);
+      }
+      
+      // Fetch the ratings using the database function
+      const { data: ratingsData, error } = await supabase
+        .rpc('get_fixture_player_ratings', { p_fixture_id: fixtureId });
+      
+      if (error) {
+        console.error('Error fetching ratings:', error);
+        throw error;
+      }
+
+      return ratingsData?.map(rating => ({
+        player_id: rating.player_id,
+        player_name: rating.player_name,
+        team_id: rating.team_id,
+        team_name: rating.team_name,
+        position: rating.player_position,
+        rating_data: rating.rating_data
+      })) || [];
     },
     staleTime: 2 * 60 * 1000,
   });
@@ -263,42 +98,17 @@ export function useApprovedPlayerRatings(fixtureId: number | null) {
     queryFn: async () => {
       if (!fixtureId) return [];
       
-      // Mock approved ratings data for demonstration
-      const mockApprovedRatings: ApprovedRating[] = [
-        {
-          id: "approved_1",
-          fixture_id: fixtureId,
-          player_id: 4,
-          player_name: "Sarah Wilson",
-          team_id: "team1",
-          position: "WG",
-          fpl_rating: 8.5,
-          participation_rating: 8.5,
-          final_rating: 8.5,
-          approved_by: "admin",
-          approved_at: new Date().toISOString(),
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          rating_data: {
-            player_id: 4,
-            player_name: "Sarah Wilson",
-            team_id: "team1",
-            position: "WG",
-            minutes_played: 90,
-            match_result: "win",
-            fpl_points: 10,
-            fpl_rating: 8.5,
-            participation_rating: 8.5,
-            final_rating: 8.5,
-            rating_breakdown: {
-              goals_conceded: 0,
-              clean_sheet_eligible: false
-            }
-          }
-        }
-      ];
+      const { data, error } = await supabase
+        .from("approved_player_ratings")
+        .select("*")
+        .eq("fixture_id", fixtureId);
 
-      return mockApprovedRatings;
+      if (error) {
+        console.error('Error fetching approved ratings:', error);
+        throw error;
+      }
+
+      return data || [];
     },
     staleTime: 30 * 1000,
   });
@@ -329,12 +139,17 @@ export function useApprovePlayerRating() {
     }) => {
       if (!user) throw new Error("Not logged in");
       
-      // Mock approval - in real implementation this would call the approve_player_rating function
-      return {
-        success: true,
-        player_id: playerId,
-        approved_at: new Date().toISOString()
-      };
+      const { data, error } = await supabase
+        .rpc('approve_player_rating', {
+          p_fixture_id: fixtureId,
+          p_player_id: playerId,
+          p_player_name: playerName,
+          p_team_id: teamId,
+          p_position: position
+        });
+
+      if (error) throw error;
+      return data;
     },
     onSuccess: (data, vars) => {
       // Refresh both calculated and approved ratings
