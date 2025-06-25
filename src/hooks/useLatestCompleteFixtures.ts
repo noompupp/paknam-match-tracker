@@ -12,12 +12,12 @@ export interface LatestCompleteFixture {
   status: string;
   home_team?: {
     name: string;
-    id: string;
+    id: number; // This is actually a number from the database
     __id__: string;
   };
   away_team?: {
     name: string;
-    id: string;
+    id: number; // This is actually a number from the database
     __id__: string;
   };
   home_team_name?: string;
@@ -29,7 +29,7 @@ export interface LatestCompleteFixture {
 export const useLatestCompleteFixtures = () => {
   return useQuery<LatestCompleteFixture[]>({
     queryKey: ["latest_complete_fixtures"],
-    queryFn: async () => {
+    queryFn: async (): Promise<LatestCompleteFixture[]> => {
       const { data: fixtures, error } = await supabase
         .from("fixtures")
         .select(`
