@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Trophy, Star, Crown, Award } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useLatestCompleteFixtures } from "@/hooks/useLatestCompleteFixtures";
-import { useHybridPlayerRatings, useApprovedPlayerRatings } from "@/hooks/useHybridPlayerRatings";
+import { useHybridPlayerRatings, useApprovedPlayerRatings, type ApprovedRating } from "@/hooks/useHybridPlayerRatings";
 import { selectTeamOfTheWeek, selectCaptainOfTheWeek } from "@/utils/teamOfTheWeekSelection";
 
 const TeamOfTheWeekCard: React.FC = () => {
@@ -20,7 +20,7 @@ const TeamOfTheWeekCard: React.FC = () => {
   const { data: approvedRatings } = useApprovedPlayerRatings(fixture?.id || null);
 
   // Calculate Team of the Week
-  const approvedMap = new Map(
+  const approvedMap = new Map<number, ApprovedRating>(
     (approvedRatings || []).map(rating => [rating.player_id, rating])
   );
 

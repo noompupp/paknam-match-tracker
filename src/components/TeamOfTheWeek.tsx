@@ -14,20 +14,22 @@ import {
   useHybridPlayerRatings, 
   useApprovedPlayerRatings, 
   useApprovePlayerRating,
-  useCanApproveRatings 
+  useCanApproveRatings,
+  type PlayerRatingRow,
+  type ApprovedRating
 } from "@/hooks/useHybridPlayerRatings";
 import { selectTeamOfTheWeek, selectCaptainOfTheWeek } from "@/utils/teamOfTheWeekSelection";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const TeamOfTheWeek: React.FC = () => {
-  const { data, isLoading, error } = useLatestCompleteFixtures();
+  const { data: fixtures, isLoading, error } = useLatestCompleteFixtures();
   const { t } = useTranslation();
   const { user } = useSecureAuth();
   const { toast } = useToast();
   const { canApprove } = useCanApproveRatings();
 
   // Currently only supporting one fixture (most recent), could be expanded
-  const fixture = (data && data.length > 0) ? data[0] : null;
+  const fixture = (fixtures && fixtures.length > 0) ? fixtures[0] : null;
 
   // Fetch hybrid ratings for this fixture
   const {
@@ -78,7 +80,7 @@ const TeamOfTheWeek: React.FC = () => {
     );
   }
 
-  const handleApproveRating = async (playerRating: any) => {
+  const handleApproveRating = async (playerRating: PlayerRatingRow) => {
     try {
       await approveMutation.mutateAsync({
         fixtureId: fixture.id,
@@ -103,7 +105,7 @@ const TeamOfTheWeek: React.FC = () => {
   };
 
   // Group ratings by approval status - fix the type issues
-  const approvedMap = new Map(
+  const approvedMap = new Map<number, ApprovedRating>(
     (approvedRatings || []).map(rating => [rating.player_id, rating])
   );
 

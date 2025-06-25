@@ -46,14 +46,42 @@ export interface ApprovedRating {
   rating_data: HybridRatingData;
 }
 
+// Helper function to parse JSON rating data
+function parseRatingData(data: any): HybridRatingData {
+  if (typeof data === 'string') {
+    try {
+      data = JSON.parse(data);
+    } catch (e) {
+      console.warn('Failed to parse rating data:', e);
+      return {
+        player_id: 0,
+        player_name: 'Unknown',
+        team_id: '',
+        position: 'Player',
+        minutes_played: 0,
+        match_result: 'draw',
+        fpl_points: 0,
+        fpl_rating: 6.0,
+        participation_rating: 6.0,
+        final_rating: 6.0,
+        rating_breakdown: {
+          goals_conceded: 0,
+          clean_sheet_eligible: false
+        }
+      };
+    }
+  }
+  return data as HybridRatingData;
+}
+
 /**
  * Hook to fetch calculated hybrid ratings for a fixture
  */
 export function useHybridPlayerRatings(fixtureId: number | null) {
-  const query = useQuery<PlayerRatingRow[]>({
+  const query = useQuery({
     queryKey: ["hybrid_player_ratings", fixtureId],
     enabled: !!fixtureId,
-    queryFn: async () => {
+    queryFn: async (): Promise<PlayerRatingRow[]> => {
       if (!fixtureId) return [];
       
       // First, try to generate ratings if they don't exist
@@ -73,14 +101,14 @@ export function useHybridPlayerRatings(fixtureId: number | null) {
         throw error;
       }
 
-      return ratingsData?.map(rating => ({
+      return (ratingsData || []).map(rating => ({
         player_id: rating.player_id,
         player_name: rating.player_name,
         team_id: rating.team_id,
         team_name: rating.team_name,
         position: rating.player_position,
-        rating_data: rating.rating_data
-      })) || [];
+        rating_data: parseRatingData(rating.rating_data)
+      }));
     },
     staleTime: 2 * 60 * 1000,
   });
@@ -92,10 +120,10 @@ export function useHybridPlayerRatings(fixtureId: number | null) {
  * Hook to fetch approved ratings for a fixture
  */
 export function useApprovedPlayerRatings(fixtureId: number | null) {
-  const query = useQuery<ApprovedRating[]>({
+  const query = useQuery({
     queryKey: ["approved_player_ratings", fixtureId],
     enabled: !!fixtureId,
-    queryFn: async () => {
+    queryFn: async (): Promise<ApprovedRating[]> => {
       if (!fixtureId) return [];
       
       const { data, error } = await supabase
@@ -108,7 +136,10 @@ export function useApprovedPlayerRatings(fixtureId: number | null) {
         throw error;
       }
 
-      return data || [];
+      return (data || []).map(rating => ({
+        ...rating,
+        rating_data: parseRatingData(rating.rating_data)
+      }));
     },
     staleTime: 30 * 1000,
   });
