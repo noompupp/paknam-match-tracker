@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useSecureAuth } from "@/contexts/SecureAuthContext";
@@ -18,6 +17,9 @@ export interface HybridRatingData {
     goals_conceded: number;
     clean_sheet_eligible: boolean;
   };
+  original_fpl_rating?: number;
+  original_participation_rating?: number;
+  was_adjusted?: boolean;
 }
 
 export interface PlayerRatingRow {
@@ -39,6 +41,11 @@ export interface ApprovedRating {
   fpl_rating: number;
   participation_rating: number;
   final_rating: number;
+  original_fpl_rating?: number;
+  original_participation_rating?: number;
+  adjusted_fpl_rating?: number;
+  adjusted_participation_rating?: number;
+  was_adjusted: boolean;
   approved_by: string;
   approved_at: string;
   created_at: string;
@@ -148,7 +155,7 @@ export function useApprovedPlayerRatings(fixtureId: number | null) {
 }
 
 /**
- * Hook to approve a player's rating
+ * Hook to approve a player's rating with optional adjustments
  */
 export function useApprovePlayerRating() {
   const queryClient = useQueryClient();
@@ -160,13 +167,17 @@ export function useApprovePlayerRating() {
       playerId,
       playerName,
       teamId,
-      position = 'Player'
+      position = 'Player',
+      adjustedFplRating,
+      adjustedParticipationRating
     }: {
       fixtureId: number;
       playerId: number;
       playerName: string;
       teamId: string;
       position?: string;
+      adjustedFplRating?: number;
+      adjustedParticipationRating?: number;
     }) => {
       if (!user) throw new Error("Not logged in");
       
@@ -176,7 +187,9 @@ export function useApprovePlayerRating() {
           p_player_id: playerId,
           p_player_name: playerName,
           p_team_id: teamId,
-          p_position: position
+          p_position: position,
+          p_adjusted_fpl_rating: adjustedFplRating,
+          p_adjusted_participation_rating: adjustedParticipationRating
         });
 
       if (error) throw error;

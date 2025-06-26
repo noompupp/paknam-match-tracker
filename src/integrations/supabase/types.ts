@@ -11,6 +11,8 @@ export type Database = {
     Tables: {
       approved_player_ratings: {
         Row: {
+          adjusted_fpl_rating: number | null
+          adjusted_participation_rating: number | null
           approved_at: string
           approved_by: string
           created_at: string
@@ -18,6 +20,8 @@ export type Database = {
           fixture_id: number
           fpl_rating: number
           id: string
+          original_fpl_rating: number | null
+          original_participation_rating: number | null
           participation_rating: number
           player_id: number
           player_name: string
@@ -25,8 +29,11 @@ export type Database = {
           rating_data: Json
           team_id: string
           updated_at: string
+          was_adjusted: boolean | null
         }
         Insert: {
+          adjusted_fpl_rating?: number | null
+          adjusted_participation_rating?: number | null
           approved_at?: string
           approved_by: string
           created_at?: string
@@ -34,6 +41,8 @@ export type Database = {
           fixture_id: number
           fpl_rating: number
           id?: string
+          original_fpl_rating?: number | null
+          original_participation_rating?: number | null
           participation_rating: number
           player_id: number
           player_name: string
@@ -41,8 +50,11 @@ export type Database = {
           rating_data?: Json
           team_id: string
           updated_at?: string
+          was_adjusted?: boolean | null
         }
         Update: {
+          adjusted_fpl_rating?: number | null
+          adjusted_participation_rating?: number | null
           approved_at?: string
           approved_by?: string
           created_at?: string
@@ -50,6 +62,8 @@ export type Database = {
           fixture_id?: number
           fpl_rating?: number
           id?: string
+          original_fpl_rating?: number | null
+          original_participation_rating?: number | null
           participation_rating?: number
           player_id?: number
           player_name?: string
@@ -57,6 +71,7 @@ export type Database = {
           rating_data?: Json
           team_id?: string
           updated_at?: string
+          was_adjusted?: boolean | null
         }
         Relationships: []
       }
@@ -951,13 +966,23 @@ export type Database = {
     }
     Functions: {
       approve_player_rating: {
-        Args: {
-          p_fixture_id: number
-          p_player_id: number
-          p_player_name: string
-          p_team_id: string
-          p_position?: string
-        }
+        Args:
+          | {
+              p_fixture_id: number
+              p_player_id: number
+              p_player_name: string
+              p_team_id: string
+              p_position?: string
+            }
+          | {
+              p_fixture_id: number
+              p_player_id: number
+              p_player_name: string
+              p_team_id: string
+              p_position?: string
+              p_adjusted_fpl_rating?: number
+              p_adjusted_participation_rating?: number
+            }
         Returns: Json
       }
       assign_referee_to_role: {

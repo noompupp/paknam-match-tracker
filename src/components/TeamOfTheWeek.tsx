@@ -2,13 +2,13 @@
 import React from "react";
 import { useLatestCompleteFixtures } from "@/hooks/useLatestCompleteFixtures";
 import { Card, CardContent } from "@/components/ui/card";
-import { Loader2, Calculator, Users, Trophy } from "lucide-react";
+import { Loader2, Calculator, Users, Trophy, Edit3 } from "lucide-react";
 import UnifiedPageHeader from "@/components/shared/UnifiedPageHeader";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useSecureAuth } from "@/contexts/SecureAuthContext";
 import { useToast } from "@/hooks/use-toast";
 import RatingFixtureHeader from "./rating/RatingFixtureHeader";
-import HybridPlayerRating from "./rating/HybridPlayerRating";
+import EnhancedPlayerRating from "./rating/EnhancedPlayerRating";
 import TeamOfTheWeekDisplay from "./rating/TeamOfTheWeekDisplay";
 import { 
   useHybridPlayerRatings, 
@@ -80,19 +80,29 @@ const TeamOfTheWeek: React.FC = () => {
     );
   }
 
-  const handleApproveRating = async (playerRating: PlayerRatingRow) => {
+  const handleApproveRating = async (
+    playerRating: PlayerRatingRow, 
+    adjustedFplRating?: number, 
+    adjustedParticipationRating?: number
+  ) => {
     try {
       await approveMutation.mutateAsync({
         fixtureId: fixture.id,
         playerId: playerRating.player_id,
         playerName: playerRating.player_name,
         teamId: playerRating.team_id,
-        position: playerRating.position
+        position: playerRating.position,
+        adjustedFplRating,
+        adjustedParticipationRating
       });
 
+      const wasAdjusted = adjustedFplRating !== undefined || adjustedParticipationRating !== undefined;
+      
       toast({
         title: t("rating.approved"),
-        description: `${t("rating.ratingApprovedFor")} ${playerRating.player_name}`,
+        description: wasAdjusted 
+          ? `${t("rating.ratingApprovedFor")} ${playerRating.player_name} (with adjustments)`
+          : `${t("rating.ratingApprovedFor")} ${playerRating.player_name}`,
         variant: "default",
       });
     } catch (err) {
@@ -104,7 +114,7 @@ const TeamOfTheWeek: React.FC = () => {
     }
   };
 
-  // Group ratings by approval status - fix the type issues
+  // Group ratings by approval status
   const approvedMap = new Map<number, ApprovedRating>(
     (approvedRatings || []).map(rating => [rating.player_id, rating])
   );
@@ -122,6 +132,9 @@ const TeamOfTheWeek: React.FC = () => {
 
   // Calculate Captain of the Week
   const captainOfTheWeek = selectCaptainOfTheWeek(approvedPlayerRatings, approvedMap, teamOfTheWeek);
+
+  // Count adjusted ratings
+  const adjustedRatingsCount = (approvedRatings || []).filter(rating => rating.was_adjusted).length;
 
   return (
     <div className="gradient-bg min-h-screen">
@@ -163,11 +176,17 @@ const TeamOfTheWeek: React.FC = () => {
                 <span>{t("rating.playerRatings")}</span>
               </h3>
               
-              {canApprove && (
-                <p className="text-sm text-muted-foreground">
-                  {t("rating.approveToConfirm")}
-                </p>
-              )}
+              <div className="flex items-center space-x-4 text-sm text-muted-foreground">
+                {adjustedRatingsCount > 0 && (
+                  <div className="flex items-center space-x-1">
+                    <Edit3 className="h-4 w-4 text-orange-600" />
+                    <span>{adjustedRatingsCount} adjusted</span>
+                  </div>
+                )}
+                {canApprove && (
+                  <p>{t("rating.approveToConfirm")}</p>
+                )}
+              </div>
             </div>
 
             {/* Pending Ratings */}
@@ -177,11 +196,13 @@ const TeamOfTheWeek: React.FC = () => {
                   {t("rating.pendingApproval")} ({pendingPlayerRatings.length})
                 </h4>
                 {pendingPlayerRatings.map((playerRating) => (
-                  <HybridPlayerRating
+                  <EnhancedPlayerRating
                     key={playerRating.player_id}
                     playerRating={playerRating}
                     canApprove={canApprove}
-                    onApprove={() => handleApproveRating(playerRating)}
+                    onApprove={(adjustedFpl, adjustedParticipation) => 
+                      handleApproveRating(playerRating, adjustedFpl, adjustedParticipation)
+                    }
                     isApproving={approveMutation.isPending}
                   />
                 ))}
@@ -195,7 +216,7 @@ const TeamOfTheWeek: React.FC = () => {
                   {t("rating.approved")} ({approvedPlayerRatings.length})
                 </h4>
                 {approvedPlayerRatings.map((playerRating) => (
-                  <HybridPlayerRating
+                  <EnhancedPlayerRating
                     key={playerRating.player_id}
                     playerRating={playerRating}
                     approvedRating={approvedMap.get(playerRating.player_id)}
