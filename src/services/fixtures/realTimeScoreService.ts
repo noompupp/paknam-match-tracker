@@ -62,12 +62,13 @@ export const realTimeScoreService = {
         ownGoals: (allGoals || []).filter(g => g.is_own_goal).length
       });
 
-      // Update fixture with new scores
+      // Update fixture with new scores AND set status to completed
       const { error: updateError } = await supabase
         .from('fixtures')
         .update({
           home_score: homeScore,
           away_score: awayScore,
+          status: 'completed', // ✅ FIX: Set status to completed
           updated_at: new Date().toISOString()
         })
         .eq('id', fixtureId);
@@ -85,18 +86,19 @@ export const realTimeScoreService = {
           fixture_id: fixtureId,
           calculated_home_score: homeScore,
           calculated_away_score: awayScore,
-          total_goal_events: (allGoals || []).length
+          total_goal_events: (allGoals || []).length,
+          status_updated: 'completed'
         },
         success: true
       });
 
-      console.log('✅ RealTimeScoreService: Score updated successfully:', { homeScore, awayScore });
+      console.log('✅ RealTimeScoreService: Score updated successfully with completed status:', { homeScore, awayScore });
 
       return {
         success: true,
         homeScore,
         awayScore,
-        message: `Score updated to ${homeScore}-${awayScore}`
+        message: `Match completed with score ${homeScore}-${awayScore}`
       };
 
     } catch (error) {
