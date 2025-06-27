@@ -7,6 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Star, Clock, Trophy, CheckCircle, AlertCircle, Edit3, RotateCcw } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useRatingValidation } from "@/hooks/useRatingValidation";
+import MobileRatingCard from "./MobileRatingCard";
 import type { PlayerRatingRow, ApprovedRating, HybridRatingData } from "@/hooks/useHybridPlayerRatings";
 
 interface EnhancedPlayerRatingProps {
@@ -89,6 +91,7 @@ const EnhancedPlayerRating: React.FC<EnhancedPlayerRatingProps> = ({
   isApproving
 }) => {
   const { t } = useTranslation();
+  const { validateApprovalData, handleValidationError } = useRatingValidation();
   const { player_name, team_name, position, rating_data } = playerRating;
   const isApproved = !!approvedRating;
   
@@ -97,6 +100,19 @@ const EnhancedPlayerRating: React.FC<EnhancedPlayerRatingProps> = ({
   const [participationRating, setParticipationRating] = useState(rating_data.participation_rating);
   const [finalRating, setFinalRating] = useState(rating_data.final_rating);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+
+  // Check if we're on mobile
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // Recalculate final rating when component ratings change
   useEffect(() => {
@@ -117,6 +133,14 @@ const EnhancedPlayerRating: React.FC<EnhancedPlayerRatingProps> = ({
   };
 
   const handleApproveRating = () => {
+    // Validate the rating data before approval
+    const validation = validateApprovalData(fplRating, participationRating, player_name);
+    
+    if (!validation.isValid) {
+      handleValidationError(validation.errors);
+      return;
+    }
+
     const adjustedFpl = fplRating !== rating_data.fpl_rating ? fplRating : undefined;
     const adjustedParticipation = participationRating !== rating_data.participation_rating ? participationRating : undefined;
     
@@ -124,8 +148,21 @@ const EnhancedPlayerRating: React.FC<EnhancedPlayerRatingProps> = ({
   };
 
   const validateRating = (value: number): boolean => {
-    return value >= 0 && value <= 10;
+    return !isNaN(value) && value >= 0 && value <= 10;
   };
+
+  // Use mobile card on small screens
+  if (isMobile) {
+    return (
+      <MobileRatingCard
+        playerRating={playerRating}
+        approvedRating={approvedRating}
+        canApprove={canApprove}
+        onApprove={onApprove}
+        isApproving={isApproving}
+      />
+    );
+  }
 
   return (
     <Card className={`mb-4 ${isApproved ? 'border-green-200 bg-green-50/50' : 'border-border'}`}>
