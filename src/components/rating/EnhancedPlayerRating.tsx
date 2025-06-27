@@ -108,7 +108,7 @@ const EnhancedPlayerRating: React.FC<EnhancedPlayerRatingProps> = ({
       fplRating !== rating_data.fpl_rating || 
       participationRating !== rating_data.participation_rating;
     setHasUnsavedChanges(hasChanges);
-  }, [fpl Rating, participationRating, rating_data.fpl_rating, rating_data.participation_rating]);
+  }, [fplRating, participationRating, rating_data.fpl_rating, rating_data.participation_rating]);
 
   const handleResetRatings = () => {
     setFplRating(rating_data.fpl_rating);
