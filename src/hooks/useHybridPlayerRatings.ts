@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useSecureAuth } from "@/contexts/SecureAuthContext";
@@ -14,8 +15,12 @@ export interface HybridRatingData {
   participation_rating: number;
   final_rating: number;
   rating_breakdown: {
+    goals?: number;
+    assists?: number;
+    cards?: number;
     goals_conceded: number;
     clean_sheet_eligible: boolean;
+    clean_sheet_achieved?: boolean;
   };
   original_fpl_rating?: number;
   original_participation_rating?: number;
