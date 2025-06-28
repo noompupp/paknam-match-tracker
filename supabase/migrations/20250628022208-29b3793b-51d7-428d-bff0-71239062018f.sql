@@ -18,6 +18,7 @@ DECLARE
   fpl_rating_value NUMERIC(4,2);
   participation_rating_value NUMERIC(4,2);
   final_rating_value NUMERIC(4,2);
+  clean_sheet_achieved BOOLEAN;
 BEGIN
   -- Get fixture information with proper team name resolution
   SELECT f.*, 
@@ -90,6 +91,14 @@ BEGIN
     AND player_name = player_record.player_name 
     AND event_type IN ('yellow_card', 'red_card');
     
+    -- Check clean sheet for defenders/goalkeepers
+    clean_sheet_achieved := CASE 
+      WHEN player_record.player_position IN ('GK', 'DF') THEN
+        (player_record.team_id = fixture_data.home_team_id AND fixture_data.away_score = 0) OR
+        (player_record.team_id = fixture_data.away_team_id AND fixture_data.home_score = 0)
+      ELSE false
+    END;
+    
     -- Enhanced FPL points calculation for 7-a-side (50 minute matches)
     base_fpl_points := CASE 
       WHEN player_record.total_minutes >= 35 THEN 2  -- 70% of match (35/50)
@@ -109,11 +118,8 @@ BEGIN
       (player_cards * 1); -- Deduct for cards
     
     -- Clean sheet bonus for defenders/goalkeepers
-    IF player_record.player_position IN ('GK', 'DF') THEN
-      IF (player_record.team_id = fixture_data.home_team_id AND fixture_data.away_score = 0) OR
-         (player_record.team_id = fixture_data.away_team_id AND fixture_data.home_score = 0) THEN
-        base_fpl_points := base_fpl_points + 4;
-      END IF;
+    IF player_record.player_position IN ('GK', 'DF') AND clean_sheet_achieved THEN
+      base_fpl_points := base_fpl_points + 4;
     END IF;
     
     -- Calculate FPL rating based on points and performance
@@ -191,13 +197,7 @@ BEGIN
           ELSE 0
         END,
         'clean_sheet_eligible', player_record.player_position IN ('GK', 'DF'),
-        'clean_sheet_achieved', 
-        CASE 
-          WHEN player_record.player_position IN ('GK', 'DF') THEN
-            (player_record.team_id = fixture_data.home_team_id AND fixture_data.away_score = 0) OR
-            (player_record.team_id = fixture_data.away_team_id AND fixture_data.home_score = 0)
-          ELSE false
-        END
+        'clean_sheet_achieved', clean_sheet_achieved
       )
     )
     ON CONFLICT (fixture_id, player_id) 
