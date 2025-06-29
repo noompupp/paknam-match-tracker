@@ -132,7 +132,7 @@ const MobileRatingCard: React.FC<MobileRatingCardProps> = ({
               <span>•</span>
               <span className="flex items-center">
                 <Clock className="h-3 w-3 mr-1" />
-                {rating_data.minutes_played}min
+                {rating_data.minutes_played}/50min
               </span>
               {isApproved && (
                 <>

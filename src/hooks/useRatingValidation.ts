@@ -19,6 +19,11 @@ interface RatingValidationHook {
   validateFPLPoints: (points: number, minutes: number) => ValidationResult;
 }
 
+// Constants for 7-a-side match validation
+const MATCH_DURATION = 50; // 7-a-side matches are 50 minutes
+const FULL_MATCH_THRESHOLD = 35; // 70% of 50 minutes
+const PARTIAL_MATCH_THRESHOLD = 15; // 30% of 50 minutes
+
 export const useRatingValidation = (): RatingValidationHook => {
   const { toast } = useToast();
 
@@ -42,13 +47,13 @@ export const useRatingValidation = (): RatingValidationHook => {
     
     if (minutes < 0) {
       errors.push("Minutes played cannot be negative");
-    } else if (minutes > 60) {
-      errors.push("Minutes played cannot exceed 60 minutes (7-a-side match duration)");
+    } else if (minutes > MATCH_DURATION + 10) { // Allow some buffer for injury time
+      errors.push(`Minutes played cannot exceed ${MATCH_DURATION + 10} minutes (7-a-side match with injury time)`);
     }
 
-    // Warn about low playtime (less than 15 minutes = 30% of match)
-    if (minutes > 0 && minutes < 15) {
-      errors.push("Warning: Player has very low playtime (less than 30% of match)");
+    // Warn about low playtime (less than 30% of match)
+    if (minutes > 0 && minutes < PARTIAL_MATCH_THRESHOLD) {
+      errors.push(`Warning: Player has very low playtime (${minutes} mins, less than 30% of ${MATCH_DURATION}-minute match)`);
     }
 
     return {
@@ -60,16 +65,16 @@ export const useRatingValidation = (): RatingValidationHook => {
   const validateFPLPoints = useCallback((points: number, minutes: number): ValidationResult => {
     const errors: string[] = [];
     
-    // Minimum points logic for 7-a-side (adjusted thresholds)
-    const expectedMinPoints = minutes >= 35 ? 2 : (minutes >= 1 ? 1 : 0);
+    // Updated minimum points logic for 7-a-side (70% threshold = 35 minutes)
+    const expectedMinPoints = minutes >= FULL_MATCH_THRESHOLD ? 2 : (minutes >= 1 ? 1 : 0);
     
     if (points < expectedMinPoints) {
-      errors.push(`FPL points (${points}) seem low for ${minutes} minutes played. Expected at least ${expectedMinPoints} points.`);
+      errors.push(`FPL points (${points}) seem low for ${minutes} minutes played in a ${MATCH_DURATION}-minute match. Expected at least ${expectedMinPoints} points.`);
     }
 
-    // Maximum reasonable points check (high-performing player shouldn't exceed ~15 points)
-    if (points > 15) {
-      errors.push(`FPL points (${points}) seem unusually high. Please verify calculation.`);
+    // Maximum reasonable points check (adjusted for 7-a-side format)
+    if (points > 20) {
+      errors.push(`FPL points (${points}) seem unusually high for a ${MATCH_DURATION}-minute match. Please verify calculation.`);
     }
 
     return {

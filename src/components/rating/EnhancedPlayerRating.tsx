@@ -159,7 +159,7 @@ const EnhancedPlayerRating: React.FC<EnhancedPlayerRatingProps> = ({
         <div className="bg-muted/30 rounded-lg p-4">
           <h4 className="font-medium mb-3 flex items-center">
             <Star className="h-4 w-4 mr-2" />
-            Performance Summary
+            Performance Summary (7-a-side League)
           </h4>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
             <div className="text-center">
@@ -179,17 +179,23 @@ const EnhancedPlayerRating: React.FC<EnhancedPlayerRatingProps> = ({
               <div className="text-muted-foreground">Result</div>
             </div>
           </div>
-          {rating_data.rating_breakdown.clean_sheet_eligible && (
-            <div className="mt-3 text-center text-sm">
-              <span className="text-muted-foreground">Clean Sheet: </span>
-              <span className={rating_data.rating_breakdown.clean_sheet_achieved 
-                ? "text-green-600 font-medium" 
-                : "text-red-600"
-              }>
-                {rating_data.rating_breakdown.clean_sheet_achieved ? "Yes ✓" : "No"}
-              </span>
+          <div className="mt-3 grid grid-cols-2 gap-4 text-sm">
+            <div className="text-center">
+              <div className="font-bold text-lg">{rating_data.minutes_played}/50</div>
+              <div className="text-muted-foreground">Minutes Played</div>
             </div>
-          )}
+            {rating_data.rating_breakdown.clean_sheet_eligible && (
+              <div className="text-center">
+                <span className="text-muted-foreground">Clean Sheet: </span>
+                <span className={rating_data.rating_breakdown.clean_sheet_achieved 
+                  ? "text-green-600 font-medium" 
+                  : "text-red-600"
+                }>
+                  {rating_data.rating_breakdown.clean_sheet_achieved ? "Yes ✓" : "No"}
+                </span>
+              </div>
+            )}
+          </div>
         </div>
 
         {!isApproved && canApprove ? (
