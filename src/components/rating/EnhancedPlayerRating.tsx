@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -13,7 +14,8 @@ import {
   Clock,
   Target,
   Users,
-  Star
+  Star,
+  AlertTriangle
 } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useRatingValidation } from "@/hooks/useRatingValidation";
@@ -36,7 +38,13 @@ const EnhancedPlayerRating: React.FC<EnhancedPlayerRatingProps> = ({
   isApproving
 }) => {
   const { t } = useTranslation();
-  const { validateRating, validateMinutesThreshold, validateFPLPoints, handleValidationError } = useRatingValidation();
+  const { 
+    validateRating, 
+    validateMinutesThreshold, 
+    validateFPLPoints, 
+    handleValidationError,
+    handleValidationWarning 
+  } = useRatingValidation();
   const { player_name, team_name, position, rating_data } = playerRating;
   const isApproved = !!approvedRating;
   
@@ -45,6 +53,7 @@ const EnhancedPlayerRating: React.FC<EnhancedPlayerRatingProps> = ({
   const [finalRating, setFinalRating] = useState(rating_data.final_rating);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
+  const [validationWarnings, setValidationWarnings] = useState<string[]>([]);
 
   React.useEffect(() => {
     const calculated = (fplRating * 0.7 + participationRating * 0.3);
@@ -55,22 +64,23 @@ const EnhancedPlayerRating: React.FC<EnhancedPlayerRatingProps> = ({
       participationRating !== rating_data.participation_rating;
     setHasUnsavedChanges(hasChanges);
 
-    // Enhanced validation
+    // Enhanced validation with warnings
     const errors: string[] = [];
+    const warnings: string[] = [];
+    
     const fplValidation = validateRating(fplRating, "FPL Rating");
     const participationValidation = validateRating(participationRating, "Participation Rating");
     const minutesValidation = validateMinutesThreshold(rating_data.minutes_played);
     const fplPointsValidation = validateFPLPoints(rating_data.fpl_points, rating_data.minutes_played);
 
     errors.push(...fplValidation.errors, ...participationValidation.errors);
-    if (minutesValidation.errors.length > 0) {
-      errors.push(...minutesValidation.errors);
-    }
-    if (fplPointsValidation.errors.length > 0) {
-      errors.push(...fplPointsValidation.errors);
-    }
+    errors.push(...minutesValidation.errors, ...fplPointsValidation.errors);
+    
+    warnings.push(...fplValidation.warnings, ...participationValidation.warnings);
+    warnings.push(...minutesValidation.warnings, ...fplPointsValidation.warnings);
 
     setValidationErrors(errors);
+    setValidationWarnings(warnings);
   }, [fplRating, participationRating, rating_data, validateRating, validateMinutesThreshold, validateFPLPoints]);
 
   const handleResetRatings = () => {
@@ -78,12 +88,19 @@ const EnhancedPlayerRating: React.FC<EnhancedPlayerRatingProps> = ({
     setParticipationRating(rating_data.participation_rating);
     setHasUnsavedChanges(false);
     setValidationErrors([]);
+    setValidationWarnings([]);
   };
 
   const handleApproveRating = () => {
+    // Only block on errors, not warnings
     if (validationErrors.length > 0) {
       handleValidationError(validationErrors);
       return;
+    }
+
+    // Show warnings but allow continuation
+    if (validationWarnings.length > 0) {
+      handleValidationWarning(validationWarnings);
     }
 
     const adjustedFpl = fplRating !== rating_data.fpl_rating ? fplRating : undefined;
@@ -114,15 +131,18 @@ const EnhancedPlayerRating: React.FC<EnhancedPlayerRatingProps> = ({
     );
   }
 
+  const hasValidationIssues = validationErrors.length > 0 || validationWarnings.length > 0;
+
   return (
-    <Card className={`mb-4 ${isApproved ? 'border-green-200 bg-green-50/50' : 'border-border'} ${validationErrors.length > 0 ? 'border-orange-300' : ''}`}>
+    <Card className={`mb-4 ${isApproved ? 'border-green-200 bg-green-50/50' : 'border-border'} ${validationErrors.length > 0 ? 'border-red-300' : validationWarnings.length > 0 ? 'border-yellow-300' : ''}`}>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <div>
             <CardTitle className="text-lg font-semibold flex items-center space-x-2">
               <span>{player_name}</span>
               {isApproved && <CheckCircle className="h-5 w-5 text-green-600" />}
-              {validationErrors.length > 0 && <AlertCircle className="h-5 w-5 text-orange-500" />}
+              {validationErrors.length > 0 && <AlertCircle className="h-5 w-5 text-red-500" />}
+              {validationErrors.length === 0 && validationWarnings.length > 0 && <AlertTriangle className="h-5 w-5 text-yellow-500" />}
             </CardTitle>
             <div className="flex items-center space-x-4 text-sm text-muted-foreground mt-1">
               <span>{team_name}</span>
@@ -142,15 +162,33 @@ const EnhancedPlayerRating: React.FC<EnhancedPlayerRatingProps> = ({
       <CardContent className="space-y-4">
         {/* Validation Errors */}
         {validationErrors.length > 0 && (
-          <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
-            <div className="flex items-center space-x-2 text-orange-800 mb-2">
+          <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+            <div className="flex items-center space-x-2 text-red-800 mb-2">
               <AlertCircle className="h-4 w-4" />
-              <span className="font-medium">Validation Issues</span>
+              <span className="font-medium">Validation Errors</span>
             </div>
-            <div className="text-sm text-orange-700 space-y-1">
+            <div className="text-sm text-red-700 space-y-1">
               {validationErrors.map((error, index) => (
                 <div key={index}>• {error}</div>
               ))}
+            </div>
+          </div>
+        )}
+
+        {/* Validation Warnings */}
+        {validationErrors.length === 0 && validationWarnings.length > 0 && (
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+            <div className="flex items-center space-x-2 text-yellow-800 mb-2">
+              <AlertTriangle className="h-4 w-4" />
+              <span className="font-medium">Validation Warnings</span>
+            </div>
+            <div className="text-sm text-yellow-700 space-y-1">
+              {validationWarnings.map((warning, index) => (
+                <div key={index}>• {warning}</div>
+              ))}
+            </div>
+            <div className="text-xs text-yellow-600 mt-2 italic">
+              These are warnings only - you can still confirm the rating.
             </div>
           </div>
         )}
@@ -250,9 +288,9 @@ const EnhancedPlayerRating: React.FC<EnhancedPlayerRatingProps> = ({
                   <Trophy className="h-4 w-4 mr-2" />
                   Final Rating
                 </Label>
-                <div className={`${validationErrors.length > 0 ? 'bg-orange-50 border-orange-200' : 'bg-green-50 border-green-200'} border rounded-lg p-3`}>
+                <div className={`${validationErrors.length > 0 ? 'bg-red-50 border-red-200' : validationWarnings.length > 0 ? 'bg-yellow-50 border-yellow-200' : 'bg-green-50 border-green-200'} border rounded-lg p-3`}>
                   <div className="text-center">
-                    <div className={`text-2xl font-bold ${validationErrors.length > 0 ? 'text-orange-700' : 'text-green-700'} mb-1`}>
+                    <div className={`text-2xl font-bold ${validationErrors.length > 0 ? 'text-red-700' : validationWarnings.length > 0 ? 'text-yellow-700' : 'text-green-700'} mb-1`}>
                       {finalRating.toFixed(2)}
                     </div>
                     <div className="text-xs text-muted-foreground font-mono">
@@ -292,6 +330,13 @@ const EnhancedPlayerRating: React.FC<EnhancedPlayerRatingProps> = ({
                 </span>
               </Button>
             </div>
+
+            {/* Warning message for button availability */}
+            {validationWarnings.length > 0 && validationErrors.length === 0 && (
+              <div className="text-xs text-yellow-600 text-center">
+                ⚠️ Rating can be confirmed despite warnings shown above.
+              </div>
+            )}
           </div>
         ) : (
           <>

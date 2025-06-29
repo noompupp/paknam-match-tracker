@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -15,7 +16,8 @@ import {
   ChevronDown,
   ChevronUp,
   Users,
-  Target
+  Target,
+  AlertTriangle
 } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useRatingValidation } from "@/hooks/useRatingValidation";
@@ -37,7 +39,13 @@ const MobileRatingCard: React.FC<MobileRatingCardProps> = ({
   isApproving
 }) => {
   const { t } = useTranslation();
-  const { validateRating, validateMinutesThreshold, validateFPLPoints, handleValidationError } = useRatingValidation();
+  const { 
+    validateRating, 
+    validateMinutesThreshold, 
+    validateFPLPoints, 
+    handleValidationError,
+    handleValidationWarning 
+  } = useRatingValidation();
   const { player_name, team_name, position, rating_data } = playerRating;
   const isApproved = !!approvedRating;
   
@@ -47,6 +55,7 @@ const MobileRatingCard: React.FC<MobileRatingCardProps> = ({
   const [finalRating, setFinalRating] = useState(rating_data.final_rating);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
+  const [validationWarnings, setValidationWarnings] = useState<string[]>([]);
 
   React.useEffect(() => {
     const calculated = (fplRating * 0.7 + participationRating * 0.3);
@@ -57,22 +66,23 @@ const MobileRatingCard: React.FC<MobileRatingCardProps> = ({
       participationRating !== rating_data.participation_rating;
     setHasUnsavedChanges(hasChanges);
 
-    // Validate on change
+    // Validate on change with warnings
     const errors: string[] = [];
+    const warnings: string[] = [];
+    
     const fplValidation = validateRating(fplRating, "FPL Rating");
     const participationValidation = validateRating(participationRating, "Participation Rating");
     const minutesValidation = validateMinutesThreshold(rating_data.minutes_played);
     const fplPointsValidation = validateFPLPoints(rating_data.fpl_points, rating_data.minutes_played);
 
     errors.push(...fplValidation.errors, ...participationValidation.errors);
-    if (minutesValidation.errors.length > 0) {
-      errors.push(...minutesValidation.errors);
-    }
-    if (fplPointsValidation.errors.length > 0) {
-      errors.push(...fplPointsValidation.errors);
-    }
+    errors.push(...minutesValidation.errors, ...fplPointsValidation.errors);
+    
+    warnings.push(...fplValidation.warnings, ...participationValidation.warnings);
+    warnings.push(...minutesValidation.warnings, ...fplPointsValidation.warnings);
 
     setValidationErrors(errors);
+    setValidationWarnings(warnings);
   }, [fplRating, participationRating, rating_data, validateRating, validateMinutesThreshold, validateFPLPoints]);
 
   const handleResetRatings = () => {
@@ -80,13 +90,19 @@ const MobileRatingCard: React.FC<MobileRatingCardProps> = ({
     setParticipationRating(rating_data.participation_rating);
     setHasUnsavedChanges(false);
     setValidationErrors([]);
+    setValidationWarnings([]);
   };
 
   const handleApproveRating = () => {
-    // Final validation before approval
+    // Only block on errors, not warnings
     if (validationErrors.length > 0) {
       handleValidationError(validationErrors);
       return;
+    }
+
+    // Show warnings but allow continuation
+    if (validationWarnings.length > 0) {
+      handleValidationWarning(validationWarnings);
     }
 
     const adjustedFpl = fplRating !== rating_data.fpl_rating ? fplRating : undefined;
@@ -115,7 +131,7 @@ const MobileRatingCard: React.FC<MobileRatingCardProps> = ({
   };
 
   return (
-    <Card className={`mb-3 ${isApproved ? 'border-green-200 bg-green-50/50' : 'border-border'} ${validationErrors.length > 0 ? 'border-orange-300' : ''}`}>
+    <Card className={`mb-3 ${isApproved ? 'border-green-200 bg-green-50/50' : 'border-border'} ${validationErrors.length > 0 ? 'border-red-300' : validationWarnings.length > 0 ? 'border-yellow-300' : ''}`}>
       <CardHeader 
         className="pb-2 cursor-pointer"
         onClick={() => setIsExpanded(!isExpanded)}
@@ -147,7 +163,10 @@ const MobileRatingCard: React.FC<MobileRatingCardProps> = ({
               {(approvedRating?.final_rating || rating_data.final_rating).toFixed(2)}
             </Badge>
             {validationErrors.length > 0 && (
-              <AlertCircle className="h-4 w-4 text-orange-500" />
+              <AlertCircle className="h-4 w-4 text-red-500" />
+            )}
+            {validationErrors.length === 0 && validationWarnings.length > 0 && (
+              <AlertTriangle className="h-4 w-4 text-yellow-500" />
             )}
             {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
           </div>
@@ -158,15 +177,33 @@ const MobileRatingCard: React.FC<MobileRatingCardProps> = ({
         <CardContent className="pt-0 space-y-3">
           {/* Validation Errors */}
           {validationErrors.length > 0 && (
-            <div className="bg-orange-50 border border-orange-200 rounded-lg p-2">
-              <div className="flex items-center space-x-1 text-xs text-orange-800 mb-1">
+            <div className="bg-red-50 border border-red-200 rounded-lg p-2">
+              <div className="flex items-center space-x-1 text-xs text-red-800 mb-1">
                 <AlertCircle className="h-3 w-3" />
-                <span className="font-medium">Validation Issues</span>
+                <span className="font-medium">Validation Errors</span>
               </div>
-              <div className="text-xs text-orange-700 space-y-1">
+              <div className="text-xs text-red-700 space-y-1">
                 {validationErrors.map((error, index) => (
                   <div key={index}>• {error}</div>
                 ))}
+              </div>
+            </div>
+          )}
+
+          {/* Validation Warnings */}
+          {validationErrors.length === 0 && validationWarnings.length > 0 && (
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-2">
+              <div className="flex items-center space-x-1 text-xs text-yellow-800 mb-1">
+                <AlertTriangle className="h-3 w-3" />
+                <span className="font-medium">Warnings</span>
+              </div>
+              <div className="text-xs text-yellow-700 space-y-1">
+                {validationWarnings.map((warning, index) => (
+                  <div key={index}>• {warning}</div>
+                ))}
+              </div>
+              <div className="text-xs text-yellow-600 mt-1 italic">
+                Can still confirm rating.
               </div>
             </div>
           )}
@@ -218,12 +255,12 @@ const MobileRatingCard: React.FC<MobileRatingCardProps> = ({
                 </div>
 
                 {/* Final rating display */}
-                <div className={`${validationErrors.length > 0 ? 'bg-orange-50 border-orange-200' : 'bg-green-50 border-green-200'} border rounded-lg p-3`}>
+                <div className={`${validationErrors.length > 0 ? 'bg-red-50 border-red-200' : validationWarnings.length > 0 ? 'bg-yellow-50 border-yellow-200' : 'bg-green-50 border-green-200'} border rounded-lg p-3`}>
                   <div className="text-center">
-                    <div className={`text-xl font-bold ${validationErrors.length > 0 ? 'text-orange-700' : 'text-green-700'} mb-1`}>
+                    <div className={`text-xl font-bold ${validationErrors.length > 0 ? 'text-red-700' : validationWarnings.length > 0 ? 'text-yellow-700' : 'text-green-700'} mb-1`}>
                       {finalRating.toFixed(2)}
                     </div>
-                    <div className={`text-xs ${validationErrors.length > 0 ? 'text-orange-600' : 'text-green-600'} font-medium mb-1`}>
+                    <div className={`text-xs ${validationErrors.length > 0 ? 'text-red-600' : validationWarnings.length > 0 ? 'text-yellow-600' : 'text-green-600'} font-medium mb-1`}>
                       Final Rating
                     </div>
                     <div className="text-xs text-muted-foreground font-mono">
@@ -304,6 +341,13 @@ const MobileRatingCard: React.FC<MobileRatingCardProps> = ({
                     </span>
                   </Button>
                 </div>
+
+                {/* Warning message for button availability */}
+                {validationWarnings.length > 0 && validationErrors.length === 0 && (
+                  <div className="text-xs text-yellow-600 text-center">
+                    ⚠️ Can confirm despite warnings.
+                  </div>
+                )}
               </div>
             </>
           ) : (

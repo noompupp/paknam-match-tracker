@@ -5,6 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 interface ValidationResult {
   isValid: boolean;
   errors: string[];
+  warnings: string[];
 }
 
 interface RatingValidationHook {
@@ -15,6 +16,7 @@ interface RatingValidationHook {
     playerName: string
   ) => ValidationResult;
   handleValidationError: (errors: string[]) => void;
+  handleValidationWarning: (warnings: string[]) => void;
   validateMinutesThreshold: (minutes: number) => ValidationResult;
   validateFPLPoints: (points: number, minutes: number) => ValidationResult;
 }
@@ -29,6 +31,7 @@ export const useRatingValidation = (): RatingValidationHook => {
 
   const validateRating = useCallback((value: number, field: string): ValidationResult => {
     const errors: string[] = [];
+    const warnings: string[] = [];
 
     if (isNaN(value) || value === null || value === undefined) {
       errors.push(`${field} must be a valid number`);
@@ -38,12 +41,14 @@ export const useRatingValidation = (): RatingValidationHook => {
 
     return {
       isValid: errors.length === 0,
-      errors
+      errors,
+      warnings
     };
   }, []);
 
   const validateMinutesThreshold = useCallback((minutes: number): ValidationResult => {
     const errors: string[] = [];
+    const warnings: string[] = [];
     
     if (minutes < 0) {
       errors.push("Minutes played cannot be negative");
@@ -51,35 +56,39 @@ export const useRatingValidation = (): RatingValidationHook => {
       errors.push(`Minutes played cannot exceed ${MATCH_DURATION + 10} minutes (7-a-side match with injury time)`);
     }
 
-    // Warn about low playtime (less than 30% of match)
+    // Convert low playtime to warning instead of error
     if (minutes > 0 && minutes < PARTIAL_MATCH_THRESHOLD) {
-      errors.push(`Warning: Player has very low playtime (${minutes} mins, less than 30% of ${MATCH_DURATION}-minute match)`);
+      warnings.push(`Player has low playtime (${minutes} mins, less than 30% of ${MATCH_DURATION}-minute match)`);
     }
 
     return {
       isValid: errors.length === 0,
-      errors
+      errors,
+      warnings
     };
   }, []);
 
   const validateFPLPoints = useCallback((points: number, minutes: number): ValidationResult => {
     const errors: string[] = [];
+    const warnings: string[] = [];
     
     // Updated minimum points logic for 7-a-side (70% threshold = 35 minutes)
     const expectedMinPoints = minutes >= FULL_MATCH_THRESHOLD ? 2 : (minutes >= 1 ? 1 : 0);
     
+    // Convert low FPL points to warning instead of error
     if (points < expectedMinPoints) {
-      errors.push(`FPL points (${points}) seem low for ${minutes} minutes played in a ${MATCH_DURATION}-minute match. Expected at least ${expectedMinPoints} points.`);
+      warnings.push(`FPL points (${points}) seem low for ${minutes} minutes played in a ${MATCH_DURATION}-minute match. Expected at least ${expectedMinPoints} points.`);
     }
 
-    // Maximum reasonable points check (adjusted for 7-a-side format)
+    // Convert high points to warning instead of error
     if (points > 20) {
-      errors.push(`FPL points (${points}) seem unusually high for a ${MATCH_DURATION}-minute match. Please verify calculation.`);
+      warnings.push(`FPL points (${points}) seem unusually high for a ${MATCH_DURATION}-minute match. Please verify calculation.`);
     }
 
     return {
       isValid: errors.length === 0,
-      errors
+      errors,
+      warnings
     };
   }, []);
 
@@ -89,6 +98,7 @@ export const useRatingValidation = (): RatingValidationHook => {
     playerName: string
   ): ValidationResult => {
     const errors: string[] = [];
+    const warnings: string[] = [];
 
     if (!playerName || playerName.trim().length === 0) {
       errors.push("Player name is required");
@@ -98,6 +108,7 @@ export const useRatingValidation = (): RatingValidationHook => {
     const participationValidation = validateRating(participationRating, "Participation Rating");
 
     errors.push(...fplValidation.errors, ...participationValidation.errors);
+    warnings.push(...fplValidation.warnings, ...participationValidation.warnings);
 
     // Enhanced business logic validation
     if (fplValidation.isValid && participationValidation.isValid) {
@@ -106,15 +117,16 @@ export const useRatingValidation = (): RatingValidationHook => {
         errors.push("Calculated final rating exceeds maximum allowed value (10.0)");
       }
 
-      // Check for unrealistic rating combinations
+      // Convert large rating difference to warning instead of error
       if (Math.abs(fplRating - participationRating) > 4) {
-        errors.push("Large difference between FPL and Participation ratings. Please verify values.");
+        warnings.push("Large difference between FPL and Participation ratings. Please verify values.");
       }
     }
 
     return {
       isValid: errors.length === 0,
-      errors
+      errors,
+      warnings
     };
   }, [validateRating]);
 
@@ -129,10 +141,22 @@ export const useRatingValidation = (): RatingValidationHook => {
     }
   }, [toast]);
 
+  const handleValidationWarning = useCallback((warnings: string[]) => {
+    if (warnings.length > 0) {
+      const warningMessage = warnings.length === 1 ? warnings[0] : `Multiple warnings: ${warnings.join(". ")}`;
+      toast({
+        title: "Validation Warning",
+        description: warningMessage,
+        variant: "default",
+      });
+    }
+  }, [toast]);
+
   return {
     validateRating,
     validateApprovalData,
     handleValidationError,
+    handleValidationWarning,
     validateMinutesThreshold,
     validateFPLPoints
   };
