@@ -119,14 +119,26 @@ export function useHybridPlayerRatings(fixtureId: number | null) {
 
       console.log('Retrieved ratings data:', ratingsData);
 
-      return (ratingsData || []).map(rating => ({
-        player_id: rating.player_id,
-        player_name: rating.player_name,
-        team_id: rating.team_id,
-        team_name: rating.team_name,
-        position: rating.player_position,
-        rating_data: parseRatingData(rating.rating_data)
-      }));
+      if (!ratingsData || ratingsData.length === 0) {
+        console.log('No ratings data found, returning empty array');
+        return [];
+      }
+
+      return ratingsData.map(rating => {
+        const parsedRatingData = parseRatingData(rating.rating_data);
+        
+        return {
+          player_id: rating.player_id,
+          player_name: rating.player_name,
+          team_id: rating.team_id,
+          team_name: rating.team_name,
+          position: rating.player_position,
+          rating_data: {
+            ...parsedRatingData,
+            final_rating: parsedRatingData.final_rating || 6.0 // Ensure final_rating exists
+          }
+        };
+      });
     },
     staleTime: 2 * 60 * 1000,
   });
