@@ -966,23 +966,15 @@ export type Database = {
     }
     Functions: {
       approve_player_rating: {
-        Args:
-          | {
-              p_fixture_id: number
-              p_player_id: number
-              p_player_name: string
-              p_team_id: string
-              p_position?: string
-            }
-          | {
-              p_fixture_id: number
-              p_player_id: number
-              p_player_name: string
-              p_team_id: string
-              p_position?: string
-              p_adjusted_fpl_rating?: number
-              p_adjusted_participation_rating?: number
-            }
+        Args: {
+          p_fixture_id: number
+          p_player_id: number
+          p_player_name: string
+          p_team_id: string
+          p_position?: string
+          p_adjusted_fpl_rating?: number
+          p_adjusted_participation_rating?: number
+        }
         Returns: Json
       }
       assign_referee_to_role: {

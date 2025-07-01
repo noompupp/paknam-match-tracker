@@ -96,12 +96,16 @@ export function useHybridPlayerRatings(fixtureId: number | null) {
     queryFn: async (): Promise<PlayerRatingRow[]> => {
       if (!fixtureId) return [];
       
+      console.log('Fetching hybrid ratings for fixture:', fixtureId);
+      
       // First, try to generate ratings if they don't exist
       const { data: generationResult, error: generationError } = await supabase
         .rpc('generate_fixture_player_ratings', { p_fixture_id: fixtureId });
       
       if (generationError) {
         console.warn('Could not generate ratings:', generationError);
+      } else {
+        console.log('Rating generation result:', generationResult);
       }
       
       // Fetch the ratings using the database function
@@ -112,6 +116,8 @@ export function useHybridPlayerRatings(fixtureId: number | null) {
         console.error('Error fetching ratings:', error);
         throw error;
       }
+
+      console.log('Retrieved ratings data:', ratingsData);
 
       return (ratingsData || []).map(rating => ({
         player_id: rating.player_id,
@@ -138,6 +144,8 @@ export function useApprovedPlayerRatings(fixtureId: number | null) {
     queryFn: async (): Promise<ApprovedRating[]> => {
       if (!fixtureId) return [];
       
+      console.log('Fetching approved ratings for fixture:', fixtureId);
+      
       const { data, error } = await supabase
         .from("approved_player_ratings")
         .select("*")
@@ -147,6 +155,8 @@ export function useApprovedPlayerRatings(fixtureId: number | null) {
         console.error('Error fetching approved ratings:', error);
         throw error;
       }
+
+      console.log('Retrieved approved ratings:', data);
 
       return (data || []).map(rating => ({
         ...rating,
@@ -186,6 +196,16 @@ export function useApprovePlayerRating() {
     }) => {
       if (!user) throw new Error("Not logged in");
       
+      console.log('Approving rating with params:', {
+        fixtureId,
+        playerId,
+        playerName,
+        teamId,
+        position,
+        adjustedFplRating,
+        adjustedParticipationRating
+      });
+      
       const { data, error } = await supabase
         .rpc('approve_player_rating', {
           p_fixture_id: fixtureId,
@@ -197,10 +217,16 @@ export function useApprovePlayerRating() {
           p_adjusted_participation_rating: adjustedParticipationRating
         });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error approving rating:', error);
+        throw error;
+      }
+      
+      console.log('Rating approval result:', data);
       return data;
     },
     onSuccess: (data, vars) => {
+      console.log('Rating approved successfully, invalidating queries');
       // Refresh both calculated and approved ratings
       queryClient.invalidateQueries({
         queryKey: ["hybrid_player_ratings", vars.fixtureId],
