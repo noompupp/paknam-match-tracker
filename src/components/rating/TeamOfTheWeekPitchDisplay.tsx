@@ -12,33 +12,38 @@ interface TeamOfTheWeekPitchDisplayProps {
 
 const PlayerPitchCard = ({ player }: { player: TeamOfTheWeekPlayer }) => {
   return (
-    <div className={`relative p-2 rounded-lg border-2 transition-all hover:scale-105 ${
+    <div className={`relative p-3 rounded-xl border-2 transition-all hover:scale-105 ${
       player.isCaptain 
-        ? 'border-yellow-400 bg-gradient-to-br from-yellow-100 to-orange-100 shadow-lg' 
-        : 'border-green-300 bg-gradient-to-br from-green-50 to-blue-50 shadow-md'
-    } min-w-0 flex-shrink-0 w-20 sm:w-24`}>
+        ? 'border-yellow-400 bg-gradient-to-br from-yellow-50 to-orange-50 shadow-lg' 
+        : 'border-primary/30 bg-gradient-to-br from-card to-card/80 shadow-md'
+    } min-w-0 flex-shrink-0 w-16 sm:w-20`}>
       {player.isCaptain && (
-        <Crown className="absolute -top-1 -right-1 h-4 w-4 text-yellow-600 fill-yellow-400" />
+        <Crown className="absolute -top-2 -right-2 h-5 w-5 text-yellow-600 fill-yellow-400 bg-white rounded-full p-0.5" />
       )}
       
-      <div className="text-center space-y-1">
-        <div className="font-bold text-xs leading-tight truncate" title={player.player_name}>
-          {player.player_name.split(' ').map((name, i) => i === 0 ? name.charAt(0) + '.' : name).join(' ')}
-        </div>
-        <div className="text-xs text-muted-foreground truncate" title={player.team_name}>
-          {player.team_name.length > 6 ? player.team_name.substring(0, 6) + '...' : player.team_name}
-        </div>
-        
-        <div className="flex items-center justify-center space-x-1">
-          <Star className="h-2.5 w-2.5 text-yellow-500 fill-current" />
-          <span className="text-xs font-bold text-green-600">
-            {player.rating_data.final_rating.toFixed(1)}
-          </span>
+      {/* Player Avatar/Jersey Circle */}
+      <div className="flex flex-col items-center space-y-2">
+        <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-white font-bold text-xs ${
+          player.isCaptain ? 'bg-yellow-500' : 'bg-primary'
+        }`}>
+          {player.player_name.split(' ').map(n => n[0]).join('').substring(0, 2)}
         </div>
         
-        <Badge variant="outline" className="text-xs px-1 py-0 h-3.5">
-          {player.position}
-        </Badge>
+        <div className="text-center space-y-1">
+          <div className="font-bold text-xs leading-tight text-center" title={player.player_name}>
+            {player.player_name.split(' ')[0]}
+          </div>
+          <div className="text-[10px] text-muted-foreground truncate" title={player.team_name}>
+            {player.team_name.substring(0, 4)}
+          </div>
+          
+          <div className="flex items-center justify-center space-x-1">
+            <Star className="h-2 w-2 text-yellow-500 fill-current" />
+            <span className="text-[10px] font-bold text-foreground">
+              {player.rating_data.final_rating.toFixed(1)}
+            </span>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -46,27 +51,20 @@ const PlayerPitchCard = ({ player }: { player: TeamOfTheWeekPlayer }) => {
 
 const FormationRow = ({ 
   players, 
-  label, 
   isGoalkeeper = false 
 }: { 
   players: TeamOfTheWeekPlayer[]; 
-  label: string;
   isGoalkeeper?: boolean;
 }) => {
   if (players.length === 0) return null;
 
   return (
-    <div className="flex flex-col items-center space-y-2">
-      <div className="text-xs font-medium text-white/80 uppercase tracking-wide">
-        {label}
-      </div>
-      <div className={`flex justify-center items-center gap-2 ${
-        isGoalkeeper ? 'mb-2' : ''
-      } ${players.length === 1 ? 'w-full justify-center' : 'flex-wrap'}`}>
-        {players.map((player) => (
-          <PlayerPitchCard key={player.player_id} player={player} />
-        ))}
-      </div>
+    <div className={`flex justify-center items-center gap-2 sm:gap-3 ${
+      isGoalkeeper ? 'mb-2' : ''
+    } ${players.length === 1 ? 'w-full justify-center' : 'flex-wrap'}`}>
+      {players.map((player) => (
+        <PlayerPitchCard key={player.player_id} player={player} />
+      ))}
     </div>
   );
 };
@@ -90,78 +88,88 @@ const TeamOfTheWeekPitchDisplay: React.FC<TeamOfTheWeekPitchDisplayProps> = ({
   const formation = formatTeamOfTheWeekByPosition(teamOfTheWeek);
 
   return (
-    <Card className="bg-gradient-to-b from-green-100 to-green-200 border-green-300">
-      <CardContent className="p-4">
-        {/* Vertical Football Pitch Layout */}
-        <div className="relative bg-gradient-to-b from-green-400 to-green-500 rounded-lg p-4 min-h-[500px] overflow-hidden">
+    <Card className="bg-gradient-to-b from-card to-card/90 border border-border">
+      <CardContent className="p-3 sm:p-4">
+        {/* Mobile-First Vertical Football Pitch Layout */}
+        <div className="relative bg-gradient-to-b from-green-400 via-green-500 to-green-600 rounded-lg p-3 sm:p-4 h-[600px] sm:h-[700px] overflow-hidden">
           
-          {/* Pitch markings - Portrait orientation */}
-          <div className="absolute inset-2 border-2 border-white/60 rounded">
-            {/* Center line - horizontal for portrait */}
-            <div className="absolute top-1/2 left-0 w-full h-0.5 bg-white/60 transform -translate-y-0.5" />
+          {/* Enhanced Pitch markings - Portrait orientation */}
+          <div className="absolute inset-3 border-2 border-white/70 rounded">
+            {/* Center line - horizontal */}
+            <div className="absolute top-1/2 left-0 w-full h-0.5 bg-white/70 transform -translate-y-0.5" />
             {/* Center circle */}
-            <div className="absolute top-1/2 left-1/2 w-16 h-16 border-2 border-white/60 rounded-full transform -translate-x-1/2 -translate-y-1/2" />
+            <div className="absolute top-1/2 left-1/2 w-12 h-12 sm:w-16 sm:h-16 border-2 border-white/70 rounded-full transform -translate-x-1/2 -translate-y-1/2" />
             {/* Goal areas - top and bottom */}
-            <div className="absolute top-0 left-1/3 w-1/3 h-8 border-2 border-white/60 border-t-0" />
-            <div className="absolute bottom-0 left-1/3 w-1/3 h-8 border-2 border-white/60 border-b-0" />
+            <div className="absolute top-0 left-1/4 w-1/2 h-6 sm:h-8 border-2 border-white/70 border-t-0" />
+            <div className="absolute bottom-0 left-1/4 w-1/2 h-6 sm:h-8 border-2 border-white/70 border-b-0" />
+            {/* Corner arcs */}
+            <div className="absolute top-0 left-0 w-3 h-3 border-b-2 border-r-2 border-white/50 rounded-br-full" />
+            <div className="absolute top-0 right-0 w-3 h-3 border-b-2 border-l-2 border-white/50 rounded-bl-full" />
+            <div className="absolute bottom-0 left-0 w-3 h-3 border-t-2 border-r-2 border-white/50 rounded-tr-full" />
+            <div className="absolute bottom-0 right-0 w-3 h-3 border-t-2 border-l-2 border-white/50 rounded-tl-full" />
           </div>
 
-          {/* Formation Display - Vertical Layout (Attack to Defense) */}
-          <div className="relative h-full flex flex-col justify-between py-8 space-y-6">
+          {/* Formation Display - Mobile-First Vertical Layout */}
+          <div className="relative h-full flex flex-col justify-between py-6 sm:py-8">
             
-            {/* Attack - Forwards at the top */}
-            <FormationRow 
-              players={formation.forwards} 
-              label="Attack"
-            />
-
-            {/* Midfield Area */}
-            <div className="flex-1 flex flex-col justify-center space-y-4">
-              {/* Advanced Midfield - Wingers */}
+            {/* Attack Zone - Forwards at the top */}
+            <div className="flex justify-center">
               <FormationRow 
-                players={formation.wingers} 
-                label="Wings"
-              />
-              
-              {/* Central Midfield */}
-              <FormationRow 
-                players={formation.midfielders} 
-                label="Midfield"
+                players={formation.forwards} 
               />
             </div>
 
-            {/* Defense */}
-            <FormationRow 
-              players={formation.defenders} 
-              label="Defense"
-            />
+            {/* Advanced Midfield Zone */}
+            {formation.wingers.length > 0 && (
+              <div className="flex justify-center">
+                <FormationRow 
+                  players={formation.wingers} 
+                />
+              </div>
+            )}
 
-            {/* Goalkeeper at the bottom */}
-            <FormationRow 
-              players={formation.goalkeeper} 
-              label="Goalkeeper"
-              isGoalkeeper={true}
-            />
+            {/* Central Midfield Zone */}
+            {formation.midfielders.length > 0 && (
+              <div className="flex justify-center">
+                <FormationRow 
+                  players={formation.midfielders} 
+                />
+              </div>
+            )}
+
+            {/* Defense Zone */}
+            <div className="flex justify-center">
+              <FormationRow 
+                players={formation.defenders} 
+              />
+            </div>
+
+            {/* Goalkeeper Zone - at the bottom */}
+            <div className="flex justify-center">
+              <FormationRow 
+                players={formation.goalkeeper} 
+                isGoalkeeper={true}
+              />
+            </div>
           </div>
 
-          {/* Formation Info - Top Left */}
-          <div className="absolute top-2 left-2 bg-white/90 rounded px-2 py-1">
-            <span className="text-xs font-semibold text-green-800">
-              7-a-side Formation
+          {/* Mobile-Optimized Info Badges */}
+          <div className="absolute top-2 left-2 bg-white/95 backdrop-blur-sm rounded-lg px-2 py-1 shadow-sm">
+            <span className="text-[10px] sm:text-xs font-semibold text-green-800">
+              {teamOfTheWeek.length}/7
             </span>
           </div>
 
-          {/* Player Count - Top Right */}
-          <div className="absolute top-2 right-2 bg-white/90 rounded px-2 py-1">
-            <span className="text-xs font-semibold text-green-800">
-              {teamOfTheWeek.length} / 7 Players
+          <div className="absolute top-2 right-2 bg-white/95 backdrop-blur-sm rounded-lg px-2 py-1 shadow-sm">
+            <span className="text-[10px] sm:text-xs font-semibold text-green-800">
+              TOTW
             </span>
           </div>
 
-          {/* Team of the Week Badge - Bottom Center */}
-          <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 bg-white/90 rounded-full px-3 py-1">
+          {/* Formation Badge - Bottom */}
+          <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 bg-white/95 backdrop-blur-sm rounded-full px-3 py-1 shadow-sm">
             <span className="text-xs font-bold text-green-800">
-              Team of the Week
+              {formation.goalkeeper.length}-{formation.defenders.length}-{formation.midfielders.length + formation.wingers.length}-{formation.forwards.length}
             </span>
           </div>
         </div>
