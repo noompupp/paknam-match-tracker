@@ -76,12 +76,13 @@ export const enhancedMatchDataService = {
         updated_at: new Date().toISOString()
       };
 
-      // Get referee assignment - use the correct property name
+      // Get referee assignment with match date for proper rotation
       const refereeAssignment = refereeAssignmentService.getRefereeAssignment(
         fixture.time || '18:00:00',
         fixture.home_team_id,
         fixture.away_team_id,
-        allTeams || []
+        allTeams || [],
+        fixture.match_date
       );
 
       // Get squad members for both teams
