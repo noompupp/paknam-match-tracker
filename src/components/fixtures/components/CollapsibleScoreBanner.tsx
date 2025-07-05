@@ -49,6 +49,9 @@ const CollapsibleScoreBanner = ({
 
   // Determine if we should show compact mode (mobile + timeline expanded)
   const shouldShowCompactMode = isMobile && isExpanded;
+  
+  // Hide goal summary when detailed timeline is active (for both mobile and desktop)
+  const shouldHideGoalSummary = isExpanded;
 
   return (
     <div className="space-y-4">
@@ -83,11 +86,11 @@ const CollapsibleScoreBanner = ({
             )}
           </div>
 
-          {/* Compact Goal Scorers and Events Summary - Hide in Compact Mode */}
+          {/* Compact Goal Scorers and Events Summary - Hide when timeline is expanded */}
           {totalEvents > 0 && (
             <div className={`
               transition-all duration-300 ease-in-out
-              ${shouldShowCompactMode 
+              ${shouldHideGoalSummary 
                 ? 'opacity-0 max-h-0 overflow-hidden' 
                 : 'opacity-100 max-h-screen mt-4 pt-4 border-t border-border/20'
               }

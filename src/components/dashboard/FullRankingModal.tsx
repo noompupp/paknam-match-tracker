@@ -57,7 +57,7 @@ const FullRankingModal = ({
 
   return (
     <EnhancedDialog open={isOpen} onOpenChange={onClose}>
-      <EnhancedDialogContent className="w-[98vw] sm:max-w-lg sm:w-auto flex flex-col py-2 px-2 rounded-xl">
+      <EnhancedDialogContent className="w-[98vw] sm:max-w-2xl lg:max-w-3xl sm:w-auto flex flex-col py-2 px-2 rounded-xl">
         <EnhancedDialogHeader className="flex-shrink-0 pb-3 px-2 sm:px-4">
           <EnhancedDialogTitle className="flex items-center gap-2 text-lg sm:text-xl font-bold">
             <Icon className="h-5 w-5 text-primary" />
