@@ -80,6 +80,7 @@ const MirroredMatchTimeline = ({
       // Determine which team this card belongs to - handle both teamId and team_id
       const cardTeamId = card.teamId || card.team_id;
       const isHomeTeamCard = cardTeamId === fixture.home_team_id;
+      
       return {
         id: card.id,
         type: isCardRed(card) ? 'red_card' as const : 'yellow_card' as const,
@@ -138,22 +139,34 @@ const MirroredMatchTimeline = ({
     }
   };
 
-  const TimelineEventCard = ({ event, isHome }: { event: TimelineEvent; isHome: boolean }) => (
-    <div className="animate-fade-in w-full">
-      <div 
-        className={`
-          ${isMobile ? 'p-2' : 'p-3'} 
-          rounded-lg border-2 bg-muted/20 
-          ${isHome ? 'border-l-4 border-r-0' : 'border-r-4 border-l-0'}
-          transition-all duration-200 hover:bg-muted/30
-          w-full
-        `}
-        style={{ 
-          borderLeftColor: isHome ? event.teamColor : 'transparent',
-          borderRightColor: isHome ? 'transparent' : event.teamColor
-        }}
-      >
-        <div className={`flex items-center gap-2 ${isHome ? 'justify-start' : 'justify-end'} w-full`}>
+  const TimelineEventCard = ({ event, isHome }: { event: TimelineEvent; isHome: boolean }) => {
+    // Debug card events specifically
+    if (event.type.includes('card')) {
+      console.log('🃏 Rendering card event:', {
+        type: event.type,
+        playerName: event.playerName,
+        time: event.time,
+        teamId: event.teamId,
+        cardType: event.cardType
+      });
+    }
+    
+    return (
+      <div className="animate-fade-in w-full">
+        <div 
+          className={`
+            ${isMobile ? 'p-2' : 'p-3'} 
+            rounded-lg border-2 bg-muted/20 
+            ${isHome ? 'border-l-4 border-r-0' : 'border-r-4 border-l-0'}
+            transition-all duration-200 hover:bg-muted/30
+            w-full
+          `}
+          style={{ 
+            borderLeftColor: isHome ? event.teamColor : 'transparent',
+            borderRightColor: isHome ? 'transparent' : event.teamColor
+          }}
+        >
+          <div className={`flex items-center gap-2 ${isHome ? 'justify-start' : 'justify-end'} w-full`}>
           {isHome && (
             <span className={`${isMobile ? 'text-sm' : 'text-lg'} flex-shrink-0`} role="img" aria-label={getEventLabel(event)}>
               {getEventIcon(event)}
@@ -200,9 +213,10 @@ const MirroredMatchTimeline = ({
             </span>
           )}
         </div>
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   if (allEvents.length === 0) {
     return (
