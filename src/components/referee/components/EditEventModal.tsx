@@ -43,38 +43,106 @@ const EditEventModal = ({
   const { toast } = useToast();
   const { data: teams } = useTeams();
 
-  // Enhanced helper function to get team name by ID with fallback strategies
+  // Enhanced helper function to get team name by ID with comprehensive debugging
   const getTeamName = (teamId: string) => {
-    if (!teams || !teamId) return `Team ${teamId}`;
+    console.log('🏷️ EditEventModal - getTeamName called:', {
+      teamId,
+      teamsAvailable: !!teams,
+      teamsCount: teams?.length || 0,
+      sampleTeam: teams?.[0]
+    });
     
-    // Try multiple matching strategies
-    const team = teams.find(t => 
-      t.__id__ === teamId || 
-      t.id?.toString() === teamId ||
-      t.__id__ === teamId.toString()
-    );
+    if (!teams || !teamId) {
+      console.log('🏷️ EditEventModal - No teams or teamId, returning fallback');
+      return `Team ${teamId}`;
+    }
     
-    return team?.name || `Team ${teamId}`;
+    // Try multiple matching strategies with detailed logging
+    const team = teams.find(t => {
+      const matches = [
+        t.__id__ === teamId,
+        t.id?.toString() === teamId,
+        t.__id__ === teamId.toString(),
+        t.name === teamId // Sometimes teamId might actually be the name
+      ];
+      
+      console.log('🏷️ EditEventModal - Team matching attempt:', {
+        teamName: t.name,
+        team__id__: t.__id__,
+        teamId_numeric: t.id,
+        searchingFor: teamId,
+        matches: {
+          __id__exact: matches[0],
+          id_toString: matches[1],
+          __id__toString: matches[2],
+          name_match: matches[3]
+        },
+        anyMatch: matches.some(Boolean)
+      });
+      
+      return matches.some(Boolean);
+    });
+    
+    const result = team?.name || `Team ${teamId}`;
+    console.log('🏷️ EditEventModal - getTeamName result:', {
+      foundTeam: !!team,
+      teamName: team?.name,
+      result
+    });
+    
+    return result;
   };
 
-  // Enhanced player filtering with better team ID matching
+  // Enhanced player filtering with better team ID matching and comprehensive debugging
   const availablePlayers = useMemo(() => {
     if (!teamId || !allPlayers) return [];
     
     console.log('🔍 EditEventModal - Filtering players:', {
       selectedTeamId: teamId,
       totalPlayers: allPlayers.length,
-      samplePlayer: allPlayers[0]
+      samplePlayer: allPlayers[0],
+      allPlayerTeamIds: allPlayers.slice(0, 5).map(p => ({
+        name: p.name,
+        team_id: p.team_id,
+        team_id_type: typeof p.team_id
+      }))
     });
     
     const filtered = allPlayers.filter(player => {
-      // Multiple matching strategies for team_id
+      // Multiple matching strategies for team_id with more comprehensive comparison
       const playerTeamId = player.team_id?.toString();
       const selectedTeamIdStr = teamId.toString();
       
-      return playerTeamId === selectedTeamIdStr ||
-             playerTeamId === teamId ||
-             player.team_id === teamId;
+      const matches = [
+        playerTeamId === selectedTeamIdStr,
+        playerTeamId === teamId,
+        player.team_id === teamId,
+        player.team_id?.toString() === selectedTeamIdStr,
+        // Additional fallback - sometimes team_id might be stored differently
+        String(player.team_id) === String(teamId)
+      ];
+      
+      const isMatch = matches.some(Boolean);
+      
+      if (allPlayers.indexOf(player) < 3) { // Debug first few players
+        console.log('🔍 EditEventModal - Player match check:', {
+          playerName: player.name,
+          playerTeamId: player.team_id,
+          playerTeamIdString: playerTeamId,
+          selectedTeamId: teamId,
+          selectedTeamIdString: selectedTeamIdStr,
+          matches: {
+            toString_exact: matches[0],
+            direct_string: matches[1], 
+            direct_exact: matches[2],
+            toString_comparison: matches[3],
+            string_cast: matches[4]
+          },
+          finalMatch: isMatch
+        });
+      }
+      
+      return isMatch;
     });
     
     console.log('🔍 EditEventModal - Filtered result:', {
@@ -223,9 +291,13 @@ const EditEventModal = ({
                         {player.name} ({player.position || 'Player'})
                       </SelectItem>
                     ))
+                  ) : teamId ? (
+                    <SelectItem value="no-players" disabled>
+                      No players found for this team
+                    </SelectItem>
                   ) : (
-                    <SelectItem value="" disabled>
-                      {teamId ? "No players found for this team" : "Select a team first"}
+                    <SelectItem value="no-team" disabled>
+                      Select a team first
                     </SelectItem>
                   )}
                 </SelectContent>
