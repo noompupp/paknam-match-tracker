@@ -77,8 +77,9 @@ const MirroredMatchTimeline = ({
       assistPlayerName: (goal.own_goal || goal.isOwnGoal) ? undefined : (goal.assistPlayerName || goal.assist_player_name)
     })),
     ...cards.map(card => {
-      // Determine which team this card belongs to
-      const isHomeTeamCard = card.team_id === fixture.home_team_id;
+      // Determine which team this card belongs to - handle both teamId and team_id
+      const cardTeamId = card.teamId || card.team_id;
+      const isHomeTeamCard = cardTeamId === fixture.home_team_id;
       return {
         id: card.id,
         type: isCardRed(card) ? 'red_card' as const : 'yellow_card' as const,
@@ -86,7 +87,7 @@ const MirroredMatchTimeline = ({
         playerName: getCardPlayerName(card),
         teamName: isHomeTeamCard ? fixture.home_team?.name : fixture.away_team?.name,
         teamColor: isHomeTeamCard ? homeTeamColor : awayTeamColor,
-        teamId: card.team_id,
+        teamId: cardTeamId,
         cardType: getCardType(card)
       };
     })
