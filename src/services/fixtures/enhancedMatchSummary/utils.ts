@@ -97,20 +97,20 @@ export const calculateSummaryStats = (
 export const processEnhancedFunctionData = (functionResult: any): EnhancedMatchSummaryData => {
   console.log('🔧 Processing enhanced function data with standardized own goal support:', functionResult);
   
-  // Parse the JSON data from the database function
-  const goals = JSON.parse(functionResult.goals || '[]').map((goal: any) => ({
+  // Use the JSONB data directly from the database function (no JSON.parse needed)
+  const goals = (functionResult.goals || []).map((goal: any) => ({
     ...goal,
     isOwnGoal: goal.isOwnGoal || false // Ensure standardized own goal flag is preserved
   }));
   
-  const cards = JSON.parse(functionResult.cards || '[]');
-  const playerTimes = JSON.parse(functionResult.player_times || '[]');
-  const timelineEvents = JSON.parse(functionResult.timeline_events || '[]').map((event: any) => ({
+  const cards = functionResult.cards || [];
+  const playerTimes = functionResult.player_times || [];
+  const timelineEvents = (functionResult.timeline_events || []).map((event: any) => ({
     ...event,
     isOwnGoal: event.isOwnGoal || false // Ensure standardized own goal flag is preserved in timeline
   }));
   
-  const summaryStats = JSON.parse(functionResult.summary_stats || '{}');
+  const summaryStats = functionResult.summary_stats || {};
 
   console.log('✅ Enhanced function data processed with standardized own goal support:', {
     goalsCount: goals.length,
