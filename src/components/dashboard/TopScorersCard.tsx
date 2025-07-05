@@ -103,7 +103,7 @@ const TopScorersCard = ({ topScorers, isLoading, error }: TopScorersCardProps) =
                   <div className="flex items-center space-x-2 sm:space-x-3 min-w-0">
                     <Badge
                       variant="outline"
-                      className={`w-7 h-7 sm:w-9 sm:h-9 rounded-full flex items-center justify-center text-xs font-bold border bg-white ${
+                      className={`w-7 h-7 sm:w-9 sm:h-9 rounded-full flex items-center justify-center text-xs font-bold border bg-background ${
                         isTop3 ? "shadow-sm" : ""
                       }`}
                     >

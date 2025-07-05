@@ -105,7 +105,7 @@ const FullRankingModal = ({
                     <div className="flex items-center gap-2 min-w-0">
                       <Badge 
                         variant="outline" 
-                        className="w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs p-0.5 bg-white/90 border-zinc-200"
+                        className="w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs p-0.5 bg-background border-border"
                       >
                         {index + 1}
                       </Badge>

@@ -50,8 +50,7 @@ export const useCreateMatchEvent = () => {
         // Member and player stats (for Top Scorers, etc.)
         queryClient.invalidateQueries({ queryKey: ['members'] });
         queryClient.invalidateQueries({ queryKey: ['playerStats'] });
-        queryClient.invalidateQueries({ queryKey: ['topScorers'] });
-        queryClient.invalidateQueries({ queryKey: ['topAssists'] });
+        queryClient.invalidateQueries({ queryKey: ['enhancedPlayerStats'] });
         
         // Team stats and league table
         queryClient.invalidateQueries({ queryKey: ['teams'] });
@@ -117,8 +116,7 @@ export const useDeleteMatchEvent = () => {
         // Member and player stats (for Top Scorers, etc.)
         queryClient.invalidateQueries({ queryKey: ['members'] });
         queryClient.invalidateQueries({ queryKey: ['playerStats'] });
-        queryClient.invalidateQueries({ queryKey: ['topScorers'] });
-        queryClient.invalidateQueries({ queryKey: ['topAssists'] });
+        queryClient.invalidateQueries({ queryKey: ['enhancedPlayerStats'] });
         
         // Team stats and league table
         queryClient.invalidateQueries({ queryKey: ['teams'] });
