@@ -295,9 +295,9 @@ const MirroredMatchTimeline = ({
               const isHomeEvent = compareTeamIds(event.teamId, fixture.home_team_id);
               const isAwayEvent = compareTeamIds(event.teamId, fixture.away_team_id);
 
-              // Debug event team matching
+              // Debug event team matching with more detail
               if (event.type.includes('card')) {
-                console.log('🎯 Event rendering team matching:', {
+                console.log('🎯 Card event team matching debug:', {
                   eventId: event.id,
                   eventType: event.type,
                   eventTeamId: event.teamId,
@@ -305,15 +305,22 @@ const MirroredMatchTimeline = ({
                   fixtureAwayTeamId: fixture.away_team_id,
                   isHomeEvent,
                   isAwayEvent,
-                  playerName: event.playerName
+                  playerName: event.playerName,
+                  eventTeamName: event.teamName,
+                  willDisplay: isHomeEvent || isAwayEvent,
+                  renderSide: isHomeEvent ? 'home' : isAwayEvent ? 'away' : 'NONE - FALLBACK NEEDED'
                 });
               }
+
+              // Fallback logic: if neither team matches, assume away team for display
+              const displayAsHome = isHomeEvent;
+              const displayAsAway = isAwayEvent || (!isHomeEvent && !isAwayEvent);
 
               return (
                 <div key={`timeline-${event.type}-${event.id}`} className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
                   {/* Home Team Event Column with Proper Constraints */}
                   <div className="min-w-0 w-full">
-                    {isHomeEvent && (
+                    {displayAsHome && (
                       <TimelineEventCard event={event} isHome={true} />
                     )}
                   </div>
@@ -332,7 +339,7 @@ const MirroredMatchTimeline = ({
 
                   {/* Away Team Event Column with Proper Constraints */}
                   <div className="min-w-0 w-full">
-                    {isAwayEvent && (
+                    {displayAsAway && (
                       <TimelineEventCard event={event} isHome={false} />
                     )}
                   </div>

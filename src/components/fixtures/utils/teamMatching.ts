@@ -10,26 +10,32 @@ export const compareTeamIds = (teamId1: any, teamId2: any): boolean => {
   const normalized1 = normalizeTeamId(teamId1);
   const normalized2 = normalizeTeamId(teamId2);
   
-  // If direct comparison fails, try alternative matching strategies
-  let result = normalized1 === normalized2;
-  
-  // Handle mixed string/number scenarios by extracting base team identifier
-  if (!result && (normalized1 && normalized2)) {
-    // Check if one is a subset of the other (e.g., "1" vs "T001")
-    const base1 = normalized1.replace(/^t0*/, ''); // Remove T and leading zeros
-    const base2 = normalized2.replace(/^t0*/, ''); // Remove T and leading zeros
-    result = base1 === base2 && base1 !== '';
+  // Simplified direct comparison first
+  if (normalized1 === normalized2) {
+    return true;
   }
   
-  console.log('🔍 Enhanced Team ID comparison:', {
-    teamId1: teamId1,
-    teamId2: teamId2,
+  // If either is empty, no match
+  if (!normalized1 || !normalized2) {
+    return false;
+  }
+  
+  // Try removing common prefixes/suffixes that might cause issues
+  const clean1 = normalized1.toLowerCase().replace(/^(team|t)0*/, '');
+  const clean2 = normalized2.toLowerCase().replace(/^(team|t)0*/, '');
+  
+  const result = clean1 === clean2 && clean1 !== '';
+  
+  // Enhanced debug logging for troubleshooting
+  console.log('🔍 Team ID comparison debug:', {
+    original1: teamId1,
+    original2: teamId2,
     normalized1,
     normalized2,
-    base1: normalized1.replace(/^t0*/, '') || 'empty',
-    base2: normalized2.replace(/^t0*/, '') || 'empty',
+    cleaned1: clean1,
+    cleaned2: clean2,
     directMatch: normalized1 === normalized2,
-    baseMatch: normalized1.replace(/^t0*/, '') === normalized2.replace(/^t0*/, ''),
+    cleanedMatch: result,
     finalResult: result
   });
   
