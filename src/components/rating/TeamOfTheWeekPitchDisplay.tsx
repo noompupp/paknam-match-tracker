@@ -28,11 +28,11 @@ const PlayerPitchCard = ({ player, membersMap }: {
       
       {/* Player Avatar */}
       <div className="flex flex-col items-center space-y-2">
-      <div className="w-8 h-8 sm:w-10 sm:h-10">
+      <div className="w-9 h-9 sm:w-11 sm:h-11">
         <MiniPlayerAvatar
           name={player.player_name}
           imageUrl={membersMap?.get(player.player_id)?.ProfileURL || membersMap?.get(player.player_id)?.optimized_avatar_url}
-          size={32}
+          size={37}
           className={`${player.isCaptain ? 'ring-2 ring-yellow-400' : ''}`}
         />
       </div>

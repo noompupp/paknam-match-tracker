@@ -14,7 +14,7 @@ const MiniPlayerAvatar = ({
   name,
   imageUrl,
   className = "",
-  size = 28, // Smarter default for compact lists
+  size = 32, // Increased by 15% from 28
 }: MiniPlayerAvatarProps) => {
   React.useEffect(() => {
     // Small console log, can disable in prod

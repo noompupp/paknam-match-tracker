@@ -31,14 +31,14 @@ const PlayerCard = ({ player, membersMap }: {
       )}
       <CardContent className="p-3">
         <div className="text-center space-y-2">
-          <div className="w-12 h-12 mx-auto">
-            <MiniPlayerAvatar
-              name={player.player_name}
-              imageUrl={membersMap.get(player.player_id)?.ProfileURL || membersMap.get(player.player_id)?.optimized_avatar_url}
-              size={48}
-              className={`${player.isCaptain ? 'ring-2 ring-yellow-400' : ''}`}
-            />
-          </div>
+           <div className="w-14 h-14 mx-auto">
+             <MiniPlayerAvatar
+               name={player.player_name}
+               imageUrl={membersMap.get(player.player_id)?.ProfileURL || membersMap.get(player.player_id)?.optimized_avatar_url}
+               size={55}
+               className={`${player.isCaptain ? 'ring-2 ring-yellow-400' : ''}`}
+             />
+           </div>
           <div className="font-bold text-sm">{player.player_name}</div>
           <div className="text-xs text-muted-foreground">{player.team_name}</div>
           <Badge variant="outline" className="text-xs">
@@ -76,14 +76,14 @@ const CaptainOfTheWeekCard = ({ captain, membersMap }: {
         </CardTitle>
       </CardHeader>
       <CardContent className="text-center">
-        <div className="w-16 h-16 mx-auto mb-3">
-          <MiniPlayerAvatar
-            name={captain.player_name}
-            imageUrl={membersMap.get(captain.player_id)?.ProfileURL || membersMap.get(captain.player_id)?.optimized_avatar_url}
-            size={64}
-            className="ring-2 ring-blue-400"
-          />
-        </div>
+         <div className="w-18 h-18 mx-auto mb-3">
+           <MiniPlayerAvatar
+             name={captain.player_name}
+             imageUrl={membersMap.get(captain.player_id)?.ProfileURL || membersMap.get(captain.player_id)?.optimized_avatar_url}
+             size={74}
+             className="ring-2 ring-blue-400"
+           />
+         </div>
         <div className="font-bold text-xl">{captain.player_name}</div>
         <div className="text-muted-foreground">{captain.team_name} • {captain.position}</div>
         <Badge className="bg-blue-600 text-white mt-2">
@@ -171,14 +171,14 @@ const TeamOfTheWeekDisplay: React.FC<TeamOfTheWeekDisplayProps> = ({
                 </CardTitle>
               </CardHeader>
               <CardContent className="text-center">
-                <div className="w-16 h-16 mx-auto mb-3">
-                  <MiniPlayerAvatar
-                    name={totwCaptain.player_name}
-                    imageUrl={membersMap.get(totwCaptain.player_id)?.ProfileURL || membersMap.get(totwCaptain.player_id)?.optimized_avatar_url}
-                    size={64}
-                    className="ring-2 ring-yellow-400"
-                  />
-                </div>
+                 <div className="w-18 h-18 mx-auto mb-3">
+                   <MiniPlayerAvatar
+                     name={totwCaptain.player_name}
+                     imageUrl={membersMap.get(totwCaptain.player_id)?.ProfileURL || membersMap.get(totwCaptain.player_id)?.optimized_avatar_url}
+                     size={74}
+                     className="ring-2 ring-yellow-400"
+                   />
+                 </div>
                 <div className="font-bold text-xl">{totwCaptain.player_name}</div>
                 <div className="text-muted-foreground">{totwCaptain.team_name} • {totwCaptain.position}</div>
                 <div className="flex items-center justify-center space-x-2 mt-2">
