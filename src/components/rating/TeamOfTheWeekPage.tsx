@@ -7,7 +7,7 @@ import { Trophy, Settings, Users, Award, RefreshCw } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useLatestCompleteFixtures } from "@/hooks/useLatestCompleteFixtures";
 import { useHybridPlayerRatings, useApprovedPlayerRatings } from "@/hooks/useHybridPlayerRatings";
-import { selectTeamOfTheWeek, selectCaptainOfTheWeek } from "@/utils/teamOfTheWeekSelection";
+import { selectTeamOfTheWeek, selectCaptainOfTheWeek, type TeamOfTheWeekPlayer, type CaptainOfTheWeekPlayer } from "@/utils/teamOfTheWeekSelection";
 import TeamOfTheWeekDisplay from "./TeamOfTheWeekDisplay";
 import ManualTOTWSelection from "./ManualTOTWSelection";
 
@@ -44,6 +44,11 @@ const TeamOfTheWeekPage: React.FC = () => {
   const handleFixtureChange = (fixtureId: number) => {
     setSelectedFixtureId(fixtureId);
     setManualMode(false); // Reset to automatic when changing fixtures
+  };
+
+  const handleManualSelection = (totw: TeamOfTheWeekPlayer[], captain: CaptainOfTheWeekPlayer | null) => {
+    setManualTOTW(totw);
+    setManualCaptain(captain);
   };
 
   const handleToggleMode = () => {
@@ -163,14 +168,12 @@ const TeamOfTheWeekPage: React.FC = () => {
 
         <TabsContent value="manage" className="space-y-6">
           {manualMode && (
-            <ManualTOTWSelection
-              availablePlayers={approvedPlayerRatings}
-              approvedMap={approvedMap}
-              currentTOTW={manualTOTW}
-              currentCaptain={manualCaptain}
-              onTOTWChange={setManualTOTW}
-              onCaptainChange={setManualCaptain}
-            />
+          <ManualTOTWSelection
+            fixtureId={activeFixtureId}
+            onSelectionChange={handleManualSelection}
+            initialTOTW={manualTOTW}
+            initialCaptain={manualCaptain}
+          />
           )}
         </TabsContent>
 

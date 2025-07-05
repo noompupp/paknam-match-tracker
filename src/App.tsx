@@ -34,6 +34,18 @@ const AppContent = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
   const { user, loading } = useSecureAuth();
 
+  // Listen for custom navigation events
+  useEffect(() => {
+    const handleNavigation = (e: CustomEvent) => {
+      if (e.detail?.tab) {
+        setActiveTab(e.detail.tab);
+      }
+    };
+    
+    window.addEventListener('navigate', handleNavigation as EventListener);
+    return () => window.removeEventListener('navigate', handleNavigation as EventListener);
+  }, []);
+
   // Show loading screen while checking authentication
   if (loading) {
     return (

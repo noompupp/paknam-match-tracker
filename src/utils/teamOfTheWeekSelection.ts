@@ -41,28 +41,32 @@ export function selectTeamOfTheWeek(
       return 'GK';
     }
     
-    // Defender variations
+    // Defender variations - be more specific to avoid misclassification
     if (pos.includes('DF') || pos.includes('DEF') || pos.includes('DEFENDER') || 
         pos.includes('CB') || pos.includes('LB') || pos.includes('RB') || 
-        pos.includes('CENTRE-BACK') || pos.includes('FULLBACK')) {
+        pos.includes('CENTRE-BACK') || pos.includes('FULLBACK') || 
+        pos === 'CENTRE BACK' || pos === 'LEFT BACK' || pos === 'RIGHT BACK') {
       return 'DF';
+    }
+    
+    // Winger variations - check before midfielders to avoid overlap
+    if (pos.includes('WG') || pos.includes('WING') || pos.includes('LW') || 
+        pos.includes('RW') || pos.includes('LM') || pos.includes('RM') ||
+        pos === 'LEFT WING' || pos === 'RIGHT WING') {
+      return 'WG';
     }
     
     // Midfielder variations
     if (pos.includes('MF') || pos.includes('MID') || pos.includes('CM') || 
-        pos.includes('CDM') || pos.includes('CAM') || pos.includes('MIDFIELDER')) {
+        pos.includes('CDM') || pos.includes('CAM') || pos.includes('MIDFIELDER') ||
+        pos === 'CENTRAL MIDFIELD' || pos === 'CENTRE MID') {
       return 'MF';
-    }
-    
-    // Winger variations
-    if (pos.includes('WG') || pos.includes('WING') || pos.includes('LW') || 
-        pos.includes('RW') || pos.includes('LM') || pos.includes('RM')) {
-      return 'WG';
     }
     
     // Forward variations
     if (pos.includes('FW') || pos.includes('FORWARD') || pos.includes('ST') || 
-        pos.includes('STRIKER') || pos.includes('CF') || pos.includes('CENTRE-FORWARD')) {
+        pos.includes('STRIKER') || pos.includes('CF') || pos.includes('CENTRE-FORWARD') ||
+        pos === 'CENTRE FORWARD' || pos === 'STRIKER') {
       return 'FW';
     }
     

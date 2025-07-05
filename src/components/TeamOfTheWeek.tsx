@@ -277,9 +277,11 @@ const TeamOfTheWeek: React.FC = () => {
                     variant="outline" 
                     size="sm"
                     onClick={() => {
-                      // Navigate via tab system - you'll need to add this to your navigation system
-                      window.location.hash = 'team-of-the-week-manager';
-                      window.location.reload();
+                      // Navigate to team-of-the-week-manager via App navigation system
+                      const navigationEvent = new CustomEvent('navigate', { 
+                        detail: { tab: 'team-of-the-week-manager' } 
+                      });
+                      window.dispatchEvent(navigationEvent);
                     }}
                     className="flex items-center gap-2"
                   >

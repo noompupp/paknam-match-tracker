@@ -24,14 +24,14 @@ const PlayerPitchCard = ({ player }: { player: TeamOfTheWeekPlayer }) => {
       
       {/* Player Avatar */}
       <div className="flex flex-col items-center space-y-2">
-        <div className="w-8 h-8 sm:w-10 sm:h-10">
-          <MiniPlayerAvatar
-            name={player.player_name}
-            imageUrl={null}
-            size={32}
-            className={`${player.isCaptain ? 'ring-2 ring-yellow-400' : ''}`}
-          />
-        </div>
+      <div className="w-8 h-8 sm:w-10 sm:h-10">
+        <MiniPlayerAvatar
+          name={player.player_name}
+          imageUrl={null}
+          size={32}
+          className={`${player.isCaptain ? 'ring-2 ring-yellow-400' : ''}`}
+        />
+      </div>
         
         <div className="text-center space-y-1">
           <div className="font-bold text-xs leading-tight text-center" title={player.player_name}>
