@@ -5,6 +5,7 @@ import { Crown, Star } from "lucide-react";
 import type { TeamOfTheWeekPlayer } from "@/utils/teamOfTheWeekSelection";
 import { formatTeamOfTheWeekByPosition } from "@/utils/teamOfTheWeekSelection";
 import { useDeviceOrientation } from "@/hooks/useDeviceOrientation";
+import PlayerAvatar from "@/components/shared/playerAvatar/PlayerAvatar";
 
 interface TeamOfTheWeekPitchDisplayProps {
   teamOfTheWeek: TeamOfTheWeekPlayer[];
@@ -21,12 +22,17 @@ const PlayerPitchCard = ({ player }: { player: TeamOfTheWeekPlayer }) => {
         <Crown className="absolute -top-2 -right-2 h-5 w-5 text-yellow-600 fill-yellow-400 bg-white rounded-full p-0.5" />
       )}
       
-      {/* Player Avatar/Jersey Circle */}
+      {/* Player Avatar */}
       <div className="flex flex-col items-center space-y-2">
-        <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-white font-bold text-xs ${
-          player.isCaptain ? 'bg-yellow-500' : 'bg-primary'
-        }`}>
-          {player.player_name.split(' ').map(n => n[0]).join('').substring(0, 2)}
+        <div className="w-8 h-8 sm:w-10 sm:h-10">
+          <PlayerAvatar
+            playerId={player.player_id}
+            playerName={player.player_name}
+            teamId={player.team_id}
+            size="sm"
+            showFlip={false}
+            className={`${player.isCaptain ? 'ring-2 ring-yellow-400' : ''}`}
+          />
         </div>
         
         <div className="text-center space-y-1">

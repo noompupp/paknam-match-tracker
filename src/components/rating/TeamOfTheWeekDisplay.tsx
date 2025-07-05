@@ -7,6 +7,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import type { TeamOfTheWeekPlayer, CaptainOfTheWeekPlayer } from "@/utils/teamOfTheWeekSelection";
 import { formatTeamOfTheWeekByPosition } from "@/utils/teamOfTheWeekSelection";
 import TeamOfTheWeekPitchDisplay from "./TeamOfTheWeekPitchDisplay";
+import PlayerAvatar from "@/components/shared/playerAvatar/PlayerAvatar";
 
 interface TeamOfTheWeekDisplayProps {
   teamOfTheWeek: TeamOfTheWeekPlayer[];
@@ -25,6 +26,16 @@ const PlayerCard = ({ player }: { player: TeamOfTheWeekPlayer }) => {
       )}
       <CardContent className="p-3">
         <div className="text-center space-y-2">
+          <div className="w-12 h-12 mx-auto">
+            <PlayerAvatar
+              playerId={player.player_id}
+              playerName={player.player_name}
+              teamId={player.team_id}
+              size="md"
+              showFlip={false}
+              className={`${player.isCaptain ? 'ring-2 ring-yellow-400' : ''}`}
+            />
+          </div>
           <div className="font-bold text-sm">{player.player_name}</div>
           <div className="text-xs text-muted-foreground">{player.team_name}</div>
           <Badge variant="outline" className="text-xs">
@@ -59,6 +70,16 @@ const CaptainOfTheWeekCard = ({ captain }: { captain: CaptainOfTheWeekPlayer }) 
         </CardTitle>
       </CardHeader>
       <CardContent className="text-center">
+        <div className="w-16 h-16 mx-auto mb-3">
+          <PlayerAvatar
+            playerId={captain.player_id}
+            playerName={captain.player_name}
+            teamId={captain.team_id}
+            size="lg"
+            showFlip={false}
+            className="ring-2 ring-blue-400"
+          />
+        </div>
         <div className="font-bold text-xl">{captain.player_name}</div>
         <div className="text-muted-foreground">{captain.team_name} • {captain.position}</div>
         <Badge className="bg-blue-600 text-white mt-2">
@@ -130,6 +151,16 @@ const TeamOfTheWeekDisplay: React.FC<TeamOfTheWeekDisplayProps> = ({
                 </CardTitle>
               </CardHeader>
               <CardContent className="text-center">
+                <div className="w-16 h-16 mx-auto mb-3">
+                  <PlayerAvatar
+                    playerId={totwCaptain.player_id}
+                    playerName={totwCaptain.player_name}
+                    teamId={totwCaptain.team_id}
+                    size="lg"
+                    showFlip={false}
+                    className="ring-2 ring-yellow-400"
+                  />
+                </div>
                 <div className="font-bold text-xl">{totwCaptain.player_name}</div>
                 <div className="text-muted-foreground">{totwCaptain.team_name} • {totwCaptain.position}</div>
                 <div className="flex items-center justify-center space-x-2 mt-2">
