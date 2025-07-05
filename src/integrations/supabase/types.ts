@@ -449,11 +449,25 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "fk_match_events_affected_team"
+            columns: ["affected_team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["__id__"]
+          },
+          {
             foreignKeyName: "fk_match_events_fixture"
             columns: ["fixture_id"]
             isOneToOne: false
             referencedRelation: "fixtures"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_match_events_scoring_team"
+            columns: ["scoring_team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["__id__"]
           },
           {
             foreignKeyName: "fk_match_events_team"
@@ -1110,6 +1124,14 @@ export type Database = {
       is_authenticated_referee: {
         Args: Record<PropertyKey, never>
         Returns: boolean
+      }
+      log_match_event_team_mapping: {
+        Args: {
+          p_event_type: string
+          p_fixture_team_ids: Json
+          p_resolved_team_ids: Json
+        }
+        Returns: undefined
       }
       log_operation: {
         Args: {

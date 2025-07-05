@@ -29,14 +29,23 @@ export const matchEventsApi = {
   },
 
   create: async (event: Omit<MatchEvent, 'id' | 'created_at'>): Promise<MatchEvent> => {
-    console.log('🎯 matchEventsApi.create: Creating event (ENHANCED DEBUG):', {
+    console.log('🎯 matchEventsApi.create: Creating event with team ID mapping (ENHANCED DEBUG):', {
       event,
       playerName: event.player_name,
       eventType: event.event_type,
       teamId: event.team_id,
+      teamIdType: typeof event.team_id,
+      scoringTeamId: event.scoring_team_id,
+      affectedTeamId: event.affected_team_id,
       fixtureId: event.fixture_id,
       eventTime: event.event_time
     });
+    
+    // Enhanced validation before database insert
+    if (!event.team_id) {
+      console.error('❌ matchEventsApi.create: Missing team_id');
+      throw new Error('team_id is required for match events');
+    }
     
     // Check for potential duplicate protection issues
     console.log('🔍 matchEventsApi.create: Checking for existing similar events...');
@@ -59,7 +68,8 @@ export const matchEventsApi = {
             id: e.id,
             time: e.event_time,
             player: e.player_name,
-            type: e.event_type
+            type: e.event_type,
+            teamId: e.team_id
           }))
         });
       }
@@ -75,21 +85,43 @@ export const matchEventsApi = {
         .single();
 
       if (error) {
-        console.error('❌ matchEventsApi.create: Database error (DETAILED):', {
+        console.error('❌ matchEventsApi.create: Database error (TEAM ID MAPPING DEBUG):', {
           error,
           errorCode: error.code,
           errorMessage: error.message,
           errorDetails: error.details,
-          eventData: event
+          eventData: event,
+          teamIdAnalysis: {
+            teamId: event.team_id,
+            teamIdType: typeof event.team_id,
+            scoringTeamId: event.scoring_team_id,
+            affectedTeamId: event.affected_team_id,
+            isNumeric: !isNaN(Number(event.team_id)),
+            possibleIssue: 'Team ID format mismatch - check if numeric fixture team IDs are being converted to text-based team __id__ values'
+          }
         });
         throw error;
       }
 
-      console.log('✅ matchEventsApi.create: Event created successfully:', data);
+      console.log('✅ matchEventsApi.create: Event created successfully with proper team ID mapping:', {
+        eventId: data.id,
+        teamId: data.team_id,
+        scoringTeamId: data.scoring_team_id,
+        playerName: data.player_name,
+        eventType: data.event_type
+      });
+      
       // Type assertion is safe here because database CHECK constraint ensures valid event_type values
       return data as MatchEvent;
     } catch (error) {
-      console.error('❌ matchEventsApi.create: Failed to create match event:', error);
+      console.error('❌ matchEventsApi.create: Failed to create match event with team ID details:', {
+        error,
+        teamIdMappingInfo: {
+          originalTeamId: event.team_id,
+          teamIdType: typeof event.team_id,
+          suggestion: 'Ensure numeric fixture team IDs are converted to text-based team.__id__ values before database insert'
+        }
+      });
       throw error;
     }
   },
