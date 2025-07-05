@@ -41,32 +41,34 @@ export function selectTeamOfTheWeek(
       return 'GK';
     }
     
-    // Defender variations - be more specific to avoid misclassification
+    // Defender variations - more comprehensive detection
     if (pos.includes('DF') || pos.includes('DEF') || pos.includes('DEFENDER') || 
         pos.includes('CB') || pos.includes('LB') || pos.includes('RB') || 
         pos.includes('CENTRE-BACK') || pos.includes('FULLBACK') || 
-        pos === 'CENTRE BACK' || pos === 'LEFT BACK' || pos === 'RIGHT BACK') {
+        pos.includes('BACK') || pos.includes('DEFENCE') ||
+        pos === 'CENTRE BACK' || pos === 'LEFT BACK' || pos === 'RIGHT BACK' ||
+        pos === 'CENTER BACK' || pos === 'CENTERBACK' || pos === 'CENTREBACK') {
       return 'DF';
     }
     
     // Winger variations - check before midfielders to avoid overlap
     if (pos.includes('WG') || pos.includes('WING') || pos.includes('LW') || 
         pos.includes('RW') || pos.includes('LM') || pos.includes('RM') ||
-        pos === 'LEFT WING' || pos === 'RIGHT WING') {
+        pos === 'LEFT WING' || pos === 'RIGHT WING' || pos === 'WINGER') {
       return 'WG';
     }
     
     // Midfielder variations
     if (pos.includes('MF') || pos.includes('MID') || pos.includes('CM') || 
         pos.includes('CDM') || pos.includes('CAM') || pos.includes('MIDFIELDER') ||
-        pos === 'CENTRAL MIDFIELD' || pos === 'CENTRE MID') {
+        pos === 'CENTRAL MIDFIELD' || pos === 'CENTRE MID' || pos === 'CENTER MID') {
       return 'MF';
     }
     
     // Forward variations
     if (pos.includes('FW') || pos.includes('FORWARD') || pos.includes('ST') || 
         pos.includes('STRIKER') || pos.includes('CF') || pos.includes('CENTRE-FORWARD') ||
-        pos === 'CENTRE FORWARD' || pos === 'STRIKER') {
+        pos === 'CENTRE FORWARD' || pos === 'CENTER FORWARD' || pos === 'STRIKER') {
       return 'FW';
     }
     
@@ -232,11 +234,26 @@ export function selectCaptainOfTheWeek(
 export function formatTeamOfTheWeekByPosition(teamOfTheWeek: TeamOfTheWeekPlayer[]) {
   const normalizePosition = (position: string): string => {
     const pos = position.toUpperCase().trim();
-    if (pos.includes('GK') || pos.includes('GOALKEEPER')) return 'GK';
-    if (pos.includes('DF') || pos.includes('DEF') || pos.includes('CB') || pos.includes('LB') || pos.includes('RB')) return 'DF';
-    if (pos.includes('MF') || pos.includes('MID') || pos.includes('CM') || pos.includes('CDM') || pos.includes('CAM')) return 'MF';
-    if (pos.includes('WG') || pos.includes('WING') || pos.includes('LW') || pos.includes('RW') || pos.includes('LM') || pos.includes('RM')) return 'WG';
-    if (pos.includes('FW') || pos.includes('FORWARD') || pos.includes('ST') || pos.includes('CF')) return 'FW';
+    if (pos.includes('GK') || pos.includes('GOALKEEPER') || pos.includes('KEEPER')) return 'GK';
+    if (pos.includes('DF') || pos.includes('DEF') || pos.includes('DEFENDER') || 
+        pos.includes('CB') || pos.includes('LB') || pos.includes('RB') || 
+        pos.includes('CENTRE-BACK') || pos.includes('FULLBACK') || 
+        pos.includes('BACK') || pos.includes('DEFENCE') ||
+        pos === 'CENTRE BACK' || pos === 'LEFT BACK' || pos === 'RIGHT BACK' ||
+        pos === 'CENTER BACK' || pos === 'CENTERBACK' || pos === 'CENTREBACK') return 'DF';
+    if ((pos.includes('MF') || pos.includes('MID') || pos.includes('CM') || 
+         pos.includes('CDM') || pos.includes('CAM') || pos.includes('MIDFIELDER') ||
+         pos === 'CENTRAL MIDFIELD' || pos === 'CENTRE MID' || pos === 'CENTER MID') &&
+         // Exclude wingers from midfielders
+         !(pos.includes('WG') || pos.includes('WING') || pos.includes('LW') || 
+           pos.includes('RW') || pos.includes('LM') || pos.includes('RM') ||
+           pos === 'LEFT WING' || pos === 'RIGHT WING' || pos === 'WINGER')) return 'MF';
+    if (pos.includes('WG') || pos.includes('WING') || pos.includes('LW') || 
+        pos.includes('RW') || pos.includes('LM') || pos.includes('RM') ||
+        pos === 'LEFT WING' || pos === 'RIGHT WING' || pos === 'WINGER') return 'WG';
+    if (pos.includes('FW') || pos.includes('FORWARD') || pos.includes('ST') || 
+        pos.includes('CF') || pos.includes('STRIKER') || pos.includes('CENTRE-FORWARD') ||
+        pos === 'CENTRE FORWARD' || pos === 'CENTER FORWARD') return 'FW';
     return 'MF'; // Default fallback
   };
 

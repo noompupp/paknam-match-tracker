@@ -83,10 +83,39 @@ const SimplifiedTOTWSelection: React.FC<SimplifiedTOTWSelectionProps> = ({
 
   // Position categories - cleaner organization with proper filtering
   const positionCategories = {
-    'GK': allPlayers.filter(p => p.position.toUpperCase().includes('GK') || p.position.toUpperCase().includes('GOALKEEPER')),
-    'DF': allPlayers.filter(p => p.position.toUpperCase().includes('DF') || p.position.toUpperCase().includes('DEF') || p.position.toUpperCase().includes('CB') || p.position.toUpperCase().includes('LB') || p.position.toUpperCase().includes('RB')),
-    'MF': allPlayers.filter(p => p.position.toUpperCase().includes('MF') || p.position.toUpperCase().includes('MID') || p.position.toUpperCase().includes('CM') || p.position.toUpperCase().includes('CDM') || p.position.toUpperCase().includes('CAM')),
-    'FW': allPlayers.filter(p => p.position.toUpperCase().includes('FW') || p.position.toUpperCase().includes('FORWARD') || p.position.toUpperCase().includes('ST') || p.position.toUpperCase().includes('CF') || p.position.toUpperCase().includes('STRIKER'))
+    'GK': allPlayers.filter(p => {
+      const pos = p.position.toUpperCase();
+      return pos.includes('GK') || pos.includes('GOALKEEPER') || pos.includes('KEEPER');
+    }),
+    'DF': allPlayers.filter(p => {
+      const pos = p.position.toUpperCase();
+      return pos.includes('DF') || pos.includes('DEF') || pos.includes('DEFENDER') || 
+             pos.includes('CB') || pos.includes('LB') || pos.includes('RB') || 
+             pos.includes('CENTRE-BACK') || pos.includes('FULLBACK') || 
+             pos.includes('BACK') || pos.includes('DEFENCE') ||
+             pos === 'CENTRE BACK' || pos === 'LEFT BACK' || pos === 'RIGHT BACK' ||
+             pos === 'CENTER BACK' || pos === 'CENTERBACK' || pos === 'CENTREBACK';
+    }),
+    'MF': allPlayers.filter(p => {
+      const pos = p.position.toUpperCase();
+      return (pos.includes('MF') || pos.includes('MID') || pos.includes('CM') || 
+              pos.includes('CDM') || pos.includes('CAM') || pos.includes('MIDFIELDER') ||
+              pos === 'CENTRAL MIDFIELD' || pos === 'CENTRE MID' || pos === 'CENTER MID') &&
+              // Exclude wingers from midfielders
+              !(pos.includes('WG') || pos.includes('WING') || pos.includes('LW') || 
+                pos.includes('RW') || pos.includes('LM') || pos.includes('RM') ||
+                pos === 'LEFT WING' || pos === 'RIGHT WING' || pos === 'WINGER');
+    }),
+    'FW': allPlayers.filter(p => {
+      const pos = p.position.toUpperCase();
+      return pos.includes('FW') || pos.includes('FORWARD') || pos.includes('ST') || 
+             pos.includes('CF') || pos.includes('STRIKER') || pos.includes('CENTRE-FORWARD') ||
+             pos === 'CENTRE FORWARD' || pos === 'CENTER FORWARD' ||
+             // Include wingers with forwards for simplicity in 7-a-side
+             pos.includes('WG') || pos.includes('WING') || pos.includes('LW') || 
+             pos.includes('RW') || pos.includes('LM') || pos.includes('RM') ||
+             pos === 'LEFT WING' || pos === 'RIGHT WING' || pos === 'WINGER';
+    })
   };
 
   const handlePlayerAdd = (playerId: string) => {
