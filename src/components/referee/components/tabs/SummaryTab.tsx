@@ -1,10 +1,14 @@
 
 import EnhancedMatchSummary from "../../EnhancedMatchSummary";
 import MatchEvents from "../../MatchEvents";
+import ManualEventForm from "../ManualEventForm";
+import EventManagementList from "../EventManagementList";
 import { ComponentPlayer } from "../../hooks/useRefereeState";
 import { useDataValidation } from "@/hooks/useDataValidation";
 import UnifiedMatchTimer from "../UnifiedMatchTimer";
 import { useMatchStore } from "@/stores/useMatchStore";
+import { useMatchEvents } from "@/hooks/useMatchEvents";
+import { useState } from "react";
 
 interface SummaryTabProps {
   selectedFixtureData: any;
@@ -52,6 +56,10 @@ const SummaryTab = ({
 
   // Get live scores from match store (local state is prioritized after reset)
   const { homeScore, awayScore } = useMatchStore();
+  
+  // Fetch match events for management
+  const { data: matchEvents = [] } = useMatchEvents(selectedFixtureData?.id);
+  const [editingEvent, setEditingEvent] = useState(null);
 
   return (
     <div className="space-y-6">

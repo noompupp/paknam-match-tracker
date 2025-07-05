@@ -52,6 +52,51 @@ export const matchEventsApi = {
     }
   },
 
+  update: async (eventId: number, updates: Partial<Omit<MatchEvent, 'id' | 'created_at'>>): Promise<MatchEvent> => {
+    console.log('🎯 matchEventsApi.update: Updating event:', { eventId, updates });
+    
+    try {
+      const { data, error } = await supabase
+        .from('match_events')
+        .update(updates)
+        .eq('id', eventId)
+        .select()
+        .single();
+
+      if (error) {
+        console.error('🎯 matchEventsApi.update: Database error:', error);
+        throw error;
+      }
+
+      console.log('🎯 matchEventsApi.update: Event updated successfully:', data);
+      return data as MatchEvent;
+    } catch (error) {
+      console.error('🎯 matchEventsApi.update: Failed to update match event:', error);
+      throw error;
+    }
+  },
+
+  delete: async (eventId: number): Promise<void> => {
+    console.log('🎯 matchEventsApi.delete: Deleting event:', eventId);
+    
+    try {
+      const { error } = await supabase
+        .from('match_events')
+        .delete()
+        .eq('id', eventId);
+
+      if (error) {
+        console.error('🎯 matchEventsApi.delete: Database error:', error);
+        throw error;
+      }
+
+      console.log('🎯 matchEventsApi.delete: Event deleted successfully');
+    } catch (error) {
+      console.error('🎯 matchEventsApi.delete: Failed to delete match event:', error);
+      throw error;
+    }
+  },
+
   updatePlayerStats: async (playerId: number, goals?: number, assists?: number) => {
     console.log('🎯 matchEventsApi.updatePlayerStats: Updating stats for player:', { playerId, goals, assists });
     

@@ -62,13 +62,16 @@ export interface Fixture {
 export interface MatchEvent {
   id: number;
   fixture_id: number;
-  event_type: 'goal' | 'yellow_card' | 'red_card' | 'substitution' | 'other';
+  event_type: 'goal' | 'assist' | 'yellow_card' | 'red_card' | 'substitution' | 'other';
   player_name: string;
   team_id: string; // Keep as string
   event_time: number;
   description: string;
   created_at: string;
   card_type?: 'yellow' | 'red';
+  is_own_goal: boolean;
+  scoring_team_id?: string;
+  affected_team_id?: string;
 }
 
 export interface PlayerTime {

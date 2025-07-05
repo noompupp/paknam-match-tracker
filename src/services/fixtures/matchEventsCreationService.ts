@@ -48,7 +48,8 @@ export const createGoalEventsWithDuplicateCheck = async (
             player_name: 'Unknown Player',
             team_id: homeTeam.id,
             event_time: 0,
-            description: `Goal by Unknown Player (${homeTeam.name})`
+            description: `Goal by Unknown Player (${homeTeam.name})`,
+            is_own_goal: false
           });
         }
       }
@@ -76,7 +77,8 @@ export const createGoalEventsWithDuplicateCheck = async (
             player_name: 'Unknown Player',
             team_id: awayTeam.id,
             event_time: 0,
-            description: `Goal by Unknown Player (${awayTeam.name})`
+            description: `Goal by Unknown Player (${awayTeam.name})`,
+            is_own_goal: false
           });
         }
       }
@@ -130,7 +132,8 @@ export const createCardEvent = async (
       team_id: teamId,
       event_time: eventTime,
       description: `${cardType} card for ${playerName}`,
-      card_type: cardType
+      card_type: cardType,
+      is_own_goal: false
     };
 
     const { error } = await supabase

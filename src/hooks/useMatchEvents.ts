@@ -44,6 +44,32 @@ export const useCreateMatchEvent = () => {
   });
 };
 
+export const useUpdateMatchEvent = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: ({ eventId, updates }: { eventId: number; updates: Partial<Omit<MatchEvent, 'id' | 'created_at'>> }) =>
+      matchEventsApi.update(eventId, updates),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['matchEvents', data.fixture_id] });
+      queryClient.invalidateQueries({ queryKey: ['fixtures'] });
+    },
+  });
+};
+
+export const useDeleteMatchEvent = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: ({ eventId, fixtureId }: { eventId: number; fixtureId: number }) => 
+      matchEventsApi.delete(eventId),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['matchEvents', variables.fixtureId] });
+      queryClient.invalidateQueries({ queryKey: ['fixtures'] });
+    },
+  });
+};
+
 export const useUpdatePlayerStats = () => {
   const queryClient = useQueryClient();
   
