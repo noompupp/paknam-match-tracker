@@ -48,12 +48,7 @@ const ManualEventForm = ({
       teamId,
       teamIdType: typeof teamId,
       teamsAvailable: !!teams,
-      teamsCount: teams?.length || 0,
-      sampleTeam: teams?.[0] ? {
-        id: teams[0].id,
-        __id__: teams[0].__id__,
-        name: teams[0].name
-      } : null
+      teamsCount: teams?.length || 0
     });
     
     if (!teams || !teamId) {
@@ -61,18 +56,13 @@ const ManualEventForm = ({
       return `Team ${teamId}`;
     }
     
-    // CRITICAL FIX: Handle numeric team ID to string __id__ mapping
+    // CRITICAL FIX: Handle numeric fixture team ID to text-based team __id__ mapping
     const team = teams.find(t => {
-      // Try exact __id__ match first (preferred)
+      // First try direct __id__ match
       if (t.__id__ === teamId) return true;
       
-      // Try numeric ID to string conversion match
+      // CRITICAL: Handle numeric fixture team IDs by matching with team.id
       if (t.id?.toString() === teamId) return true;
-      
-      // Try reverse - if teamId is numeric, convert __id__ to number for comparison
-      if (!isNaN(Number(teamId)) && t.__id__ && !isNaN(Number(t.__id__))) {
-        return Number(t.__id__) === Number(teamId);
-      }
       
       // Fallback to name match
       if (t.name === teamId) return true;
@@ -85,12 +75,30 @@ const ManualEventForm = ({
       foundTeam: !!team,
       teamName: team?.name,
       teamId,
-      matchedTeam: team ? {
-        id: team.id,
-        __id__: team.__id__,
-        name: team.name
-      } : null,
       result
+    });
+    
+    return result;
+  };
+
+  // CRITICAL FIX: Get the text-based team __id__ for database operations
+  const getTeamIdForDatabase = (fixtureTeamId: string) => {
+    if (!teams || !fixtureTeamId) return fixtureTeamId;
+    
+    const team = teams.find(t => {
+      // Match numeric fixture team ID with team.id
+      if (t.id?.toString() === fixtureTeamId) return true;
+      // Direct __id__ match
+      if (t.__id__ === fixtureTeamId) return true;
+      return false;
+    });
+    
+    const result = team?.__id__ || fixtureTeamId;
+    console.log('🏷️ ManualEventForm - getTeamIdForDatabase:', {
+      fixtureTeamId,
+      foundTeam: !!team,
+      teamName: team?.name,
+      resultId: result
     });
     
     return result;
@@ -205,19 +213,33 @@ const ManualEventForm = ({
     }
 
     try {
+      // CRITICAL FIX: Convert fixture team IDs to database-compatible team IDs
+      const databaseTeamId = getTeamIdForDatabase(teamId);
+      const databaseHomeTeamId = getTeamIdForDatabase(homeTeamId);
+      const databaseAwayTeamId = getTeamIdForDatabase(awayTeamId);
+      
+      console.log('🎯 ManualEventForm - Creating event with mapped team IDs:', {
+        originalTeamId: teamId,
+        databaseTeamId,
+        originalHomeTeamId: homeTeamId,
+        databaseHomeTeamId,
+        originalAwayTeamId: awayTeamId,
+        databaseAwayTeamId
+      });
+
       const eventData: Omit<MatchEvent, 'id' | 'created_at'> = {
         fixture_id: fixtureId,
         event_type: eventType as any,
         player_name: playerName,
-        team_id: teamId,
+        team_id: databaseTeamId, // Use mapped team ID
         event_time: eventTime,
         description: description || `${eventType} by ${playerName}`,
         card_type: eventType.includes('card') ? (cardType as 'yellow' | 'red') : null,
         is_own_goal: eventType === 'goal' ? isOwnGoal : false,
         scoring_team_id: eventType === 'goal' && isOwnGoal 
-          ? (teamId === homeTeamId ? awayTeamId : homeTeamId)
-          : teamId,
-        affected_team_id: teamId
+          ? (databaseTeamId === databaseHomeTeamId ? databaseAwayTeamId : databaseHomeTeamId)
+          : databaseTeamId,
+        affected_team_id: databaseTeamId
       };
 
       await createEvent.mutateAsync(eventData);
