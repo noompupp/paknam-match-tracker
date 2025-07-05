@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Clock } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { compareTeamIds } from "../utils/teamMatching";
 
 interface TimelineEvent {
   id: string | number;
@@ -79,7 +80,18 @@ const MirroredMatchTimeline = ({
     ...cards.map(card => {
       // Determine which team this card belongs to - handle both teamId and team_id
       const cardTeamId = card.teamId || card.team_id;
-      const isHomeTeamCard = cardTeamId === fixture.home_team_id;
+      const isHomeTeamCard = compareTeamIds(cardTeamId, fixture.home_team_id);
+      
+      // Debug card team matching
+      console.log('🎯 Card team matching:', {
+        cardId: card.id,
+        cardTeamId,
+        fixtureHomeTeamId: fixture.home_team_id,
+        fixtureAwayTeamId: fixture.away_team_id,
+        isHomeTeamCard,
+        playerName: getCardPlayerName(card),
+        cardType: getCardType(card)
+      });
       
       return {
         id: card.id,
@@ -261,8 +273,22 @@ const MirroredMatchTimeline = ({
 
             {/* Timeline Events with Fixed Grid Constraints */}
             {allEvents.map((event) => {
-              const isHomeEvent = event.teamId === fixture.home_team_id;
-              const isAwayEvent = event.teamId === fixture.away_team_id;
+              const isHomeEvent = compareTeamIds(event.teamId, fixture.home_team_id);
+              const isAwayEvent = compareTeamIds(event.teamId, fixture.away_team_id);
+
+              // Debug event team matching
+              if (event.type.includes('card')) {
+                console.log('🎯 Event rendering team matching:', {
+                  eventId: event.id,
+                  eventType: event.type,
+                  eventTeamId: event.teamId,
+                  fixtureHomeTeamId: fixture.home_team_id,
+                  fixtureAwayTeamId: fixture.away_team_id,
+                  isHomeEvent,
+                  isAwayEvent,
+                  playerName: event.playerName
+                });
+              }
 
               return (
                 <div key={`timeline-${event.type}-${event.id}`} className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
