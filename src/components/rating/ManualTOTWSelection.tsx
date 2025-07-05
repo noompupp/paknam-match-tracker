@@ -38,6 +38,11 @@ const ManualTOTWSelection: React.FC<ManualTOTWSelectionProps> = ({
   const { data: approvedRatings } = useApprovedPlayerRatings(fixtureId);
   const { data: weeklyPerformance } = useWeeklyPlayerPerformance(weeklyTotwId);
 
+  // Create approvedMap for fixture-based data
+  const approvedMap = new Map(
+    (approvedRatings || []).map(rating => [rating.player_id, rating])
+  );
+
   // Determine data source and transform for consistent interface
   const availablePlayers = weeklyTotwId && weeklyPerformance 
     ? weeklyPerformance.map(wp => ({
@@ -47,19 +52,28 @@ const ManualTOTWSelection: React.FC<ManualTOTWSelectionProps> = ({
         team_name: wp.team_name,
         position: wp.position,
         rating_data: {
-          final_rating: wp.weighted_final_rating,
+          player_id: wp.player_id,
+          player_name: wp.player_name,
+          team_id: wp.team_id,
+          position: wp.position,
+          minutes_played: wp.total_minutes,
+          match_result: 'weekly_aggregate',
+          fpl_points: 0,
           fpl_rating: wp.average_fpl_rating,
-          participation_rating: wp.average_participation_rating
+          participation_rating: wp.average_participation_rating,
+          final_rating: wp.weighted_final_rating,
+          rating_breakdown: {
+            goals: wp.total_goals,
+            assists: wp.total_assists,
+            cards: wp.total_cards,
+            goals_conceded: 0,
+            clean_sheet_eligible: ['GK', 'DF'].includes(wp.position),
+          }
         }
       })).sort((a, b) => b.rating_data.final_rating - a.rating_data.final_rating)
-    : (() => {
-        const approvedMap = new Map(
-          (approvedRatings || []).map(rating => [rating.player_id, rating])
-        );
-        return (hybridRatings || []).filter(rating => 
-          approvedMap.has(rating.player_id)
-        ).sort((a, b) => b.rating_data.final_rating - a.rating_data.final_rating);
-      })();
+    : (hybridRatings || []).filter(rating => 
+        approvedMap.has(rating.player_id)
+      ).sort((a, b) => b.rating_data.final_rating - a.rating_data.final_rating);
 
   const handlePlayerToggle = (playerId: number) => {
     const newSelected = new Set(selectedPlayers);
@@ -90,7 +104,7 @@ const ManualTOTWSelection: React.FC<ManualTOTWSelectionProps> = ({
       .map(player => ({
         ...player,
         isCaptain: player.player_id === captainId,
-        approvedRating: approvedMap.get(player.player_id)
+        approvedRating: weeklyTotwId ? undefined : approvedMap.get(player.player_id)
       }));
 
     onSelectionChange(selectedTOTW, null); // Manual selection doesn't affect captain of the week

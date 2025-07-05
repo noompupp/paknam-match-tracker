@@ -324,6 +324,7 @@ const TeamOfTheWeekPage: React.FC = () => {
           {manualMode && (
             <ManualTOTWSelection
               fixtureId={viewMode === 'fixture' ? activeFixtureId : null}
+              weeklyTotwId={viewMode === 'weekly' ? currentWeeklyTOTW?.id : null}
               onSelectionChange={handleManualSelection}
               initialTOTW={manualTOTW}
               initialCaptain={manualCaptain}
