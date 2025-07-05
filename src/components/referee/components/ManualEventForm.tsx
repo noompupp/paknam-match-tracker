@@ -9,6 +9,7 @@ import { Switch } from "@/components/ui/switch";
 import { Plus, Clock } from "lucide-react";
 import { useCreateMatchEvent } from "@/hooks/useMatchEvents";
 import { useToast } from "@/hooks/use-toast";
+import { useTeams } from "@/hooks/useTeams";
 import { MatchEvent } from "@/types/database";
 
 interface ManualEventFormProps {
@@ -39,6 +40,24 @@ const ManualEventForm = ({
 
   const createEvent = useCreateMatchEvent();
   const { toast } = useToast();
+  const { data: teams } = useTeams();
+
+  // Helper function to get team name by ID
+  const getTeamName = (teamId: string) => {
+    const team = teams?.find(t => t.__id__ === teamId);
+    return team?.name || `Team ${teamId}`;
+  };
+
+  // Get players for selected team, or all players if no team selected
+  const availablePlayers = teamId 
+    ? allPlayers.filter(p => p.team_id === teamId)
+    : allPlayers;
+
+  // Reset player selection when team changes
+  const handleTeamChange = (newTeamId: string) => {
+    setTeamId(newTeamId);
+    setPlayerName(""); // Reset player selection
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -95,8 +114,6 @@ const ManualEventForm = ({
     }
   };
 
-  const teamPlayers = allPlayers.filter(p => p.team_id === teamId);
-
   return (
     <Card className="w-full">
       <CardHeader>
@@ -130,13 +147,13 @@ const ManualEventForm = ({
 
               <div className="space-y-2">
                 <Label htmlFor="team">Team *</Label>
-                <Select value={teamId} onValueChange={setTeamId}>
+                <Select value={teamId} onValueChange={handleTeamChange}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select team" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value={homeTeamId}>Home Team</SelectItem>
-                    <SelectItem value={awayTeamId}>Away Team</SelectItem>
+                    <SelectItem value={homeTeamId}>{getTeamName(homeTeamId)}</SelectItem>
+                    <SelectItem value={awayTeamId}>{getTeamName(awayTeamId)}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -145,26 +162,24 @@ const ManualEventForm = ({
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="player">Player *</Label>
-                {teamPlayers.length > 0 ? (
-                  <Select value={playerName} onValueChange={setPlayerName}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select player" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {teamPlayers.map((player) => (
+                <Select value={playerName} onValueChange={setPlayerName}>
+                  <SelectTrigger>
+                    <SelectValue placeholder={teamId ? "Select player" : "Select a team first"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availablePlayers.length > 0 ? (
+                      availablePlayers.map((player) => (
                         <SelectItem key={player.id} value={player.name}>
                           {player.name}
                         </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                ) : (
-                  <Input
-                    value={playerName}
-                    onChange={(e) => setPlayerName(e.target.value)}
-                    placeholder="Enter player name"
-                  />
-                )}
+                      ))
+                    ) : (
+                      <SelectItem value="" disabled>
+                        {teamId ? "No players found" : "Select a team first"}
+                      </SelectItem>
+                    )}
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="space-y-2">
