@@ -9,8 +9,8 @@ export const normalizeId = (id: any): string => {
 
 export const transformFixture = (fixture: any): Fixture => ({
   id: fixture.id || 0,
-  home_team_id: fixture.home_team?.id || 0,
-  away_team_id: fixture.away_team?.id || 0,
+  home_team_id: fixture.home_team_id || '',
+  away_team_id: fixture.away_team_id || '',
   match_date: fixture.match_date || fixture.date?.toString() || '',
   match_time: fixture.match_time?.toString() || fixture.time?.toString() || '',
   home_score: fixture.home_score,
