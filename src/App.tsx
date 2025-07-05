@@ -17,6 +17,8 @@ import Fixtures from "@/components/Fixtures";
 import Results from "@/components/Results";
 import RefereeToolsContainer from "@/components/referee/RefereeToolsContainer";
 import TeamOfTheWeek from "@/components/TeamOfTheWeek";
+// Add team-of-the-week-manager route to the App.tsx system
+import TeamOfTheWeekPage from "@/components/rating/TeamOfTheWeekPage";
 
 // Create a client
 const queryClient = new QueryClient({
@@ -80,6 +82,14 @@ const AppContent = () => {
           <RoleGuard requiredRole="referee_rater">
             <React.Suspense fallback={<div>Loading...</div>}>
               <TeamOfTheWeek />
+            </React.Suspense>
+          </RoleGuard>
+        );
+      case "team-of-the-week-manager":
+        return (
+          <RoleGuard requiredRole="rater">
+            <React.Suspense fallback={<div>Loading...</div>}>
+              <TeamOfTheWeekPage />
             </React.Suspense>
           </RoleGuard>
         );

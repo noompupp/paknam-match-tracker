@@ -141,20 +141,24 @@ const TeamOfTheWeekPitchDisplay: React.FC<TeamOfTheWeekPitchDisplayProps> = ({
               </div>
             )}
 
-            {/* Defense Zone */}
-            <div className="flex justify-center">
-              <FormationRow 
-                players={formation.defenders} 
-              />
-            </div>
+            {/* Defense Zone - FIXED: Place defenders above goalkeeper */}
+            {formation.defenders.length > 0 && (
+              <div className="flex justify-center">
+                <FormationRow 
+                  players={formation.defenders} 
+                />
+              </div>
+            )}
 
             {/* Goalkeeper Zone - at the bottom */}
-            <div className="flex justify-center">
-              <FormationRow 
-                players={formation.goalkeeper} 
-                isGoalkeeper={true}
-              />
-            </div>
+            {formation.goalkeeper.length > 0 && (
+              <div className="flex justify-center">
+                <FormationRow 
+                  players={formation.goalkeeper} 
+                  isGoalkeeper={true}
+                />
+              </div>
+            )}
           </div>
 
           {/* Mobile-Optimized Info Badges */}

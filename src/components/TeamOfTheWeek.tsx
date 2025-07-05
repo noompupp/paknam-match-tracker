@@ -19,8 +19,10 @@ import {
   type PlayerRatingRow,
   type ApprovedRating
 } from "@/hooks/useHybridPlayerRatings";
-import { selectTeamOfTheWeek, selectCaptainOfTheWeek } from "@/utils/teamOfTheWeekSelection";
+import { selectTeamOfTheWeek, selectCaptainOfTheWeek } from "@/utils/teamOfTheWeekSelection";  
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { Settings } from "lucide-react";
 
 const TeamOfTheWeek: React.FC = () => {
   const { data: fixtures, isLoading, error } = useLatestCompleteFixtures();
@@ -259,14 +261,32 @@ const TeamOfTheWeek: React.FC = () => {
             </TabsContent>
 
             <TabsContent value="approved" className="space-y-4">
-              <div className="flex items-center space-x-2 mb-4">
-                <Trophy className="h-5 w-5 text-yellow-600" />
-                <h3 className="text-lg font-semibold">
-                  {t("rating.teamOfTheWeek")}
-                </h3>
-                <span className="text-sm text-muted-foreground">
-                  (7-a-side League)
-                </span>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2 mb-4">
+                  <Trophy className="h-5 w-5 text-yellow-600" />
+                  <h3 className="text-lg font-semibold">
+                    {t("rating.teamOfTheWeek")}
+                  </h3>
+                  <span className="text-sm text-muted-foreground">
+                    (7-a-side League)
+                  </span>
+                </div>
+                
+                {canApprove && (
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => {
+                      // Navigate via tab system - you'll need to add this to your navigation system
+                      window.location.hash = 'team-of-the-week-manager';
+                      window.location.reload();
+                    }}
+                    className="flex items-center gap-2"
+                  >
+                    <Settings className="h-4 w-4" />
+                    Manage TOTW
+                  </Button>
+                )}
               </div>
 
               <TeamOfTheWeekDisplay 

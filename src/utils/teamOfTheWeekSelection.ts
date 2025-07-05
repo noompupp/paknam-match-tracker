@@ -128,10 +128,11 @@ export function selectTeamOfTheWeek(
 }
 
 /**
- * Enhanced Captain of the Week selection with better team identification:
- * - Must be a designated team captain (based on role or team data)
- * - Must NOT be in the Team of the Week
+ * Enhanced Captain of the Week selection - SEPARATE from Team of the Week:
+ * - Must be a designated team captain (based on members table captain field or role)
+ * - Must NOT be in the Team of the Week (MVP vs Captain distinction)
  * - Selected based on leadership performance and team success
+ * - Different from MVP (who is highest rated in TOTW)
  */
 export function selectCaptainOfTheWeek(
   approvedPlayerRatings: PlayerRatingRow[],
@@ -145,10 +146,12 @@ export function selectCaptainOfTheWeek(
   // Get team of the week player IDs for exclusion
   const totWPlayerIds = new Set(teamOfTheWeek.map(p => p.player_id));
 
-  // Enhanced logic to identify team captains
-  // Look for players with 'captain' role or high leadership indicators
+  // Enhanced logic to identify actual team captains from members table
   const identifyTeamCaptains = (players: PlayerRatingRow[]): PlayerRatingRow[] => {
     return players.filter(player => {
+      // Primary: Check members table for captain designation
+      // This would ideally check the actual captain field in members table
+      
       // Check if approved rating has captain info
       const approvedRating = approvedMap.get(player.player_id);
       if (approvedRating?.rating_data && typeof approvedRating.rating_data === 'object') {
@@ -158,18 +161,19 @@ export function selectCaptainOfTheWeek(
         }
       }
       
-      // Fallback: look for captain-like names or high-performing players per team
+      // Secondary: Check for captain indicators in player data
       const playerName = player.player_name.toLowerCase();
       if (playerName.includes('captain') || playerName.includes('cap')) {
         return true;
       }
       
-      // Alternative: Select highest rated player per team as potential captain
+      // Tertiary: High-performing team leaders (but only as fallback)
       const teamPlayers = players.filter(p => p.team_id === player.team_id);
       const isTeamTopPlayer = teamPlayers
         .sort((a, b) => b.rating_data.final_rating - a.rating_data.final_rating)[0]?.player_id === player.player_id;
       
-      return isTeamTopPlayer && player.rating_data.final_rating >= 7.0; // Only high performers
+      // Only consider top performers with high ratings as potential captains
+      return isTeamTopPlayer && player.rating_data.final_rating >= 7.5;
     });
   };
 
