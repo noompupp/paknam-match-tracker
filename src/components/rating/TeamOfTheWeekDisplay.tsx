@@ -146,13 +146,13 @@ const TeamOfTheWeekDisplay: React.FC<TeamOfTheWeekDisplayProps> = ({
   return (
     <div className="space-y-6">
       {/* Header */}
-      <Card className="border-yellow-200 bg-gradient-to-r from-yellow-50 to-orange-50">
+      <Card className="border-yellow-300 bg-gradient-to-r from-yellow-100 via-yellow-50 to-orange-100 shadow-md">
         <CardHeader className="text-center pb-3">
-          <CardTitle className="flex items-center justify-center space-x-2">
-            <Trophy className="h-6 w-6 text-yellow-600" />
-            <span>{t("rating.teamOfTheWeek")}</span>
+          <CardTitle className="flex items-center justify-center space-x-2 text-yellow-800">
+            <Trophy className="h-6 w-6 text-yellow-700" />
+            <span className="font-bold">{t("rating.teamOfTheWeek")}</span>
           </CardTitle>
-          <div className="text-sm text-muted-foreground">
+          <div className="text-sm text-yellow-700 font-medium">
             7-a-side Formation • {teamOfTheWeek.length} Players Selected
           </div>
         </CardHeader>
@@ -163,11 +163,11 @@ const TeamOfTheWeekDisplay: React.FC<TeamOfTheWeekDisplayProps> = ({
         <div className="lg:col-span-2 space-y-4">
           {/* TOTW Captain Highlight */}
           {totwCaptain && (
-            <Card className="border-yellow-400 bg-gradient-to-r from-yellow-100 to-orange-100">
+            <Card className="border-yellow-500 bg-gradient-to-r from-yellow-200 via-yellow-100 to-orange-200 shadow-lg">
               <CardHeader className="pb-2">
-                <CardTitle className="text-center flex items-center justify-center space-x-2 text-lg">
-                  <Crown className="h-5 w-5 text-yellow-600" />
-                  <span>TOTW {t('rating.captain')}</span>
+                <CardTitle className="text-center flex items-center justify-center space-x-2 text-lg text-yellow-800">
+                  <Crown className="h-5 w-5 text-yellow-700" />
+                  <span className="font-bold">TOTW {t('rating.captain')}</span>
                 </CardTitle>
               </CardHeader>
               <CardContent className="text-center">
@@ -176,14 +176,14 @@ const TeamOfTheWeekDisplay: React.FC<TeamOfTheWeekDisplayProps> = ({
                      name={totwCaptain.player_name}
                      imageUrl={membersMap.get(totwCaptain.player_id)?.ProfileURL || membersMap.get(totwCaptain.player_id)?.optimized_avatar_url}
                      size={74}
-                     className="ring-2 ring-yellow-400"
+                     className="ring-2 ring-yellow-500"
                    />
                  </div>
-                <div className="font-bold text-xl">{totwCaptain.player_name}</div>
-                <div className="text-muted-foreground">{totwCaptain.team_name} • {totwCaptain.position}</div>
+                <div className="font-bold text-xl text-yellow-900">{totwCaptain.player_name}</div>
+                <div className="text-yellow-700 font-medium">{totwCaptain.team_name} • {totwCaptain.position}</div>
                 <div className="flex items-center justify-center space-x-2 mt-2">
-                  <Star className="h-4 w-4 text-yellow-500 fill-current" />
-                  <span className="font-bold text-green-600 text-lg">
+                  <Star className="h-4 w-4 text-yellow-600 fill-current" />
+                  <span className="font-bold text-green-700 text-lg">
                     {totwCaptain.rating_data.final_rating.toFixed(2)}
                   </span>
                 </div>

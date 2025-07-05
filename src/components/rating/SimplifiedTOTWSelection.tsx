@@ -81,7 +81,7 @@ const SimplifiedTOTWSelection: React.FC<SimplifiedTOTWSelectionProps> = ({
     },
   });
 
-  // Position categories - cleaner organization with proper filtering
+  // Position categories - cleaner organization with proper filtering including defensive midfielders
   const positionCategories = {
     'GK': allPlayers.filter(p => {
       const pos = p.position.toUpperCase();
@@ -100,7 +100,8 @@ const SimplifiedTOTWSelection: React.FC<SimplifiedTOTWSelectionProps> = ({
       const pos = p.position.toUpperCase();
       return (pos.includes('MF') || pos.includes('MID') || pos.includes('CM') || 
               pos.includes('CDM') || pos.includes('CAM') || pos.includes('MIDFIELDER') ||
-              pos === 'CENTRAL MIDFIELD' || pos === 'CENTRE MID' || pos === 'CENTER MID') &&
+              pos === 'CENTRAL MIDFIELD' || pos === 'CENTRE MID' || pos === 'CENTER MID' ||
+              pos.includes('DM') || pos.includes('DEFENSIVE MID')) &&
               // Exclude wingers from midfielders
               !(pos.includes('WG') || pos.includes('WING') || pos.includes('LW') || 
                 pos.includes('RW') || pos.includes('LM') || pos.includes('RM') ||

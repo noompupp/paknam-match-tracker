@@ -14,7 +14,7 @@ const MiniPlayerAvatar = ({
   name,
   imageUrl,
   className = "",
-  size = 32, // Increased by 15% from 28
+  size = 40, // Increased by 25% from 32
 }: MiniPlayerAvatarProps) => {
   React.useEffect(() => {
     // Small console log, can disable in prod

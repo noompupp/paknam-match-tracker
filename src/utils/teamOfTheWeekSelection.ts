@@ -58,9 +58,14 @@ export function selectTeamOfTheWeek(
       return 'WG';
     }
     
+    // Defensive midfielder variations (separate from general midfielders)
+    if (pos.includes('CDM') || pos.includes('DEFENSIVE MID') || pos.includes('DM')) {
+      return 'DM';
+    }
+    
     // Midfielder variations
     if (pos.includes('MF') || pos.includes('MID') || pos.includes('CM') || 
-        pos.includes('CDM') || pos.includes('CAM') || pos.includes('MIDFIELDER') ||
+        pos.includes('CAM') || pos.includes('MIDFIELDER') ||
         pos === 'CENTRAL MIDFIELD' || pos === 'CENTRE MID' || pos === 'CENTER MID') {
       return 'MF';
     }
@@ -241,8 +246,12 @@ export function formatTeamOfTheWeekByPosition(teamOfTheWeek: TeamOfTheWeekPlayer
         pos.includes('BACK') || pos.includes('DEFENCE') ||
         pos === 'CENTRE BACK' || pos === 'LEFT BACK' || pos === 'RIGHT BACK' ||
         pos === 'CENTER BACK' || pos === 'CENTERBACK' || pos === 'CENTREBACK') return 'DF';
+    
+    // Defensive midfielder variations (separate from general midfielders)
+    if (pos.includes('CDM') || pos.includes('DEFENSIVE MID') || pos.includes('DM')) return 'DM';
+    
     if ((pos.includes('MF') || pos.includes('MID') || pos.includes('CM') || 
-         pos.includes('CDM') || pos.includes('CAM') || pos.includes('MIDFIELDER') ||
+         pos.includes('CAM') || pos.includes('MIDFIELDER') ||
          pos === 'CENTRAL MIDFIELD' || pos === 'CENTRE MID' || pos === 'CENTER MID') &&
          // Exclude wingers from midfielders
          !(pos.includes('WG') || pos.includes('WING') || pos.includes('LW') || 
@@ -260,6 +269,7 @@ export function formatTeamOfTheWeekByPosition(teamOfTheWeek: TeamOfTheWeekPlayer
   const formation = {
     goalkeeper: teamOfTheWeek.filter(p => normalizePosition(p.position) === 'GK'),
     defenders: teamOfTheWeek.filter(p => normalizePosition(p.position) === 'DF'),
+    defensiveMidfielders: teamOfTheWeek.filter(p => normalizePosition(p.position) === 'DM'),
     midfielders: teamOfTheWeek.filter(p => normalizePosition(p.position) === 'MF'),
     wingers: teamOfTheWeek.filter(p => normalizePosition(p.position) === 'WG'),
     forwards: teamOfTheWeek.filter(p => normalizePosition(p.position) === 'FW')

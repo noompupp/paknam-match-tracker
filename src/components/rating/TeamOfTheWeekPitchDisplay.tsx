@@ -41,8 +41,8 @@ const PlayerPitchCard = ({ player, membersMap }: {
           <div className="font-bold text-xs leading-tight text-center" title={player.player_name}>
             {player.player_name.split(' ')[0]}
           </div>
-          <div className="text-[10px] text-muted-foreground truncate" title={player.team_name}>
-            {player.team_name.substring(0, 4)}
+          <div className="text-[10px] text-muted-foreground" title={player.team_name}>
+            {player.team_name}
           </div>
           
           <div className="flex items-center justify-center space-x-1">
@@ -141,6 +141,16 @@ const TeamOfTheWeekPitchDisplay: React.FC<TeamOfTheWeekPitchDisplayProps> = ({
               </div>
             )}
 
+            {/* Defensive Midfield Zone */}
+            {formation.defensiveMidfielders.length > 0 && (
+              <div className="flex justify-center">
+                <FormationRow 
+                  players={formation.defensiveMidfielders}
+                  membersMap={membersMap}
+                />
+              </div>
+            )}
+
             {/* Central Midfield Zone */}
             {formation.midfielders.length > 0 && (
               <div className="flex justify-center">
@@ -189,7 +199,7 @@ const TeamOfTheWeekPitchDisplay: React.FC<TeamOfTheWeekPitchDisplayProps> = ({
           {/* Formation Badge - Bottom */}
           <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 bg-white/95 backdrop-blur-sm rounded-full px-3 py-1 shadow-sm">
             <span className="text-xs font-bold text-green-800">
-              {formation.defenders.length}-{formation.midfielders.length + formation.wingers.length}-{formation.forwards.length}
+              {formation.defenders.length}-{formation.defensiveMidfielders.length + formation.midfielders.length + formation.wingers.length}-{formation.forwards.length}
             </span>
           </div>
         </div>
@@ -213,7 +223,7 @@ const TeamOfTheWeekPitchDisplay: React.FC<TeamOfTheWeekPitchDisplayProps> = ({
         {teamOfTheWeek.length > 0 && (
           <div className="mt-3 text-center">
             <p className="text-sm text-muted-foreground">
-              Formation: {formation.defenders.length}-{formation.midfielders.length + formation.wingers.length}-{formation.forwards.length}
+              Formation: {formation.defenders.length}-{formation.defensiveMidfielders.length + formation.midfielders.length + formation.wingers.length}-{formation.forwards.length}
               {teamOfTheWeek.find(p => p.isCaptain) && (
                 <span className="ml-2 text-yellow-600 font-medium">
                   • Captain: {teamOfTheWeek.find(p => p.isCaptain)?.player_name}
