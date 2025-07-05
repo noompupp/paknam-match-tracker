@@ -7,6 +7,8 @@ import { useTranslation } from "@/hooks/useTranslation";
 import type { TeamOfTheWeekPlayer, CaptainOfTheWeekPlayer } from "@/utils/teamOfTheWeekSelection";
 import { formatTeamOfTheWeekByPosition } from "@/utils/teamOfTheWeekSelection";
 import TeamOfTheWeekPitchDisplay from "./TeamOfTheWeekPitchDisplay";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import MiniPlayerAvatar from "@/components/dashboard/MiniPlayerAvatar";
 
 interface TeamOfTheWeekDisplayProps {
@@ -14,7 +16,10 @@ interface TeamOfTheWeekDisplayProps {
   captainOfTheWeek: CaptainOfTheWeekPlayer | null;
 }
 
-const PlayerCard = ({ player }: { player: TeamOfTheWeekPlayer }) => {
+const PlayerCard = ({ player, membersMap }: { 
+  player: TeamOfTheWeekPlayer;
+  membersMap: Map<number, any>;
+}) => {
   const { t } = useTranslation();
   
   return (
@@ -29,7 +34,7 @@ const PlayerCard = ({ player }: { player: TeamOfTheWeekPlayer }) => {
           <div className="w-12 h-12 mx-auto">
             <MiniPlayerAvatar
               name={player.player_name}
-              imageUrl={null}
+              imageUrl={membersMap.get(player.player_id)?.ProfileURL || membersMap.get(player.player_id)?.optimized_avatar_url}
               size={48}
               className={`${player.isCaptain ? 'ring-2 ring-yellow-400' : ''}`}
             />
@@ -56,7 +61,10 @@ const PlayerCard = ({ player }: { player: TeamOfTheWeekPlayer }) => {
   );
 };
 
-const CaptainOfTheWeekCard = ({ captain }: { captain: CaptainOfTheWeekPlayer }) => {
+const CaptainOfTheWeekCard = ({ captain, membersMap }: { 
+  captain: CaptainOfTheWeekPlayer;
+  membersMap: Map<number, any>;
+}) => {
   const { t } = useTranslation();
   
   return (
@@ -71,7 +79,7 @@ const CaptainOfTheWeekCard = ({ captain }: { captain: CaptainOfTheWeekPlayer }) 
         <div className="w-16 h-16 mx-auto mb-3">
           <MiniPlayerAvatar
             name={captain.player_name}
-            imageUrl={null}
+            imageUrl={membersMap.get(captain.player_id)?.ProfileURL || membersMap.get(captain.player_id)?.optimized_avatar_url}
             size={64}
             className="ring-2 ring-blue-400"
           />
@@ -100,6 +108,22 @@ const TeamOfTheWeekDisplay: React.FC<TeamOfTheWeekDisplayProps> = ({
   captainOfTheWeek 
 }) => {
   const { t } = useTranslation();
+  
+  // Fetch player data for avatars
+  const { data: members } = useQuery({
+    queryKey: ['members-for-totw-display'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('members')
+        .select('id, name, ProfileURL, optimized_avatar_url, team_id');
+      if (error) throw error;
+      return data || [];
+    }
+  });
+
+  const membersMap = new Map(
+    (members || []).map(member => [member.id, member])
+  );
   
   if (!teamOfTheWeek || teamOfTheWeek.length === 0) {
     return (
@@ -150,7 +174,7 @@ const TeamOfTheWeekDisplay: React.FC<TeamOfTheWeekDisplayProps> = ({
                 <div className="w-16 h-16 mx-auto mb-3">
                   <MiniPlayerAvatar
                     name={totwCaptain.player_name}
-                    imageUrl={null}
+                    imageUrl={membersMap.get(totwCaptain.player_id)?.ProfileURL || membersMap.get(totwCaptain.player_id)?.optimized_avatar_url}
                     size={64}
                     className="ring-2 ring-yellow-400"
                   />
@@ -168,7 +192,7 @@ const TeamOfTheWeekDisplay: React.FC<TeamOfTheWeekDisplayProps> = ({
           )}
 
           {/* 2D Pitch Formation Display */}
-          <TeamOfTheWeekPitchDisplay teamOfTheWeek={teamOfTheWeek} />
+          <TeamOfTheWeekPitchDisplay teamOfTheWeek={teamOfTheWeek} membersMap={membersMap} />
 
           {/* Summary Stats */}
           <Card>
@@ -200,7 +224,7 @@ const TeamOfTheWeekDisplay: React.FC<TeamOfTheWeekDisplayProps> = ({
         {/* Captain of the Week - Takes 1/3 width on large screens */}
         <div className="space-y-4">
           {captainOfTheWeek ? (
-            <CaptainOfTheWeekCard captain={captainOfTheWeek} />
+            <CaptainOfTheWeekCard captain={captainOfTheWeek} membersMap={membersMap} />
           ) : (
             <Card className="border-gray-200">
               <CardContent className="py-8 text-center">

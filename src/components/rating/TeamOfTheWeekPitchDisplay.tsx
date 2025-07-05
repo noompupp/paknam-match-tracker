@@ -9,9 +9,13 @@ import MiniPlayerAvatar from "@/components/dashboard/MiniPlayerAvatar";
 
 interface TeamOfTheWeekPitchDisplayProps {
   teamOfTheWeek: TeamOfTheWeekPlayer[];
+  membersMap?: Map<number, any>;
 }
 
-const PlayerPitchCard = ({ player }: { player: TeamOfTheWeekPlayer }) => {
+const PlayerPitchCard = ({ player, membersMap }: { 
+  player: TeamOfTheWeekPlayer;
+  membersMap?: Map<number, any>;
+}) => {
   return (
     <div className={`relative p-3 rounded-xl border-2 transition-all hover:scale-105 ${
       player.isCaptain 
@@ -27,7 +31,7 @@ const PlayerPitchCard = ({ player }: { player: TeamOfTheWeekPlayer }) => {
       <div className="w-8 h-8 sm:w-10 sm:h-10">
         <MiniPlayerAvatar
           name={player.player_name}
-          imageUrl={null}
+          imageUrl={membersMap?.get(player.player_id)?.ProfileURL || membersMap?.get(player.player_id)?.optimized_avatar_url}
           size={32}
           className={`${player.isCaptain ? 'ring-2 ring-yellow-400' : ''}`}
         />
@@ -55,9 +59,11 @@ const PlayerPitchCard = ({ player }: { player: TeamOfTheWeekPlayer }) => {
 
 const FormationRow = ({ 
   players, 
+  membersMap,
   isGoalkeeper = false 
 }: { 
   players: TeamOfTheWeekPlayer[]; 
+  membersMap?: Map<number, any>;
   isGoalkeeper?: boolean;
 }) => {
   if (players.length === 0) return null;
@@ -67,14 +73,15 @@ const FormationRow = ({
       isGoalkeeper ? 'mb-2' : ''
     } ${players.length === 1 ? 'w-full justify-center' : 'flex-wrap'}`}>
       {players.map((player) => (
-        <PlayerPitchCard key={player.player_id} player={player} />
+        <PlayerPitchCard key={player.player_id} player={player} membersMap={membersMap} />
       ))}
     </div>
   );
 };
 
 const TeamOfTheWeekPitchDisplay: React.FC<TeamOfTheWeekPitchDisplayProps> = ({ 
-  teamOfTheWeek 
+  teamOfTheWeek,
+  membersMap 
 }) => {
   const { isPortrait } = useDeviceOrientation();
 
@@ -119,7 +126,8 @@ const TeamOfTheWeekPitchDisplay: React.FC<TeamOfTheWeekPitchDisplayProps> = ({
             {/* Attack Zone - Forwards at the top */}
             <div className="flex justify-center">
               <FormationRow 
-                players={formation.forwards} 
+                players={formation.forwards}
+                membersMap={membersMap}
               />
             </div>
 
@@ -127,7 +135,8 @@ const TeamOfTheWeekPitchDisplay: React.FC<TeamOfTheWeekPitchDisplayProps> = ({
             {formation.wingers.length > 0 && (
               <div className="flex justify-center">
                 <FormationRow 
-                  players={formation.wingers} 
+                  players={formation.wingers}
+                  membersMap={membersMap}
                 />
               </div>
             )}
@@ -136,7 +145,8 @@ const TeamOfTheWeekPitchDisplay: React.FC<TeamOfTheWeekPitchDisplayProps> = ({
             {formation.midfielders.length > 0 && (
               <div className="flex justify-center">
                 <FormationRow 
-                  players={formation.midfielders} 
+                  players={formation.midfielders}
+                  membersMap={membersMap}
                 />
               </div>
             )}
@@ -145,7 +155,8 @@ const TeamOfTheWeekPitchDisplay: React.FC<TeamOfTheWeekPitchDisplayProps> = ({
             {formation.defenders.length > 0 && (
               <div className="flex justify-center">
                 <FormationRow 
-                  players={formation.defenders} 
+                  players={formation.defenders}
+                  membersMap={membersMap}
                 />
               </div>
             )}
@@ -154,7 +165,8 @@ const TeamOfTheWeekPitchDisplay: React.FC<TeamOfTheWeekPitchDisplayProps> = ({
             {formation.goalkeeper.length > 0 && (
               <div className="flex justify-center">
                 <FormationRow 
-                  players={formation.goalkeeper} 
+                  players={formation.goalkeeper}
+                  membersMap={membersMap}
                   isGoalkeeper={true}
                 />
               </div>

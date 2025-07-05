@@ -12,6 +12,7 @@ import { useCurrentWeeklyTOTW, useWeeklyPlayerPerformance, useGenerateWeeklyTOTW
 import { useToast } from "@/hooks/use-toast";
 import TeamOfTheWeekDisplay from "./TeamOfTheWeekDisplay";
 import ManualTOTWSelection from "./ManualTOTWSelection";
+import SimplifiedTOTWSelection from "./SimplifiedTOTWSelection";
 
 const TeamOfTheWeekPage: React.FC = () => {
   const { t } = useTranslation();
@@ -322,13 +323,24 @@ const TeamOfTheWeekPage: React.FC = () => {
 
         <TabsContent value="manage" className="space-y-6">
           {manualMode && (
-            <ManualTOTWSelection
-              fixtureId={viewMode === 'fixture' ? activeFixtureId : null}
-              weeklyTotwId={viewMode === 'weekly' ? currentWeeklyTOTW?.id : null}
-              onSelectionChange={handleManualSelection}
-              initialTOTW={manualTOTW}
-              initialCaptain={manualCaptain}
-            />
+            <div className="space-y-4">
+              <ManualTOTWSelection
+                fixtureId={viewMode === 'fixture' ? activeFixtureId : null}
+                weeklyTotwId={viewMode === 'weekly' ? currentWeeklyTOTW?.id : null}
+                onSelectionChange={handleManualSelection}
+                initialTOTW={manualTOTW}
+                initialCaptain={manualCaptain}
+              />
+              
+              <div className="border-t pt-4">
+                <h3 className="text-lg font-semibold mb-4">Quick Selection Alternative</h3>
+                <SimplifiedTOTWSelection
+                  onSelectionChange={handleManualSelection}
+                  initialTOTW={manualTOTW}
+                  initialCaptain={manualCaptain}
+                />
+              </div>
+            </div>
           )}
         </TabsContent>
 

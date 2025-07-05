@@ -8,6 +8,8 @@ import { useTranslation } from "@/hooks/useTranslation";
 import type { TeamOfTheWeekPlayer, CaptainOfTheWeekPlayer } from "@/utils/teamOfTheWeekSelection";
 import { useHybridPlayerRatings, useApprovedPlayerRatings } from "@/hooks/useHybridPlayerRatings";
 import { useWeeklyPlayerPerformance } from "@/hooks/useWeeklyTOTW";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import MiniPlayerAvatar from "@/components/dashboard/MiniPlayerAvatar";
 
 interface ManualTOTWSelectionProps {
@@ -43,8 +45,24 @@ const ManualTOTWSelection: React.FC<ManualTOTWSelectionProps> = ({
     (approvedRatings || []).map(rating => [rating.player_id, rating])
   );
 
+  // Fetch player data for avatars
+  const { data: members } = useQuery({
+    queryKey: ['members-for-totw'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('members')
+        .select('id, name, ProfileURL, optimized_avatar_url, team_id');
+      if (error) throw error;
+      return data || [];
+    }
+  });
+
+  const membersMap = new Map(
+    (members || []).map(member => [member.id, member])
+  );
+
   // Determine data source and transform for consistent interface
-  const availablePlayers = weeklyTotwId && weeklyPerformance 
+  const availablePlayers = weeklyTotwId && weeklyPerformance
     ? weeklyPerformance.map(wp => ({
         player_id: wp.player_id,
         player_name: wp.player_name,
@@ -174,7 +192,7 @@ const ManualTOTWSelection: React.FC<ManualTOTWSelectionProps> = ({
                   <div className="w-10 h-10 flex-shrink-0">
                     <MiniPlayerAvatar
                       name={player.player_name}
-                      imageUrl={null}
+                      imageUrl={membersMap.get(player.player_id)?.ProfileURL || membersMap.get(player.player_id)?.optimized_avatar_url}
                       size={40}
                       className={isCaptain ? 'ring-2 ring-yellow-400' : ''}
                     />
