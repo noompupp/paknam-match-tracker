@@ -29,7 +29,43 @@ export const matchEventsApi = {
   },
 
   create: async (event: Omit<MatchEvent, 'id' | 'created_at'>): Promise<MatchEvent> => {
-    console.log('🎯 matchEventsApi.create: Creating event:', event);
+    console.log('🎯 matchEventsApi.create: Creating event (ENHANCED DEBUG):', {
+      event,
+      playerName: event.player_name,
+      eventType: event.event_type,
+      teamId: event.team_id,
+      fixtureId: event.fixture_id,
+      eventTime: event.event_time
+    });
+    
+    // Check for potential duplicate protection issues
+    console.log('🔍 matchEventsApi.create: Checking for existing similar events...');
+    
+    try {
+      // Query for similar events to understand duplicate patterns
+      const { data: existingEvents, error: queryError } = await supabase
+        .from('match_events')
+        .select('*')
+        .eq('fixture_id', event.fixture_id)
+        .eq('player_name', event.player_name)
+        .eq('event_type', event.event_type);
+      
+      if (queryError) {
+        console.warn('⚠️ matchEventsApi.create: Could not check existing events:', queryError);
+      } else {
+        console.log('🔍 matchEventsApi.create: Found existing similar events:', {
+          count: existingEvents?.length || 0,
+          events: existingEvents?.map(e => ({
+            id: e.id,
+            time: e.event_time,
+            player: e.player_name,
+            type: e.event_type
+          }))
+        });
+      }
+    } catch (queryError) {
+      console.warn('⚠️ matchEventsApi.create: Exception during duplicate check:', queryError);
+    }
     
     try {
       const { data, error } = await supabase
@@ -39,15 +75,21 @@ export const matchEventsApi = {
         .single();
 
       if (error) {
-        console.error('🎯 matchEventsApi.create: Database error:', error);
+        console.error('❌ matchEventsApi.create: Database error (DETAILED):', {
+          error,
+          errorCode: error.code,
+          errorMessage: error.message,
+          errorDetails: error.details,
+          eventData: event
+        });
         throw error;
       }
 
-      console.log('🎯 matchEventsApi.create: Event created successfully:', data);
+      console.log('✅ matchEventsApi.create: Event created successfully:', data);
       // Type assertion is safe here because database CHECK constraint ensures valid event_type values
       return data as MatchEvent;
     } catch (error) {
-      console.error('🎯 matchEventsApi.create: Failed to create match event:', error);
+      console.error('❌ matchEventsApi.create: Failed to create match event:', error);
       throw error;
     }
   },

@@ -47,9 +47,14 @@ const EditEventModal = ({
   const getTeamName = (teamId: string) => {
     console.log('🏷️ EditEventModal - getTeamName called:', {
       teamId,
+      teamIdType: typeof teamId,
       teamsAvailable: !!teams,
       teamsCount: teams?.length || 0,
-      sampleTeam: teams?.[0]
+      sampleTeam: teams?.[0] ? {
+        id: teams[0].id,
+        __id__: teams[0].__id__,
+        name: teams[0].name
+      } : null
     });
     
     if (!teams || !teamId) {
@@ -57,86 +62,113 @@ const EditEventModal = ({
       return `Team ${teamId}`;
     }
     
-    // Try multiple matching strategies with detailed logging
+    // CRITICAL FIX: Handle numeric team ID to string __id__ mapping
     const team = teams.find(t => {
-      const matches = [
-        t.__id__ === teamId,
-        t.id?.toString() === teamId,
-        t.__id__ === teamId.toString(),
-        t.name === teamId // Sometimes teamId might actually be the name
-      ];
+      // Try exact __id__ match first (preferred)
+      if (t.__id__ === teamId) return true;
       
-      console.log('🏷️ EditEventModal - Team matching attempt:', {
-        teamName: t.name,
-        team__id__: t.__id__,
-        teamId_numeric: t.id,
-        searchingFor: teamId,
-        matches: {
-          __id__exact: matches[0],
-          id_toString: matches[1],
-          __id__toString: matches[2],
-          name_match: matches[3]
-        },
-        anyMatch: matches.some(Boolean)
-      });
+      // Try numeric ID to string conversion match
+      if (t.id?.toString() === teamId) return true;
       
-      return matches.some(Boolean);
+      // Try reverse - if teamId is numeric, convert __id__ to number for comparison
+      if (!isNaN(Number(teamId)) && t.__id__ && !isNaN(Number(t.__id__))) {
+        return Number(t.__id__) === Number(teamId);
+      }
+      
+      // Fallback to name match
+      if (t.name === teamId) return true;
+      
+      return false;
     });
     
     const result = team?.name || `Team ${teamId}`;
     console.log('🏷️ EditEventModal - getTeamName result:', {
       foundTeam: !!team,
       teamName: team?.name,
+      teamId,
+      matchedTeam: team ? {
+        id: team.id,
+        __id__: team.__id__,
+        name: team.name
+      } : null,
       result
     });
     
     return result;
   };
 
-  // Enhanced player filtering with better team ID matching and comprehensive debugging
+  // CRITICAL FIX: Enhanced player filtering with proper team ID mapping
   const availablePlayers = useMemo(() => {
-    if (!teamId || !allPlayers) return [];
+    if (!teamId || !allPlayers || !teams) return [];
     
-    console.log('🔍 EditEventModal - Filtering players:', {
+    console.log('🔍 EditEventModal - Filtering players (ENHANCED):', {
       selectedTeamId: teamId,
+      selectedTeamIdType: typeof teamId,
       totalPlayers: allPlayers.length,
-      samplePlayer: allPlayers[0],
-      allPlayerTeamIds: allPlayers.slice(0, 5).map(p => ({
-        name: p.name,
-        team_id: p.team_id,
-        team_id_type: typeof p.team_id
-      }))
+      totalTeams: teams.length,
+      samplePlayer: allPlayers[0] ? {
+        name: allPlayers[0].name,
+        team_id: allPlayers[0].team_id,
+        team_id_type: typeof allPlayers[0].team_id
+      } : null
+    });
+    
+    // CRITICAL: Find the actual team __id__ that corresponds to the selected teamId
+    const selectedTeam = teams.find(t => {
+      // Try exact __id__ match first
+      if (t.__id__ === teamId) return true;
+      
+      // Try numeric ID to string conversion match  
+      if (t.id?.toString() === teamId) return true;
+      
+      // Try reverse - if teamId is numeric, convert __id__ to number for comparison
+      if (!isNaN(Number(teamId)) && t.__id__ && !isNaN(Number(t.__id__))) {
+        return Number(t.__id__) === Number(teamId);
+      }
+      
+      return false;
+    });
+    
+    if (!selectedTeam) {
+      console.error('🔍 EditEventModal - Selected team not found!:', {
+        teamId,
+        availableTeams: teams.map(t => ({ id: t.id, __id__: t.__id__, name: t.name }))
+      });
+      return [];
+    }
+    
+    const targetTeamId = selectedTeam.__id__; // Use the __id__ for player matching
+    console.log('🔍 EditEventModal - Using target team ID for filtering:', {
+      selectedTeamId: teamId,
+      targetTeamId,
+      selectedTeamName: selectedTeam.name
     });
     
     const filtered = allPlayers.filter(player => {
-      // Multiple matching strategies for team_id with more comprehensive comparison
+      // ENHANCED: Use the mapped team __id__ for comparison
       const playerTeamId = player.team_id?.toString();
-      const selectedTeamIdStr = teamId.toString();
       
       const matches = [
-        playerTeamId === selectedTeamIdStr,
-        playerTeamId === teamId,
-        player.team_id === teamId,
-        player.team_id?.toString() === selectedTeamIdStr,
-        // Additional fallback - sometimes team_id might be stored differently
-        String(player.team_id) === String(teamId)
+        playerTeamId === targetTeamId,
+        player.team_id === targetTeamId,
+        String(player.team_id) === String(targetTeamId),
+        // Additional numeric comparison fallback
+        !isNaN(Number(playerTeamId)) && !isNaN(Number(targetTeamId)) && 
+        Number(playerTeamId) === Number(targetTeamId)
       ];
       
       const isMatch = matches.some(Boolean);
       
       if (allPlayers.indexOf(player) < 3) { // Debug first few players
-        console.log('🔍 EditEventModal - Player match check:', {
+        console.log('🔍 EditEventModal - Player match check (ENHANCED):', {
           playerName: player.name,
           playerTeamId: player.team_id,
-          playerTeamIdString: playerTeamId,
-          selectedTeamId: teamId,
-          selectedTeamIdString: selectedTeamIdStr,
+          targetTeamId,
           matches: {
-            toString_exact: matches[0],
-            direct_string: matches[1], 
-            direct_exact: matches[2],
-            toString_comparison: matches[3],
-            string_cast: matches[4]
+            string_exact: matches[0],
+            direct_exact: matches[1], 
+            string_cast: matches[2],
+            numeric_fallback: matches[3]
           },
           finalMatch: isMatch
         });
@@ -145,13 +177,15 @@ const EditEventModal = ({
       return isMatch;
     });
     
-    console.log('🔍 EditEventModal - Filtered result:', {
+    console.log('🔍 EditEventModal - Enhanced filtered result:', {
+      selectedTeamName: selectedTeam.name,
+      targetTeamId,
       matchingPlayers: filtered.length,
       players: filtered.map(p => ({ name: p.name, team_id: p.team_id }))
     });
     
     return filtered;
-  }, [teamId, allPlayers]);
+  }, [teamId, allPlayers, teams]);
 
   // Reset player selection when team changes
   const handleTeamChange = (newTeamId: string) => {
