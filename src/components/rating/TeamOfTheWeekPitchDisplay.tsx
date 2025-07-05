@@ -21,7 +21,7 @@ const PlayerPitchCard = ({ player, membersMap }: {
       player.isCaptain 
         ? 'border-yellow-400 bg-gradient-to-br from-yellow-50 to-orange-50 shadow-lg' 
         : 'border-primary/30 bg-gradient-to-br from-card to-card/80 shadow-md'
-    } min-w-0 flex-shrink-0 w-16 sm:w-20`}>
+    } min-w-0 flex-shrink-0 w-20 sm:w-24`}>
       {player.isCaptain && (
         <Crown className="absolute -top-2 -right-2 h-5 w-5 text-yellow-600 fill-yellow-400 bg-white rounded-full p-0.5" />
       )}
@@ -37,11 +37,11 @@ const PlayerPitchCard = ({ player, membersMap }: {
         />
       </div>
         
-        <div className="text-center space-y-1">
-          <div className="font-bold text-xs leading-tight text-center" title={player.player_name}>
+        <div className="text-center space-y-1 w-full">
+          <div className="font-bold text-xs leading-tight text-center truncate" title={player.player_name}>
             {player.player_name.split(' ')[0]}
           </div>
-          <div className="text-[10px] text-muted-foreground" title={player.team_name}>
+          <div className="text-[10px] text-muted-foreground truncate" title={player.team_name}>
             {player.team_name}
           </div>
           
@@ -141,7 +141,17 @@ const TeamOfTheWeekPitchDisplay: React.FC<TeamOfTheWeekPitchDisplayProps> = ({
               </div>
             )}
 
-            {/* Defensive Midfield Zone */}
+            {/* Defense Zone - Defenders in separate row from midfielders */}
+            {formation.defenders.length > 0 && (
+              <div className="flex justify-center">
+                <FormationRow 
+                  players={formation.defenders}
+                  membersMap={membersMap}
+                />
+              </div>
+            )}
+
+            {/* Defensive Midfield Zone - Separate from other midfielders */}
             {formation.defensiveMidfielders.length > 0 && (
               <div className="flex justify-center">
                 <FormationRow 
@@ -156,16 +166,6 @@ const TeamOfTheWeekPitchDisplay: React.FC<TeamOfTheWeekPitchDisplayProps> = ({
               <div className="flex justify-center">
                 <FormationRow 
                   players={formation.midfielders}
-                  membersMap={membersMap}
-                />
-              </div>
-            )}
-
-            {/* Defense Zone - FIXED: Place defenders above goalkeeper */}
-            {formation.defenders.length > 0 && (
-              <div className="flex justify-center">
-                <FormationRow 
-                  players={formation.defenders}
                   membersMap={membersMap}
                 />
               </div>

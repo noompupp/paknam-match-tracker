@@ -68,35 +68,39 @@ const CaptainOfTheWeekCard = ({ captain, membersMap }: {
   const { t } = useTranslation();
   
   return (
-    <Card className="border-blue-400 bg-gradient-to-r from-blue-100 to-indigo-100">
+    <Card className="border-blue-600 bg-gradient-to-r from-blue-300 via-blue-200 to-indigo-200 shadow-lg">
       <CardHeader className="pb-2">
-        <CardTitle className="text-center flex items-center justify-center space-x-2 text-lg">
-          <Award className="h-5 w-5 text-blue-600" />
-          <span>🏆 Captain of the Week</span>
+        <CardTitle className="text-center flex items-center justify-center space-x-2 text-lg text-blue-900">
+          <Award className="h-5 w-5 text-blue-800" />
+          <span className="font-bold">🏆 Captain of the Week</span>
         </CardTitle>
       </CardHeader>
-      <CardContent className="text-center">
-         <div className="w-18 h-18 mx-auto mb-3">
-           <MiniPlayerAvatar
-             name={captain.player_name}
-             imageUrl={membersMap.get(captain.player_id)?.ProfileURL || membersMap.get(captain.player_id)?.optimized_avatar_url}
-             size={74}
-             className="ring-2 ring-blue-400"
-           />
-         </div>
-        <div className="font-bold text-xl">{captain.player_name}</div>
-        <div className="text-muted-foreground">{captain.team_name} • {captain.position}</div>
-        <Badge className="bg-blue-600 text-white mt-2">
-          Team Captain
-        </Badge>
-        <div className="flex items-center justify-center space-x-2 mt-2">
-          <Star className="h-4 w-4 text-yellow-500 fill-current" />
-          <span className="font-bold text-green-600 text-lg">
-            {captain.rating_data.final_rating.toFixed(2)}
-          </span>
-        </div>
-        <div className="text-xs text-muted-foreground mt-1">
-          Performance Score: {captain.teamPerformanceScore.toFixed(1)}
+      <CardContent>
+        <div className="flex items-center space-x-4">
+          <div className="w-18 h-18 flex-shrink-0">
+            <MiniPlayerAvatar
+              name={captain.player_name}
+              imageUrl={membersMap.get(captain.player_id)?.ProfileURL || membersMap.get(captain.player_id)?.optimized_avatar_url}
+              size={74}
+              className="ring-2 ring-blue-600"
+            />
+          </div>
+          <div className="flex-1">
+            <div className="font-bold text-xl text-blue-900">{captain.player_name}</div>
+            <div className="text-blue-800 font-medium">{captain.team_name} • {captain.position}</div>
+            <Badge className="bg-blue-700 text-white mt-2">
+              Team Captain
+            </Badge>
+            <div className="flex items-center space-x-2 mt-2">
+              <Star className="h-4 w-4 text-yellow-600 fill-current" />
+              <span className="font-bold text-green-800 text-lg">
+                {captain.rating_data.final_rating.toFixed(2)}
+              </span>
+            </div>
+            <div className="text-xs text-blue-700 mt-1">
+              Performance Score: {captain.teamPerformanceScore.toFixed(1)}
+            </div>
+          </div>
         </div>
       </CardContent>
     </Card>
@@ -163,29 +167,33 @@ const TeamOfTheWeekDisplay: React.FC<TeamOfTheWeekDisplayProps> = ({
         <div className="lg:col-span-2 space-y-4">
           {/* TOTW Captain Highlight */}
           {totwCaptain && (
-            <Card className="border-yellow-500 bg-gradient-to-r from-yellow-200 via-yellow-100 to-orange-200 shadow-lg">
+            <Card className="border-yellow-600 bg-gradient-to-r from-yellow-300 via-yellow-200 to-orange-200 shadow-lg">
               <CardHeader className="pb-2">
-                <CardTitle className="text-center flex items-center justify-center space-x-2 text-lg text-yellow-800">
-                  <Crown className="h-5 w-5 text-yellow-700" />
+                <CardTitle className="text-center flex items-center justify-center space-x-2 text-lg text-yellow-900">
+                  <Crown className="h-5 w-5 text-yellow-800" />
                   <span className="font-bold">TOTW {t('rating.captain')}</span>
                 </CardTitle>
               </CardHeader>
               <CardContent className="text-center">
-                 <div className="w-18 h-18 mx-auto mb-3">
-                   <MiniPlayerAvatar
-                     name={totwCaptain.player_name}
-                     imageUrl={membersMap.get(totwCaptain.player_id)?.ProfileURL || membersMap.get(totwCaptain.player_id)?.optimized_avatar_url}
-                     size={74}
-                     className="ring-2 ring-yellow-500"
-                   />
-                 </div>
-                <div className="font-bold text-xl text-yellow-900">{totwCaptain.player_name}</div>
-                <div className="text-yellow-700 font-medium">{totwCaptain.team_name} • {totwCaptain.position}</div>
-                <div className="flex items-center justify-center space-x-2 mt-2">
-                  <Star className="h-4 w-4 text-yellow-600 fill-current" />
-                  <span className="font-bold text-green-700 text-lg">
-                    {totwCaptain.rating_data.final_rating.toFixed(2)}
-                  </span>
+                <div className="flex items-center justify-center space-x-4">
+                  <div className="w-18 h-18 flex-shrink-0">
+                    <MiniPlayerAvatar
+                      name={totwCaptain.player_name}
+                      imageUrl={membersMap.get(totwCaptain.player_id)?.ProfileURL || membersMap.get(totwCaptain.player_id)?.optimized_avatar_url}
+                      size={74}
+                      className="ring-2 ring-yellow-600"
+                    />
+                  </div>
+                  <div className="flex-1 text-left">
+                    <div className="font-bold text-xl text-yellow-900">{totwCaptain.player_name}</div>
+                    <div className="text-yellow-800 font-medium">{totwCaptain.team_name} • {totwCaptain.position}</div>
+                    <div className="flex items-center space-x-2 mt-2">
+                      <Star className="h-4 w-4 text-yellow-700 fill-current" />
+                      <span className="font-bold text-green-800 text-lg">
+                        {totwCaptain.rating_data.final_rating.toFixed(2)}
+                      </span>
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
