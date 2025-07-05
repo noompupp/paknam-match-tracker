@@ -1,7 +1,7 @@
 
 export const createTeamObject = (team: any) => {
   const teamObj = {
-    id: team.id || 0,
+    id: team.__id__ || team.id || '',  // Use string ID (__id__) as primary identifier
     name: team.name || '',
     logo: team.logo || '⚽',
     logoURL: team.logoURL || undefined,

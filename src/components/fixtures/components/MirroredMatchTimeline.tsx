@@ -81,25 +81,44 @@ const MirroredMatchTimeline = ({
       // Determine which team this card belongs to - handle both teamId and team_id
       const cardTeamId = card.teamId || card.team_id;
       const isHomeTeamCard = compareTeamIds(cardTeamId, fixture.home_team_id);
+      const isAwayTeamCard = compareTeamIds(cardTeamId, fixture.away_team_id);
       
-      // Debug card team matching
-      console.log('🎯 Card team matching:', {
+      // Debug card team matching with enhanced logging
+      console.log('🎯 Enhanced Card team matching:', {
         cardId: card.id,
         cardTeamId,
         fixtureHomeTeamId: fixture.home_team_id,
         fixtureAwayTeamId: fixture.away_team_id,
+        homeTeamObject: fixture.home_team,
+        awayTeamObject: fixture.away_team,
         isHomeTeamCard,
+        isAwayTeamCard,
         playerName: getCardPlayerName(card),
         cardType: getCardType(card)
       });
+      
+      // Determine team assignment with fallback logic
+      let teamName, teamColor;
+      if (isHomeTeamCard) {
+        teamName = fixture.home_team?.name || 'Home Team';
+        teamColor = homeTeamColor;
+      } else if (isAwayTeamCard) {
+        teamName = fixture.away_team?.name || 'Away Team';
+        teamColor = awayTeamColor;
+      } else {
+        // Fallback: try to match by team name or use first available
+        teamName = card.team || 'Unknown Team';
+        teamColor = homeTeamColor; // Default color
+        console.log('⚠️ Card team assignment fallback used for card:', card.id);
+      }
       
       return {
         id: card.id,
         type: isCardRed(card) ? 'red_card' as const : 'yellow_card' as const,
         time: getCardTime(card),
         playerName: getCardPlayerName(card),
-        teamName: isHomeTeamCard ? fixture.home_team?.name : fixture.away_team?.name,
-        teamColor: isHomeTeamCard ? homeTeamColor : awayTeamColor,
+        teamName,
+        teamColor,
         teamId: cardTeamId,
         cardType: getCardType(card)
       };
