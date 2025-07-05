@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { matchEventsApi } from '@/services/api';
 import { MatchEvent } from '@/types/database';
+import { realTimeScoreService } from '@/services/fixtures/realTimeScoreService';
 
 interface LocalMatchEvent {
   id: number;
@@ -37,9 +38,50 @@ export const useCreateMatchEvent = () => {
   return useMutation({
     mutationFn: (eventData: Omit<MatchEvent, 'id' | 'created_at'>) =>
       matchEventsApi.create(eventData),
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['matchEvents', data.fixture_id] });
-      queryClient.invalidateQueries({ queryKey: ['fixtures'] });
+    onSuccess: async (data) => {
+      console.log('🎯 useCreateMatchEvent: Event created, triggering comprehensive synchronization');
+      
+      // Phase 3: Comprehensive data invalidation for all views
+      const invalidateQueries = async () => {
+        // Core match data
+        queryClient.invalidateQueries({ queryKey: ['matchEvents', data.fixture_id] });
+        queryClient.invalidateQueries({ queryKey: ['fixtures'] });
+        
+        // Member and player stats (for Top Scorers, etc.)
+        queryClient.invalidateQueries({ queryKey: ['members'] });
+        queryClient.invalidateQueries({ queryKey: ['playerStats'] });
+        queryClient.invalidateQueries({ queryKey: ['topScorers'] });
+        queryClient.invalidateQueries({ queryKey: ['topAssists'] });
+        
+        // Team stats and league table
+        queryClient.invalidateQueries({ queryKey: ['teams'] });
+        queryClient.invalidateQueries({ queryKey: ['leagueTable'] });
+        
+        // Enhanced match summary and rating data
+        queryClient.invalidateQueries({ queryKey: ['enhancedMatchSummary'] });
+        queryClient.invalidateQueries({ queryKey: ['matchSummary'] });
+        queryClient.invalidateQueries({ queryKey: ['playerRatings'] });
+      };
+      
+      // Invalidate immediately
+      await invalidateQueries();
+      
+      // Trigger real-time score update if it's a goal event
+      if (data.event_type === 'goal') {
+        console.log('🔄 useCreateMatchEvent: Triggering real-time score update for goal event');
+        try {
+          const scoreResult = await realTimeScoreService.updateFixtureScoreRealTime(data.fixture_id);
+          if (scoreResult.success) {
+            console.log('✅ useCreateMatchEvent: Real-time score update successful:', scoreResult);
+            // Additional invalidation after score update to ensure all views sync
+            await invalidateQueries();
+          } else {
+            console.error('❌ useCreateMatchEvent: Real-time score update failed:', scoreResult.error);
+          }
+        } catch (error) {
+          console.error('❌ useCreateMatchEvent: Real-time score update error:', error);
+        }
+      }
     },
   });
 };
@@ -63,9 +105,48 @@ export const useDeleteMatchEvent = () => {
   return useMutation({
     mutationFn: ({ eventId, fixtureId }: { eventId: number; fixtureId: number }) => 
       matchEventsApi.delete(eventId),
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['matchEvents', variables.fixtureId] });
-      queryClient.invalidateQueries({ queryKey: ['fixtures'] });
+    onSuccess: async (_, variables) => {
+      console.log('🎯 useDeleteMatchEvent: Event deleted, triggering comprehensive synchronization');
+      
+      // Phase 3: Comprehensive data invalidation for all views
+      const invalidateQueries = async () => {
+        // Core match data
+        queryClient.invalidateQueries({ queryKey: ['matchEvents', variables.fixtureId] });
+        queryClient.invalidateQueries({ queryKey: ['fixtures'] });
+        
+        // Member and player stats (for Top Scorers, etc.)
+        queryClient.invalidateQueries({ queryKey: ['members'] });
+        queryClient.invalidateQueries({ queryKey: ['playerStats'] });
+        queryClient.invalidateQueries({ queryKey: ['topScorers'] });
+        queryClient.invalidateQueries({ queryKey: ['topAssists'] });
+        
+        // Team stats and league table
+        queryClient.invalidateQueries({ queryKey: ['teams'] });
+        queryClient.invalidateQueries({ queryKey: ['leagueTable'] });
+        
+        // Enhanced match summary and rating data
+        queryClient.invalidateQueries({ queryKey: ['enhancedMatchSummary'] });
+        queryClient.invalidateQueries({ queryKey: ['matchSummary'] });
+        queryClient.invalidateQueries({ queryKey: ['playerRatings'] });
+      };
+      
+      // Invalidate immediately
+      await invalidateQueries();
+      
+      // Always trigger real-time score update for deletions (in case it was a goal)
+      console.log('🔄 useDeleteMatchEvent: Triggering real-time score update after event deletion');
+      try {
+        const scoreResult = await realTimeScoreService.updateFixtureScoreRealTime(variables.fixtureId);
+        if (scoreResult.success) {
+          console.log('✅ useDeleteMatchEvent: Real-time score update successful:', scoreResult);
+          // Additional invalidation after score update to ensure all views sync
+          await invalidateQueries();
+        } else {
+          console.error('❌ useDeleteMatchEvent: Real-time score update failed:', scoreResult.error);
+        }
+      } catch (error) {
+        console.error('❌ useDeleteMatchEvent: Real-time score update error:', error);
+      }
     },
   });
 };

@@ -11,6 +11,7 @@ import { useCreateMatchEvent } from "@/hooks/useMatchEvents";
 import { useToast } from "@/hooks/use-toast";
 import { useTeams } from "@/hooks/useTeams";
 import { MatchEvent } from "@/types/database";
+import ScoreConsistencyValidator from "@/components/shared/ScoreConsistencyValidator";
 
 interface ManualEventFormProps {
   fixtureId: number;
@@ -42,9 +43,9 @@ const ManualEventForm = ({
   const { toast } = useToast();
   const { data: teams } = useTeams();
 
-  // Enhanced helper function to get team name by ID with comprehensive debugging
+  // ENHANCED: Simplified team name resolution with comprehensive fallbacks
   const getTeamName = (teamId: string) => {
-    console.log('🏷️ ManualEventForm - getTeamName called:', {
+    console.log('🏷️ ManualEventForm - getTeamName called (ENHANCED):', {
       teamId,
       teamIdType: typeof teamId,
       teamsAvailable: !!teams,
@@ -56,49 +57,66 @@ const ManualEventForm = ({
       return `Team ${teamId}`;
     }
     
-    // CRITICAL FIX: Handle numeric fixture team ID to text-based team __id__ mapping
+    // ENHANCED: Multiple resolution strategies for maximum compatibility
     const team = teams.find(t => {
-      // First try direct __id__ match
+      // Strategy 1: Direct __id__ match (most common)
       if (t.__id__ === teamId) return true;
       
-      // CRITICAL: Handle numeric fixture team IDs by matching with team.id
+      // Strategy 2: Numeric ID to string match
       if (t.id?.toString() === teamId) return true;
       
-      // Fallback to name match
+      // Strategy 3: Name match (legacy support)  
       if (t.name === teamId) return true;
+      
+      // Strategy 4: Case-insensitive name match
+      if (t.name?.toLowerCase() === teamId.toLowerCase()) return true;
       
       return false;
     });
     
     const result = team?.name || `Team ${teamId}`;
-    console.log('🏷️ ManualEventForm - getTeamName result:', {
+    console.log('🏷️ ManualEventForm - getTeamName result (ENHANCED):', {
       foundTeam: !!team,
       teamName: team?.name,
       teamId,
-      result
+      result,
+      matchedStrategy: team ? 
+        (team.__id__ === teamId ? 'direct_id' : 
+         team.id?.toString() === teamId ? 'numeric_id' : 
+         team.name === teamId ? 'name_exact' : 'name_case_insensitive') : 'none'
     });
     
     return result;
   };
 
-  // CRITICAL FIX: Get the text-based team __id__ for database operations
+  // ENHANCED: Simplified team ID resolution for database operations
   const getTeamIdForDatabase = (fixtureTeamId: string) => {
     if (!teams || !fixtureTeamId) return fixtureTeamId;
     
+    console.log('🏷️ ManualEventForm - getTeamIdForDatabase (ENHANCED):', {
+      fixtureTeamId,
+      fixtureTeamIdType: typeof fixtureTeamId
+    });
+    
+    // Find team using the same strategy as getTeamName
     const team = teams.find(t => {
-      // Match numeric fixture team ID with team.id
-      if (t.id?.toString() === fixtureTeamId) return true;
-      // Direct __id__ match
       if (t.__id__ === fixtureTeamId) return true;
+      if (t.id?.toString() === fixtureTeamId) return true;
+      if (t.name === fixtureTeamId) return true;
+      if (t.name?.toLowerCase() === fixtureTeamId.toLowerCase()) return true;
       return false;
     });
     
     const result = team?.__id__ || fixtureTeamId;
-    console.log('🏷️ ManualEventForm - getTeamIdForDatabase:', {
+    console.log('🏷️ ManualEventForm - getTeamIdForDatabase result (ENHANCED):', {
       fixtureTeamId,
       foundTeam: !!team,
       teamName: team?.name,
-      resultId: result
+      resultId: result,
+      strategy: team ? 
+        (team.__id__ === fixtureTeamId ? 'direct_id' : 
+         team.id?.toString() === fixtureTeamId ? 'numeric_id' : 
+         team.name === fixtureTeamId ? 'name_exact' : 'name_case_insensitive') : 'fallback'
     });
     
     return result;
@@ -213,18 +231,20 @@ const ManualEventForm = ({
     }
 
     try {
-      // CRITICAL FIX: Convert fixture team IDs to database-compatible team IDs
+      // ENHANCED: Convert fixture team IDs to database-compatible team IDs
       const databaseTeamId = getTeamIdForDatabase(teamId);
       const databaseHomeTeamId = getTeamIdForDatabase(homeTeamId);
       const databaseAwayTeamId = getTeamIdForDatabase(awayTeamId);
       
-      console.log('🎯 ManualEventForm - Creating event with mapped team IDs:', {
+      console.log('🎯 ManualEventForm - Creating event with enhanced team ID mapping:', {
         originalTeamId: teamId,
         databaseTeamId,
         originalHomeTeamId: homeTeamId,
         databaseHomeTeamId,
         originalAwayTeamId: awayTeamId,
-        databaseAwayTeamId
+        databaseAwayTeamId,
+        eventType,
+        playerName
       });
 
       const eventData: Omit<MatchEvent, 'id' | 'created_at'> = {
@@ -245,8 +265,8 @@ const ManualEventForm = ({
       await createEvent.mutateAsync(eventData);
 
       toast({
-        title: "Event Added",
-        description: `${eventType} event added successfully`,
+        title: "Event Added Successfully",
+        description: `${eventType} event added for ${playerName}. Score synchronization in progress...`,
       });
 
       // Reset form
@@ -260,7 +280,7 @@ const ManualEventForm = ({
       setIsExpanded(false);
 
     } catch (error) {
-      console.error('Failed to create event:', error);
+      console.error('❌ ManualEventForm - Failed to create event:', error);
       toast({
         title: "Error",
         description: "Failed to add event. Please try again.",
@@ -270,156 +290,168 @@ const ManualEventForm = ({
   };
 
   return (
-    <Card className="w-full">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2 cursor-pointer" onClick={() => setIsExpanded(!isExpanded)}>
-          <Plus className="h-4 w-4" />
-          Add Manual Event
-          <span className="text-sm text-muted-foreground ml-auto">
-            {isExpanded ? 'Click to collapse' : 'Click to expand'}
-          </span>
-        </CardTitle>
-      </CardHeader>
+    <div className="space-y-4">
+      {/* Score Consistency Validator */}
+      <ScoreConsistencyValidator 
+        fixtureId={fixtureId} 
+        onScoreFixed={() => {
+          console.log('🎯 ManualEventForm - Score fixed, validation updated');
+        }}
+      />
+      
+      {/* Manual Event Form */}
+      <Card className="w-full">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 cursor-pointer" onClick={() => setIsExpanded(!isExpanded)}>
+            <Plus className="h-4 w-4" />
+            Add Manual Event
+            <span className="text-sm text-muted-foreground ml-auto">
+              {isExpanded ? 'Click to collapse' : 'Click to expand'}
+            </span>
+          </CardTitle>
+        </CardHeader>
 
-      {isExpanded && (
-        <CardContent className="space-y-4">
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="eventType">Event Type *</Label>
-                <Select value={eventType} onValueChange={setEventType}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select event type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="goal">Goal</SelectItem>
-                    <SelectItem value="assist">Assist</SelectItem>
-                    <SelectItem value="yellow_card">Yellow Card</SelectItem>
-                    <SelectItem value="red_card">Red Card</SelectItem>
-                  </SelectContent>
-                </Select>
+        {isExpanded && (
+          <CardContent className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {/* ... keep existing form content */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="eventType">Event Type *</Label>
+                  <Select value={eventType} onValueChange={setEventType}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select event type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="goal">Goal</SelectItem>
+                      <SelectItem value="assist">Assist</SelectItem>
+                      <SelectItem value="yellow_card">Yellow Card</SelectItem>
+                      <SelectItem value="red_card">Red Card</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="team">Team *</Label>
+                  <Select value={teamId} onValueChange={handleTeamChange}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select team" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value={homeTeamId}>{getTeamName(homeTeamId)}</SelectItem>
+                      <SelectItem value={awayTeamId}>{getTeamName(awayTeamId)}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="team">Team *</Label>
-                <Select value={teamId} onValueChange={handleTeamChange}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select team" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value={homeTeamId}>{getTeamName(homeTeamId)}</SelectItem>
-                    <SelectItem value={awayTeamId}>{getTeamName(awayTeamId)}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="player">Player *</Label>
+                  <Select value={playerName} onValueChange={setPlayerName}>
+                    <SelectTrigger>
+                      <SelectValue placeholder={teamId ? "Select player" : "Select a team first"} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availablePlayers.length > 0 ? (
+                        availablePlayers.map((player) => (
+                          <SelectItem 
+                            key={`player-${player.id}-${player.name}`} 
+                            value={player.name}
+                          >
+                            {player.name} ({player.position || 'Player'})
+                          </SelectItem>
+                        ))
+                    ) : teamId ? (
+                      <SelectItem value="no-players" disabled>
+                        No players found for this team
+                      </SelectItem>
+                    ) : (
+                      <SelectItem value="no-team" disabled>
+                        Select a team first
+                      </SelectItem>
+                    )}
+                    </SelectContent>
+                  </Select>
+                </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="player">Player *</Label>
-                <Select value={playerName} onValueChange={setPlayerName}>
-                  <SelectTrigger>
-                    <SelectValue placeholder={teamId ? "Select player" : "Select a team first"} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {availablePlayers.length > 0 ? (
-                      availablePlayers.map((player) => (
-                        <SelectItem 
-                          key={`player-${player.id}-${player.name}`} 
-                          value={player.name}
-                        >
-                          {player.name} ({player.position || 'Player'})
-                        </SelectItem>
-                      ))
-                  ) : teamId ? (
-                    <SelectItem value="no-players" disabled>
-                      No players found for this team
-                    </SelectItem>
-                  ) : (
-                    <SelectItem value="no-team" disabled>
-                      Select a team first
-                    </SelectItem>
-                  )}
-                  </SelectContent>
-                </Select>
+                <div className="space-y-2">
+                  <Label htmlFor="eventTime" className="flex items-center gap-1">
+                    <Clock className="h-3 w-3" />
+                    Event Time (seconds)
+                  </Label>
+                  <Input
+                    type="number"
+                    value={eventTime}
+                    onChange={(e) => setEventTime(parseInt(e.target.value) || 0)}
+                    min={0}
+                    max={7200}
+                  />
+                  <span className="text-xs text-muted-foreground">
+                    {formatTime(eventTime)}
+                  </span>
+                </div>
               </div>
 
+              {eventType.includes('card') && (
+                <div className="space-y-2">
+                  <Label htmlFor="cardType">Card Type *</Label>
+                  <Select value={cardType} onValueChange={setCardType}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select card type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="yellow">Yellow Card</SelectItem>
+                      <SelectItem value="red">Red Card</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
+              {eventType === 'goal' && (
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="ownGoal"
+                    checked={isOwnGoal}
+                    onCheckedChange={setIsOwnGoal}
+                  />
+                  <Label htmlFor="ownGoal">Own Goal</Label>
+                </div>
+              )}
+
               <div className="space-y-2">
-                <Label htmlFor="eventTime" className="flex items-center gap-1">
-                  <Clock className="h-3 w-3" />
-                  Event Time (seconds)
-                </Label>
-                <Input
-                  type="number"
-                  value={eventTime}
-                  onChange={(e) => setEventTime(parseInt(e.target.value) || 0)}
-                  min={0}
-                  max={7200}
+                <Label htmlFor="description">Description (optional)</Label>
+                <Textarea
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Additional event details..."
+                  rows={2}
                 />
-                <span className="text-xs text-muted-foreground">
-                  {formatTime(eventTime)}
-                </span>
               </div>
-            </div>
 
-            {eventType.includes('card') && (
-              <div className="space-y-2">
-                <Label htmlFor="cardType">Card Type *</Label>
-                <Select value={cardType} onValueChange={setCardType}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select card type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="yellow">Yellow Card</SelectItem>
-                    <SelectItem value="red">Red Card</SelectItem>
-                  </SelectContent>
-                </Select>
+              <div className="flex gap-2">
+                <Button 
+                  type="submit" 
+                  disabled={createEvent.isPending}
+                  className="flex items-center gap-2"
+                >
+                  <Plus className="h-4 w-4" />
+                  {createEvent.isPending ? 'Adding...' : 'Add Event'}
+                </Button>
+                
+                <Button 
+                  type="button" 
+                  variant="outline"
+                  onClick={() => setIsExpanded(false)}
+                >
+                  Cancel
+                </Button>
               </div>
-            )}
-
-            {eventType === 'goal' && (
-              <div className="flex items-center space-x-2">
-                <Switch
-                  id="ownGoal"
-                  checked={isOwnGoal}
-                  onCheckedChange={setIsOwnGoal}
-                />
-                <Label htmlFor="ownGoal">Own Goal</Label>
-              </div>
-            )}
-
-            <div className="space-y-2">
-              <Label htmlFor="description">Description (optional)</Label>
-              <Textarea
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="Additional event details..."
-                rows={2}
-              />
-            </div>
-
-            <div className="flex gap-2">
-              <Button 
-                type="submit" 
-                disabled={createEvent.isPending}
-                className="flex items-center gap-2"
-              >
-                <Plus className="h-4 w-4" />
-                {createEvent.isPending ? 'Adding...' : 'Add Event'}
-              </Button>
-              
-              <Button 
-                type="button" 
-                variant="outline"
-                onClick={() => setIsExpanded(false)}
-              >
-                Cancel
-              </Button>
-            </div>
-          </form>
-        </CardContent>
-      )}
-    </Card>
+            </form>
+          </CardContent>
+        )}
+      </Card>
+    </div>
   );
 };
 
