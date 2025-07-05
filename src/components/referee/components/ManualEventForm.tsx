@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -42,16 +42,47 @@ const ManualEventForm = ({
   const { toast } = useToast();
   const { data: teams } = useTeams();
 
-  // Helper function to get team name by ID
+  // Enhanced helper function to get team name by ID with fallback strategies
   const getTeamName = (teamId: string) => {
-    const team = teams?.find(t => t.__id__ === teamId);
+    if (!teams || !teamId) return `Team ${teamId}`;
+    
+    // Try multiple matching strategies
+    const team = teams.find(t => 
+      t.__id__ === teamId || 
+      t.id?.toString() === teamId ||
+      t.__id__ === teamId.toString()
+    );
+    
     return team?.name || `Team ${teamId}`;
   };
 
-  // Get players for selected team, or all players if no team selected
-  const availablePlayers = teamId 
-    ? allPlayers.filter(p => p.team_id === teamId)
-    : allPlayers;
+  // Enhanced player filtering with better team ID matching
+  const availablePlayers = useMemo(() => {
+    if (!teamId || !allPlayers) return [];
+    
+    console.log('🔍 ManualEventForm - Filtering players:', {
+      selectedTeamId: teamId,
+      totalPlayers: allPlayers.length,
+      samplePlayer: allPlayers[0]
+    });
+    
+    const filtered = allPlayers.filter(player => {
+      // Multiple matching strategies for team_id
+      const playerTeamId = player.team_id?.toString();
+      const selectedTeamIdStr = teamId.toString();
+      
+      return playerTeamId === selectedTeamIdStr ||
+             playerTeamId === teamId ||
+             player.team_id === teamId;
+    });
+    
+    console.log('🔍 ManualEventForm - Filtered result:', {
+      matchingPlayers: filtered.length,
+      players: filtered.map(p => ({ name: p.name, team_id: p.team_id }))
+    });
+    
+    return filtered;
+  }, [teamId, allPlayers]);
 
   // Reset player selection when team changes
   const handleTeamChange = (newTeamId: string) => {
@@ -169,13 +200,16 @@ const ManualEventForm = ({
                   <SelectContent>
                     {availablePlayers.length > 0 ? (
                       availablePlayers.map((player) => (
-                        <SelectItem key={player.id} value={player.name}>
-                          {player.name}
+                        <SelectItem 
+                          key={`player-${player.id}-${player.name}`} 
+                          value={player.name}
+                        >
+                          {player.name} ({player.position || 'Player'})
                         </SelectItem>
                       ))
                     ) : (
                       <SelectItem value="" disabled>
-                        {teamId ? "No players found" : "Select a team first"}
+                        {teamId ? "No players found for this team" : "Select a team first"}
                       </SelectItem>
                     )}
                   </SelectContent>
