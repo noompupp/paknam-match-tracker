@@ -59,22 +59,26 @@ const EnhancedDialogContent = React.forwardRef<
         ref={ref}
         className={cn(
           "fixed z-50 grid gap-4 bg-background shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
-          // Fullscreen mode styling
-          isMaximized && !isMobile ? [
-            "inset-2 max-w-none max-h-none w-auto h-auto translate-x-0 translate-y-0 rounded-lg",
-            "data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%]"
-          ] : [
+          // Apply base styling first (including custom className)
+          !isMaximized && [
             // Normal mode styling
-            "left-[50%] top-[50%] translate-x-[-50%] translate-y-[-50%] max-w-lg",
+            "left-[50%] top-[50%] translate-x-[-50%] translate-y-[-50%]",
             "data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%]",
-            "sm:rounded-lg"
+            // Mobile sizing
+            "h-[90vh] w-[95vw] mobile-safe-modal pb-[15vh]",
+            // Desktop sizing 
+            "sm:h-auto sm:w-auto sm:max-w-4xl sm:max-h-[90vh] sm:pt-0 sm:pb-0 sm:rounded-lg"
           ],
-          "border-0 sm:border", // Remove border on mobile, keep on desktop
-          // Mobile: 90% height with proper centering, full width - Updated padding with mobile safe area
-          "h-[90vh] w-[95vw] sm:h-auto sm:w-auto",
-          // Enhanced padding: mobile safe area top, bottom 15% on mobile, keep normal on desktop
-          "mobile-safe-modal pb-[15vh] sm:pt-0 sm:pb-0",
-          className
+          // Border and base styles
+          "border-0 sm:border",
+          // Apply custom className from props
+          className,
+          // Apply maximized styles LAST so they override everything
+          isMaximized && !isMobile && [
+            "!inset-2 !max-w-none !max-h-none !w-auto !h-auto !translate-x-0 !translate-y-0 !rounded-lg",
+            "!left-auto !top-auto !pb-0 !pt-0",
+            "data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%]"
+          ]
         )}
         {...props}
       >

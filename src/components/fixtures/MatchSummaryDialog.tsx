@@ -56,10 +56,10 @@ const MatchSummaryDialog = ({ fixture, isOpen, onClose }: MatchSummaryDialogProp
 
   return (
     <EnhancedDialog open={isOpen} onOpenChange={onClose}>
-      <EnhancedDialogContent 
-        className="w-[100vw] h-[100vh] sm:w-[95vw] sm:h-auto sm:max-w-4xl sm:max-h-[90vh] overflow-y-auto p-4 sm:p-6 sm:rounded-lg"
-        enableMaximize={true}
-      >
+        <EnhancedDialogContent 
+          className="overflow-y-auto p-4 sm:p-6"
+          enableMaximize={true}
+        >
         <EnhancedDialogHeader className="pb-3 sm:pb-4">
           <EnhancedDialogTitle className="flex items-center gap-2 text-lg sm:text-xl font-bold">
             <Trophy className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
