@@ -54,12 +54,12 @@ export const matchSummaryService = {
         throw timeError;
       }
 
-      // Process match events into goals and cards
+      // Process match events into goals and cards (playerId will be resolved later)
       const goals = matchEvents
         ?.filter(event => event.event_type === 'goal' || event.event_type === 'assist')
         .map(event => ({
           id: event.id,
-          playerId: parseInt(event.player_name) || 0, // Handle if player_name contains ID
+          playerId: 0, // Will be resolved in updateMemberStatsFromMatch
           playerName: event.player_name,
           team: event.team_id,
           type: event.event_type as 'goal' | 'assist',
@@ -70,7 +70,7 @@ export const matchSummaryService = {
         ?.filter(event => event.event_type === 'card')
         .map(event => ({
           id: event.id,
-          playerId: parseInt(event.player_name) || 0, // Handle if player_name contains ID
+          playerId: 0, // Will be resolved in updateMemberStatsFromMatch
           playerName: event.player_name,
           team: event.team_id,
           cardType: event.card_type as 'yellow' | 'red',
@@ -118,10 +118,50 @@ export const matchSummaryService = {
         minutesPlayed: number;
       }>();
 
-      // Process goals and assists
+      // First, get all unique player names from match events
+      const allPlayerNames = new Set<string>();
+      summaryData.goals.forEach(goal => allPlayerNames.add(goal.playerName));
+      summaryData.cards.forEach(card => allPlayerNames.add(card.playerName));
+      summaryData.playerTimes.forEach(timeData => allPlayerNames.add(timeData.playerName));
+
+      // Create a lookup map from player names to player IDs
+      const playerNameToIdMap = new Map<string, number>();
+      
+      if (allPlayerNames.size > 0) {
+        console.log('🔍 MatchSummaryService: Looking up player IDs for names:', Array.from(allPlayerNames));
+        
+        const { data: membersData, error: membersError } = await supabase
+          .from('members')
+          .select('id, name, team_id')
+          .in('name', Array.from(allPlayerNames));
+
+        if (membersError) {
+          console.error('❌ MatchSummaryService: Error fetching member data:', membersError);
+        } else if (membersData) {
+          membersData.forEach(member => {
+            playerNameToIdMap.set(member.name, member.id);
+          });
+          console.log('✅ MatchSummaryService: Player name to ID mapping:', Object.fromEntries(playerNameToIdMap));
+        }
+      }
+
+      // Helper function to get player ID with fallback
+      const getPlayerId = (playerName: string): number | null => {
+        const playerId = playerNameToIdMap.get(playerName);
+        if (!playerId) {
+          console.warn(`⚠️ MatchSummaryService: Could not find player ID for name: "${playerName}"`);
+          return null;
+        }
+        return playerId;
+      };
+
+      // Process goals and assists with proper player ID lookup
       summaryData.goals.forEach(goal => {
-        if (!playerStats.has(goal.playerId)) {
-          playerStats.set(goal.playerId, {
+        const playerId = getPlayerId(goal.playerName);
+        if (!playerId) return; // Skip if player ID not found
+
+        if (!playerStats.has(playerId)) {
+          playerStats.set(playerId, {
             goals: 0,
             assists: 0,
             yellowCards: 0,
@@ -130,18 +170,23 @@ export const matchSummaryService = {
           });
         }
         
-        const stats = playerStats.get(goal.playerId)!;
+        const stats = playerStats.get(playerId)!;
         if (goal.type === 'goal') {
           stats.goals += 1;
+          console.log(`⚽ MatchSummaryService: Added goal for ${goal.playerName} (ID: ${playerId})`);
         } else if (goal.type === 'assist') {
           stats.assists += 1;
+          console.log(`🅰️ MatchSummaryService: Added assist for ${goal.playerName} (ID: ${playerId})`);
         }
       });
 
-      // Process cards
+      // Process cards with proper player ID lookup
       summaryData.cards.forEach(card => {
-        if (!playerStats.has(card.playerId)) {
-          playerStats.set(card.playerId, {
+        const playerId = getPlayerId(card.playerName);
+        if (!playerId) return; // Skip if player ID not found
+
+        if (!playerStats.has(playerId)) {
+          playerStats.set(playerId, {
             goals: 0,
             assists: 0,
             yellowCards: 0,
@@ -150,18 +195,22 @@ export const matchSummaryService = {
           });
         }
         
-        const stats = playerStats.get(card.playerId)!;
+        const stats = playerStats.get(playerId)!;
         if (card.cardType === 'yellow') {
           stats.yellowCards += 1;
+          console.log(`🟨 MatchSummaryService: Added yellow card for ${card.playerName} (ID: ${playerId})`);
         } else if (card.cardType === 'red') {
           stats.redCards += 1;
+          console.log(`🟥 MatchSummaryService: Added red card for ${card.playerName} (ID: ${playerId})`);
         }
       });
 
-      // Process playing time
+      // Process playing time - use the player_id directly from player_time_tracking
       summaryData.playerTimes.forEach(timeData => {
-        if (!playerStats.has(timeData.playerId)) {
-          playerStats.set(timeData.playerId, {
+        const playerId = timeData.playerId; // This should be the actual player ID from the database
+        
+        if (!playerStats.has(playerId)) {
+          playerStats.set(playerId, {
             goals: 0,
             assists: 0,
             yellowCards: 0,
@@ -170,14 +219,21 @@ export const matchSummaryService = {
           });
         }
         
-        const stats = playerStats.get(timeData.playerId)!;
+        const stats = playerStats.get(playerId)!;
         stats.minutesPlayed += timeData.totalMinutes;
+        console.log(`⏱️ MatchSummaryService: Added ${timeData.totalMinutes} minutes for ${timeData.playerName} (ID: ${playerId})`);
       });
 
       // Update each player's stats in the database
       let updatedCount = 0;
+      let failedCount = 0;
+      
+      console.log(`📊 MatchSummaryService: Updating stats for ${playerStats.size} players`);
+      
       for (const [playerId, stats] of playerStats) {
         try {
+          console.log(`🔄 MatchSummaryService: Updating player ${playerId} with stats:`, stats);
+          
           const { error } = await supabase.rpc('safe_update_member_stats', {
             p_member_id: playerId,
             p_goals: stats.goals,
@@ -190,19 +246,24 @@ export const matchSummaryService = {
 
           if (!error) {
             updatedCount++;
+            console.log(`✅ MatchSummaryService: Successfully updated stats for player ${playerId}`);
           } else {
-            console.warn(`⚠️ MatchSummaryService: Failed to update stats for player ${playerId}:`, error);
+            failedCount++;
+            console.error(`❌ MatchSummaryService: Failed to update stats for player ${playerId}:`, error);
           }
         } catch (error) {
-          console.warn(`⚠️ MatchSummaryService: Error updating player ${playerId}:`, error);
+          failedCount++;
+          console.error(`❌ MatchSummaryService: Exception updating player ${playerId}:`, error);
         }
       }
 
-      console.log(`✅ MatchSummaryService: Updated stats for ${updatedCount}/${playerStats.size} players`);
+      console.log(`✅ MatchSummaryService: Updated stats for ${updatedCount}/${playerStats.size} players (${failedCount} failed)`);
       
       return {
-        success: true,
-        message: `Successfully updated stats for ${updatedCount} players`
+        success: updatedCount > 0,
+        message: failedCount > 0 
+          ? `Updated stats for ${updatedCount} players, ${failedCount} failed`
+          : `Successfully updated stats for ${updatedCount} players`
       };
 
     } catch (error) {
