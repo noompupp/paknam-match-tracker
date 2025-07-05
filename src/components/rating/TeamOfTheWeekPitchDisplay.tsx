@@ -5,7 +5,7 @@ import { Crown, Star } from "lucide-react";
 import type { TeamOfTheWeekPlayer } from "@/utils/teamOfTheWeekSelection";
 import { formatTeamOfTheWeekByPosition } from "@/utils/teamOfTheWeekSelection";
 import { useDeviceOrientation } from "@/hooks/useDeviceOrientation";
-import PlayerAvatar from "@/components/shared/playerAvatar/PlayerAvatar";
+import MiniPlayerAvatar from "@/components/dashboard/MiniPlayerAvatar";
 
 interface TeamOfTheWeekPitchDisplayProps {
   teamOfTheWeek: TeamOfTheWeekPlayer[];
@@ -25,12 +25,10 @@ const PlayerPitchCard = ({ player }: { player: TeamOfTheWeekPlayer }) => {
       {/* Player Avatar */}
       <div className="flex flex-col items-center space-y-2">
         <div className="w-8 h-8 sm:w-10 sm:h-10">
-          <PlayerAvatar
-            playerId={player.player_id}
-            playerName={player.player_name}
-            teamId={player.team_id}
-            size="sm"
-            showFlip={false}
+          <MiniPlayerAvatar
+            name={player.player_name}
+            imageUrl={null}
+            size={32}
             className={`${player.isCaptain ? 'ring-2 ring-yellow-400' : ''}`}
           />
         </div>

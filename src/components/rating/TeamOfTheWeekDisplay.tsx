@@ -7,7 +7,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import type { TeamOfTheWeekPlayer, CaptainOfTheWeekPlayer } from "@/utils/teamOfTheWeekSelection";
 import { formatTeamOfTheWeekByPosition } from "@/utils/teamOfTheWeekSelection";
 import TeamOfTheWeekPitchDisplay from "./TeamOfTheWeekPitchDisplay";
-import PlayerAvatar from "@/components/shared/playerAvatar/PlayerAvatar";
+import MiniPlayerAvatar from "@/components/dashboard/MiniPlayerAvatar";
 
 interface TeamOfTheWeekDisplayProps {
   teamOfTheWeek: TeamOfTheWeekPlayer[];
@@ -27,12 +27,10 @@ const PlayerCard = ({ player }: { player: TeamOfTheWeekPlayer }) => {
       <CardContent className="p-3">
         <div className="text-center space-y-2">
           <div className="w-12 h-12 mx-auto">
-            <PlayerAvatar
-              playerId={player.player_id}
-              playerName={player.player_name}
-              teamId={player.team_id}
-              size="md"
-              showFlip={false}
+            <MiniPlayerAvatar
+              name={player.player_name}
+              imageUrl={null}
+              size={48}
               className={`${player.isCaptain ? 'ring-2 ring-yellow-400' : ''}`}
             />
           </div>
@@ -71,12 +69,10 @@ const CaptainOfTheWeekCard = ({ captain }: { captain: CaptainOfTheWeekPlayer }) 
       </CardHeader>
       <CardContent className="text-center">
         <div className="w-16 h-16 mx-auto mb-3">
-          <PlayerAvatar
-            playerId={captain.player_id}
-            playerName={captain.player_name}
-            teamId={captain.team_id}
-            size="lg"
-            showFlip={false}
+          <MiniPlayerAvatar
+            name={captain.player_name}
+            imageUrl={null}
+            size={64}
             className="ring-2 ring-blue-400"
           />
         </div>
@@ -152,12 +148,10 @@ const TeamOfTheWeekDisplay: React.FC<TeamOfTheWeekDisplayProps> = ({
               </CardHeader>
               <CardContent className="text-center">
                 <div className="w-16 h-16 mx-auto mb-3">
-                  <PlayerAvatar
-                    playerId={totwCaptain.player_id}
-                    playerName={totwCaptain.player_name}
-                    teamId={totwCaptain.team_id}
-                    size="lg"
-                    showFlip={false}
+                  <MiniPlayerAvatar
+                    name={totwCaptain.player_name}
+                    imageUrl={null}
+                    size={64}
                     className="ring-2 ring-yellow-400"
                   />
                 </div>
