@@ -3,14 +3,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Crown, Star, Users, Save } from "lucide-react";
+import { Crown, Star, Users, Save, Calendar } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { TeamOfTheWeekPlayer, CaptainOfTheWeekPlayer } from "@/utils/teamOfTheWeekSelection";
 import { useHybridPlayerRatings, useApprovedPlayerRatings } from "@/hooks/useHybridPlayerRatings";
+import { useWeeklyPlayerPerformance } from "@/hooks/useWeeklyTOTW";
 import MiniPlayerAvatar from "@/components/dashboard/MiniPlayerAvatar";
 
 interface ManualTOTWSelectionProps {
   fixtureId: number | null;
+  weeklyTotwId?: string | null;
   onSelectionChange: (totw: TeamOfTheWeekPlayer[], captain: CaptainOfTheWeekPlayer | null) => void;
   initialTOTW?: TeamOfTheWeekPlayer[];
   initialCaptain?: CaptainOfTheWeekPlayer | null;
@@ -18,6 +20,7 @@ interface ManualTOTWSelectionProps {
 
 const ManualTOTWSelection: React.FC<ManualTOTWSelectionProps> = ({ 
   fixtureId, 
+  weeklyTotwId,
   onSelectionChange,
   initialTOTW = [],
   initialCaptain = null
@@ -30,17 +33,33 @@ const ManualTOTWSelection: React.FC<ManualTOTWSelectionProps> = ({
     initialTOTW.find(p => p.isCaptain)?.player_id || null
   );
 
+  // Use weekly data if available, otherwise fixture data
   const { data: hybridRatings } = useHybridPlayerRatings(fixtureId);
   const { data: approvedRatings } = useApprovedPlayerRatings(fixtureId);
+  const { data: weeklyPerformance } = useWeeklyPlayerPerformance(weeklyTotwId);
 
-  // Get approved player ratings only
-  const approvedMap = new Map(
-    (approvedRatings || []).map(rating => [rating.player_id, rating])
-  );
-
-  const availablePlayers = (hybridRatings || []).filter(rating => 
-    approvedMap.has(rating.player_id)
-  ).sort((a, b) => b.rating_data.final_rating - a.rating_data.final_rating);
+  // Determine data source and transform for consistent interface
+  const availablePlayers = weeklyTotwId && weeklyPerformance 
+    ? weeklyPerformance.map(wp => ({
+        player_id: wp.player_id,
+        player_name: wp.player_name,
+        team_id: wp.team_id,
+        team_name: wp.team_name,
+        position: wp.position,
+        rating_data: {
+          final_rating: wp.weighted_final_rating,
+          fpl_rating: wp.average_fpl_rating,
+          participation_rating: wp.average_participation_rating
+        }
+      })).sort((a, b) => b.rating_data.final_rating - a.rating_data.final_rating)
+    : (() => {
+        const approvedMap = new Map(
+          (approvedRatings || []).map(rating => [rating.player_id, rating])
+        );
+        return (hybridRatings || []).filter(rating => 
+          approvedMap.has(rating.player_id)
+        ).sort((a, b) => b.rating_data.final_rating - a.rating_data.final_rating);
+      })();
 
   const handlePlayerToggle = (playerId: number) => {
     const newSelected = new Set(selectedPlayers);

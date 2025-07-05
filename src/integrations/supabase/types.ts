@@ -96,6 +96,56 @@ export type Database = {
         }
         Relationships: []
       }
+      captain_selection_history: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          performance_score: number
+          player_id: number
+          player_name: string
+          selected_by: string | null
+          selection_reason: string | null
+          selection_type: string
+          team_id: string
+          weekly_totw_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          performance_score?: number
+          player_id: number
+          player_name: string
+          selected_by?: string | null
+          selection_reason?: string | null
+          selection_type: string
+          team_id: string
+          weekly_totw_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          performance_score?: number
+          player_id?: number
+          player_name?: string
+          selected_by?: string | null
+          selection_reason?: string | null
+          selection_type?: string
+          team_id?: string
+          weekly_totw_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "captain_selection_history_weekly_totw_id_fkey"
+            columns: ["weekly_totw_id"]
+            isOneToOne: false
+            referencedRelation: "weekly_totw"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       coordination_events: {
         Row: {
           event_data: Json | null
@@ -974,11 +1024,137 @@ export type Database = {
           },
         ]
       }
+      weekly_player_performance: {
+        Row: {
+          average_fpl_rating: number
+          average_participation_rating: number
+          created_at: string
+          fixtures_played_in: number[]
+          id: string
+          matches_played: number
+          performance_breakdown: Json
+          player_id: number
+          player_name: string
+          position: string
+          team_id: string
+          team_name: string
+          total_assists: number
+          total_cards: number
+          total_goals: number
+          total_minutes: number
+          updated_at: string
+          weekly_totw_id: string
+          weighted_final_rating: number
+        }
+        Insert: {
+          average_fpl_rating?: number
+          average_participation_rating?: number
+          created_at?: string
+          fixtures_played_in?: number[]
+          id?: string
+          matches_played?: number
+          performance_breakdown?: Json
+          player_id: number
+          player_name: string
+          position?: string
+          team_id: string
+          team_name: string
+          total_assists?: number
+          total_cards?: number
+          total_goals?: number
+          total_minutes?: number
+          updated_at?: string
+          weekly_totw_id: string
+          weighted_final_rating?: number
+        }
+        Update: {
+          average_fpl_rating?: number
+          average_participation_rating?: number
+          created_at?: string
+          fixtures_played_in?: number[]
+          id?: string
+          matches_played?: number
+          performance_breakdown?: Json
+          player_id?: number
+          player_name?: string
+          position?: string
+          team_id?: string
+          team_name?: string
+          total_assists?: number
+          total_cards?: number
+          total_goals?: number
+          total_minutes?: number
+          updated_at?: string
+          weekly_totw_id?: string
+          weighted_final_rating?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "weekly_player_performance_weekly_totw_id_fkey"
+            columns: ["weekly_totw_id"]
+            isOneToOne: false
+            referencedRelation: "weekly_totw"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      weekly_totw: {
+        Row: {
+          approved_by: string | null
+          captain_of_the_week: Json | null
+          created_at: string
+          created_by: string | null
+          fixtures_included: number[]
+          id: string
+          is_finalized: boolean
+          season_year: number
+          selection_method: string
+          team_of_the_week: Json
+          updated_at: string
+          week_end_date: string
+          week_start_date: string
+        }
+        Insert: {
+          approved_by?: string | null
+          captain_of_the_week?: Json | null
+          created_at?: string
+          created_by?: string | null
+          fixtures_included?: number[]
+          id?: string
+          is_finalized?: boolean
+          season_year?: number
+          selection_method?: string
+          team_of_the_week?: Json
+          updated_at?: string
+          week_end_date: string
+          week_start_date: string
+        }
+        Update: {
+          approved_by?: string | null
+          captain_of_the_week?: Json | null
+          created_at?: string
+          created_by?: string | null
+          fixtures_included?: number[]
+          id?: string
+          is_finalized?: boolean
+          season_year?: number
+          selection_method?: string
+          team_of_the_week?: Json
+          updated_at?: string
+          week_end_date?: string
+          week_start_date?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      aggregate_weekly_player_performance: {
+        Args: { p_week_start: string; p_week_end: string }
+        Returns: Json
+      }
       approve_player_rating: {
         Args: {
           p_fixture_id: number
@@ -1026,6 +1202,10 @@ export type Database = {
         }
         Returns: string
       }
+      generate_weekly_totw: {
+        Args: { p_week_start?: string; p_week_end?: string }
+        Returns: Json
+      }
       get_coordination_with_assignments: {
         Args: { p_fixture_id: number }
         Returns: {
@@ -1034,6 +1214,13 @@ export type Database = {
           assignments: Json
           user_assignments: Json
           completion_status: Json
+        }[]
+      }
+      get_current_week_boundaries: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          week_start: string
+          week_end: string
         }[]
       }
       get_enhanced_match_summary: {
