@@ -120,68 +120,68 @@ const TeamOfTheWeekPitchDisplay: React.FC<TeamOfTheWeekPitchDisplayProps> = ({
             <div className="absolute bottom-0 right-0 w-3 h-3 border-t-2 border-l-2 border-white/50 rounded-tl-full" />
           </div>
 
-          {/* Formation Display - Mobile-First Vertical Layout */}
-          <div className="relative h-full flex flex-col justify-between py-6 sm:py-8">
-            
-            {/* Attack Zone - Forwards at the top */}
+        {/* Formation Display - Mobile-First Vertical Layout */}
+        <div className="relative h-full flex flex-col justify-between py-6 sm:py-8">
+          
+          {/* Attack Zone - Forwards at the top */}
+          <div className="flex justify-center">
+            <FormationRow 
+              players={formation.forwards}
+              membersMap={membersMap}
+            />
+          </div>
+
+          {/* Advanced Midfield Zone */}
+          {formation.wingers.length > 0 && (
             <div className="flex justify-center">
               <FormationRow 
-                players={formation.forwards}
+                players={formation.wingers}
                 membersMap={membersMap}
               />
             </div>
+          )}
 
-            {/* Advanced Midfield Zone */}
-            {formation.wingers.length > 0 && (
-              <div className="flex justify-center">
-                <FormationRow 
-                  players={formation.wingers}
-                  membersMap={membersMap}
-                />
-              </div>
-            )}
+          {/* Central Midfield Zone */}
+          {formation.midfielders.length > 0 && (
+            <div className="flex justify-center">
+              <FormationRow 
+                players={formation.midfielders}
+                membersMap={membersMap}
+              />
+            </div>
+          )}
 
-            {/* Defense Zone - Defenders in separate row from midfielders */}
-            {formation.defenders.length > 0 && (
-              <div className="flex justify-center">
-                <FormationRow 
-                  players={formation.defenders}
-                  membersMap={membersMap}
-                />
-              </div>
-            )}
+          {/* Defensive Midfield Zone */}
+          {formation.defensiveMidfielders.length > 0 && (
+            <div className="flex justify-center">
+              <FormationRow 
+                players={formation.defensiveMidfielders}
+                membersMap={membersMap}
+              />
+            </div>
+          )}
 
-            {/* Defensive Midfield Zone - Separate from other midfielders */}
-            {formation.defensiveMidfielders.length > 0 && (
-              <div className="flex justify-center">
-                <FormationRow 
-                  players={formation.defensiveMidfielders}
-                  membersMap={membersMap}
-                />
-              </div>
-            )}
+          {/* Defense Zone - Defenders positioned properly between midfield and goalkeeper */}
+          {formation.defenders.length > 0 && (
+            <div className="flex justify-center">
+              <FormationRow 
+                players={formation.defenders}
+                membersMap={membersMap}
+              />
+            </div>
+          )}
 
-            {/* Central Midfield Zone */}
-            {formation.midfielders.length > 0 && (
-              <div className="flex justify-center">
-                <FormationRow 
-                  players={formation.midfielders}
-                  membersMap={membersMap}
-                />
-              </div>
-            )}
-
-            {/* Goalkeeper Zone - at the bottom */}
-            {formation.goalkeeper.length > 0 && (
-              <div className="flex justify-center">
-                <FormationRow 
-                  players={formation.goalkeeper}
-                  membersMap={membersMap}
-                  isGoalkeeper={true}
-                />
-              </div>
-            )}
-          </div>
+          {/* Goalkeeper Zone - at the bottom */}
+          {formation.goalkeeper.length > 0 && (
+            <div className="flex justify-center">
+              <FormationRow 
+                players={formation.goalkeeper}
+                membersMap={membersMap}
+                isGoalkeeper={true}
+              />
+            </div>
+          )}
+        </div>
 
           {/* Mobile-Optimized Info Badges */}
           <div className="absolute top-2 left-2 bg-white/95 backdrop-blur-sm rounded-lg px-2 py-1 shadow-sm">

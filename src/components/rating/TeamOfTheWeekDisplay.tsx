@@ -171,7 +171,7 @@ const TeamOfTheWeekDisplay: React.FC<TeamOfTheWeekDisplayProps> = ({
               <CardHeader className="pb-2">
                 <CardTitle className="text-center flex items-center justify-center space-x-2 text-lg text-yellow-900">
                   <Crown className="h-5 w-5 text-yellow-800" />
-                  <span className="font-bold">TOTW {t('rating.captain')}</span>
+                  <span className="font-bold">TOTW MVP</span>
                 </CardTitle>
               </CardHeader>
               <CardContent className="text-center">
@@ -185,11 +185,11 @@ const TeamOfTheWeekDisplay: React.FC<TeamOfTheWeekDisplayProps> = ({
                     />
                   </div>
                   <div className="flex-1 text-left">
-                    <div className="font-bold text-xl text-yellow-900">{totwCaptain.player_name}</div>
-                    <div className="text-yellow-800 font-medium">{totwCaptain.team_name} • {totwCaptain.position}</div>
+                    <div className="font-bold text-xl text-yellow-950">{totwCaptain.player_name}</div>
+                    <div className="text-yellow-900 font-medium">{totwCaptain.team_name} • {totwCaptain.position}</div>
                     <div className="flex items-center space-x-2 mt-2">
-                      <Star className="h-4 w-4 text-yellow-700 fill-current" />
-                      <span className="font-bold text-green-800 text-lg">
+                      <Star className="h-4 w-4 text-yellow-800 fill-current" />
+                      <span className="font-bold text-green-900 text-lg">
                         {totwCaptain.rating_data.final_rating.toFixed(2)}
                       </span>
                     </div>
