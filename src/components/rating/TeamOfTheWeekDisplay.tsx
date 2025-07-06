@@ -167,10 +167,10 @@ const TeamOfTheWeekDisplay: React.FC<TeamOfTheWeekDisplayProps> = ({
         <div className="lg:col-span-2 space-y-4">
           {/* TOTW Captain Highlight */}
           {totwCaptain && (
-            <Card className="border-yellow-600 bg-gradient-to-r from-yellow-300 via-yellow-200 to-orange-200 shadow-lg">
+            <Card className="border-slate-700 bg-slate-800 shadow-lg">
               <CardHeader className="pb-2">
-                <CardTitle className="text-center flex items-center justify-center space-x-2 text-lg text-yellow-900">
-                  <Crown className="h-5 w-5 text-yellow-800" />
+                <CardTitle className="text-center flex items-center justify-center space-x-2 text-lg text-white">
+                  <Crown className="h-5 w-5 text-yellow-400" />
                   <span className="font-bold">TOTW MVP</span>
                 </CardTitle>
               </CardHeader>
@@ -181,15 +181,15 @@ const TeamOfTheWeekDisplay: React.FC<TeamOfTheWeekDisplayProps> = ({
                       name={totwCaptain.player_name}
                       imageUrl={membersMap.get(totwCaptain.player_id)?.ProfileURL || membersMap.get(totwCaptain.player_id)?.optimized_avatar_url}
                       size={74}
-                      className="ring-2 ring-yellow-600"
+                      className="ring-2 ring-yellow-400"
                     />
                   </div>
                   <div className="flex-1 text-left">
-                    <div className="font-bold text-xl text-yellow-950">{totwCaptain.player_name}</div>
-                    <div className="text-yellow-900 font-medium">{totwCaptain.team_name} • {totwCaptain.position}</div>
+                    <div className="font-bold text-xl text-white">{totwCaptain.player_name}</div>
+                    <div className="text-slate-200 font-medium">{totwCaptain.team_name} • {totwCaptain.position}</div>
                     <div className="flex items-center space-x-2 mt-2">
-                      <Star className="h-4 w-4 text-yellow-800 fill-current" />
-                      <span className="font-bold text-green-900 text-lg">
+                      <Star className="h-4 w-4 text-yellow-400 fill-current" />
+                      <span className="font-bold text-green-400 text-lg">
                         {totwCaptain.rating_data.final_rating.toFixed(2)}
                       </span>
                     </div>
