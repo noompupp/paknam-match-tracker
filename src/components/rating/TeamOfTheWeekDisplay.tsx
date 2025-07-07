@@ -167,11 +167,11 @@ const TeamOfTheWeekDisplay: React.FC<TeamOfTheWeekDisplayProps> = ({
         <div className="lg:col-span-2 space-y-4">
           {/* TOTW Captain Highlight */}
           {totwCaptain && (
-            <Card className="border-slate-700 bg-slate-800 shadow-lg">
+            <Card className="border-amber-600 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 shadow-xl ring-2 ring-amber-500/30">
               <CardHeader className="pb-2">
                 <CardTitle className="text-center flex items-center justify-center space-x-2 text-lg text-white">
-                  <Crown className="h-5 w-5 text-yellow-400" />
-                  <span className="font-bold">TOTW MVP</span>
+                  <Crown className="h-5 w-5 text-amber-400 drop-shadow-lg" />
+                  <span className="font-bold text-white drop-shadow-md">TOTW MVP</span>
                 </CardTitle>
               </CardHeader>
               <CardContent className="text-center">
@@ -181,15 +181,15 @@ const TeamOfTheWeekDisplay: React.FC<TeamOfTheWeekDisplayProps> = ({
                       name={totwCaptain.player_name}
                       imageUrl={membersMap.get(totwCaptain.player_id)?.ProfileURL || membersMap.get(totwCaptain.player_id)?.optimized_avatar_url}
                       size={74}
-                      className="ring-2 ring-yellow-400"
+                      className="ring-3 ring-amber-400 shadow-xl"
                     />
                   </div>
                   <div className="flex-1 text-left">
-                    <div className="font-bold text-xl text-white">{totwCaptain.player_name}</div>
-                    <div className="text-slate-200 font-medium">{totwCaptain.team_name} • {totwCaptain.position}</div>
+                    <div className="font-bold text-xl text-white drop-shadow-md">{totwCaptain.player_name}</div>
+                    <div className="text-amber-200 font-medium drop-shadow-sm">{totwCaptain.team_name} • {totwCaptain.position}</div>
                     <div className="flex items-center space-x-2 mt-2">
-                      <Star className="h-4 w-4 text-yellow-400 fill-current" />
-                      <span className="font-bold text-green-400 text-lg">
+                      <Star className="h-4 w-4 text-amber-400 fill-current drop-shadow-sm" />
+                      <span className="font-bold text-green-300 text-lg drop-shadow-sm">
                         {totwCaptain.rating_data.final_rating.toFixed(2)}
                       </span>
                     </div>

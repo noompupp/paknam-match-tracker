@@ -93,8 +93,8 @@ export function selectTeamOfTheWeek(
 
   const selectedPlayers: PlayerRatingRow[] = [];
   
-  // Core positions for 7-a-side (in priority order)
-  const corePositions = ['GK', 'DF', 'MF', 'WG', 'FW'];
+  // Core positions for 7-a-side (in priority order) - Simplified to 4 main positions
+  const corePositions = ['GK', 'DF', 'MF', 'FW'];
   
   // Step 1: Try to get the best player from each core position
   for (const position of corePositions) {
@@ -247,19 +247,15 @@ export function formatTeamOfTheWeekByPosition(teamOfTheWeek: TeamOfTheWeekPlayer
         pos === 'CENTRE BACK' || pos === 'LEFT BACK' || pos === 'RIGHT BACK' ||
         pos === 'CENTER BACK' || pos === 'CENTERBACK' || pos === 'CENTREBACK') return 'DF';
     
-    // Defensive midfielder variations (separate from general midfielders)
-    if (pos.includes('CDM') || pos.includes('DEFENSIVE MID') || pos.includes('DM')) return 'DM';
-    
-    if ((pos.includes('MF') || pos.includes('MID') || pos.includes('CM') || 
-         pos.includes('CAM') || pos.includes('MIDFIELDER') ||
-         pos === 'CENTRAL MIDFIELD' || pos === 'CENTRE MID' || pos === 'CENTER MID') &&
-         // Exclude wingers from midfielders
-         !(pos.includes('WG') || pos.includes('WING') || pos.includes('LW') || 
-           pos.includes('RW') || pos.includes('LM') || pos.includes('RM') ||
-           pos === 'LEFT WING' || pos === 'RIGHT WING' || pos === 'WINGER')) return 'MF';
-    if (pos.includes('WG') || pos.includes('WING') || pos.includes('LW') || 
+    // Consolidate ALL midfielder variations into a single 'MF' category
+    if (pos.includes('MF') || pos.includes('MID') || pos.includes('CM') || 
+        pos.includes('CAM') || pos.includes('CDM') || pos.includes('DM') ||
+        pos.includes('MIDFIELDER') || pos.includes('DEFENSIVE MID') ||
+        pos.includes('WG') || pos.includes('WING') || pos.includes('LW') || 
         pos.includes('RW') || pos.includes('LM') || pos.includes('RM') ||
-        pos === 'LEFT WING' || pos === 'RIGHT WING' || pos === 'WINGER') return 'WG';
+        pos === 'CENTRAL MIDFIELD' || pos === 'CENTRE MID' || pos === 'CENTER MID' ||
+        pos === 'LEFT WING' || pos === 'RIGHT WING' || pos === 'WINGER') return 'MF';
+    
     if (pos.includes('FW') || pos.includes('FORWARD') || pos.includes('ST') || 
         pos.includes('CF') || pos.includes('STRIKER') || pos.includes('CENTRE-FORWARD') ||
         pos === 'CENTRE FORWARD' || pos === 'CENTER FORWARD') return 'FW';
@@ -269,9 +265,7 @@ export function formatTeamOfTheWeekByPosition(teamOfTheWeek: TeamOfTheWeekPlayer
   const formation = {
     goalkeeper: teamOfTheWeek.filter(p => normalizePosition(p.position) === 'GK'),
     defenders: teamOfTheWeek.filter(p => normalizePosition(p.position) === 'DF'),
-    defensiveMidfielders: teamOfTheWeek.filter(p => normalizePosition(p.position) === 'DM'),
     midfielders: teamOfTheWeek.filter(p => normalizePosition(p.position) === 'MF'),
-    wingers: teamOfTheWeek.filter(p => normalizePosition(p.position) === 'WG'),
     forwards: teamOfTheWeek.filter(p => normalizePosition(p.position) === 'FW')
   };
 

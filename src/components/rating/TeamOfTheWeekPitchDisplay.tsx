@@ -131,20 +131,7 @@ const TeamOfTheWeekPitchDisplay: React.FC<TeamOfTheWeekPitchDisplayProps> = ({
             />
           </div>
 
-          {/* Advanced Midfield Zone - Wingers */}
-          {formation.wingers.length > 0 && (
-            <div className="flex justify-center mb-8">
-              <div className="relative">
-                <FormationRow 
-                  players={formation.wingers}
-                  membersMap={membersMap}
-                />
-                <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 w-16 h-px bg-white/40"></div>
-              </div>
-            </div>
-          )}
-
-          {/* Central Midfield Zone */}
+          {/* Advanced Midfield Zone - Central Midfielders */}
           {formation.midfielders.length > 0 && (
             <div className="flex justify-center mb-8">
               <div className="relative">
@@ -153,19 +140,6 @@ const TeamOfTheWeekPitchDisplay: React.FC<TeamOfTheWeekPitchDisplayProps> = ({
                   membersMap={membersMap}
                 />
                 <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 w-16 h-px bg-white/40"></div>
-              </div>
-            </div>
-          )}
-
-          {/* Defensive Midfield Zone */}
-          {formation.defensiveMidfielders.length > 0 && (
-            <div className="flex justify-center mb-8">
-              <div className="relative">
-                <FormationRow 
-                  players={formation.defensiveMidfielders}
-                  membersMap={membersMap}
-                />
-                <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 w-20 h-px bg-white/50"></div>
               </div>
             </div>
           )}
@@ -215,7 +189,7 @@ const TeamOfTheWeekPitchDisplay: React.FC<TeamOfTheWeekPitchDisplayProps> = ({
           {/* Formation Badge - Bottom */}
           <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 bg-white/95 backdrop-blur-sm rounded-full px-3 py-1 shadow-sm">
             <span className="text-xs font-bold text-green-800">
-              {formation.defenders.length}-{formation.defensiveMidfielders.length + formation.midfielders.length + formation.wingers.length}-{formation.forwards.length}
+              {formation.defenders.length}-{formation.midfielders.length}-{formation.forwards.length}
             </span>
           </div>
         </div>
@@ -239,7 +213,7 @@ const TeamOfTheWeekPitchDisplay: React.FC<TeamOfTheWeekPitchDisplayProps> = ({
         {teamOfTheWeek.length > 0 && (
           <div className="mt-3 text-center">
             <p className="text-sm text-muted-foreground">
-              Formation: {formation.defenders.length}-{formation.defensiveMidfielders.length + formation.midfielders.length + formation.wingers.length}-{formation.forwards.length}
+              Formation: {formation.defenders.length}-{formation.midfielders.length}-{formation.forwards.length}
               {teamOfTheWeek.find(p => p.isCaptain) && (
                 <span className="ml-2 text-yellow-600 font-medium">
                   • Captain: {teamOfTheWeek.find(p => p.isCaptain)?.player_name}
