@@ -120,55 +120,45 @@ const TeamOfTheWeekPitchDisplay: React.FC<TeamOfTheWeekPitchDisplayProps> = ({
             <div className="absolute bottom-0 right-0 w-3 h-3 border-t-2 border-l-2 border-white/50 rounded-tl-full" />
           </div>
 
-        {/* Formation Display - Mobile-First Vertical Layout with Enhanced Spacing */}
-        <div className="relative h-full flex flex-col justify-between py-8 sm:py-12">
+        {/* Formation Display - Even Distribution with Proper Spacing */}
+        <div className="relative h-full flex flex-col justify-evenly py-4 sm:py-6">
           
           {/* Attack Zone - Forwards at the top */}
-          <div className="flex justify-center mb-6">
+          <div className="flex justify-center">
             <FormationRow 
               players={formation.forwards}
               membersMap={membersMap}
             />
           </div>
 
-          {/* Advanced Midfield Zone - Central Midfielders */}
+          {/* Midfield Zone - Central Midfielders */}
           {formation.midfielders.length > 0 && (
-            <div className="flex justify-center mb-8">
-              <div className="relative">
-                <FormationRow 
-                  players={formation.midfielders}
-                  membersMap={membersMap}
-                />
-                <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 w-16 h-px bg-white/40"></div>
-              </div>
+            <div className="flex justify-center">
+              <FormationRow 
+                players={formation.midfielders}
+                membersMap={membersMap}
+              />
             </div>
           )}
 
-          {/* Defense Zone - Defenders with prominent separation */}
+          {/* Defense Zone - Defenders */}
           {formation.defenders.length > 0 && (
-            <div className="flex justify-center mb-8">
-              <div className="relative">
-                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 w-20 h-px bg-white/50"></div>
-                <FormationRow 
-                  players={formation.defenders}
-                  membersMap={membersMap}
-                />
-                <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 w-24 h-px bg-white/60"></div>
-              </div>
+            <div className="flex justify-center">
+              <FormationRow 
+                players={formation.defenders}
+                membersMap={membersMap}
+              />
             </div>
           )}
 
-          {/* Goalkeeper Zone - at the bottom with maximum separation */}
+          {/* Goalkeeper Zone - at the bottom */}
           {formation.goalkeeper.length > 0 && (
             <div className="flex justify-center">
-              <div className="relative">
-                <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 w-24 h-px bg-white/60"></div>
-                <FormationRow 
-                  players={formation.goalkeeper}
-                  membersMap={membersMap}
-                  isGoalkeeper={true}
-                />
-              </div>
+              <FormationRow 
+                players={formation.goalkeeper}
+                membersMap={membersMap}
+                isGoalkeeper={true}
+              />
             </div>
           )}
         </div>

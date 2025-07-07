@@ -32,7 +32,7 @@ export function selectTeamOfTheWeek(
     (a, b) => b.rating_data.final_rating - a.rating_data.final_rating
   );
 
-  // Enhanced position mapping to handle variations
+  // Enhanced position mapping - STRICT separation for 4 core positions
   const normalizePosition = (position: string): string => {
     const pos = position.toUpperCase().trim();
     
@@ -41,7 +41,7 @@ export function selectTeamOfTheWeek(
       return 'GK';
     }
     
-    // Defender variations - more comprehensive detection
+    // Defender variations - comprehensive detection
     if (pos.includes('DF') || pos.includes('DEF') || pos.includes('DEFENDER') || 
         pos.includes('CB') || pos.includes('LB') || pos.includes('RB') || 
         pos.includes('CENTRE-BACK') || pos.includes('FULLBACK') || 
@@ -51,25 +51,6 @@ export function selectTeamOfTheWeek(
       return 'DF';
     }
     
-    // Winger variations - check before midfielders to avoid overlap
-    if (pos.includes('WG') || pos.includes('WING') || pos.includes('LW') || 
-        pos.includes('RW') || pos.includes('LM') || pos.includes('RM') ||
-        pos === 'LEFT WING' || pos === 'RIGHT WING' || pos === 'WINGER') {
-      return 'WG';
-    }
-    
-    // Defensive midfielder variations (separate from general midfielders)
-    if (pos.includes('CDM') || pos.includes('DEFENSIVE MID') || pos.includes('DM')) {
-      return 'DM';
-    }
-    
-    // Midfielder variations
-    if (pos.includes('MF') || pos.includes('MID') || pos.includes('CM') || 
-        pos.includes('CAM') || pos.includes('MIDFIELDER') ||
-        pos === 'CENTRAL MIDFIELD' || pos === 'CENTRE MID' || pos === 'CENTER MID') {
-      return 'MF';
-    }
-    
     // Forward variations
     if (pos.includes('FW') || pos.includes('FORWARD') || pos.includes('ST') || 
         pos.includes('STRIKER') || pos.includes('CF') || pos.includes('CENTRE-FORWARD') ||
@@ -77,7 +58,8 @@ export function selectTeamOfTheWeek(
       return 'FW';
     }
     
-    // Default fallback - treat as midfielder for flexibility
+    // ALL remaining positions go to midfield (including wingers, DM, CAM, etc)
+    // This ensures clean 4-position separation: GK, DF, MF, FW
     return 'MF';
   };
 
@@ -237,29 +219,35 @@ export function selectCaptainOfTheWeek(
  * Adapts to available positions and creates balanced display
  */
 export function formatTeamOfTheWeekByPosition(teamOfTheWeek: TeamOfTheWeekPlayer[]) {
+  // Use IDENTICAL position normalization as the selection function
   const normalizePosition = (position: string): string => {
     const pos = position.toUpperCase().trim();
-    if (pos.includes('GK') || pos.includes('GOALKEEPER') || pos.includes('KEEPER')) return 'GK';
+    
+    // Goalkeeper variations
+    if (pos.includes('GK') || pos.includes('GOALKEEPER') || pos.includes('KEEPER')) {
+      return 'GK';
+    }
+    
+    // Defender variations - comprehensive detection
     if (pos.includes('DF') || pos.includes('DEF') || pos.includes('DEFENDER') || 
         pos.includes('CB') || pos.includes('LB') || pos.includes('RB') || 
         pos.includes('CENTRE-BACK') || pos.includes('FULLBACK') || 
         pos.includes('BACK') || pos.includes('DEFENCE') ||
         pos === 'CENTRE BACK' || pos === 'LEFT BACK' || pos === 'RIGHT BACK' ||
-        pos === 'CENTER BACK' || pos === 'CENTERBACK' || pos === 'CENTREBACK') return 'DF';
+        pos === 'CENTER BACK' || pos === 'CENTERBACK' || pos === 'CENTREBACK') {
+      return 'DF';
+    }
     
-    // Consolidate ALL midfielder variations into a single 'MF' category
-    if (pos.includes('MF') || pos.includes('MID') || pos.includes('CM') || 
-        pos.includes('CAM') || pos.includes('CDM') || pos.includes('DM') ||
-        pos.includes('MIDFIELDER') || pos.includes('DEFENSIVE MID') ||
-        pos.includes('WG') || pos.includes('WING') || pos.includes('LW') || 
-        pos.includes('RW') || pos.includes('LM') || pos.includes('RM') ||
-        pos === 'CENTRAL MIDFIELD' || pos === 'CENTRE MID' || pos === 'CENTER MID' ||
-        pos === 'LEFT WING' || pos === 'RIGHT WING' || pos === 'WINGER') return 'MF';
-    
+    // Forward variations
     if (pos.includes('FW') || pos.includes('FORWARD') || pos.includes('ST') || 
-        pos.includes('CF') || pos.includes('STRIKER') || pos.includes('CENTRE-FORWARD') ||
-        pos === 'CENTRE FORWARD' || pos === 'CENTER FORWARD') return 'FW';
-    return 'MF'; // Default fallback
+        pos.includes('STRIKER') || pos.includes('CF') || pos.includes('CENTRE-FORWARD') ||
+        pos === 'CENTRE FORWARD' || pos === 'CENTER FORWARD' || pos === 'STRIKER') {
+      return 'FW';
+    }
+    
+    // ALL remaining positions go to midfield (including wingers, DM, CAM, etc)
+    // This ensures clean 4-position separation: GK, DF, MF, FW
+    return 'MF';
   };
 
   const formation = {
