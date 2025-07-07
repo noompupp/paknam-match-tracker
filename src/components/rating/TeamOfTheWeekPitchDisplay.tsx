@@ -66,11 +66,10 @@ const FormationRow = ({
   membersMap?: Map<number, any>;
   isGoalkeeper?: boolean;
 }) => {
-  if (players.length === 0) return null;
-
+  // Always render the row to maintain grid structure, even if empty
   return (
-    <div className={`flex justify-center items-center gap-2 sm:gap-3 ${
-      isGoalkeeper ? 'mb-2' : ''
+    <div className={`flex justify-center items-center gap-2 sm:gap-3 min-h-[80px] sm:min-h-[96px] ${
+      isGoalkeeper ? 'mb-0' : ''
     } ${players.length === 1 ? 'w-full justify-center' : 'flex-wrap'}`}>
       {players.map((player) => (
         <PlayerPitchCard key={player.player_id} player={player} membersMap={membersMap} />
@@ -120,47 +119,41 @@ const TeamOfTheWeekPitchDisplay: React.FC<TeamOfTheWeekPitchDisplayProps> = ({
             <div className="absolute bottom-0 right-0 w-3 h-3 border-t-2 border-l-2 border-white/50 rounded-tl-full" />
           </div>
 
-        {/* Formation Display - Even Distribution with Proper Spacing */}
-        <div className="relative h-full flex flex-col justify-evenly py-4 sm:py-6">
+        {/* Formation Display - Fixed 4-Row Grid Structure */}
+        <div className="relative h-full grid grid-rows-4 gap-2 sm:gap-4 py-4 sm:py-6">
           
-          {/* Attack Zone - Forwards at the top */}
-          <div className="flex justify-center">
+          {/* Row 1: Forwards (Attack Zone) */}
+          <div className="flex justify-center items-center">
             <FormationRow 
               players={formation.forwards}
               membersMap={membersMap}
             />
           </div>
 
-          {/* Midfield Zone - Central Midfielders */}
-          {formation.midfielders.length > 0 && (
-            <div className="flex justify-center">
-              <FormationRow 
-                players={formation.midfielders}
-                membersMap={membersMap}
-              />
-            </div>
-          )}
+          {/* Row 2: Midfielders (Midfield Zone) */}
+          <div className="flex justify-center items-center">
+            <FormationRow 
+              players={formation.midfielders}
+              membersMap={membersMap}
+            />
+          </div>
 
-          {/* Defense Zone - Defenders */}
-          {formation.defenders.length > 0 && (
-            <div className="flex justify-center">
-              <FormationRow 
-                players={formation.defenders}
-                membersMap={membersMap}
-              />
-            </div>
-          )}
+          {/* Row 3: Defenders (Defense Zone) */}
+          <div className="flex justify-center items-center">
+            <FormationRow 
+              players={formation.defenders}
+              membersMap={membersMap}
+            />
+          </div>
 
-          {/* Goalkeeper Zone - at the bottom */}
-          {formation.goalkeeper.length > 0 && (
-            <div className="flex justify-center">
-              <FormationRow 
-                players={formation.goalkeeper}
-                membersMap={membersMap}
-                isGoalkeeper={true}
-              />
-            </div>
-          )}
+          {/* Row 4: Goalkeeper (Goal Zone) */}
+          <div className="flex justify-center items-center">
+            <FormationRow 
+              players={formation.goalkeeper}
+              membersMap={membersMap}
+              isGoalkeeper={true}
+            />
+          </div>
         </div>
 
           {/* Mobile-Optimized Info Badges */}
@@ -176,7 +169,7 @@ const TeamOfTheWeekPitchDisplay: React.FC<TeamOfTheWeekPitchDisplayProps> = ({
             </span>
           </div>
 
-          {/* Formation Badge - Bottom */}
+          {/* Formation Badge - Bottom (excluding goalkeeper) */}
           <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 bg-white/95 backdrop-blur-sm rounded-full px-3 py-1 shadow-sm">
             <span className="text-xs font-bold text-green-800">
               {formation.defenders.length}-{formation.midfielders.length}-{formation.forwards.length}
