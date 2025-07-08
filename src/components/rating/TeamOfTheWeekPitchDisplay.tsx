@@ -1,6 +1,7 @@
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Crown, Star } from "lucide-react";
 import type { TeamOfTheWeekPlayer } from "@/utils/teamOfTheWeekSelection";
 import { formatTeamOfTheWeekByPosition } from "@/utils/teamOfTheWeekSelection";
@@ -17,43 +18,72 @@ const PlayerPitchCard = ({ player, membersMap }: {
   membersMap?: Map<number, any>;
 }) => {
   return (
-    <div className={`relative p-3 rounded-xl border-2 transition-all hover:scale-105 ${
-      player.isCaptain 
-        ? 'border-yellow-400 bg-gradient-to-br from-yellow-50 to-orange-50 shadow-lg' 
-        : 'border-primary/30 bg-gradient-to-br from-card to-card/80 shadow-md'
-    } min-w-0 flex-shrink-0 w-20 sm:w-24`}>
-      {player.isCaptain && (
-        <Crown className="absolute -top-2 -right-2 h-5 w-5 text-yellow-600 fill-yellow-400 bg-white rounded-full p-0.5" />
-      )}
-      
-      {/* Player Avatar */}
-      <div className="flex flex-col items-center space-y-2">
-      <div className="w-9 h-9 sm:w-11 sm:h-11">
-        <MiniPlayerAvatar
-          name={player.player_name}
-          imageUrl={membersMap?.get(player.player_id)?.ProfileURL || membersMap?.get(player.player_id)?.optimized_avatar_url}
-          size={37}
-          className={`${player.isCaptain ? 'ring-2 ring-yellow-400' : ''}`}
-        />
-      </div>
-        
-        <div className="text-center space-y-1 w-full">
-          <div className="font-bold text-xs leading-tight text-center truncate" title={player.player_name}>
-            {player.player_name.split(' ')[0]}
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <div className={`relative p-2 sm:p-3 rounded-xl border-2 transition-all hover:scale-105 cursor-pointer ${
+            player.isCaptain 
+              ? 'border-yellow-400 bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-950 dark:to-orange-950 shadow-lg' 
+              : 'border-primary/30 bg-gradient-to-br from-card to-card/80 shadow-md'
+          } min-w-0 flex-shrink-0 w-18 sm:w-22 md:w-24`}>
+            {player.isCaptain && (
+              <Crown className="absolute -top-2 -right-2 h-4 w-4 sm:h-5 sm:w-5 text-yellow-600 fill-yellow-400 bg-white rounded-full p-0.5" />
+            )}
+            
+            {/* Player Avatar */}
+            <div className="flex flex-col items-center space-y-1.5 sm:space-y-2">
+              <div className="w-8 h-8 sm:w-9 sm:h-9 md:w-11 md:h-11">
+                <MiniPlayerAvatar
+                  name={player.player_name}
+                  imageUrl={membersMap?.get(player.player_id)?.ProfileURL || membersMap?.get(player.player_id)?.optimized_avatar_url}
+                  size={32}
+                  className={`${player.isCaptain ? 'ring-2 ring-yellow-400' : ''}`}
+                />
+              </div>
+              
+              <div className="text-center space-y-0.5 w-full">
+                {/* Player Name - Show first name but allow full name in tooltip */}
+                <div className="font-bold text-[10px] sm:text-xs leading-tight text-center">
+                  {player.player_name.split(' ')[0]}
+                </div>
+                
+                {/* Team Name - Show abbreviated but full name in tooltip */}
+                <div className="text-[8px] sm:text-[10px] text-muted-foreground leading-tight">
+                  {player.team_name.length > 12 ? `${player.team_name.substring(0, 8)}...` : player.team_name}
+                </div>
+                
+                {/* Rating */}
+                <div className="flex items-center justify-center space-x-0.5 sm:space-x-1">
+                  <Star className="h-1.5 w-1.5 sm:h-2 sm:w-2 text-yellow-500 fill-current" />
+                  <span className="text-[8px] sm:text-[10px] font-bold text-foreground">
+                    {player.rating_data.final_rating.toFixed(1)}
+                  </span>
+                </div>
+                
+                {/* Position indicator */}
+                <div className="text-[7px] sm:text-[8px] text-muted-foreground/80 uppercase font-medium">
+                  {player.position}
+                </div>
+              </div>
+            </div>
           </div>
-          <div className="text-[10px] text-muted-foreground truncate" title={player.team_name}>
-            {player.team_name}
+        </TooltipTrigger>
+        <TooltipContent side="top" className="max-w-48">
+          <div className="text-center space-y-1">
+            <div className="font-semibold">{player.player_name}</div>
+            <div className="text-sm text-muted-foreground">{player.team_name}</div>
+            <div className="text-sm">Position: {player.position}</div>
+            <div className="text-sm">Rating: {player.rating_data.final_rating.toFixed(2)}</div>
+            {player.isCaptain && (
+              <div className="text-sm text-yellow-600 font-medium flex items-center justify-center gap-1">
+                <Crown className="h-3 w-3" />
+                Team Captain
+              </div>
+            )}
           </div>
-          
-          <div className="flex items-center justify-center space-x-1">
-            <Star className="h-2 w-2 text-yellow-500 fill-current" />
-            <span className="text-[10px] font-bold text-foreground">
-              {player.rating_data.final_rating.toFixed(1)}
-            </span>
-          </div>
-        </div>
-      </div>
-    </div>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 };
 
@@ -120,10 +150,10 @@ const TeamOfTheWeekPitchDisplay: React.FC<TeamOfTheWeekPitchDisplayProps> = ({
           </div>
 
         {/* Formation Display - Fixed 4-Row Grid Structure */}
-        <div className="relative h-full grid grid-rows-4 gap-2 sm:gap-4 py-4 sm:py-6">
+        <div className="relative h-full grid grid-rows-4 gap-1 sm:gap-3 py-3 sm:py-6">
           
           {/* Row 1: Forwards (Attack Zone) */}
-          <div className="flex justify-center items-center">
+          <div className="flex justify-center items-center min-h-[60px] sm:min-h-[80px]">
             <FormationRow 
               players={formation.forwards}
               membersMap={membersMap}
@@ -131,7 +161,7 @@ const TeamOfTheWeekPitchDisplay: React.FC<TeamOfTheWeekPitchDisplayProps> = ({
           </div>
 
           {/* Row 2: Midfielders (Midfield Zone) */}
-          <div className="flex justify-center items-center">
+          <div className="flex justify-center items-center min-h-[60px] sm:min-h-[80px]">
             <FormationRow 
               players={formation.midfielders}
               membersMap={membersMap}
@@ -139,7 +169,7 @@ const TeamOfTheWeekPitchDisplay: React.FC<TeamOfTheWeekPitchDisplayProps> = ({
           </div>
 
           {/* Row 3: Defenders (Defense Zone) */}
-          <div className="flex justify-center items-center">
+          <div className="flex justify-center items-center min-h-[60px] sm:min-h-[80px]">
             <FormationRow 
               players={formation.defenders}
               membersMap={membersMap}
@@ -147,7 +177,7 @@ const TeamOfTheWeekPitchDisplay: React.FC<TeamOfTheWeekPitchDisplayProps> = ({
           </div>
 
           {/* Row 4: Goalkeeper (Goal Zone) */}
-          <div className="flex justify-center items-center">
+          <div className="flex justify-center items-center min-h-[60px] sm:min-h-[80px]">
             <FormationRow 
               players={formation.goalkeeper}
               membersMap={membersMap}

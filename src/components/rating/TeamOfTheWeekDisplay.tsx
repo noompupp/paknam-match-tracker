@@ -2,10 +2,12 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Trophy, Star, Crown, Award } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Trophy, Star, Crown, Award, ChevronDown, AlertTriangle, Info } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { TeamOfTheWeekPlayer, CaptainOfTheWeekPlayer } from "@/utils/teamOfTheWeekSelection";
 import { formatTeamOfTheWeekByPosition } from "@/utils/teamOfTheWeekSelection";
+import { validateFormation, suggestPositionCorrections } from "@/utils/positionValidation";
 import TeamOfTheWeekPitchDisplay from "./TeamOfTheWeekPitchDisplay";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -146,6 +148,10 @@ const TeamOfTheWeekDisplay: React.FC<TeamOfTheWeekDisplayProps> = ({
   }
 
   const totwCaptain = teamOfTheWeek.find(p => p.isCaptain);
+  
+  // Formation validation
+  const formationValidation = validateFormation(teamOfTheWeek);
+  const positionCorrections = suggestPositionCorrections(teamOfTheWeek);
 
   return (
     <div className="space-y-6">
@@ -227,6 +233,96 @@ const TeamOfTheWeekDisplay: React.FC<TeamOfTheWeekDisplayProps> = ({
               </div>
             </CardContent>
           </Card>
+
+          {/* Formation Validation Panel */}
+          {(!formationValidation.isBalanced || positionCorrections.length > 0) && (
+            <Collapsible>
+              <Card className="border-orange-200 bg-orange-50 dark:bg-orange-950">
+                <CollapsibleTrigger className="w-full">
+                  <CardHeader className="pb-3 hover:bg-orange-100 dark:hover:bg-orange-900 transition-colors">
+                    <CardTitle className="flex items-center justify-between text-orange-800 dark:text-orange-200">
+                      <div className="flex items-center space-x-2">
+                        <AlertTriangle className="h-5 w-5" />
+                        <span>Formation Analysis</span>
+                        {!formationValidation.isBalanced && (
+                          <Badge variant="destructive" className="text-xs">
+                            Issues Found
+                          </Badge>
+                        )}
+                      </div>
+                      <ChevronDown className="h-4 w-4" />
+                    </CardTitle>
+                  </CardHeader>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <CardContent className="pt-0">
+                    <div className="space-y-4">
+                      {/* Formation Overview */}
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <div className="text-sm font-medium text-orange-800 dark:text-orange-200 mb-2">Current Formation</div>
+                          <div className="text-lg font-bold">{formationValidation.formation}</div>
+                          <div className="text-sm text-muted-foreground">
+                            GK: {formationValidation.distribution.goalkeepers} • 
+                            DF: {formationValidation.distribution.defenders} • 
+                            MF: {formationValidation.distribution.midfielders} • 
+                            FW: {formationValidation.distribution.forwards}
+                          </div>
+                        </div>
+                        <div>
+                          <div className="text-sm font-medium text-orange-800 dark:text-orange-200 mb-2">Balance Status</div>
+                          <Badge variant={formationValidation.isBalanced ? "default" : "destructive"}>
+                            {formationValidation.isBalanced ? "Balanced" : "Needs Attention"}
+                          </Badge>
+                        </div>
+                      </div>
+
+                      {/* Recommendations */}
+                      {formationValidation.recommendations.length > 0 && (
+                        <div>
+                          <div className="text-sm font-medium text-orange-800 dark:text-orange-200 mb-2 flex items-center space-x-1">
+                            <Info className="h-4 w-4" />
+                            <span>Recommendations</span>
+                          </div>
+                          <ul className="text-sm space-y-1">
+                            {formationValidation.recommendations.map((rec, idx) => (
+                              <li key={idx} className="flex items-start space-x-2">
+                                <span className="text-orange-600 dark:text-orange-400">•</span>
+                                <span>{rec}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+
+                      {/* Position Corrections */}
+                      {positionCorrections.length > 0 && (
+                        <div>
+                          <div className="text-sm font-medium text-orange-800 dark:text-orange-200 mb-2">Position Corrections Suggested</div>
+                          <div className="space-y-2">
+                            {positionCorrections.slice(0, 3).map((correction, idx) => (
+                              <div key={idx} className="text-xs bg-orange-100 dark:bg-orange-900 p-2 rounded">
+                                <div className="font-medium">{correction.playerName}</div>
+                                <div className="text-muted-foreground">
+                                  {correction.currentPosition} → {correction.suggestedPosition}
+                                </div>
+                                <div className="text-orange-700 dark:text-orange-300">{correction.reason}</div>
+                              </div>
+                            ))}
+                            {positionCorrections.length > 3 && (
+                              <div className="text-xs text-muted-foreground">
+                                +{positionCorrections.length - 3} more suggestions
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </CollapsibleContent>
+              </Card>
+            </Collapsible>
+          )}
         </div>
 
         {/* Captain of the Week - Takes 1/3 width on large screens */}
