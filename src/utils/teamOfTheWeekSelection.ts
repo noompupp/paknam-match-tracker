@@ -41,33 +41,34 @@ export function selectTeamOfTheWeek(
       return 'GK';
     }
     
+    // Midfielder variations - PRIORITIZE EXACT MATCHES FIRST
+    if (pos === 'MIDFIELDER' || pos === 'MID' || pos === 'MF' ||
+        pos.includes('CM') || pos.includes('CENTRAL MIDFIELDER') || 
+        pos.includes('CDM') || pos.includes('DEFENSIVE MIDFIELDER') ||
+        pos.includes('CAM') || pos.includes('ATTACKING MIDFIELDER') ||
+        pos.includes('LM') || pos.includes('LEFT MIDFIELDER') ||
+        pos.includes('RM') || pos.includes('RIGHT MIDFIELDER') ||
+        pos.includes('DM') || pos.includes('AM')) {
+      return 'MF';
+    }
+    
     // Forward variations - check for striker patterns
-    if (pos.includes('ST') || pos.includes('STRIKER') || pos.includes('CF') || 
-        pos.includes('CENTRE-FORWARD') || pos.includes('CENTER-FORWARD') ||
-        pos === 'CENTRE FORWARD' || pos === 'CENTER FORWARD' || 
-        pos.includes('FW') || pos.includes('FORWARD')) {
+    if (pos === 'FORWARD' || pos === 'FW' || pos === 'STRIKER' || pos === 'ST' ||
+        pos.includes('CF') || pos.includes('CENTRE-FORWARD') || pos.includes('CENTER-FORWARD') ||
+        pos === 'CENTRE FORWARD' || pos === 'CENTER FORWARD') {
       return 'FW';
     }
     
     // Defender variations - comprehensive detection
-    if (pos.includes('CB') || pos.includes('CENTRE-BACK') || pos.includes('CENTER-BACK') ||
+    if (pos === 'DEFENDER' || pos === 'DF' || pos === 'DEF' ||
+        pos.includes('CB') || pos.includes('CENTRE-BACK') || pos.includes('CENTER-BACK') ||
         pos === 'CENTRE BACK' || pos === 'CENTER BACK' || pos === 'CENTERBACK' || pos === 'CENTREBACK' ||
         pos.includes('LB') || pos.includes('LEFT-BACK') || pos === 'LEFT BACK' ||
         pos.includes('RB') || pos.includes('RIGHT-BACK') || pos === 'RIGHT BACK' ||
         pos.includes('FULLBACK') || pos.includes('FULL-BACK') ||
-        pos.includes('DF') || pos.includes('DEF') || pos.includes('DEFENDER') || 
-        pos.includes('BACK') || pos.includes('DEFENCE') || pos.includes('DEFENSE')) {
+        pos.includes('BACK') && !pos.includes('MIDFIELDER') ||
+        pos.includes('DEFENCE') || pos.includes('DEFENSE')) {
       return 'DF';
-    }
-    
-    // Midfielder variations - more specific classification
-    if (pos.includes('CM') || pos.includes('CENTRAL') || 
-        pos.includes('CDM') || pos.includes('DEFENSIVE') ||
-        pos.includes('CAM') || pos.includes('ATTACKING') ||
-        pos.includes('LM') || pos.includes('RM') ||
-        pos.includes('DM') || pos.includes('AM') ||
-        pos.includes('MF') || pos.includes('MID') || pos.includes('MIDFIELDER')) {
-      return 'MF';
     }
     
     // Wing positions - classify as midfielders for formation balance
@@ -272,33 +273,34 @@ export function formatTeamOfTheWeekByPosition(teamOfTheWeek: TeamOfTheWeekPlayer
       return 'GK';
     }
     
+    // Midfielder variations - PRIORITIZE EXACT MATCHES FIRST
+    if (pos === 'MIDFIELDER' || pos === 'MID' || pos === 'MF' ||
+        pos.includes('CM') || pos.includes('CENTRAL MIDFIELDER') || 
+        pos.includes('CDM') || pos.includes('DEFENSIVE MIDFIELDER') ||
+        pos.includes('CAM') || pos.includes('ATTACKING MIDFIELDER') ||
+        pos.includes('LM') || pos.includes('LEFT MIDFIELDER') ||
+        pos.includes('RM') || pos.includes('RIGHT MIDFIELDER') ||
+        pos.includes('DM') || pos.includes('AM')) {
+      return 'MF';
+    }
+    
     // Forward variations - check for striker patterns
-    if (pos.includes('ST') || pos.includes('STRIKER') || pos.includes('CF') || 
-        pos.includes('CENTRE-FORWARD') || pos.includes('CENTER-FORWARD') ||
-        pos === 'CENTRE FORWARD' || pos === 'CENTER FORWARD' || 
-        pos.includes('FW') || pos.includes('FORWARD')) {
+    if (pos === 'FORWARD' || pos === 'FW' || pos === 'STRIKER' || pos === 'ST' ||
+        pos.includes('CF') || pos.includes('CENTRE-FORWARD') || pos.includes('CENTER-FORWARD') ||
+        pos === 'CENTRE FORWARD' || pos === 'CENTER FORWARD') {
       return 'FW';
     }
     
     // Defender variations - comprehensive detection
-    if (pos.includes('CB') || pos.includes('CENTRE-BACK') || pos.includes('CENTER-BACK') ||
+    if (pos === 'DEFENDER' || pos === 'DF' || pos === 'DEF' ||
+        pos.includes('CB') || pos.includes('CENTRE-BACK') || pos.includes('CENTER-BACK') ||
         pos === 'CENTRE BACK' || pos === 'CENTER BACK' || pos === 'CENTERBACK' || pos === 'CENTREBACK' ||
         pos.includes('LB') || pos.includes('LEFT-BACK') || pos === 'LEFT BACK' ||
         pos.includes('RB') || pos.includes('RIGHT-BACK') || pos === 'RIGHT BACK' ||
         pos.includes('FULLBACK') || pos.includes('FULL-BACK') ||
-        pos.includes('DF') || pos.includes('DEF') || pos.includes('DEFENDER') || 
-        pos.includes('BACK') || pos.includes('DEFENCE') || pos.includes('DEFENSE')) {
+        pos.includes('BACK') && !pos.includes('MIDFIELDER') ||
+        pos.includes('DEFENCE') || pos.includes('DEFENSE')) {
       return 'DF';
-    }
-    
-    // Midfielder variations - more specific classification
-    if (pos.includes('CM') || pos.includes('CENTRAL') || 
-        pos.includes('CDM') || pos.includes('DEFENSIVE') ||
-        pos.includes('CAM') || pos.includes('ATTACKING') ||
-        pos.includes('LM') || pos.includes('RM') ||
-        pos.includes('DM') || pos.includes('AM') ||
-        pos.includes('MF') || pos.includes('MID') || pos.includes('MIDFIELDER')) {
-      return 'MF';
     }
     
     // Wing positions - classify as midfielders for formation balance

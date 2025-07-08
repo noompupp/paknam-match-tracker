@@ -25,7 +25,7 @@ const PlayerPitchCard = ({ player, membersMap }: {
             player.isCaptain 
               ? 'border-yellow-400 bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-950 dark:to-orange-950 shadow-lg' 
               : 'border-primary/30 bg-gradient-to-br from-card to-card/80 shadow-md'
-          } min-w-0 flex-shrink-0 w-18 sm:w-22 md:w-24`}>
+          } min-w-0 flex-shrink-0 w-20 sm:w-24 md:w-28`}>
             {player.isCaptain && (
               <Crown className="absolute -top-2 -right-2 h-4 w-4 sm:h-5 sm:w-5 text-yellow-600 fill-yellow-400 bg-white rounded-full p-0.5" />
             )}
