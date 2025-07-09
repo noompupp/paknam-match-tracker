@@ -6,7 +6,7 @@ import DashboardHeader from "./dashboard/DashboardHeader";
 import LeagueTable from "./dashboard/LeagueTable";
 import TopScorersCard from "./dashboard/TopScorersCard";
 import TopAssistsCard from "./dashboard/TopAssistsCard";
-import CompactTeamOfTheWeekCard from "./dashboard/CompactTeamOfTheWeekCard";
+import UnifiedTeamOfTheWeekCard from "./shared/UnifiedTeamOfTheWeekCard";
 import EnhancedRecentResultsCard from "./dashboard/EnhancedRecentResultsCard";
 import UpcomingFixturesCard from "./dashboard/UpcomingFixturesCard";
 import MatchPreviewModal from "./fixtures/MatchPreviewModal";
@@ -87,7 +87,7 @@ const Dashboard = ({ onNavigateToResults, onNavigateToFixtures }: DashboardProps
               isLoading={assistsLoading} 
               error={assistsError}
             />
-            <CompactTeamOfTheWeekCard />
+            <UnifiedTeamOfTheWeekCard variant="dashboard" />
           </div>
 
           <EnhancedRecentResultsCard 
