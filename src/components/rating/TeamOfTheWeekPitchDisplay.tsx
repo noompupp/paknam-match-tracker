@@ -21,18 +21,18 @@ const PlayerPitchCard = ({ player, membersMap }: {
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          <div className={`relative p-2 sm:p-3 rounded-xl border-2 transition-all hover:scale-105 cursor-pointer ${
-            player.isCaptain 
-              ? 'border-yellow-400 bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-950 dark:to-orange-950 shadow-lg' 
-              : 'border-primary/30 bg-gradient-to-br from-card to-card/80 shadow-md'
-          } min-w-0 flex-shrink-0 w-20 sm:w-24 md:w-28`}>
+            <div className={`relative p-2 sm:p-3 rounded-xl border-2 transition-all hover:scale-105 cursor-pointer ${
+              player.isCaptain 
+                ? 'border-yellow-400 bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-950 dark:to-orange-950 shadow-lg' 
+                : 'border-primary/30 bg-gradient-to-br from-card to-card/80 shadow-md'
+            } min-w-0 flex-shrink-0 w-20 sm:w-24 md:w-32 lg:w-36 xl:w-40`}>
             {player.isCaptain && (
               <Crown className="absolute -top-2 -right-2 h-4 w-4 sm:h-5 sm:w-5 text-yellow-600 fill-yellow-400 bg-white rounded-full p-0.5" />
             )}
             
             {/* Player Avatar */}
             <div className="flex flex-col items-center space-y-1.5 sm:space-y-2">
-              <div className="w-8 h-8 sm:w-9 sm:h-9 md:w-11 md:h-11">
+              <div className="w-8 h-8 sm:w-9 sm:h-9 md:w-11 md:h-11 lg:w-12 lg:h-12 xl:w-14 xl:h-14">
                 <MiniPlayerAvatar
                   name={player.player_name}
                   imageUrl={membersMap?.get(player.player_id)?.ProfileURL || membersMap?.get(player.player_id)?.optimized_avatar_url}
