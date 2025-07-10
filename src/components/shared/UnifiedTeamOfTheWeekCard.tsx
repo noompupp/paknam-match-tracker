@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Trophy, Star, Crown } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useCurrentWeeklyTOTW, useWeeklyPlayerPerformance } from "@/hooks/useWeeklyTOTW";
 import { useLatestCompleteFixtures } from "@/hooks/useLatestCompleteFixtures";
 import { useHybridPlayerRatings, useApprovedPlayerRatings } from "@/hooks/useHybridPlayerRatings";
 import { selectTeamOfTheWeek, formatTeamOfTheWeekByPosition, type TeamOfTheWeekPlayer } from "@/utils/teamOfTheWeekSelection";
@@ -28,7 +29,7 @@ const PlayerPitchCard = ({
     ? 'w-14 sm:w-16 md:w-20' 
     : 'w-20 sm:w-24 md:w-32 lg:w-36 xl:w-40';
   
-  const avatarSize = variant === 'dashboard' ? 28 : 32;
+  const avatarSize = variant === 'dashboard' ? 36 : 42; // Increased by 30%
   const textSize = variant === 'dashboard' ? 'text-[8px] sm:text-[9px]' : 'text-[10px] sm:text-xs';
 
   return (
@@ -121,10 +122,14 @@ const UnifiedTeamOfTheWeekCard: React.FC<UnifiedTeamOfTheWeekCardProps> = ({
   variant = 'dashboard' 
 }) => {
   const { t } = useTranslation();
+  
+  // First, try to get weekly TOTW data (prioritize manually saved lineups)
+  const { data: weeklyTOTW } = useCurrentWeeklyTOTW();
+  const { data: weeklyPerformance } = useWeeklyPlayerPerformance(weeklyTOTW?.id);
+  
+  // Fallback to fixture-based approach if no weekly TOTW exists
   const { data: fixtures } = useLatestCompleteFixtures();
-  
   const fixture = (fixtures && fixtures.length > 0) ? fixtures[0] : null;
-  
   const { data: hybridRatings } = useHybridPlayerRatings(fixture?.id || null);
   const { data: approvedRatings } = useApprovedPlayerRatings(fixture?.id || null);
 
@@ -143,17 +148,68 @@ const UnifiedTeamOfTheWeekCard: React.FC<UnifiedTeamOfTheWeekCardProps> = ({
     (members || []).map(member => [member.id, member])
   );
 
-  const approvedMap = new Map(
-    (approvedRatings || []).map(rating => [rating.player_id, rating])
-  );
+  // Helper function to convert weekly performance to TeamOfTheWeekPlayer format
+  const convertWeeklyPerformanceToTOTWPlayers = (performance: any[]): TeamOfTheWeekPlayer[] => {
+    if (!performance || performance.length === 0) return [];
+    
+    // Sort by weighted final rating and take top 7
+    const sortedPlayers = performance
+      .sort((a, b) => b.weighted_final_rating - a.weighted_final_rating)
+      .slice(0, 7);
+    
+    const captain = sortedPlayers[0]; // Highest rated player is captain
+    
+    return sortedPlayers.map(player => ({
+      player_id: player.player_id,
+      player_name: player.player_name,
+      team_id: player.team_id,
+      team_name: player.team_name,
+      position: player.position,
+      isCaptain: player.player_id === captain?.player_id,
+      rating_data: {
+        player_id: player.player_id,
+        player_name: player.player_name,
+        team_id: player.team_id,
+        position: player.position,
+        minutes_played: 90, // Default for weekly aggregation
+        match_result: 'win', // Default for weekly aggregation
+        fpl_points: Math.round(player.average_fpl_rating * 2), // Estimate
+        fpl_rating: player.average_fpl_rating,
+        participation_rating: player.average_participation_rating,
+        final_rating: player.weighted_final_rating,
+        rating_breakdown: {
+          goals: player.total_goals || 0,
+          assists: player.total_assists || 0,
+          cards: player.total_cards || 0,
+          goals_conceded: 0,
+          clean_sheet_eligible: player.position?.includes('GK') || player.position?.includes('DF') || false
+        }
+      }
+    }));
+  };
 
-  const approvedPlayerRatings = (hybridRatings || []).filter(rating => 
-    approvedMap.has(rating.player_id)
-  );
+  // Determine the team of the week to display
+  let teamOfTheWeek: TeamOfTheWeekPlayer[] = [];
+  
+  if (weeklyTOTW && Array.isArray(weeklyTOTW.team_of_the_week) && weeklyTOTW.team_of_the_week.length > 0) {
+    // Use manually saved weekly TOTW (highest priority)
+    teamOfTheWeek = weeklyTOTW.team_of_the_week;
+  } else if (weeklyPerformance && weeklyPerformance.length > 0) {
+    // Use aggregated weekly performance data (second priority)
+    teamOfTheWeek = convertWeeklyPerformanceToTOTWPlayers(weeklyPerformance);
+  } else if (fixture && hybridRatings && approvedRatings) {
+    // Fallback to fixture-based selection (lowest priority)
+    const approvedMap = new Map(
+      approvedRatings.map(rating => [rating.player_id, rating])
+    );
+    const approvedPlayerRatings = hybridRatings.filter(rating => 
+      approvedMap.has(rating.player_id)
+    );
+    teamOfTheWeek = selectTeamOfTheWeek(approvedPlayerRatings, approvedMap);
+  }
 
-  const teamOfTheWeek = selectTeamOfTheWeek(approvedPlayerRatings, approvedMap);
-
-  if (!fixture) {
+  // Only show "no matches" if we have no data at all
+  if (!weeklyTOTW && !weeklyPerformance && !fixture) {
     return (
       <Card className="h-full">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
