@@ -29,7 +29,7 @@ const PlayerPitchCard = ({
     ? 'w-14 sm:w-16 md:w-20' 
     : 'w-20 sm:w-24 md:w-32 lg:w-36 xl:w-40';
   
-  const avatarSize = variant === 'dashboard' ? 36 : 42; // Increased by 30%
+  const avatarSize = variant === 'dashboard' ? 48 : 54; // Increased avatar size
   const textSize = variant === 'dashboard' ? 'text-[8px] sm:text-[9px]' : 'text-[10px] sm:text-xs';
 
   return (

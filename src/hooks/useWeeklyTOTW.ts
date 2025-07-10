@@ -114,12 +114,46 @@ export const useUpdateWeeklyTOTW = () => {
 
   return useMutation({
     mutationFn: async (params: {
-      id: string;
+      id?: string;
       team_of_the_week?: any[];
       captain_of_the_week?: any;
       selection_method?: string;
       is_finalized?: boolean;
     }) => {
+      // If no ID provided, get current week boundaries and create/update
+      if (!params.id) {
+        const { data: weekBoundaries } = await supabase.rpc('get_current_week_boundaries');
+        
+        if (!weekBoundaries || weekBoundaries.length === 0) {
+          throw new Error('Failed to get week boundaries');
+        }
+
+        const { week_start, week_end } = weekBoundaries[0];
+        const season_year = new Date(week_start).getFullYear();
+
+        // Try to upsert the weekly TOTW record
+        const { data, error } = await supabase
+          .from('weekly_totw')
+          .upsert({
+            week_start_date: week_start,
+            week_end_date: week_end,
+            season_year: season_year,
+            team_of_the_week: params.team_of_the_week || [],
+            captain_of_the_week: params.captain_of_the_week,
+            selection_method: params.selection_method || 'manual',
+            is_finalized: params.is_finalized || false,
+            updated_at: new Date().toISOString(),
+          }, {
+            onConflict: 'week_start_date,season_year'
+          })
+          .select()
+          .single();
+
+        if (error) throw error;
+        return data;
+      }
+
+      // Update existing record
       const { data, error } = await supabase
         .from('weekly_totw')
         .update({
