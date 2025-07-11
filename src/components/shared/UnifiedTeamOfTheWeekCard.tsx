@@ -29,7 +29,7 @@ const PlayerPitchCard = ({
     ? 'w-14 sm:w-16 md:w-20' 
     : 'w-20 sm:w-24 md:w-32 lg:w-36 xl:w-40';
   
-  const avatarSize = variant === 'dashboard' ? 48 : 54; // Increased avatar size
+  const avatarSize = variant === 'dashboard' ? 56 : 64; // Increased avatar size for better visibility
   const textSize = variant === 'dashboard' ? 'text-[8px] sm:text-[9px]' : 'text-[10px] sm:text-xs';
 
   return (
@@ -188,17 +188,22 @@ const UnifiedTeamOfTheWeekCard: React.FC<UnifiedTeamOfTheWeekCardProps> = ({
     }));
   };
 
-  // Determine the team of the week to display
+  // Determine the team of the week to display with proper priority for manual saves
   let teamOfTheWeek: TeamOfTheWeekPlayer[] = [];
   
+  // Priority 1: Check for manually saved TOTW (selection_method = 'manual')
   if (weeklyTOTW && Array.isArray(weeklyTOTW.team_of_the_week) && weeklyTOTW.team_of_the_week.length > 0) {
-    // Use manually saved weekly TOTW (highest priority)
+    console.log('Using saved weekly TOTW:', weeklyTOTW.selection_method, weeklyTOTW.team_of_the_week.length);
     teamOfTheWeek = weeklyTOTW.team_of_the_week;
-  } else if (weeklyPerformance && weeklyPerformance.length > 0) {
-    // Use aggregated weekly performance data (second priority)
+  } 
+  // Priority 2: Use aggregated weekly performance data for automatic generation
+  else if (weeklyPerformance && weeklyPerformance.length > 0) {
+    console.log('Using weekly performance data:', weeklyPerformance.length);
     teamOfTheWeek = convertWeeklyPerformanceToTOTWPlayers(weeklyPerformance);
-  } else if (fixture && hybridRatings && approvedRatings) {
-    // Fallback to fixture-based selection (lowest priority)
+  } 
+  // Priority 3: Fallback to fixture-based selection
+  else if (fixture && hybridRatings && approvedRatings) {
+    console.log('Using fixture-based selection fallback');
     const approvedMap = new Map(
       approvedRatings.map(rating => [rating.player_id, rating])
     );
@@ -265,9 +270,19 @@ const UnifiedTeamOfTheWeekCard: React.FC<UnifiedTeamOfTheWeekCardProps> = ({
           <Trophy className="h-4 w-4 text-yellow-600" />
           <span>{t("rating.teamOfTheWeek")}</span>
         </CardTitle>
-        <Badge variant="secondary" className="text-xs">
-          {teamOfTheWeek.length}/7
-        </Badge>
+        <div className="flex items-center gap-2">
+          {weeklyTOTW?.selection_method && (
+            <Badge 
+              variant={weeklyTOTW.selection_method === 'manual' ? 'default' : 'secondary'} 
+              className="text-xs"
+            >
+              {weeklyTOTW.selection_method === 'manual' ? '✏️ Manual' : '🤖 Auto'}
+            </Badge>
+          )}
+          <Badge variant="secondary" className="text-xs">
+            {teamOfTheWeek.length}/7
+          </Badge>
+        </div>
       </CardHeader>
       
       <CardContent className="space-y-4">
@@ -351,20 +366,28 @@ const UnifiedTeamOfTheWeekCard: React.FC<UnifiedTeamOfTheWeekCardProps> = ({
           </div>
         </div>
 
-        {/* Captain highlight */}
+        {/* Captain banner - more prominent */}
         {totwCaptain && (
-          <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-3">
+          <div className="bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 border-2 border-yellow-300 dark:border-yellow-700 rounded-lg p-4 shadow-md">
             <div className="flex items-center space-x-3">
-              <Crown className="h-4 w-4 text-yellow-600 flex-shrink-0" />
+              <div className="flex-shrink-0">
+                <Crown className="h-6 w-6 text-yellow-600 fill-yellow-400" />
+              </div>
               <div className="flex-1">
-                <div className="text-sm font-bold">{totwCaptain.player_name}</div>
+                <div className="text-base font-bold text-yellow-800 dark:text-yellow-200">
+                  👑 Captain of the Week
+                </div>
+                <div className="text-sm font-semibold">{totwCaptain.player_name}</div>
                 <div className="text-xs text-muted-foreground">{totwCaptain.team_name}</div>
               </div>
-              <div className="flex items-center space-x-1">
-                <Star className="h-3 w-3 text-yellow-500 fill-current" />
-                <span className="text-sm font-bold text-green-600">
-                  {totwCaptain.rating_data.final_rating.toFixed(1)}
-                </span>
+              <div className="text-right">
+                <div className="flex items-center space-x-1">
+                  <Star className="h-4 w-4 text-yellow-500 fill-current" />
+                  <span className="text-lg font-bold text-yellow-700 dark:text-yellow-300">
+                    {totwCaptain.rating_data.final_rating.toFixed(1)}
+                  </span>
+                </div>
+                <div className="text-xs text-muted-foreground">Rating</div>
               </div>
             </div>
           </div>

@@ -131,7 +131,7 @@ export const useUpdateWeeklyTOTW = () => {
         const { week_start, week_end } = weekBoundaries[0];
         const season_year = new Date(week_start).getFullYear();
 
-        // Try to upsert the weekly TOTW record
+        // Try to upsert the weekly TOTW record with proper manual override
         const { data, error } = await supabase
           .from('weekly_totw')
           .upsert({
@@ -143,6 +143,7 @@ export const useUpdateWeeklyTOTW = () => {
             selection_method: params.selection_method || 'manual',
             is_finalized: params.is_finalized || false,
             updated_at: new Date().toISOString(),
+            created_by: null, // Will be set by RLS policy
           }, {
             onConflict: 'week_start_date,season_year'
           })
@@ -153,7 +154,7 @@ export const useUpdateWeeklyTOTW = () => {
         return data;
       }
 
-      // Update existing record
+      // Update existing record with proper manual override
       const { data, error } = await supabase
         .from('weekly_totw')
         .update({
