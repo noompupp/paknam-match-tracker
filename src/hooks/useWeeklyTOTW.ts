@@ -120,16 +120,27 @@ export const useUpdateWeeklyTOTW = () => {
       selection_method?: string;
       is_finalized?: boolean;
     }) => {
+      console.log('🔄 useUpdateWeeklyTOTW: Starting mutation with params:', params);
+      
       // If no ID provided, get current week boundaries and create/update
       if (!params.id) {
-        const { data: weekBoundaries } = await supabase.rpc('get_current_week_boundaries');
+        console.log('📅 No ID provided, getting current week boundaries...');
+        const { data: weekBoundaries, error: boundariesError } = await supabase.rpc('get_current_week_boundaries');
+        
+        if (boundariesError) {
+          console.error('❌ Failed to get week boundaries:', boundariesError);
+          throw boundariesError;
+        }
         
         if (!weekBoundaries || weekBoundaries.length === 0) {
+          console.error('❌ No week boundaries returned');
           throw new Error('Failed to get week boundaries');
         }
 
         const { week_start, week_end } = weekBoundaries[0];
         const season_year = new Date(week_start).getFullYear();
+        
+        console.log('📊 Upserting weekly TOTW for:', { week_start, week_end, season_year });
 
         // Try to upsert the weekly TOTW record with proper manual override
         const { data, error } = await supabase
@@ -150,11 +161,17 @@ export const useUpdateWeeklyTOTW = () => {
           .select()
           .single();
 
-        if (error) throw error;
+        if (error) {
+          console.error('❌ Upsert failed:', error);
+          throw error;
+        }
+        
+        console.log('✅ Upsert successful:', data);
         return data;
       }
 
       // Update existing record with proper manual override
+      console.log('🔄 Updating existing record with ID:', params.id);
       const { data, error } = await supabase
         .from('weekly_totw')
         .update({
@@ -168,11 +185,20 @@ export const useUpdateWeeklyTOTW = () => {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Update failed:', error);
+        throw error;
+      }
+      
+      console.log('✅ Update successful:', data);
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log('🎉 Mutation completed successfully, invalidating queries:', data);
       queryClient.invalidateQueries({ queryKey: ['weekly-totw'] });
+    },
+    onError: (error) => {
+      console.error('💥 Mutation failed:', error);
     },
   });
 };
