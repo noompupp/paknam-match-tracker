@@ -12,6 +12,13 @@ export interface SyncResult {
   errors: string[];
   warnings: string[];
   summary: string;
+  playerStatsSync?: {
+    playersUpdated: number;
+    goalsAdded: number;
+    assistsAdded: number;
+    errors: string[];
+    warnings: string[];
+  };
 }
 
 export const dataSynchronizationService = {

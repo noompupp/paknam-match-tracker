@@ -19,8 +19,15 @@ interface CleanupResult {
   errors: string[];
 }
 
+interface CumulativeStatsResult {
+  success: boolean;
+  players_updated: number;
+  error?: string;
+  calculated_at: string;
+}
+
 export const syncExistingMatchEvents = async (): Promise<SyncResult> => {
-  console.log('🔄 PlayerStatsSyncService: Starting comprehensive sync of existing match events...');
+  console.log('🔄 PlayerStatsSyncService: Starting cumulative stats sync using database function...');
   
   const result: SyncResult = {
     playersUpdated: 0,
@@ -31,125 +38,44 @@ export const syncExistingMatchEvents = async (): Promise<SyncResult> => {
   };
 
   try {
-    // Get all match events that affect player stats
-    const { data: events, error: eventsError } = await supabase
+    // Use the new database function to calculate cumulative stats
+    console.log('📊 PlayerStatsSyncService: Calling calculate_cumulative_player_stats function...');
+    
+    const { data: functionResult, error: functionError } = await supabase
+      .rpc('calculate_cumulative_player_stats');
+
+    if (functionError) {
+      throw new Error(`Database function failed: ${functionError.message}`);
+    }
+
+    // Type the function result properly
+    const typedResult = functionResult as unknown as CumulativeStatsResult;
+    
+    if (!typedResult || !typedResult.success) {
+      throw new Error(`Stats calculation failed: ${typedResult?.error || 'Unknown error'}`);
+    }
+
+    // Get summary of what was updated
+    result.playersUpdated = typedResult.players_updated || 0;
+    
+    // Calculate the totals for reporting (optional - for UI feedback)
+    const { data: totalEvents, error: totalError } = await supabase
       .from('match_events')
-      .select(`
-        id,
-        fixture_id,
-        event_type,
-        player_name,
-        team_id,
-        event_time,
-        description
-      `)
-      .in('event_type', ['goal', 'assist'])
-      .order('fixture_id', { ascending: true })
-      .order('event_time', { ascending: true });
+      .select('event_type')
+      .in('event_type', ['goal', 'assist']);
 
-    if (eventsError) {
-      throw new Error(`Failed to fetch match events: ${eventsError.message}`);
+    if (!totalError && totalEvents) {
+      result.goalsAdded = totalEvents.filter(e => e.event_type === 'goal').length;
+      result.assistsAdded = totalEvents.filter(e => e.event_type === 'assist').length;
     }
 
-    if (!events || events.length === 0) {
-      console.log('✅ PlayerStatsSyncService: No match events found to sync');
-      return result;
-    }
-
-    console.log(`📊 PlayerStatsSyncService: Found ${events.length} events to process`);
-
-    // Group events by player name to batch updates
-    const playerEvents = new Map<string, { goals: number; assists: number; playerId?: number }>();
-
-    for (const event of events) {
-      if (!playerEvents.has(event.player_name)) {
-        playerEvents.set(event.player_name, { goals: 0, assists: 0 });
-      }
-
-      const playerData = playerEvents.get(event.player_name)!;
-      
-      if (event.event_type === 'goal') {
-        playerData.goals++;
-        result.goalsAdded++;
-      } else if (event.event_type === 'assist') {
-        playerData.assists++;
-        result.assistsAdded++;
-      }
-    }
-
-    // Find player IDs and update stats
-    for (const [playerName, stats] of playerEvents) {
-      try {
-        // Find player in database
-        const { data: players, error: playerError } = await supabase
-          .from('members')
-          .select('id, name, goals, assists')
-          .ilike('name', playerName)
-          .limit(1);
-
-        if (playerError) {
-          result.errors.push(`Error finding player "${playerName}": ${playerError.message}`);
-          continue;
-        }
-
-        if (!players || players.length === 0) {
-          result.warnings.push(`Player "${playerName}" not found in members table`);
-          continue;
-        }
-
-        const player = players[0];
-        const currentGoals = player.goals || 0;
-        const currentAssists = player.assists || 0;
-
-        // Calculate expected totals based on events
-        const expectedGoals = stats.goals;
-        const expectedAssists = stats.assists;
-
-        // Only update if there's a difference
-        let needsUpdate = false;
-        let goalsDiff = 0;
-        let assistsDiff = 0;
-
-        if (currentGoals !== expectedGoals) {
-          goalsDiff = expectedGoals - currentGoals;
-          needsUpdate = true;
-        }
-
-        if (currentAssists !== expectedAssists) {
-          assistsDiff = expectedAssists - currentAssists;
-          needsUpdate = true;
-        }
-
-        if (needsUpdate) {
-          // Update player stats to match events
-          const { error: updateError } = await supabase
-            .from('members')
-            .update({
-              goals: expectedGoals,
-              assists: expectedAssists
-            })
-            .eq('id', player.id);
-
-          if (updateError) {
-            result.errors.push(`Error updating player "${playerName}": ${updateError.message}`);
-          } else {
-            result.playersUpdated++;
-            console.log(`✅ PlayerStatsSyncService: Updated ${playerName}: goals ${currentGoals} → ${expectedGoals}, assists ${currentAssists} → ${expectedAssists}`);
-          }
-        } else {
-          console.log(`✅ PlayerStatsSyncService: Player "${playerName}" stats already correct`);
-        }
-
-      } catch (error) {
-        result.errors.push(`Unexpected error processing player "${playerName}": ${error instanceof Error ? error.message : 'Unknown error'}`);
-      }
-    }
-
-    console.log(`✅ PlayerStatsSyncService: Sync completed. Updated ${result.playersUpdated} players`);
+    console.log(`✅ PlayerStatsSyncService: Cumulative sync completed. Updated ${result.playersUpdated} players with accurate season totals`);
+    console.log(`📈 Total season stats: ${result.goalsAdded} goals, ${result.assistsAdded} assists`);
+    
     return result;
 
   } catch (error) {
-    console.error('❌ PlayerStatsSyncService: Critical error during sync:', error);
+    console.error('❌ PlayerStatsSyncService: Critical error during cumulative sync:', error);
     result.errors.push(`Critical sync error: ${error instanceof Error ? error.message : 'Unknown error'}`);
     return result;
   }
@@ -181,7 +107,7 @@ export const validatePlayerStats = async (): Promise<ValidationResult> => {
     for (const player of players) {
       const { data: playerEvents, error: eventsError } = await supabase
         .from('match_events')
-        .select('event_type')
+        .select('event_type, is_own_goal')
         .eq('player_name', player.name)
         .in('event_type', ['goal', 'assist']);
 
@@ -191,7 +117,8 @@ export const validatePlayerStats = async (): Promise<ValidationResult> => {
         continue;
       }
 
-      const eventGoals = playerEvents?.filter(e => e.event_type === 'goal').length || 0;
+      // Count goals excluding own goals (like the database function does)
+      const eventGoals = playerEvents?.filter(e => e.event_type === 'goal' && e.is_own_goal === false).length || 0;
       const eventAssists = playerEvents?.filter(e => e.event_type === 'assist').length || 0;
       const playerGoals = player.goals || 0;
       const playerAssists = player.assists || 0;

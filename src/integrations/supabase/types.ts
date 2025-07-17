@@ -1182,6 +1182,10 @@ export type Database = {
         }
         Returns: Json
       }
+      calculate_cumulative_player_stats: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
       cleanup_orphaned_images: {
         Args: Record<PropertyKey, never>
         Returns: number

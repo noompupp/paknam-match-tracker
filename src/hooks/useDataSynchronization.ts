@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { dataSynchronizationService, SyncResult } from '@/services/dataSynchronizationService';
+import { syncExistingMatchEvents } from '@/services/fixtures/playerStatsSyncService';
 import { useToast } from '@/hooks/use-toast';
 
 export const useDataSynchronization = () => {
@@ -10,7 +11,22 @@ export const useDataSynchronization = () => {
   const [lastSyncResult, setLastSyncResult] = useState<SyncResult | null>(null);
 
   const syncMutation = useMutation({
-    mutationFn: dataSynchronizationService.performFullDataSync,
+    mutationFn: async () => {
+      // First run the player stats sync with new cumulative calculation
+      console.log('🔄 DataSynchronization: Running cumulative player stats sync...');
+      const playerSyncResult = await syncExistingMatchEvents();
+      
+      // Then run the regular data sync
+      console.log('🔄 DataSynchronization: Running full data synchronization...');
+      const fullSyncResult = await dataSynchronizationService.performFullDataSync();
+      
+      // Combine results
+      return {
+        ...fullSyncResult,
+        playerStatsSync: playerSyncResult,
+        summary: `${fullSyncResult.summary}. Player stats: ${playerSyncResult.playersUpdated} players updated with cumulative totals.`
+      };
+    },
     onSuccess: (result) => {
       setLastSyncResult(result);
       
