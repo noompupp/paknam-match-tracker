@@ -16,8 +16,21 @@ export const usePlayerStatsSync = () => {
     onSuccess: (result) => {
       setLastSyncResult(result);
       
-      // Invalidate queries to refresh UI
+      // Enhanced cache invalidation to refresh UI immediately
+      console.log('🗑️ Quick sync cache invalidation: Clearing player stats caches...');
+      
+      // Invalidate all enhanced player stats queries (new system)
+      queryClient.invalidateQueries({ 
+        queryKey: ['enhancedPlayerStats'],
+        exact: false 
+      });
+      
+      // Also invalidate legacy queries for compatibility
       queryClient.invalidateQueries({ queryKey: ['members'] });
+      queryClient.invalidateQueries({ queryKey: ['topScorers'] });
+      queryClient.invalidateQueries({ queryKey: ['topAssists'] });
+      
+      console.log('✅ Quick sync cache invalidation: Player stats caches cleared');
       
       if (result.playersUpdated > 0) {
         toast({

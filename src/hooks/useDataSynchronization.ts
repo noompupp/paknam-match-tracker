@@ -30,14 +30,25 @@ export const useDataSynchronization = () => {
     onSuccess: (result) => {
       setLastSyncResult(result);
       
-      // Invalidate all relevant queries to refresh the UI
+      // Comprehensive cache invalidation for immediate UI updates
+      console.log('🗑️ Full sync cache invalidation: Clearing ALL related caches...');
+      
+      // Invalidate all enhanced player stats queries (new system)
+      queryClient.invalidateQueries({ 
+        queryKey: ['enhancedPlayerStats'],
+        exact: false 
+      });
+      
+      // Invalidate legacy and related queries
       queryClient.invalidateQueries({ queryKey: ['members'] });
       queryClient.invalidateQueries({ queryKey: ['fixtures'] });
       queryClient.invalidateQueries({ queryKey: ['matchEvents'] });
-      queryClient.invalidateQueries({ queryKey: ['enhancedTopScorers'] });
-      queryClient.invalidateQueries({ queryKey: ['enhancedTopAssists'] });
       queryClient.invalidateQueries({ queryKey: ['playerStats'] });
       queryClient.invalidateQueries({ queryKey: ['teamPlayerStats'] });
+      queryClient.invalidateQueries({ queryKey: ['topScorers'] });
+      queryClient.invalidateQueries({ queryKey: ['topAssists'] });
+      
+      console.log('✅ Full sync cache invalidation: All caches cleared');
       
       if (result.success) {
         toast({

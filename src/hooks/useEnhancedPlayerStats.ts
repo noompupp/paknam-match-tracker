@@ -1,5 +1,5 @@
 
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { playerStatsApi } from '@/services/playerStatsApi';
 
 export const useEnhancedTopScorers = (limit: number = 10) => {
@@ -9,9 +9,9 @@ export const useEnhancedTopScorers = (limit: number = 10) => {
       console.log('🎣 useEnhancedTopScorers: Starting enhanced query with limit:', limit);
       return playerStatsApi.getTopScorers(limit);
     },
-    staleTime: 30 * 1000, // 30 seconds
+    staleTime: 5 * 1000, // 5 seconds (reduced for immediate updates)
     refetchOnWindowFocus: true,
-    refetchInterval: 60 * 1000, // Refetch every minute
+    refetchInterval: 30 * 1000, // Refetch every 30 seconds (increased frequency)
     select: (data) => {
       console.log('✅ useEnhancedTopScorers: Query successful, scorers:', data);
       return data?.map(player => ({
@@ -32,9 +32,9 @@ export const useEnhancedTopAssists = (limit: number = 10) => {
       console.log('🎣 useEnhancedTopAssists: Starting enhanced query with limit:', limit);
       return playerStatsApi.getTopAssists(limit);
     },
-    staleTime: 30 * 1000, // 30 seconds
+    staleTime: 5 * 1000, // 5 seconds (reduced for immediate updates)
     refetchOnWindowFocus: true,
-    refetchInterval: 60 * 1000, // Refetch every minute
+    refetchInterval: 30 * 1000, // Refetch every 30 seconds (increased frequency)
     select: (data) => {
       console.log('✅ useEnhancedTopAssists: Query successful, assists:', data);
       return data?.map(player => ({
@@ -56,9 +56,9 @@ export const useEnhancedTeamPlayerStats = (teamId: string) => {
       return playerStatsApi.getByTeam(teamId);
     },
     enabled: !!teamId,
-    staleTime: 30 * 1000,
+    staleTime: 5 * 1000, // 5 seconds (reduced for immediate updates)
     refetchOnWindowFocus: true,
-    refetchInterval: 60 * 1000,
+    refetchInterval: 30 * 1000, // Refetch every 30 seconds (increased frequency)
     select: (data) => {
       console.log('📊 useEnhancedTeamPlayerStats: Processing team player data:', data);
       
@@ -93,5 +93,53 @@ export const useEnhancedTeamPlayerStats = (teamId: string) => {
       }) || [];
     }
   });
+};
+
+// Cache invalidation utility hook
+export const usePlayerStatsCache = () => {
+  const queryClient = useQueryClient();
+  
+  const invalidateLeaderboards = () => {
+    console.log('🗑️ Manual cache invalidation: Clearing leaderboard caches...');
+    
+    // Invalidate all enhanced player stats queries
+    queryClient.invalidateQueries({ 
+      queryKey: ['enhancedPlayerStats'],
+      exact: false 
+    });
+    
+    // Also invalidate legacy queries for compatibility
+    queryClient.invalidateQueries({ queryKey: ['members'] });
+    queryClient.invalidateQueries({ queryKey: ['topScorers'] });
+    queryClient.invalidateQueries({ queryKey: ['topAssists'] });
+    
+    console.log('✅ Manual cache invalidation: All leaderboard caches cleared');
+  };
+
+  const forceRefreshLeaderboards = async () => {
+    console.log('🔄 Force refresh: Invalidating and refetching leaderboards...');
+    
+    // First invalidate
+    invalidateLeaderboards();
+    
+    // Then force refetch the main queries
+    await Promise.all([
+      queryClient.refetchQueries({ 
+        queryKey: ['enhancedPlayerStats', 'topScorers'],
+        exact: false 
+      }),
+      queryClient.refetchQueries({ 
+        queryKey: ['enhancedPlayerStats', 'topAssists'],
+        exact: false 
+      })
+    ]);
+    
+    console.log('✅ Force refresh: All leaderboards refreshed');
+  };
+
+  return {
+    invalidateLeaderboards,
+    forceRefreshLeaderboards
+  };
 };
 

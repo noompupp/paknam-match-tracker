@@ -3,13 +3,33 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { RefreshCw, CheckCircle, AlertTriangle, TrendingUp, Calculator } from "lucide-react";
+import { RefreshCw, CheckCircle, AlertTriangle, TrendingUp, Calculator, Trash2 } from "lucide-react";
 import { usePlayerStatsSync } from "@/hooks/usePlayerStatsSync";
 import { useDataSynchronization } from "@/hooks/useDataSynchronization";
+import { usePlayerStatsCache } from "@/hooks/useEnhancedPlayerStats";
+import { useToast } from "@/hooks/use-toast";
 
 const StatsManagement = () => {
+  const { toast } = useToast();
   const { syncStats, validateStats, isSyncing, isValidating, lastSyncResult } = usePlayerStatsSync();
   const { performFullSync, isSyncing: isFullSyncing, lastSyncResult: fullSyncResult } = useDataSynchronization();
+  const { invalidateLeaderboards, forceRefreshLeaderboards } = usePlayerStatsCache();
+
+  const handleManualCacheRefresh = async () => {
+    try {
+      await forceRefreshLeaderboards();
+      toast({
+        title: "Cache Refreshed! 🔄",
+        description: "Leaderboard data has been refreshed from the database.",
+      });
+    } catch (error) {
+      toast({
+        title: "Refresh Failed",
+        description: "Failed to refresh leaderboard cache.",
+        variant: "destructive"
+      });
+    }
+  };
 
   return (
     <Card className="card-shadow-lg">
@@ -20,7 +40,7 @@ const StatsManagement = () => {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <Button 
             onClick={() => syncStats()} 
             disabled={isSyncing || isFullSyncing}
@@ -48,6 +68,15 @@ const StatsManagement = () => {
           >
             <CheckCircle className={`h-4 w-4 ${isValidating ? 'animate-spin' : ''}`} />
             {isValidating ? 'Validating...' : 'Validate Stats'}
+          </Button>
+
+          <Button 
+            onClick={handleManualCacheRefresh}
+            variant="destructive"
+            className="flex items-center gap-2"
+          >
+            <Trash2 className="h-4 w-4" />
+            Clear Cache & Refresh
           </Button>
         </div>
 
@@ -141,6 +170,7 @@ const StatsManagement = () => {
           <p><strong>Quick Sync:</strong> Updates member statistics based on assigned match events (goals/assists).</p>
           <p><strong>Full Cumulative Sync:</strong> Recalculates ALL season totals from ALL match events using database function - ensures accurate cumulative stats.</p>
           <p><strong>Validate Stats:</strong> Checks consistency between match events and member statistics.</p>
+          <p><strong>Clear Cache & Refresh:</strong> Manually clears cached leaderboard data and forces a fresh fetch from the database - use if stats appear outdated.</p>
           <p><strong>Note:</strong> Use Full Cumulative Sync after matches to ensure leaderboards show correct season totals, not just recent match stats.</p>
         </div>
       </CardContent>
