@@ -36,12 +36,18 @@ const MatchSummaryDialog = ({ fixture, isOpen, onClose }: MatchSummaryDialogProp
   // Use Enhanced Timeline as primary data source
   let goals, cards, timelineEvents = [];
 
-  if (enhancedSuccess && enhancedData?.timelineEvents?.length > 0) {
-    const unifiedData = processUnifiedMatchData(enhancedData);
-    goals = unifiedData.goals;
-    cards = unifiedData.cards;
-    timelineEvents = unifiedData.timelineEvents;
-    console.log('✅ Using Enhanced Timeline data:', { goals: goals.length, cards: cards.length });
+  if (enhancedSuccess && enhancedData?.goals?.length >= 0) {
+    // Use enhanced data directly - it's already processed by the database function
+    goals = enhancedData.goals || [];
+    cards = enhancedData.cards || [];
+    timelineEvents = enhancedData.timelineEvents || [];
+    
+    console.log('✅ Using Enhanced Match Summary data:', { 
+      goals: goals.length, 
+      cards: cards.length,
+      sampleGoal: goals[0],
+      sampleCard: cards[0]
+    });
   } else {
     // Fallback to match events
     goals = (matchEvents || []).filter(event => event.event_type === 'goal');
