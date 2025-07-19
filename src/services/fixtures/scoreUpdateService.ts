@@ -6,7 +6,7 @@ import { calculateAndUpdatePositions } from './positionCalculationService';
 import { createGoalEventsWithDuplicateCheck } from './matchEventsCreationService';
 
 export const updateFixtureScore = async (id: number, homeScore: number, awayScore: number): Promise<Fixture> => {
-  console.log('🔍 ScoreUpdateService: Starting fixture score update with H2H tie-breaking:', { id, homeScore, awayScore });
+  console.log('🔍 ScoreUpdateService: Starting fixture score update with position tracking:', { id, homeScore, awayScore });
   
   try {
     // Validate input parameters
@@ -48,9 +48,10 @@ export const updateFixtureScore = async (id: number, homeScore: number, awayScor
     console.log('📈 ScoreUpdateService: Updating team statistics...');
     await updateTeamStats(homeTeam, awayTeam, homeScore, awayScore, currentFixture);
 
-    // Calculate and update league positions with H2H tie-breaking
-    console.log('🏆 ScoreUpdateService: Updating league table positions with H2H...');
+    // Calculate and update league positions with proper position tracking
+    console.log('🏆 ScoreUpdateService: Calculating positions with proper tracking...');
     await calculateAndUpdatePositions();
+    console.log('✅ ScoreUpdateService: Position tracking completed');
 
     // Create goal events for the score change with correct team IDs
     console.log('⚽ ScoreUpdateService: Creating goal events with correct team IDs...');
@@ -67,7 +68,9 @@ export const updateFixtureScore = async (id: number, homeScore: number, awayScor
     // Return simplified fixture object
     const result = createFixtureResult(updatedFixture, homeTeam, awayTeam);
     
-    console.log('✅ ScoreUpdateService: Successfully completed fixture score update with H2H tie-breaking');
+    console.log('✅ ScoreUpdateService: Successfully completed fixture score update with position tracking');
+    console.log('🔍 ScoreUpdateService: Position indicators should now show rank changes');
+    
     return result;
 
   } catch (error) {
