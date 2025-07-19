@@ -6,10 +6,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import LeagueTable from "./LeagueTable";
-import RecentResults from "./RecentResults";
-import UpcomingFixtures from "./UpcomingFixtures";
-import TopScorers from "./TopScorers";
-import TopAssists from "./TopAssists";
+import EnhancedRecentResultsCard from "./EnhancedRecentResultsCard";
+import UpcomingFixturesCard from "./UpcomingFixturesCard";
+import TopScorersCard from "./TopScorersCard";
+import TopAssistsCard from "./TopAssistsCard";
 import PositionTrackingDebug from "../debug/PositionTrackingDebug";
 import { useTeams } from "@/hooks/useTeams";
 import { useFixtures } from "@/hooks/useFixtures";
@@ -93,14 +93,14 @@ const Dashboard = () => {
               <LeagueTable teams={teams} isLoading={teamsLoading} />
             </div>
             <div className="space-y-6">
-              <TopScorers />
-              <TopAssists />
+              <TopScorersCard topScorers={[]} isLoading={false} />
+              <TopAssistsCard topAssists={[]} isLoading={false} />
             </div>
           </div>
           
           <div className="grid gap-6 md:grid-cols-2">
-            <RecentResults />
-            <UpcomingFixtures />
+            <EnhancedRecentResultsCard recentFixtures={[]} isLoading={false} onViewAll={() => {}} />
+            <UpcomingFixturesCard upcomingFixtures={[]} isLoading={false} onViewAll={() => {}} />
           </div>
         </TabsContent>
 
@@ -110,15 +110,15 @@ const Dashboard = () => {
 
         <TabsContent value="fixtures" className="space-y-6">
           <div className="grid gap-6 md:grid-cols-2">
-            <RecentResults />
-            <UpcomingFixtures />
+            <EnhancedRecentResultsCard recentFixtures={[]} isLoading={false} onViewAll={() => {}} />
+            <UpcomingFixturesCard upcomingFixtures={[]} isLoading={false} onViewAll={() => {}} />
           </div>
         </TabsContent>
 
         <TabsContent value="stats" className="space-y-6">
           <div className="grid gap-6 md:grid-cols-2">
-            <TopScorers />
-            <TopAssists />
+            <TopScorersCard topScorers={[]} isLoading={false} />
+            <TopAssistsCard topAssists={[]} isLoading={false} />
           </div>
         </TabsContent>
       </Tabs>
