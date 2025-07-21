@@ -25,24 +25,21 @@ export const getGoalTeamId = (goal: any): string => {
 };
 
 export const getGoalPlayerName = (goal: any): string => {
-  // Enhanced database function returns properly structured data
+  // Try multiple possible player name fields
   const possibleNames = [
-    goal.playerName,     // From enhanced function
-    goal.player_name,    // Fallback format
-    goal.player?.name,   // Nested format
-    goal.scorer,         // Alternative field
-    goal.name           // Direct name field
+    goal.playerName,
+    goal.player_name,
+    goal.player?.name,
+    goal.scorer,
+    goal.name
   ];
   
-  const playerName = possibleNames.find(name => name && name.trim() !== '') || 'Unknown Player';
+  const playerName = possibleNames.find(name => name && name.trim() !== '') || '';
   
-  console.log('🔍 getGoalPlayerName - Enhanced extraction:', {
+  console.log('🔍 getGoalPlayerName - Analyzing goal:', {
     goalId: goal.id,
-    goalType: goal.type,
-    possibleNames: possibleNames.map((name, i) => ({ [`field_${i}`]: name })),
-    selectedName: playerName,
-    isOwnGoal: goal.isOwnGoal || goal.is_own_goal,
-    rawGoal: goal
+    possibleNames,
+    selectedName: playerName
   });
   
   return playerName;
@@ -136,23 +133,13 @@ export const getCardTeamId = (card: any): string => {
 
 export const getCardPlayerName = (card: any): string => {
   const possibleNames = [
-    card.playerName,     // From enhanced function
-    card.player_name,    // Fallback format
-    card.player?.name,   // Nested format
-    card.name           // Direct name field
+    card.playerName,
+    card.player_name,
+    card.player?.name,
+    card.name
   ];
   
-  const playerName = possibleNames.find(name => name && name.trim() !== '') || 'Unknown Player';
-  
-  console.log('🔍 getCardPlayerName - Enhanced extraction:', {
-    cardId: card.id,
-    cardType: card.type || card.cardType,
-    possibleNames: possibleNames.map((name, i) => ({ [`field_${i}`]: name })),
-    selectedName: playerName,
-    rawCard: card
-  });
-  
-  return playerName;
+  return possibleNames.find(name => name && name.trim() !== '') || '';
 };
 
 export const getCardTime = (card: any): number => {
@@ -168,25 +155,8 @@ export const getCardTime = (card: any): number => {
 };
 
 export const getCardType = (card: any): string => {
-  // Enhanced database function provides consistent card type
-  const possibleTypes = [
-    card.cardType,      // From enhanced function
-    card.type,          // Alternative field
-    card.event_type     // Fallback format
-  ];
-  
-  const type = possibleTypes.find(t => t && t.trim() !== '') || 'yellow_card';
-  const normalizedType = type.replace('_card', '').toLowerCase();
-  
-  console.log('🔍 getCardType - Enhanced extraction:', {
-    cardId: card.id,
-    possibleTypes,
-    selectedType: type,
-    normalizedType,
-    isRed: normalizedType.includes('red')
-  });
-  
-  return normalizedType.includes('red') ? 'red card' : 'yellow card';
+  const type = card.type || card.cardType || card.event_type || '';
+  return type.includes('red') ? 'red card' : 'yellow card';
 };
 
 export const isCardRed = (card: any): boolean => {
