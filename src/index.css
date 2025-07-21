@@ -31,16 +31,6 @@
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
     
-    /* TOTW Red Theme Colors */
-    --totw-red-primary: 0 84% 55%;
-    --totw-red-secondary: 0 75% 45%;
-    --totw-red-light: 0 65% 85%;
-    --totw-red-dark: 0 90% 35%;
-    --totw-captain-gold: 45 95% 55%;
-    --totw-captain-gold-light: 45 85% 75%;
-    --totw-field-green: 120 35% 45%;
-    --totw-field-green-light: 120 25% 85%;
-    
     /* Enhanced gradient background variables with blue theme */
     --app-gradient: linear-gradient(135deg, 
       hsl(220 60% 95%) 0%, 
@@ -87,16 +77,6 @@
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
-    
-    /* TOTW Red Theme Colors - Dark Mode */
-    --totw-red-primary: 0 75% 60%;
-    --totw-red-secondary: 0 65% 50%;
-    --totw-red-light: 0 25% 25%;
-    --totw-red-dark: 0 85% 40%;
-    --totw-captain-gold: 45 85% 60%;
-    --totw-captain-gold-light: 45 75% 80%;
-    --totw-field-green: 120 25% 35%;
-    --totw-field-green-light: 120 15% 15%;
     
     /* Dark mode gradient variables with blue theme */
     --app-gradient: linear-gradient(135deg, 
@@ -299,11 +279,6 @@
 
   .scrollbar-thumb-border\/50::-webkit-scrollbar-thumb:hover {
     background-color: hsl(var(--border) / 0.7);
-  }
-
-  /* UEFA-style hexagon clip path for TOTW player avatars */
-  .clip-path-hexagon {
-    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
   }
 }
 

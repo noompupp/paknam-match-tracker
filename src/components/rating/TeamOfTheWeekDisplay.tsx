@@ -1,8 +1,9 @@
+
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Trophy, Star, Crown, Award, ChevronDown, AlertTriangle, Info, Shield } from "lucide-react";
+import { Trophy, Star, Crown, Award, ChevronDown, AlertTriangle, Info } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { TeamOfTheWeekPlayer, CaptainOfTheWeekPlayer } from "@/utils/teamOfTheWeekSelection";
 import { formatTeamOfTheWeekByPosition } from "@/utils/teamOfTheWeekSelection";
@@ -17,105 +18,48 @@ interface TeamOfTheWeekDisplayProps {
   captainOfTheWeek: CaptainOfTheWeekPlayer | null;
 }
 
-const PlayerCard = ({ player, membersMap, isLarge = false }: { 
+const PlayerCard = ({ player, membersMap }: { 
   player: TeamOfTheWeekPlayer;
   membersMap: Map<number, any>;
-  isLarge?: boolean;
 }) => {
   const { t } = useTranslation();
   
-  const avatarSize = isLarge ? 85 : 65; // Increased by 30% from original 55px to 72px, with large variant
-  
   return (
-    <div className={`relative group transition-all duration-300 hover:scale-105 ${isLarge ? 'mx-auto max-w-[200px]' : 'max-w-[160px] mx-auto'}`}>
-      {/* Captain Banner */}
+    <Card className={`relative ${player.isCaptain ? 'border-yellow-400 bg-yellow-50' : 'border-green-200 bg-green-50'}`}>
       {player.isCaptain && (
-        <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 z-20">
-          <div className="bg-totw-captain-gold text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg border-2 border-totw-captain-gold-light">
-            <Crown className="inline h-3 w-3 mr-1" />
-            CAPTAIN
-          </div>
+        <div className="absolute -top-2 -right-2 bg-yellow-500 rounded-full p-1">
+          <Crown className="h-4 w-4 text-white" />
         </div>
       )}
-      
-      {/* Main Card */}
-      <div className={`relative overflow-hidden transition-all duration-300 group-hover:shadow-2xl ${
-        player.isCaptain 
-          ? 'bg-gradient-to-br from-totw-captain-gold-light via-totw-captain-gold to-totw-captain-gold shadow-xl ring-2 ring-totw-captain-gold' 
-          : 'bg-gradient-to-br from-totw-red-light via-white to-totw-red-light shadow-lg border-2 border-totw-red-primary'
-      } ${isLarge ? 'rounded-2xl p-6' : 'rounded-xl p-4'}`}>
-        
-        {/* Hexagonal Avatar Container */}
-        <div className="relative mb-4">
-          <div className={`relative mx-auto ${isLarge ? 'w-24 h-24' : 'w-20 h-20'}`}>
-            {/* Hexagonal Background */}
-            <div className={`absolute inset-0 ${
-              player.isCaptain 
-                ? 'bg-gradient-to-br from-totw-captain-gold to-totw-captain-gold-light' 
-                : 'bg-gradient-to-br from-totw-red-primary to-totw-red-secondary'
-            } clip-path-hexagon shadow-lg`} />
-            
-            {/* Avatar with circular clip inside hexagon */}
-            <div className={`absolute inset-1 overflow-hidden rounded-full ${
-              player.isCaptain ? 'ring-4 ring-totw-captain-gold' : 'ring-3 ring-totw-red-primary'
-            }`}>
-              <MiniPlayerAvatar
-                name={player.player_name}
-                imageUrl={membersMap.get(player.player_id)?.ProfileURL || membersMap.get(player.player_id)?.optimized_avatar_url}
-                size={avatarSize}
-                className="object-cover"
-              />
-            </div>
-            
-            {/* Captain Crown Icon */}
-            {player.isCaptain && (
-              <div className="absolute -top-2 -right-2 bg-totw-captain-gold rounded-full p-1.5 shadow-lg border-2 border-white">
-                <Crown className="h-4 w-4 text-white" />
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Player Info */}
+      <CardContent className="p-3">
         <div className="text-center space-y-2">
-          {/* Player Name */}
-          <h3 className={`font-bold text-gray-900 leading-tight ${isLarge ? 'text-lg' : 'text-base'}`}>
-            {player.player_name}
-          </h3>
-          
-          {/* Team Badge and Name */}
-          <div className="flex items-center justify-center space-x-2">
-            <Shield className="h-4 w-4 text-totw-red-secondary" />
-            <span className={`font-medium text-gray-700 ${isLarge ? 'text-sm' : 'text-xs'}`}>
-              {player.team_name}
-            </span>
-          </div>
-          
-          {/* Position Badge */}
-          <Badge 
-            variant="outline" 
-            className={`font-semibold border-totw-red-primary text-totw-red-dark bg-white/90 ${
-              isLarge ? 'text-sm py-1 px-3' : 'text-xs py-0.5 px-2'
-            }`}
-          >
+           <div className="w-14 h-14 mx-auto">
+             <MiniPlayerAvatar
+               name={player.player_name}
+               imageUrl={membersMap.get(player.player_id)?.ProfileURL || membersMap.get(player.player_id)?.optimized_avatar_url}
+               size={55}
+               className={`${player.isCaptain ? 'ring-2 ring-yellow-400' : ''}`}
+             />
+           </div>
+          <div className="font-bold text-sm">{player.player_name}</div>
+          <div className="text-xs text-muted-foreground">{player.team_name}</div>
+          <Badge variant="outline" className="text-xs">
             {player.position}
           </Badge>
-          
-          {/* Rating */}
           <div className="flex items-center justify-center space-x-1">
-            <Star className={`text-totw-captain-gold fill-current ${isLarge ? 'h-5 w-5' : 'h-4 w-4'}`} />
-            <span className={`font-bold text-totw-red-dark ${isLarge ? 'text-xl' : 'text-lg'}`}>
-              {player.rating_data.final_rating.toFixed(1)}
+            <Star className="h-3 w-3 text-yellow-500 fill-current" />
+            <span className="text-sm font-bold text-green-600">
+              {player.rating_data.final_rating.toFixed(2)}
             </span>
           </div>
+          {player.isCaptain && (
+            <Badge className="bg-yellow-500 text-white text-xs">
+              {t('rating.captain')}
+            </Badge>
+          )}
         </div>
-        
-        {/* Decorative Elements */}
-        <div className="absolute top-2 right-2 opacity-20">
-          <Trophy className="h-6 w-6 text-totw-red-primary" />
-        </div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 };
 
@@ -126,61 +70,36 @@ const CaptainOfTheWeekCard = ({ captain, membersMap }: {
   const { t } = useTranslation();
   
   return (
-    <Card className="relative overflow-hidden bg-gradient-to-br from-totw-captain-gold-light via-totw-captain-gold to-totw-captain-gold border-2 border-totw-captain-gold shadow-2xl">
-      {/* Decorative Background Pattern */}
-      <div className="absolute inset-0 opacity-10">
-        <div className="absolute top-4 right-4">
-          <Trophy className="h-20 w-20 text-white" />
-        </div>
-        <div className="absolute bottom-4 left-4">
-          <Crown className="h-16 w-16 text-white" />
-        </div>
-      </div>
-      
-      <CardHeader className="pb-3 relative z-10">
-        <CardTitle className="text-center flex items-center justify-center space-x-2 text-white">
-          <Award className="h-6 w-6 drop-shadow-lg" />
-          <span className="font-bold text-xl drop-shadow-lg">🏆 Captain of the Week</span>
+    <Card className="border-blue-600 bg-gradient-to-r from-blue-300 via-blue-200 to-indigo-200 shadow-lg">
+      <CardHeader className="pb-2">
+        <CardTitle className="text-center flex items-center justify-center space-x-2 text-lg text-blue-900">
+          <Award className="h-5 w-5 text-blue-800" />
+          <span className="font-bold">🏆 Captain of the Week</span>
         </CardTitle>
       </CardHeader>
-      
-      <CardContent className="relative z-10">
+      <CardContent>
         <div className="flex items-center space-x-4">
-          <div className="relative">
-            <div className="w-20 h-20 relative">
-              {/* Hexagonal Background */}
-              <div className="absolute inset-0 bg-gradient-to-br from-white to-totw-captain-gold-light clip-path-hexagon shadow-lg" />
-              
-              {/* Avatar */}
-              <div className="absolute inset-1 overflow-hidden rounded-full ring-4 ring-white">
-                <MiniPlayerAvatar
-                  name={captain.player_name}
-                  imageUrl={membersMap.get(captain.player_id)?.ProfileURL || membersMap.get(captain.player_id)?.optimized_avatar_url}
-                  size={90}
-                  className="object-cover"
-                />
-              </div>
-            </div>
+          <div className="w-18 h-18 flex-shrink-0">
+            <MiniPlayerAvatar
+              name={captain.player_name}
+              imageUrl={membersMap.get(captain.player_id)?.ProfileURL || membersMap.get(captain.player_id)?.optimized_avatar_url}
+              size={74}
+              className="ring-2 ring-blue-600"
+            />
           </div>
-          
           <div className="flex-1">
-            <div className="font-bold text-2xl text-white drop-shadow-lg">{captain.player_name}</div>
-            <div className="text-white/90 font-medium text-lg drop-shadow-md">
-              {captain.team_name} • {captain.position}
-            </div>
-            
-            <Badge className="bg-white text-totw-captain-gold font-bold mt-2 px-3 py-1">
+            <div className="font-bold text-xl text-blue-900">{captain.player_name}</div>
+            <div className="text-blue-800 font-medium">{captain.team_name} • {captain.position}</div>
+            <Badge className="bg-blue-700 text-white mt-2">
               Team Captain
             </Badge>
-            
-            <div className="flex items-center space-x-2 mt-3">
-              <Star className="h-5 w-5 text-white fill-current drop-shadow-sm" />
-              <span className="font-bold text-white text-2xl drop-shadow-lg">
-                {captain.rating_data.final_rating.toFixed(1)}
+            <div className="flex items-center space-x-2 mt-2">
+              <Star className="h-4 w-4 text-yellow-600 fill-current" />
+              <span className="font-bold text-green-800 text-lg">
+                {captain.rating_data.final_rating.toFixed(2)}
               </span>
             </div>
-            
-            <div className="text-white/80 text-sm mt-1 drop-shadow-sm">
+            <div className="text-xs text-blue-700 mt-1">
               Performance Score: {captain.teamPerformanceScore.toFixed(1)}
             </div>
           </div>
@@ -214,13 +133,13 @@ const TeamOfTheWeekDisplay: React.FC<TeamOfTheWeekDisplayProps> = ({
   
   if (!teamOfTheWeek || teamOfTheWeek.length === 0) {
     return (
-      <Card className="border-totw-red-light bg-totw-field-green-light">
-        <CardContent className="py-12 text-center">
-          <Trophy className="h-16 w-16 text-totw-red-primary mx-auto mb-6" />
-          <h3 className="text-xl font-bold text-totw-red-dark mb-2">
+      <Card>
+        <CardContent className="py-8 text-center">
+          <Trophy className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+          <p className="text-muted-foreground mb-2">
             {t("rating.noApprovedRatings")}
-          </h3>
-          <p className="text-totw-red-secondary">
+          </p>
+          <p className="text-sm text-muted-foreground">
             {t("rating.approveRatingsFirst")}
           </p>
         </CardContent>
@@ -235,96 +154,81 @@ const TeamOfTheWeekDisplay: React.FC<TeamOfTheWeekDisplayProps> = ({
   const positionCorrections = suggestPositionCorrections(teamOfTheWeek);
 
   return (
-    <div className="space-y-8">
-      {/* UEFA-Style Header */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-totw-red-primary via-totw-red-secondary to-totw-red-primary text-white rounded-2xl shadow-2xl">
-        {/* Background Pattern */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-4 right-8">
-            <Trophy className="h-32 w-32" />
-          </div>
-          <div className="absolute bottom-4 left-8">
-            <Award className="h-24 w-24" />
-          </div>
-        </div>
-        
-        <div className="relative z-10 text-center py-8 px-6">
-          <h1 className="text-4xl font-bold mb-2 drop-shadow-lg">TEAM OF THE WEEK</h1>
-          <p className="text-xl text-white/90 drop-shadow-md">
+    <div className="space-y-6">
+      {/* Header */}
+      <Card className="border-yellow-300 bg-gradient-to-r from-yellow-100 via-yellow-50 to-orange-100 shadow-md">
+        <CardHeader className="text-center pb-3">
+          <CardTitle className="flex items-center justify-center space-x-2 text-yellow-800">
+            <Trophy className="h-6 w-6 text-yellow-700" />
+            <span className="font-bold">{t("rating.teamOfTheWeek")}</span>
+          </CardTitle>
+          <div className="text-sm text-yellow-700 font-medium">
             7-a-side Formation • {teamOfTheWeek.length} Players Selected
-          </p>
-          <div className="mt-4 flex items-center justify-center space-x-6 text-sm">
-            <div className="flex items-center space-x-2">
-              <Star className="h-5 w-5 fill-current" />
-              <span>Top Performers</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Crown className="h-5 w-5" />
-              <span>Captain's Choice</span>
-            </div>
           </div>
-        </div>
-      </div>
+        </CardHeader>
+      </Card>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Main TOTW Display - Takes 2/3 width */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* TOTW Captain Spotlight */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Pitch Formation Display - Takes 2/3 width on large screens */}
+        <div className="lg:col-span-2 space-y-4">
+          {/* TOTW Captain Highlight */}
           {totwCaptain && (
-            <div className="bg-gradient-to-br from-totw-field-green-light to-totw-field-green/20 rounded-2xl p-6 border-2 border-totw-captain-gold shadow-xl">
-              <div className="text-center mb-6">
-                <h2 className="text-2xl font-bold text-totw-red-dark mb-2 flex items-center justify-center space-x-2">
-                  <Crown className="h-6 w-6 text-totw-captain-gold" />
-                  <span>TEAM CAPTAIN</span>
-                </h2>
-                <p className="text-totw-red-secondary">Most Valuable Player of the Week</p>
-              </div>
-              
-              <PlayerCard player={totwCaptain} membersMap={membersMap} isLarge={true} />
-            </div>
+            <Card className="border-amber-500 bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-950 dark:to-yellow-950 dark:border-amber-400 shadow-xl ring-2 ring-amber-500/30">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-center flex items-center justify-center space-x-2 text-lg text-amber-900 dark:text-amber-100">
+                  <Crown className="h-5 w-5 text-amber-600 dark:text-amber-400 drop-shadow-lg" />
+                  <span className="font-bold drop-shadow-md">TOTW MVP</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="text-center">
+                <div className="flex items-center justify-center space-x-4">
+                  <div className="w-18 h-18 flex-shrink-0">
+                    <MiniPlayerAvatar
+                      name={totwCaptain.player_name}
+                      imageUrl={membersMap.get(totwCaptain.player_id)?.ProfileURL || membersMap.get(totwCaptain.player_id)?.optimized_avatar_url}
+                      size={74}
+                      className="ring-3 ring-amber-500 dark:ring-amber-400 shadow-xl"
+                    />
+                  </div>
+                  <div className="flex-1 text-left">
+                    <div className="font-bold text-xl text-amber-900 dark:text-amber-100 drop-shadow-md">{totwCaptain.player_name}</div>
+                    <div className="text-amber-700 dark:text-amber-300 font-medium drop-shadow-sm">{totwCaptain.team_name} • {totwCaptain.position}</div>
+                    <div className="flex items-center space-x-2 mt-2">
+                      <Star className="h-4 w-4 text-amber-600 dark:text-amber-400 fill-current drop-shadow-sm" />
+                      <span className="font-bold text-green-700 dark:text-green-400 text-lg drop-shadow-sm">
+                        {totwCaptain.rating_data.final_rating.toFixed(2)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           )}
 
           {/* 2D Pitch Formation Display */}
-          <div className="bg-gradient-to-br from-totw-field-green-light to-totw-field-green/30 rounded-2xl p-6 border-2 border-totw-field-green shadow-lg">
-            <h3 className="text-xl font-bold text-totw-red-dark mb-4 text-center">Formation Display</h3>
-            <TeamOfTheWeekPitchDisplay teamOfTheWeek={teamOfTheWeek} membersMap={membersMap} />
-          </div>
-
-          {/* Player Cards Grid */}
-          <div className="bg-white rounded-2xl p-6 shadow-lg border border-totw-red-light">
-            <h3 className="text-xl font-bold text-totw-red-dark mb-6 text-center">Selected Players</h3>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {teamOfTheWeek.map((player) => (
-                <PlayerCard 
-                  key={`${player.player_id}-${player.position}`} 
-                  player={player} 
-                  membersMap={membersMap} 
-                />
-              ))}
-            </div>
-          </div>
+          <TeamOfTheWeekPitchDisplay teamOfTheWeek={teamOfTheWeek} membersMap={membersMap} />
 
           {/* Summary Stats */}
-          <Card className="border-totw-red-light bg-gradient-to-r from-white to-totw-red-light/20">
-            <CardContent className="py-6">
-              <div className="grid grid-cols-3 gap-6 text-center">
-                <div className="space-y-2">
-                  <div className="text-3xl font-bold text-totw-red-primary">
+          <Card>
+            <CardContent className="py-4">
+              <div className="grid grid-cols-3 gap-4 text-center">
+                <div>
+                  <div className="text-2xl font-bold text-green-600">
                     {teamOfTheWeek.length}
                   </div>
-                  <div className="text-sm font-medium text-totw-red-secondary">Players</div>
+                  <div className="text-sm text-muted-foreground">Players</div>
                 </div>
-                <div className="space-y-2">
-                  <div className="text-3xl font-bold text-totw-captain-gold">
+                <div>
+                  <div className="text-2xl font-bold text-yellow-600">
                     {teamOfTheWeek.reduce((acc, p) => acc + p.rating_data.final_rating, 0).toFixed(1)}
                   </div>
-                  <div className="text-sm font-medium text-totw-red-secondary">Total Rating</div>
+                  <div className="text-sm text-muted-foreground">Total Rating</div>
                 </div>
-                <div className="space-y-2">
-                  <div className="text-3xl font-bold text-totw-red-primary">
+                <div>
+                  <div className="text-2xl font-bold text-blue-600">
                     {(teamOfTheWeek.reduce((acc, p) => acc + p.rating_data.final_rating, 0) / teamOfTheWeek.length).toFixed(1)}
                   </div>
-                  <div className="text-sm font-medium text-totw-red-secondary">Avg Rating</div>
+                  <div className="text-sm text-muted-foreground">Avg Rating</div>
                 </div>
               </div>
             </CardContent>
@@ -421,51 +325,23 @@ const TeamOfTheWeekDisplay: React.FC<TeamOfTheWeekDisplayProps> = ({
           )}
         </div>
 
-        {/* Captain of the Week Sidebar - Takes 1/3 width */}
-        <div className="space-y-6">
+        {/* Captain of the Week - Takes 1/3 width on large screens */}
+        <div className="space-y-4">
           {captainOfTheWeek ? (
             <CaptainOfTheWeekCard captain={captainOfTheWeek} membersMap={membersMap} />
           ) : (
-            <Card className="border-totw-red-light bg-totw-field-green-light">
+            <Card className="border-gray-200">
               <CardContent className="py-8 text-center">
-                <Award className="h-12 w-12 text-totw-red-primary mx-auto mb-4" />
-                <h3 className="text-lg font-bold text-totw-red-dark mb-2">
+                <Award className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <p className="text-muted-foreground mb-2">
                   No Captain of the Week
-                </h3>
-                <p className="text-sm text-totw-red-secondary">
+                </p>
+                <p className="text-sm text-muted-foreground">
                   No eligible team captains available
                 </p>
               </CardContent>
             </Card>
           )}
-          
-          {/* Additional Stats Card */}
-          <Card className="border-totw-red-light bg-gradient-to-br from-white to-totw-red-light/10">
-            <CardHeader>
-              <CardTitle className="text-totw-red-dark flex items-center space-x-2">
-                <Trophy className="h-5 w-5" />
-                <span>Team Statistics</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-totw-red-secondary">Highest Rating</span>
-                <span className="font-bold text-totw-red-dark">
-                  {Math.max(...teamOfTheWeek.map(p => p.rating_data.final_rating)).toFixed(1)}
-                </span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-totw-red-secondary">Formation</span>
-                <span className="font-bold text-totw-red-dark">{formationValidation.formation}</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-totw-red-secondary">Teams Represented</span>
-                <span className="font-bold text-totw-red-dark">
-                  {new Set(teamOfTheWeek.map(p => p.team_name)).size}
-                </span>
-              </div>
-            </CardContent>
-          </Card>
         </div>
       </div>
     </div>

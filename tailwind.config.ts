@@ -75,20 +75,6 @@ export default {
 					800: '#5a03d4',
 					900: '#4b05ad',
 					950: '#2e0276'
-				},
-				'totw-red': {
-					primary: 'hsl(var(--totw-red-primary))',
-					secondary: 'hsl(var(--totw-red-secondary))',
-					light: 'hsl(var(--totw-red-light))',
-					dark: 'hsl(var(--totw-red-dark))'
-				},
-				'totw-captain': {
-					gold: 'hsl(var(--totw-captain-gold))',
-					'gold-light': 'hsl(var(--totw-captain-gold-light))'
-				},
-				'totw-field': {
-					green: 'hsl(var(--totw-field-green))',
-					'green-light': 'hsl(var(--totw-field-green-light))'
 				}
 			},
 			borderRadius: {
