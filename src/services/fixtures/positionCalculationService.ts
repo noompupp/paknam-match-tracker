@@ -29,7 +29,9 @@ export const calculateAndUpdatePositions = async (): Promise<void> => {
         name: t.name, 
         points: t.points, 
         goalDifference: t.goal_difference,
-        goalsFor: t.goals_for
+        goalsFor: t.goals_for,
+        currentPosition: t.position,
+        previousPosition: t.previous_position
       }))
     );
 
@@ -89,20 +91,28 @@ export const calculateAndUpdatePositions = async (): Promise<void> => {
         name: t.name, 
         points: t.points, 
         goalDifference: t.goal_difference,
-        goalsFor: t.goals_for
+        goalsFor: t.goals_for,
+        oldPosition: t.position,
+        oldPrevious: t.previous_position
       }))
     );
 
-    // Update positions for all teams, preserving previous position before updating current
+    // Update positions for all teams with proper previous position tracking
     const updatePromises = finalOrderedTeams.map((team, index) => {
       const newPosition = index + 1;
+      const currentPosition = team.position;
       
-      console.log(`🔄 PositionCalculationService: Updating ${team.name} from position ${team.position} to ${newPosition} (previous: ${team.previous_position})`);
+      console.log(`🔄 PositionCalculationService: Updating ${team.name}:`, {
+        currentPosition,
+        newPosition,
+        willSetPrevious: currentPosition,
+        change: currentPosition - newPosition
+      });
       
       return supabase
         .from('teams')
         .update({ 
-          previous_position: team.position, // Store current position as previous
+          previous_position: currentPosition, // Store current position as previous
           position: newPosition // Update to new position
         })
         .eq('id', team.id);
@@ -130,7 +140,7 @@ export const calculateAndUpdatePositions = async (): Promise<void> => {
       rankChange: team.position - (index + 1) // Calculate change (negative = moved up, positive = moved down)
     }));
     
-    console.log('🏆 PositionCalculationService: Final league table with H2H ranking:', finalPositions);
+    console.log('🏆 PositionCalculationService: Final league table with rank changes:', finalPositions);
 
   } catch (error) {
     console.error('❌ PositionCalculationService: Critical error in position calculation:', error);
