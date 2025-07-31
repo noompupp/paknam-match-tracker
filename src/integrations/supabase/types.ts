@@ -1298,6 +1298,10 @@ export type Database = {
           ready_for_review: boolean
         }[]
       }
+      get_player_stats_sync_status: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
       get_user_fixture_assignments: {
         Args: { p_fixture_id: number }
         Returns: {
