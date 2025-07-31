@@ -26,6 +26,15 @@ interface CumulativeStatsResult {
   calculated_at: string;
 }
 
+interface EnhancedValidationResult {
+  success: boolean;
+  is_valid: boolean;
+  total_issues: number;
+  issues: string[];
+  error?: string;
+  validated_at: string;
+}
+
 export const syncExistingMatchEvents = async (): Promise<SyncResult> => {
   console.log('🔄 PlayerStatsSyncService: Starting cumulative stats sync using database function...');
   
@@ -82,7 +91,7 @@ export const syncExistingMatchEvents = async (): Promise<SyncResult> => {
 };
 
 export const validatePlayerStats = async (): Promise<ValidationResult> => {
-  console.log('🔍 PlayerStatsSyncService: Validating player stats consistency...');
+  console.log('🔍 PlayerStatsSyncService: Validating player stats consistency with enhanced validation...');
   
   const result: ValidationResult = {
     isValid: true,
@@ -90,61 +99,37 @@ export const validatePlayerStats = async (): Promise<ValidationResult> => {
   };
 
   try {
-    // Get all players with their current stats
-    const { data: players, error: playersError } = await supabase
-      .from('members')
-      .select('id, name, goals, assists');
+    // Use the enhanced validation function that includes matches_played checks
+    const { data: validationResult, error: validationError } = await supabase
+      .rpc('validate_player_stats_with_participation');
 
-    if (playersError) {
-      throw new Error(`Failed to fetch players: ${playersError.message}`);
+    if (validationError) {
+      throw new Error(`Enhanced validation failed: ${validationError.message}`);
     }
 
-    if (!players || players.length === 0) {
-      return result;
+    // Type the validation result properly
+    const typedValidationResult = validationResult as unknown as EnhancedValidationResult;
+    
+    if (!typedValidationResult || !typedValidationResult.success) {
+      throw new Error(`Validation function failed: ${typedValidationResult?.error || 'Unknown error'}`);
     }
 
-    // For each player, count their events and compare
-    for (const player of players) {
-      const { data: playerEvents, error: eventsError } = await supabase
-        .from('match_events')
-        .select('event_type, is_own_goal')
-        .eq('player_name', player.name)
-        .in('event_type', ['goal', 'assist']);
-
-      if (eventsError) {
-        result.issues.push(`Error fetching events for ${player.name}: ${eventsError.message}`);
-        result.isValid = false;
-        continue;
-      }
-
-      // Count goals excluding own goals (like the database function does)
-      const eventGoals = playerEvents?.filter(e => e.event_type === 'goal' && e.is_own_goal === false).length || 0;
-      const eventAssists = playerEvents?.filter(e => e.event_type === 'assist').length || 0;
-      const playerGoals = player.goals || 0;
-      const playerAssists = player.assists || 0;
-
-      if (eventGoals !== playerGoals) {
-        result.issues.push(`${player.name}: Goals mismatch - Events: ${eventGoals}, Profile: ${playerGoals}`);
-        result.isValid = false;
-      }
-
-      if (eventAssists !== playerAssists) {
-        result.issues.push(`${player.name}: Assists mismatch - Events: ${eventAssists}, Profile: ${playerAssists}`);
-        result.isValid = false;
-      }
-    }
+    // Extract results from the database function
+    result.isValid = typedValidationResult.is_valid;
+    result.issues = typedValidationResult.issues || [];
 
     if (result.isValid) {
-      console.log('✅ PlayerStatsSyncService: All player stats are consistent');
+      console.log('✅ PlayerStatsSyncService: All player stats are consistent with enhanced validation');
     } else {
-      console.warn(`⚠️ PlayerStatsSyncService: Found ${result.issues.length} consistency issues`);
+      console.warn(`⚠️ PlayerStatsSyncService: Found ${typedValidationResult.total_issues} consistency issues including matches_played`);
+      console.log('📋 Issues:', result.issues);
     }
 
     return result;
 
   } catch (error) {
-    console.error('❌ PlayerStatsSyncService: Error during validation:', error);
-    result.issues.push(`Validation error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    console.error('❌ PlayerStatsSyncService: Error during enhanced validation:', error);
+    result.issues.push(`Enhanced validation error: ${error instanceof Error ? error.message : 'Unknown error'}`);
     result.isValid = false;
     return result;
   }

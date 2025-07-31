@@ -1373,6 +1373,10 @@ export type Database = {
         Args: { player_name: string }
         Returns: boolean
       }
+      validate_player_stats_with_participation: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
     }
     Enums: {
       [_ in never]: never
