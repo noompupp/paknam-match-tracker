@@ -57,7 +57,7 @@ const FullRankingModal = ({
 
   return (
     <EnhancedDialog open={isOpen} onOpenChange={onClose}>
-      <EnhancedDialogContent className="w-[98vw] sm:max-w-2xl lg:max-w-3xl sm:w-auto flex flex-col py-2 px-2 rounded-xl">
+      <EnhancedDialogContent className="w-[98vw] sm:max-w-3xl lg:max-w-4xl sm:w-auto flex flex-col py-2 px-2 rounded-xl">
         <EnhancedDialogHeader className="flex-shrink-0 pb-3 px-2 sm:px-4">
           <EnhancedDialogTitle className="flex items-center gap-2 text-lg sm:text-xl font-bold">
             <Icon className="h-5 w-5 text-primary" />
@@ -100,9 +100,9 @@ const FullRankingModal = ({
                 return (
                   <div 
                     key={`${player.id ?? index}-${player.profileImageUrl ?? "none"}`}
-                    className={`flex items-center justify-between rounded-lg border bg-card shadow-sm transition mb-0 px-2 py-1 min-h-[38px] ${rankClass}`}
+                    className={`flex items-center justify-between rounded-lg border bg-card shadow-sm transition mb-0 px-3 py-2 min-h-[44px] ${rankClass}`}
                   >
-                    <div className="flex items-center gap-2 min-w-0">
+                    <div className="flex items-center gap-3 min-w-0">
                       <Badge 
                         variant="outline" 
                         className="w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs p-0.5 bg-background border-border"
@@ -112,15 +112,15 @@ const FullRankingModal = ({
                       <MiniPlayerAvatar
                         name={player.name}
                         imageUrl={player.profileImageUrl}
-                        size={28}
+                        size={36}
                         className="flex-shrink-0"
                       />
-                      <div className="truncate max-w-[112px]">
-                        <p className="font-medium text-[15px] truncate">{player.name}</p>
-                        <p className="text-xs text-muted-foreground truncate leading-tight">{player.team}</p>
+                      <div className="truncate max-w-[140px]">
+                        <p className="font-medium text-base truncate">{player.name}</p>
+                        <p className="text-sm text-muted-foreground truncate leading-tight">{player.team}</p>
                       </div>
                     </div>
-                    <Badge className={`font-bold text-sm px-2 py-0.5 ${getStatColor()} shadow`}>
+                    <Badge className={`font-bold text-base px-3 py-1 ${getStatColor()} shadow`}>
                       {getStatValue(player)}
                     </Badge>
                   </div>
