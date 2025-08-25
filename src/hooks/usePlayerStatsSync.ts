@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useQueryClient, useMutation } from '@tanstack/react-query';
 import { syncExistingMatchEvents, validatePlayerStats, cleanupDuplicateEvents } from '@/services/fixtures/playerStatsSyncService';
 import { useToast } from '@/hooks/use-toast';
+import { useEnhancedSync } from '@/hooks/useEnhancedSync';
 
 export const usePlayerStatsSync = () => {
   const { toast } = useToast();
@@ -10,6 +11,7 @@ export const usePlayerStatsSync = () => {
   const [lastSyncResult, setLastSyncResult] = useState<any>(null);
   const [lastValidationResult, setLastValidationResult] = useState<any>(null);
   const [lastCleanupResult, setLastCleanupResult] = useState<any>(null);
+  const { recheckHealth } = useEnhancedSync();
 
   const syncMutation = useMutation({
     mutationFn: syncExistingMatchEvents,
@@ -31,6 +33,9 @@ export const usePlayerStatsSync = () => {
       queryClient.invalidateQueries({ queryKey: ['topAssists'] });
       
       console.log('✅ Quick sync cache invalidation: Player stats caches cleared');
+      
+      // Update sync health status
+      recheckHealth();
       
       if (result.playersUpdated > 0) {
         toast({

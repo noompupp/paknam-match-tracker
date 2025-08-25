@@ -4,11 +4,13 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { dataSynchronizationService, SyncResult } from '@/services/dataSynchronizationService';
 import { syncExistingMatchEvents } from '@/services/fixtures/playerStatsSyncService';
 import { useToast } from '@/hooks/use-toast';
+import { useEnhancedSync } from '@/hooks/useEnhancedSync';
 
 export const useDataSynchronization = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [lastSyncResult, setLastSyncResult] = useState<SyncResult | null>(null);
+  const { recheckHealth } = useEnhancedSync();
 
   const syncMutation = useMutation({
     mutationFn: async () => {
@@ -49,6 +51,9 @@ export const useDataSynchronization = () => {
       queryClient.invalidateQueries({ queryKey: ['topAssists'] });
       
       console.log('✅ Full sync cache invalidation: All caches cleared');
+      
+      // Update sync health status
+      recheckHealth();
       
       if (result.success) {
         toast({

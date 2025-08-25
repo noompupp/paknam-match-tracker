@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "12.2.3 (519615d)"
@@ -1157,28 +1157,28 @@ export type Database = {
     }
     Functions: {
       aggregate_weekly_player_performance: {
-        Args: { p_week_start: string; p_week_end: string }
+        Args: { p_week_end: string; p_week_start: string }
         Returns: Json
       }
       approve_player_rating: {
         Args: {
+          p_adjusted_fpl_rating?: number
+          p_adjusted_participation_rating?: number
           p_fixture_id: number
           p_player_id: number
           p_player_name: string
-          p_team_id: string
           p_position?: string
-          p_adjusted_fpl_rating?: number
-          p_adjusted_participation_rating?: number
+          p_team_id: string
         }
         Returns: Json
       }
       assign_referee_to_role: {
         Args: {
-          p_fixture_id: number
           p_assigned_role: string
-          p_workflow_mode: string
-          p_team_assignment?: string
+          p_fixture_id: number
           p_responsibilities?: string[]
+          p_team_assignment?: string
+          p_workflow_mode: string
         }
         Returns: Json
       }
@@ -1194,6 +1194,10 @@ export type Database = {
         Args: { p_assignment_id: string; p_completion_notes?: string }
         Returns: Json
       }
+      detect_sync_discrepancies: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
       finalize_match_coordination: {
         Args: { p_coordination_id: string; p_final_review_data?: Json }
         Returns: Json
@@ -1204,44 +1208,44 @@ export type Database = {
       }
       generate_league_operation_hash: {
         Args: {
-          p_fixture_id: number
-          p_operation_type: string
-          p_home_score: number
           p_away_score: number
+          p_fixture_id: number
+          p_home_score: number
+          p_operation_type: string
         }
         Returns: string
       }
       generate_weekly_totw: {
-        Args: { p_week_start?: string; p_week_end?: string }
+        Args: { p_week_end?: string; p_week_start?: string }
         Returns: Json
       }
       get_coordination_with_assignments: {
         Args: { p_fixture_id: number }
         Returns: {
-          fixture_id: number
-          workflow_mode: string
           assignments: Json
-          user_assignments: Json
           completion_status: Json
+          fixture_id: number
+          user_assignments: Json
+          workflow_mode: string
         }[]
       }
       get_current_week_boundaries: {
         Args: Record<PropertyKey, never>
         Returns: {
-          week_start: string
           week_end: string
+          week_start: string
         }[]
       }
       get_enhanced_match_summary: {
         Args: { p_fixture_id: number }
         Returns: {
-          fixture_id: number
-          home_team_id: string
-          away_team_id: string
-          home_score: number
           away_score: number
-          goals: Json
+          away_team_id: string
           cards: Json
+          fixture_id: number
+          goals: Json
+          home_score: number
+          home_team_id: string
           player_times: Json
           summary_stats: Json
           timeline_events: Json
@@ -1250,30 +1254,30 @@ export type Database = {
       get_enhanced_match_summary_v2: {
         Args: { p_fixture_id: number }
         Returns: {
-          fixture_id: number
-          home_team_id: string
-          away_team_id: string
-          home_score: number
           away_score: number
-          goals: Json
+          away_team_id: string
           cards: Json
+          fixture_id: number
+          goals: Json
+          home_score: number
+          home_team_id: string
+          own_goals_summary: Json
           player_times: Json
           summary_stats: Json
           timeline_events: Json
-          own_goals_summary: Json
         }[]
       }
       get_fixture_all_assignments: {
         Args: { p_fixture_id: number }
         Returns: {
+          assigned_at: string
+          assigned_role: string
           assignment_id: string
           referee_id: string
-          assigned_role: string
-          team_assignment: string
           responsibilities: string[]
           status: string
+          team_assignment: string
           workflow_mode: string
-          assigned_at: string
         }[]
       }
       get_fixture_player_ratings: {
@@ -1281,35 +1285,39 @@ export type Database = {
         Returns: {
           player_id: number
           player_name: string
-          team_id: string
-          team_name: string
           player_position: string
           rating_data: Json
+          team_id: string
+          team_name: string
         }[]
       }
       get_match_coordination_status: {
         Args: { p_fixture_id: number }
         Returns: {
-          coordination_id: string
-          fixture_id: number
-          status: string
           assignments: Json
           completion_summary: Json
+          coordination_id: string
+          fixture_id: number
           ready_for_review: boolean
+          status: string
         }[]
       }
       get_player_stats_sync_status: {
         Args: Record<PropertyKey, never>
         Returns: Json
       }
+      get_sync_health_status: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
       get_user_fixture_assignments: {
         Args: { p_fixture_id: number }
         Returns: {
-          assignment_id: string
           assigned_role: string
-          team_assignment: string
+          assignment_id: string
           responsibilities: string[]
           status: string
+          team_assignment: string
           workflow_mode: string
         }[]
       }
@@ -1335,25 +1343,29 @@ export type Database = {
       }
       log_operation: {
         Args: {
-          p_operation_type: string
-          p_table_name?: string
-          p_record_id?: string
-          p_payload?: Json
-          p_result?: Json
           p_error_message?: string
+          p_operation_type: string
+          p_payload?: Json
+          p_record_id?: string
+          p_result?: Json
           p_success?: boolean
+          p_table_name?: string
         }
         Returns: string
       }
+      manual_sync_player_stats: {
+        Args: { p_triggered_by?: string }
+        Returns: Json
+      }
       safe_update_member_stats: {
         Args: {
-          p_member_id: number
-          p_goals?: number
           p_assists?: number
-          p_yellow_cards?: number
+          p_goals?: number
+          p_matches_played?: number
+          p_member_id: number
           p_red_cards?: number
           p_total_minutes_played?: number
-          p_matches_played?: number
+          p_yellow_cards?: number
         }
         Returns: Json
       }
@@ -1366,7 +1378,7 @@ export type Database = {
         Returns: Json
       }
       validate_fixture_score: {
-        Args: { home_score: number; away_score: number }
+        Args: { away_score: number; home_score: number }
         Returns: boolean
       }
       validate_player_name: {
