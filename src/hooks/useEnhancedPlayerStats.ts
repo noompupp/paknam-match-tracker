@@ -1,5 +1,6 @@
 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { enhancedPlayerStatsAPI } from '@/services/enhancedPlayerStatsAPI';
 import { playerStatsApi } from '@/services/playerStatsApi';
 
 export const useEnhancedTopScorers = (limit: number = 10) => {
@@ -7,19 +8,21 @@ export const useEnhancedTopScorers = (limit: number = 10) => {
     queryKey: ['enhancedPlayerStats', 'topScorers', limit],
     queryFn: () => {
       console.log('🎣 useEnhancedTopScorers: Starting enhanced query with limit:', limit);
-      return playerStatsApi.getTopScorers(limit);
+      return enhancedPlayerStatsAPI.getTopScorers(limit);
     },
-    staleTime: 5 * 1000, // 5 seconds (reduced for immediate updates)
-    refetchOnWindowFocus: true,
-    refetchInterval: 30 * 1000, // Refetch every 30 seconds (increased frequency)
+    staleTime: 30000, // 30 seconds
+    refetchInterval: 60000, // 1 minute for live updates
+    refetchIntervalInBackground: true,
+    retry: 3,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
     select: (data) => {
       console.log('✅ useEnhancedTopScorers: Query successful, scorers:', data);
       return data?.map(player => ({
         id: player.id,
         name: player.name,
-        team: player.team_name,
+        team: player.team_id,
         goals: player.goals,
-        profileImageUrl: player.ProfileURL ?? null, // Add image field for downstream usage
+        profileImageUrl: player.profileImageUrl,
       })) || [];
     }
   });
@@ -30,19 +33,21 @@ export const useEnhancedTopAssists = (limit: number = 10) => {
     queryKey: ['enhancedPlayerStats', 'topAssists', limit],
     queryFn: () => {
       console.log('🎣 useEnhancedTopAssists: Starting enhanced query with limit:', limit);
-      return playerStatsApi.getTopAssists(limit);
+      return enhancedPlayerStatsAPI.getTopAssists(limit);
     },
-    staleTime: 5 * 1000, // 5 seconds (reduced for immediate updates)
-    refetchOnWindowFocus: true,
-    refetchInterval: 30 * 1000, // Refetch every 30 seconds (increased frequency)
+    staleTime: 30000, // 30 seconds
+    refetchInterval: 60000, // 1 minute for live updates
+    refetchIntervalInBackground: true,
+    retry: 3,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
     select: (data) => {
       console.log('✅ useEnhancedTopAssists: Query successful, assists:', data);
       return data?.map(player => ({
         id: player.id,
         name: player.name,
-        team: player.team_name,
+        team: player.team_id,
         assists: player.assists,
-        profileImageUrl: player.ProfileURL ?? null, // Add image field for downstream usage
+        profileImageUrl: player.profileImageUrl,
       })) || [];
     }
   });
