@@ -16,7 +16,6 @@ import {
 } from "./utils/matchSummaryDataProcessor";
 import MatchSummaryContent from "./components/MatchSummaryContent";
 import MatchSummaryShareActions from "./components/MatchSummaryShareActions";
-import MatchExportDialog from "./components/export/MatchExportDialog";
 
 interface MatchSummaryDialogProps {
   fixture: any;
@@ -94,20 +93,11 @@ const MatchSummaryDialog = ({ fixture, isOpen, onClose }: MatchSummaryDialogProp
             isCardRed={isCardRed}
           />
 
-          <div className="flex gap-2">
-            <MatchSummaryShareActions 
-              fixture={fixture} 
-              goals={goals}
-              cards={cards}
-            />
-            <MatchExportDialog
-              fixture={fixture}
-              goals={goals}
-              cards={cards}
-              playerTimes={enhancedData?.playerTimes}
-              summary={enhancedData?.summary}
-            />
-          </div>
+          <MatchSummaryShareActions 
+            fixture={fixture} 
+            goals={goals}
+            cards={cards}
+          />
         </div>
       </EnhancedDialogContent>
     </EnhancedDialog>

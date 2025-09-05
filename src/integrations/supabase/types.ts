@@ -1354,7 +1354,7 @@ export type Database = {
         Returns: string
       }
       manual_sync_player_stats: {
-        Args: Record<PropertyKey, never>
+        Args: { p_triggered_by?: string }
         Returns: Json
       }
       safe_update_member_stats: {

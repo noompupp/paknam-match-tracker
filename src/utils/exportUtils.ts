@@ -11,16 +11,5 @@ export {
 } from './export/fileExports';
 
 export {
-  exportToPNG,
-  createPNGFromElement,
-  type PNGExportOptions
-} from './export/pngExport';
-
-export {
-  exportToExcel,
-  type ExcelExportData
-} from './export/xlsxExport';
-
-export {
   generateEnhancedMatchSummary
 } from './export/matchSummaryGenerator';
