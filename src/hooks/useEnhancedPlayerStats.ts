@@ -20,7 +20,7 @@ export const useEnhancedTopScorers = (limit: number = 10) => {
       return data?.map(player => ({
         id: player.id,
         name: player.name,
-        team: player.team_id,
+        team: player.team_name || 'Unknown Team',
         goals: player.goals,
         profileImageUrl: player.profileImageUrl,
       })) || [];
@@ -45,7 +45,7 @@ export const useEnhancedTopAssists = (limit: number = 10) => {
       return data?.map(player => ({
         id: player.id,
         name: player.name,
-        team: player.team_id,
+        team: player.team_name || 'Unknown Team',
         assists: player.assists,
         profileImageUrl: player.profileImageUrl,
       })) || [];

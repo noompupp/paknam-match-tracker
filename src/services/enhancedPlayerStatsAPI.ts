@@ -4,6 +4,7 @@ interface EnhancedPlayerStats {
   id: number;
   name: string;
   team_id?: string;
+  team_name?: string;
   goals: number;
   assists: number;
   matches_played: number;
@@ -46,8 +47,8 @@ export const enhancedPlayerStatsAPI = {
         await this.performManualSync();
       }
       
-      // Fetch top scorers with enhanced query
-      const { data, error } = await supabase
+      // Try primary query with team name join first
+      let { data, error } = await supabase
         .from('members')
         .select(`
           id,
@@ -58,23 +59,70 @@ export const enhancedPlayerStatsAPI = {
           matches_played,
           ProfileURL,
           optimized_avatar_url,
-          avatar_variants
+          avatar_variants,
+          teams!inner(name)
         `)
         .gt('goals', 0)
         .order('goals', { ascending: false })
         .order('name', { ascending: true })
         .limit(limit);
 
+      // Fallback strategy if JOIN fails
+      if (error) {
+        console.warn('⚠️ EnhancedPlayerStatsAPI: Primary query failed, using fallback strategy');
+        
+        // Get members without relationship
+        const { data: members, error: membersError } = await supabase
+          .from('members')
+          .select(`
+            id,
+            name,
+            team_id,
+            goals,
+            assists,
+            matches_played,
+            ProfileURL,
+            optimized_avatar_url,
+            avatar_variants
+          `)
+          .gt('goals', 0)
+          .order('goals', { ascending: false })
+          .order('name', { ascending: true })
+          .limit(limit);
+
+        if (membersError) {
+          throw membersError;
+        }
+
+        // Get teams separately
+        const { data: teams, error: teamsError } = await supabase
+          .from('teams')
+          .select('__id__, name');
+
+        if (teamsError) {
+          throw teamsError;
+        }
+
+        // Manual join
+        data = members?.map(member => ({
+          ...member,
+          teams: teams?.find(t => t.__id__ === member.team_id) || null
+        })) as any || [];
+        
+        error = null;
+      }
+
       if (error) {
         console.error('❌ EnhancedPlayerStatsAPI: Error fetching top scorers:', error);
         throw error;
       }
 
-      // Transform data with profile image handling
+      // Transform data with profile image handling and team name resolution
       const transformedData: EnhancedPlayerStats[] = data?.map(player => ({
         id: player.id,
         name: player.name || 'Unknown Player',
         team_id: player.team_id,
+        team_name: (player.teams as any)?.name || 'Unknown Team',
         goals: player.goals || 0,
         assists: player.assists || 0,
         matches_played: player.matches_played || 0,
@@ -103,8 +151,8 @@ export const enhancedPlayerStatsAPI = {
         await this.performManualSync();
       }
       
-      // Fetch top assists with enhanced query
-      const { data, error } = await supabase
+      // Try primary query with team name join first
+      let { data, error } = await supabase
         .from('members')
         .select(`
           id,
@@ -115,23 +163,70 @@ export const enhancedPlayerStatsAPI = {
           matches_played,
           ProfileURL,
           optimized_avatar_url,
-          avatar_variants
+          avatar_variants,
+          teams!inner(name)
         `)
         .gt('assists', 0)
         .order('assists', { ascending: false })
         .order('name', { ascending: true })
         .limit(limit);
 
+      // Fallback strategy if JOIN fails
+      if (error) {
+        console.warn('⚠️ EnhancedPlayerStatsAPI: Primary query failed, using fallback strategy');
+        
+        // Get members without relationship
+        const { data: members, error: membersError } = await supabase
+          .from('members')
+          .select(`
+            id,
+            name,
+            team_id,
+            goals,
+            assists,
+            matches_played,
+            ProfileURL,
+            optimized_avatar_url,
+            avatar_variants
+          `)
+          .gt('assists', 0)
+          .order('assists', { ascending: false })
+          .order('name', { ascending: true })
+          .limit(limit);
+
+        if (membersError) {
+          throw membersError;
+        }
+
+        // Get teams separately
+        const { data: teams, error: teamsError } = await supabase
+          .from('teams')
+          .select('__id__, name');
+
+        if (teamsError) {
+          throw teamsError;
+        }
+
+        // Manual join
+        data = members?.map(member => ({
+          ...member,
+          teams: teams?.find(t => t.__id__ === member.team_id) || null
+        })) as any || [];
+        
+        error = null;
+      }
+
       if (error) {
         console.error('❌ EnhancedPlayerStatsAPI: Error fetching top assists:', error);
         throw error;
       }
 
-      // Transform data with profile image handling
+      // Transform data with profile image handling and team name resolution
       const transformedData: EnhancedPlayerStats[] = data?.map(player => ({
         id: player.id,
         name: player.name || 'Unknown Player',
         team_id: player.team_id,
+        team_name: (player.teams as any)?.name || 'Unknown Team',
         goals: player.goals || 0,
         assists: player.assists || 0,
         matches_played: player.matches_played || 0,
