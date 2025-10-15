@@ -14,72 +14,6 @@ export type Database = {
   }
   public: {
     Tables: {
-      approved_player_ratings: {
-        Row: {
-          adjusted_fpl_rating: number | null
-          adjusted_participation_rating: number | null
-          approved_at: string
-          approved_by: string
-          created_at: string
-          final_rating: number
-          fixture_id: number
-          fpl_rating: number
-          id: string
-          original_fpl_rating: number | null
-          original_participation_rating: number | null
-          participation_rating: number
-          player_id: number
-          player_name: string
-          position: string
-          rating_data: Json
-          team_id: string
-          updated_at: string
-          was_adjusted: boolean | null
-        }
-        Insert: {
-          adjusted_fpl_rating?: number | null
-          adjusted_participation_rating?: number | null
-          approved_at?: string
-          approved_by: string
-          created_at?: string
-          final_rating: number
-          fixture_id: number
-          fpl_rating: number
-          id?: string
-          original_fpl_rating?: number | null
-          original_participation_rating?: number | null
-          participation_rating: number
-          player_id: number
-          player_name: string
-          position?: string
-          rating_data?: Json
-          team_id: string
-          updated_at?: string
-          was_adjusted?: boolean | null
-        }
-        Update: {
-          adjusted_fpl_rating?: number | null
-          adjusted_participation_rating?: number | null
-          approved_at?: string
-          approved_by?: string
-          created_at?: string
-          final_rating?: number
-          fixture_id?: number
-          fpl_rating?: number
-          id?: string
-          original_fpl_rating?: number | null
-          original_participation_rating?: number | null
-          participation_rating?: number
-          player_id?: number
-          player_name?: string
-          position?: string
-          rating_data?: Json
-          team_id?: string
-          updated_at?: string
-          was_adjusted?: boolean | null
-        }
-        Relationships: []
-      }
       auth_roles: {
         Row: {
           created_at: string | null
@@ -100,56 +34,6 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
-      }
-      captain_selection_history: {
-        Row: {
-          created_at: string
-          id: string
-          is_active: boolean
-          performance_score: number
-          player_id: number
-          player_name: string
-          selected_by: string | null
-          selection_reason: string | null
-          selection_type: string
-          team_id: string
-          weekly_totw_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          is_active?: boolean
-          performance_score?: number
-          player_id: number
-          player_name: string
-          selected_by?: string | null
-          selection_reason?: string | null
-          selection_type: string
-          team_id: string
-          weekly_totw_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          is_active?: boolean
-          performance_score?: number
-          player_id?: number
-          player_name?: string
-          selected_by?: string | null
-          selection_reason?: string | null
-          selection_type?: string
-          team_id?: string
-          weekly_totw_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "captain_selection_history_weekly_totw_id_fkey"
-            columns: ["weekly_totw_id"]
-            isOneToOne: false
-            referencedRelation: "weekly_totw"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       coordination_events: {
         Row: {
@@ -185,63 +69,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
-      }
-      fixture_player_ratings: {
-        Row: {
-          created_at: string
-          final_rating: number | null
-          fixture_id: number
-          fpl_points: number | null
-          fpl_rating: number | null
-          id: string
-          match_result: string
-          minutes_played: number | null
-          participation_rating: number | null
-          player_id: number
-          player_name: string
-          player_position: string
-          rating_breakdown: Json | null
-          team_id: string
-          team_name: string
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          final_rating?: number | null
-          fixture_id: number
-          fpl_points?: number | null
-          fpl_rating?: number | null
-          id?: string
-          match_result: string
-          minutes_played?: number | null
-          participation_rating?: number | null
-          player_id: number
-          player_name: string
-          player_position?: string
-          rating_breakdown?: Json | null
-          team_id: string
-          team_name: string
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          final_rating?: number | null
-          fixture_id?: number
-          fpl_points?: number | null
-          fpl_rating?: number | null
-          id?: string
-          match_result?: string
-          minutes_played?: number | null
-          participation_rating?: number | null
-          player_id?: number
-          player_name?: string
-          player_position?: string
-          rating_breakdown?: Json | null
-          team_id?: string
-          team_name?: string
-          updated_at?: string
-        }
-        Relationships: []
       }
       fixtures: {
         Row: {
@@ -637,6 +464,56 @@ export type Database = {
           },
         ]
       }
+      member_payments: {
+        Row: {
+          amount: number | null
+          created_at: string | null
+          id: string
+          member_id: number
+          notes: string | null
+          payment_date: string | null
+          payment_method: string | null
+          payment_month: string
+          payment_status: string
+          updated_at: string | null
+          updated_by: string | null
+        }
+        Insert: {
+          amount?: number | null
+          created_at?: string | null
+          id?: string
+          member_id: number
+          notes?: string | null
+          payment_date?: string | null
+          payment_method?: string | null
+          payment_month: string
+          payment_status: string
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Update: {
+          amount?: number | null
+          created_at?: string | null
+          id?: string
+          member_id?: number
+          notes?: string | null
+          payment_date?: string | null
+          payment_method?: string | null
+          payment_month?: string
+          payment_status?: string
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "member_payments_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       members: {
         Row: {
           __id__: string
@@ -648,6 +525,8 @@ export type Database = {
           id: number
           last_time_sync: string | null
           last_updated_by: string | null
+          line_id: string | null
+          line_name: string | null
           matches_played: number | null
           name: string | null
           nickname: string | null
@@ -675,6 +554,8 @@ export type Database = {
           id?: number
           last_time_sync?: string | null
           last_updated_by?: string | null
+          line_id?: string | null
+          line_name?: string | null
           matches_played?: number | null
           name?: string | null
           nickname?: string | null
@@ -702,6 +583,8 @@ export type Database = {
           id?: number
           last_time_sync?: string | null
           last_updated_by?: string | null
+          line_id?: string | null
+          line_name?: string | null
           matches_played?: number | null
           name?: string | null
           nickname?: string | null
@@ -820,51 +703,6 @@ export type Database = {
           user_agent?: string | null
         }
         Relationships: []
-      }
-      player_ratings: {
-        Row: {
-          created_at: string | null
-          fixture_id: number
-          id: number
-          player_id: number
-          rater_id: string
-          rating: number
-          updated_at: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          fixture_id: number
-          id?: number
-          player_id: number
-          rater_id: string
-          rating: number
-          updated_at?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          fixture_id?: number
-          id?: number
-          player_id?: number
-          rater_id?: string
-          rating?: number
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "player_ratings_fixture_id_fkey"
-            columns: ["fixture_id"]
-            isOneToOne: false
-            referencedRelation: "fixtures"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "player_ratings_player_id_fkey"
-            columns: ["player_id"]
-            isOneToOne: false
-            referencedRelation: "members"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       player_time_tracking: {
         Row: {
@@ -1029,149 +867,11 @@ export type Database = {
           },
         ]
       }
-      weekly_player_performance: {
-        Row: {
-          average_fpl_rating: number
-          average_participation_rating: number
-          created_at: string
-          fixtures_played_in: number[]
-          id: string
-          matches_played: number
-          performance_breakdown: Json
-          player_id: number
-          player_name: string
-          position: string
-          team_id: string
-          team_name: string
-          total_assists: number
-          total_cards: number
-          total_goals: number
-          total_minutes: number
-          updated_at: string
-          weekly_totw_id: string
-          weighted_final_rating: number
-        }
-        Insert: {
-          average_fpl_rating?: number
-          average_participation_rating?: number
-          created_at?: string
-          fixtures_played_in?: number[]
-          id?: string
-          matches_played?: number
-          performance_breakdown?: Json
-          player_id: number
-          player_name: string
-          position?: string
-          team_id: string
-          team_name: string
-          total_assists?: number
-          total_cards?: number
-          total_goals?: number
-          total_minutes?: number
-          updated_at?: string
-          weekly_totw_id: string
-          weighted_final_rating?: number
-        }
-        Update: {
-          average_fpl_rating?: number
-          average_participation_rating?: number
-          created_at?: string
-          fixtures_played_in?: number[]
-          id?: string
-          matches_played?: number
-          performance_breakdown?: Json
-          player_id?: number
-          player_name?: string
-          position?: string
-          team_id?: string
-          team_name?: string
-          total_assists?: number
-          total_cards?: number
-          total_goals?: number
-          total_minutes?: number
-          updated_at?: string
-          weekly_totw_id?: string
-          weighted_final_rating?: number
-        }
-        Relationships: [
-          {
-            foreignKeyName: "weekly_player_performance_weekly_totw_id_fkey"
-            columns: ["weekly_totw_id"]
-            isOneToOne: false
-            referencedRelation: "weekly_totw"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      weekly_totw: {
-        Row: {
-          approved_by: string | null
-          captain_of_the_week: Json | null
-          created_at: string
-          created_by: string | null
-          fixtures_included: number[]
-          id: string
-          is_finalized: boolean
-          season_year: number
-          selection_method: string
-          team_of_the_week: Json
-          updated_at: string
-          week_end_date: string
-          week_start_date: string
-        }
-        Insert: {
-          approved_by?: string | null
-          captain_of_the_week?: Json | null
-          created_at?: string
-          created_by?: string | null
-          fixtures_included?: number[]
-          id?: string
-          is_finalized?: boolean
-          season_year?: number
-          selection_method?: string
-          team_of_the_week?: Json
-          updated_at?: string
-          week_end_date: string
-          week_start_date: string
-        }
-        Update: {
-          approved_by?: string | null
-          captain_of_the_week?: Json | null
-          created_at?: string
-          created_by?: string | null
-          fixtures_included?: number[]
-          id?: string
-          is_finalized?: boolean
-          season_year?: number
-          selection_method?: string
-          team_of_the_week?: Json
-          updated_at?: string
-          week_end_date?: string
-          week_start_date?: string
-        }
-        Relationships: []
-      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      aggregate_weekly_player_performance: {
-        Args: { p_week_end: string; p_week_start: string }
-        Returns: Json
-      }
-      approve_player_rating: {
-        Args: {
-          p_adjusted_fpl_rating?: number
-          p_adjusted_participation_rating?: number
-          p_fixture_id: number
-          p_player_id: number
-          p_player_name: string
-          p_position?: string
-          p_team_id: string
-        }
-        Returns: Json
-      }
       assign_referee_to_role: {
         Args: {
           p_assigned_role: string
@@ -1202,10 +902,6 @@ export type Database = {
         Args: { p_coordination_id: string; p_final_review_data?: Json }
         Returns: Json
       }
-      generate_fixture_player_ratings: {
-        Args: { p_fixture_id: number }
-        Returns: Json
-      }
       generate_league_operation_hash: {
         Args: {
           p_away_score: number
@@ -1215,10 +911,6 @@ export type Database = {
         }
         Returns: string
       }
-      generate_weekly_totw: {
-        Args: { p_week_end?: string; p_week_start?: string }
-        Returns: Json
-      }
       get_coordination_with_assignments: {
         Args: { p_fixture_id: number }
         Returns: {
@@ -1227,13 +919,6 @@ export type Database = {
           fixture_id: number
           user_assignments: Json
           workflow_mode: string
-        }[]
-      }
-      get_current_week_boundaries: {
-        Args: Record<PropertyKey, never>
-        Returns: {
-          week_end: string
-          week_start: string
         }[]
       }
       get_enhanced_match_summary: {
@@ -1280,17 +965,6 @@ export type Database = {
           workflow_mode: string
         }[]
       }
-      get_fixture_player_ratings: {
-        Args: { p_fixture_id: number }
-        Returns: {
-          player_id: number
-          player_name: string
-          player_position: string
-          rating_data: Json
-          team_id: string
-          team_name: string
-        }[]
-      }
       get_match_coordination_status: {
         Args: { p_fixture_id: number }
         Returns: {
@@ -1300,6 +974,16 @@ export type Database = {
           fixture_id: number
           ready_for_review: boolean
           status: string
+        }[]
+      }
+      get_monthly_payment_summary: {
+        Args: { target_month: string }
+        Returns: {
+          paid_count: number
+          payment_month: string
+          total_amount: number
+          total_members: number
+          unpaid_count: number
         }[]
       }
       get_player_stats_sync_status: {
@@ -1324,6 +1008,10 @@ export type Database = {
       get_user_role: {
         Args: { user_uuid: string }
         Returns: string
+      }
+      initialize_monthly_payments: {
+        Args: { target_month: string }
+        Returns: Json
       }
       initialize_referee_assignments: {
         Args: { p_fixture_id: number; p_workflow_mode: string }
@@ -1354,7 +1042,7 @@ export type Database = {
         Returns: string
       }
       manual_sync_player_stats: {
-        Args: { p_triggered_by?: string }
+        Args: Record<PropertyKey, never>
         Returns: Json
       }
       safe_update_member_stats: {

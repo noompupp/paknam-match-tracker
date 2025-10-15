@@ -2,7 +2,7 @@
 import React, { useEffect, useRef } from 'react';
 import { useSecureAuth } from "@/contexts/SecureAuthContext";
 import { Button } from "@/components/ui/button";
-import { Home, Calendar, Trophy, Flag, Users, Star } from "lucide-react";
+import { Home, Calendar, Trophy, Flag, Users, Wallet } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { usePlatformDetection } from "@/hooks/usePlatformDetection";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -54,6 +54,7 @@ const RoleBasedNavigation = ({ activeTab, onTabChange }: RoleBasedNavigationProp
     { id: "teams", label: t('nav.teams'), icon: Users },
     { id: "results", label: t('nav.results'), icon: Trophy },
     { id: "fixtures", label: t('nav.fixtures'), icon: Calendar },
+    { id: "membership", label: t('nav.membership'), icon: Wallet },
   ];
 
   // Protected navigation items for authenticated users with specific roles
@@ -64,13 +65,6 @@ const RoleBasedNavigation = ({ activeTab, onTabChange }: RoleBasedNavigationProp
       icon: Flag, 
       requiredRole: "referee",
       description: "Access referee tools and match management"
-    },
-    { 
-      id: "rating", 
-      label: t('nav.rating'), 
-      icon: Star, 
-      requiredRole: "referee_rater",
-      description: "Access player rating and team of the week features"
     },
   ];
 

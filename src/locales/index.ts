@@ -11,7 +11,7 @@ import forms from "./forms";
 import time from "./time";
 import messages from "./messages";
 import language from "./language";
-import rating from "./rating";
+import membership from "./membership";
 
 import { SupportedLanguage, TranslationObject } from "./types";
 
@@ -29,7 +29,7 @@ const modules: Modules = [
   time,
   messages,
   language,
-  rating,
+  membership,
 ];
 
 function aggregateTranslations(): Record<SupportedLanguage, TranslationObject> {
