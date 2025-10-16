@@ -976,6 +976,10 @@ export type Database = {
           status: string
         }[]
       }
+      get_member_status: {
+        Args: { p_member_id: number; p_reference_month?: string }
+        Returns: string
+      }
       get_monthly_payment_summary: {
         Args: { target_month: string }
         Returns: {
@@ -985,6 +989,10 @@ export type Database = {
           total_members: number
           unpaid_count: number
         }[]
+      }
+      get_payment_history: {
+        Args: { p_member_id: number; p_months_back?: number }
+        Returns: Json
       }
       get_player_stats_sync_status: {
         Args: Record<PropertyKey, never>

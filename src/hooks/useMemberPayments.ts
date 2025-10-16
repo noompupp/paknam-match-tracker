@@ -19,6 +19,7 @@ export interface MemberPayment {
 
 export interface MemberWithPayment {
   id: number;
+  __id__?: string; // Text ID like "M001"
   name: string;
   nickname?: string;
   ProfileURL?: string;
@@ -26,6 +27,8 @@ export interface MemberWithPayment {
   line_name?: string;
   team_id?: string;
   payment?: MemberPayment;
+  paymentHistory?: any; // Payment history data
+  membershipStatus?: 'active' | 'inactive'; // Membership status
 }
 
 export interface PaymentSummary {
@@ -45,10 +48,10 @@ export function useMonthlyPayments(month: Date) {
   return useQuery<MemberWithPayment[]>({
     queryKey: ["member_payments", monthStr],
     queryFn: async () => {
-      // First get all members
+      // First get all members with __id__
       const { data: members, error: membersError } = await supabase
         .from("members")
-        .select("id, name, nickname, ProfileURL, line_id, line_name, team_id")
+        .select("id, __id__, name, nickname, ProfileURL, line_id, line_name, team_id")
         .order("name");
 
       if (membersError) throw membersError;
@@ -66,10 +69,33 @@ export function useMonthlyPayments(month: Date) {
         payments?.map(p => [p.member_id, p as MemberPayment]) || []
       );
 
-      return (members?.map(member => ({
-        ...member,
-        payment: paymentsMap.get(member.id)
-      })) || []) as MemberWithPayment[];
+      // Get payment history and status for each member
+      const membersWithPayments = await Promise.all(
+        (members || []).map(async (member) => {
+          // Get payment history
+          const { data: historyData } = await supabase
+            .rpc('get_payment_history', {
+              p_member_id: member.id,
+              p_months_back: 6
+            });
+
+          // Get membership status
+          const { data: statusData } = await supabase
+            .rpc('get_member_status', {
+              p_member_id: member.id,
+              p_reference_month: monthStr
+            });
+
+          return {
+            ...member,
+            payment: paymentsMap.get(member.id),
+            paymentHistory: historyData,
+            membershipStatus: statusData as 'active' | 'inactive'
+          };
+        })
+      );
+
+      return membersWithPayments as MemberWithPayment[];
     },
   });
 }
@@ -217,5 +243,45 @@ export function useUpdatePaymentStatus() {
         variant: "destructive",
       });
     },
+  });
+}
+
+/**
+ * Fetch payment history for a member
+ */
+export function usePaymentHistory(memberId: number, monthsBack: number = 6) {
+  return useQuery({
+    queryKey: ['payment-history', memberId, monthsBack],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .rpc('get_payment_history', {
+          p_member_id: memberId,
+          p_months_back: monthsBack
+        });
+      
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!memberId,
+  });
+}
+
+/**
+ * Fetch membership status for a member
+ */
+export function useMemberStatus(memberId: number, referenceMonth?: Date) {
+  return useQuery({
+    queryKey: ['member-status', memberId, referenceMonth],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .rpc('get_member_status', {
+          p_member_id: memberId,
+          p_reference_month: referenceMonth?.toISOString().split('T')[0]
+        });
+      
+      if (error) throw error;
+      return data as 'active' | 'inactive';
+    },
+    enabled: !!memberId,
   });
 }

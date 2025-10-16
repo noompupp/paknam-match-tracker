@@ -23,6 +23,7 @@ export interface Team {
 
 export interface Member {
   id: number;
+  __id__?: string; // Text ID like "M001", "M002"
   name: string;
   nickname?: string;
   number: string; // Keep as string to match database
@@ -38,8 +39,22 @@ export interface Member {
   created_at: string;
   updated_at: string;
   ProfileURL?: string; // Add ProfileURL property
+  line_id?: string; // LINE ID
+  line_name?: string; // LINE Name
   team?: Team;
   contributionScore?: number; // <-- Add this line to fix the type error
+}
+
+export interface PaymentHistoryMonth {
+  month: string; // ISO date string
+  status: 'paid' | 'unpaid';
+  amount?: number;
+  payment_date?: string;
+}
+
+export interface MembershipStatus {
+  status: 'active' | 'inactive';
+  lastPaymentMonth?: string;
 }
 
 export interface Fixture {

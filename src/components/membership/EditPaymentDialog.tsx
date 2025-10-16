@@ -38,9 +38,6 @@ const EditPaymentDialog: React.FC<EditPaymentDialogProps> = ({
   const [paymentDate, setPaymentDate] = useState(
     member.payment?.payment_date || new Date().toISOString().split('T')[0]
   );
-  const [amount, setAmount] = useState(
-    member.payment?.amount?.toString() || ""
-  );
   const [paymentMethod, setPaymentMethod] = useState(
     member.payment?.payment_method || ""
   );
@@ -50,7 +47,6 @@ const EditPaymentDialog: React.FC<EditPaymentDialogProps> = ({
     if (open) {
       setStatus(member.payment?.payment_status || "unpaid");
       setPaymentDate(member.payment?.payment_date || new Date().toISOString().split('T')[0]);
-      setAmount(member.payment?.amount?.toString() || "");
       setPaymentMethod(member.payment?.payment_method || "");
       setNotes(member.payment?.notes || "");
     }
@@ -64,7 +60,7 @@ const EditPaymentDialog: React.FC<EditPaymentDialogProps> = ({
         month: month,
         status: status,
         paymentDate: paymentDate,
-        amount: amount ? parseFloat(amount) : undefined,
+        amount: 500, // Fixed amount
         paymentMethod: paymentMethod || undefined,
         notes: notes || undefined,
       },
@@ -111,24 +107,19 @@ const EditPaymentDialog: React.FC<EditPaymentDialogProps> = ({
           {status === "paid" && (
             <>
               <div className="space-y-2">
+                <Label>{t('membership.fixedAmount')}</Label>
+                <div className="p-3 bg-muted rounded-md">
+                  <p className="text-lg font-semibold">{t('membership.fixedAmountValue')}</p>
+                </div>
+              </div>
+
+              <div className="space-y-2">
                 <Label htmlFor="paymentDate">{t('membership.paymentDate')}</Label>
                 <Input
                   id="paymentDate"
                   type="date"
                   value={paymentDate}
                   onChange={(e) => setPaymentDate(e.target.value)}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="amount">{t('membership.amount')}</Label>
-                <Input
-                  id="amount"
-                  type="number"
-                  step="0.01"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                  placeholder="0.00"
                 />
               </div>
 

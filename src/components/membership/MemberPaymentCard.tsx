@@ -4,11 +4,13 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Edit, CheckCircle, XCircle } from "lucide-react";
+import { Edit, CheckCircle, XCircle, Hash } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useUserRole } from "@/hooks/useUserRole";
 import { MemberWithPayment, useUpdatePaymentStatus } from "@/hooks/useMemberPayments";
 import EditPaymentDialog from "./EditPaymentDialog";
+import PaymentHistoryTimeline from "./PaymentHistoryTimeline";
+import MembershipStatusBadge from "./MembershipStatusBadge";
 
 interface MemberPaymentCardProps {
   member: MemberWithPayment;
@@ -22,6 +24,8 @@ const MemberPaymentCard: React.FC<MemberPaymentCardProps> = ({ member, month }) 
   const updatePaymentMutation = useUpdatePaymentStatus();
 
   const isPaid = member.payment?.payment_status === 'paid';
+  const isInactive = member.membershipStatus === 'inactive';
+  const memberId = member.__id__?.replace('M', '') || '—';
 
   const handleQuickToggle = () => {
     if (!isAdmin) return;
@@ -37,27 +41,45 @@ const MemberPaymentCard: React.FC<MemberPaymentCardProps> = ({ member, month }) 
 
   return (
     <>
-      <Card className={`transition-all ${isPaid ? 'border-green-500/30 bg-green-50/5' : 'border-red-500/30 bg-red-50/5'}`}>
+      <Card className={`transition-all ${isInactive ? 'opacity-60 grayscale' : ''} ${isPaid ? 'border-green-500/30 bg-green-50/5' : 'border-red-500/30 bg-red-50/5'}`}>
         <CardContent className="p-4">
-          <div className="flex items-center gap-3">
-            <Avatar className="h-12 w-12">
+          <div className="flex items-start gap-3">
+            <Avatar className={`h-12 w-12 ${isInactive ? 'opacity-70' : ''}`}>
               <AvatarImage src={member.ProfileURL} alt={member.name} />
               <AvatarFallback>{member.name.substring(0, 2)}</AvatarFallback>
             </Avatar>
 
-            <div className="flex-1 min-w-0">
-              <h3 className="font-semibold truncate">{member.nickname || member.name}</h3>
-              <div className="text-sm text-muted-foreground space-y-0.5">
-                {member.line_name && (
-                  <p className="truncate">{t('membership.lineName')}: {member.line_name}</p>
-                )}
-                {member.line_id && (
-                  <p className="truncate">{t('membership.lineId')}: {member.line_id}</p>
-                )}
+            <div className="flex-1 min-w-0 space-y-2">
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <h3 className="font-semibold truncate">{member.nickname || member.name}</h3>
+                  {member.membershipStatus && (
+                    <MembershipStatusBadge status={member.membershipStatus} size="sm" />
+                  )}
+                </div>
+                <div className="flex items-center gap-1 text-sm text-muted-foreground mb-1">
+                  <Hash className="w-3 h-3" />
+                  <span>{t('membership.memberId')}: {memberId}</span>
+                </div>
+                <div className="text-sm text-muted-foreground space-y-0.5">
+                  {member.line_name && (
+                    <p className="truncate">{t('membership.lineName')}: {member.line_name}</p>
+                  )}
+                  {member.line_id && (
+                    <p className="truncate">{t('membership.lineId')}: {member.line_id}</p>
+                  )}
+                </div>
               </div>
+
+              {member.paymentHistory?.months && (
+                <div className="space-y-1">
+                  <p className="text-xs text-muted-foreground">{t('membership.paymentHistory')}</p>
+                  <PaymentHistoryTimeline history={member.paymentHistory.months} />
+                </div>
+              )}
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex flex-col items-end gap-2">
               <Badge
                 variant={isPaid ? "default" : "destructive"}
                 className={isPaid ? "bg-green-600" : ""}
@@ -70,6 +92,18 @@ const MemberPaymentCard: React.FC<MemberPaymentCardProps> = ({ member, month }) 
                 {t(isPaid ? 'membership.statusPaid' : 'membership.statusUnpaid')}
               </Badge>
 
+              {member.payment?.amount && (
+                <p className="text-sm text-muted-foreground">
+                  ฿{member.payment.amount.toFixed(2)}
+                </p>
+              )}
+
+              {member.payment?.payment_date && (
+                <p className="text-xs text-muted-foreground">
+                  {new Date(member.payment.payment_date).toLocaleDateString()}
+                </p>
+              )}
+
               {isAdmin && (
                 <Button
                   variant="outline"
@@ -81,15 +115,6 @@ const MemberPaymentCard: React.FC<MemberPaymentCardProps> = ({ member, month }) 
               )}
             </div>
           </div>
-
-          {member.payment?.amount && (
-            <div className="mt-2 pt-2 border-t text-sm text-muted-foreground">
-              <span>฿{member.payment.amount.toFixed(2)}</span>
-              {member.payment.payment_date && (
-                <span className="ml-2">• {new Date(member.payment.payment_date).toLocaleDateString()}</span>
-              )}
-            </div>
-          )}
         </CardContent>
       </Card>
 

@@ -33,6 +33,13 @@ const membership: LocaleModule = {
     'membership.status': 'Status',
     'membership.statusPaid': 'Paid',
     'membership.statusUnpaid': 'Unpaid',
+    'membership.memberId': 'Member ID',
+    'membership.paymentHistory': 'Payment History (Last 6 Months)',
+    'membership.statusActive': 'Active',
+    'membership.statusInactive': 'Inactive',
+    'membership.inactiveMembers': 'Inactive Members',
+    'membership.fixedAmount': 'Monthly Fee',
+    'membership.fixedAmountValue': '฿500.00',
   },
   th: {
     'membership.title': 'สมาชิกภาพ',
@@ -65,6 +72,13 @@ const membership: LocaleModule = {
     'membership.status': 'สถานะ',
     'membership.statusPaid': 'ชำระแล้ว',
     'membership.statusUnpaid': 'ยังไม่ชำระ',
+    'membership.memberId': 'รหัสสมาชิก',
+    'membership.paymentHistory': 'ประวัติการชำระเงิน (6 เดือนล่าสุด)',
+    'membership.statusActive': 'ใช้งานอยู่',
+    'membership.statusInactive': 'ไม่ได้ใช้งาน',
+    'membership.inactiveMembers': 'สมาชิกที่ไม่ได้ใช้งาน',
+    'membership.fixedAmount': 'ค่าสมาชิกรายเดือน',
+    'membership.fixedAmountValue': '฿500.00',
   }
 };
 

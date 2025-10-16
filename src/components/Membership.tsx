@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
 import { Plus, Loader2 } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useUserRole } from "@/hooks/useUserRole";
@@ -28,8 +29,26 @@ const Membership: React.FC = () => {
   const { data: summary, isLoading: summaryLoading } = usePaymentSummary(selectedMonth);
   const initializeMonthMutation = useInitializeMonthlyPayments();
 
-  const paidMembers = members?.filter(m => m.payment?.payment_status === 'paid') || [];
-  const unpaidMembers = members?.filter(m => m.payment?.payment_status === 'unpaid' || !m.payment) || [];
+  // Helper function to sort members by ID
+  const sortByMemberId = (memberList: typeof members) => {
+    if (!memberList) return [];
+    return [...memberList].sort((a, b) => {
+      const idA = a.__id__?.replace('M', '') || '0';
+      const idB = b.__id__?.replace('M', '') || '0';
+      return idA.localeCompare(idB, undefined, { numeric: true });
+    });
+  };
+
+  // Categorize and sort members
+  const inactiveMembers = sortByMemberId(
+    members?.filter(m => m.membershipStatus === 'inactive') || []
+  );
+  const paidMembers = sortByMemberId(
+    members?.filter(m => m.membershipStatus !== 'inactive' && m.payment?.payment_status === 'paid') || []
+  );
+  const unpaidMembers = sortByMemberId(
+    members?.filter(m => m.membershipStatus !== 'inactive' && (m.payment?.payment_status === 'unpaid' || !m.payment)) || []
+  );
 
   const handleInitializeMonth = () => {
     initializeMonthMutation.mutate(selectedMonth);
@@ -84,62 +103,78 @@ const Membership: React.FC = () => {
             <Loader2 className="h-8 w-8 animate-spin" />
           </div>
         ) : (
-          <Tabs defaultValue="unpaid" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="unpaid" className="relative">
-                {t('membership.unpaid')}
-                {unpaidMembers.length > 0 && (
-                  <span className="ml-2 bg-red-600 text-white text-xs px-2 py-0.5 rounded-full">
-                    {unpaidMembers.length}
-                  </span>
-                )}
-              </TabsTrigger>
-              <TabsTrigger value="paid" className="relative">
-                {t('membership.paid')}
-                {paidMembers.length > 0 && (
-                  <span className="ml-2 bg-green-600 text-white text-xs px-2 py-0.5 rounded-full">
-                    {paidMembers.length}
-                  </span>
-                )}
-              </TabsTrigger>
-            </TabsList>
+          <>
+            {inactiveMembers.length > 0 && (
+              <div className="mb-6">
+                <h2 className="text-lg font-semibold mb-3 flex items-center gap-2 text-red-600 dark:text-red-400">
+                  {t('membership.inactiveMembers')}
+                  <Badge variant="destructive">{inactiveMembers.length}</Badge>
+                </h2>
+                <div className="space-y-3">
+                  {inactiveMembers.map((member) => (
+                    <MemberPaymentCard key={member.id} member={member} month={selectedMonth} />
+                  ))}
+                </div>
+              </div>
+            )}
 
-            <TabsContent value="unpaid" className="space-y-3 mt-4">
-              {unpaidMembers.length === 0 ? (
-                <Card>
-                  <CardContent className="py-8 text-center text-muted-foreground">
-                    All members have paid for this month! 🎉
-                  </CardContent>
-                </Card>
-              ) : (
-                unpaidMembers.map((member) => (
-                  <MemberPaymentCard
-                    key={member.id}
-                    member={member}
-                    month={selectedMonth}
-                  />
-                ))
-              )}
-            </TabsContent>
+            <Tabs defaultValue="unpaid" className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="unpaid" className="relative">
+                  {t('membership.unpaid')}
+                  {unpaidMembers.length > 0 && (
+                    <span className="ml-2 bg-red-600 text-white text-xs px-2 py-0.5 rounded-full">
+                      {unpaidMembers.length}
+                    </span>
+                  )}
+                </TabsTrigger>
+                <TabsTrigger value="paid" className="relative">
+                  {t('membership.paid')}
+                  {paidMembers.length > 0 && (
+                    <span className="ml-2 bg-green-600 text-white text-xs px-2 py-0.5 rounded-full">
+                      {paidMembers.length}
+                    </span>
+                  )}
+                </TabsTrigger>
+              </TabsList>
 
-            <TabsContent value="paid" className="space-y-3 mt-4">
-              {paidMembers.length === 0 ? (
-                <Card>
-                  <CardContent className="py-8 text-center text-muted-foreground">
-                    No members have paid yet for this month.
-                  </CardContent>
-                </Card>
-              ) : (
-                paidMembers.map((member) => (
-                  <MemberPaymentCard
-                    key={member.id}
-                    member={member}
-                    month={selectedMonth}
-                  />
-                ))
-              )}
-            </TabsContent>
-          </Tabs>
+              <TabsContent value="unpaid" className="space-y-3 mt-4">
+                {unpaidMembers.length === 0 ? (
+                  <Card>
+                    <CardContent className="py-8 text-center text-muted-foreground">
+                      All members have paid for this month! 🎉
+                    </CardContent>
+                  </Card>
+                ) : (
+                  unpaidMembers.map((member) => (
+                    <MemberPaymentCard
+                      key={member.id}
+                      member={member}
+                      month={selectedMonth}
+                    />
+                  ))
+                )}
+              </TabsContent>
+
+              <TabsContent value="paid" className="space-y-3 mt-4">
+                {paidMembers.length === 0 ? (
+                  <Card>
+                    <CardContent className="py-8 text-center text-muted-foreground">
+                      No members have paid yet for this month.
+                    </CardContent>
+                  </Card>
+                ) : (
+                  paidMembers.map((member) => (
+                    <MemberPaymentCard
+                      key={member.id}
+                      member={member}
+                      month={selectedMonth}
+                    />
+                  ))
+                )}
+              </TabsContent>
+            </Tabs>
+          </>
         )}
       </div>
     </div>
