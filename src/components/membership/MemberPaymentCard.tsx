@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,6 +10,7 @@ import { MemberWithPayment, useUpdatePaymentStatus } from "@/hooks/useMemberPaym
 import EditPaymentDialog from "./EditPaymentDialog";
 import PaymentHistoryTimeline from "./PaymentHistoryTimeline";
 import MembershipStatusBadge from "./MembershipStatusBadge";
+import FeeExemptBadge from "./FeeExemptBadge";
 
 interface MemberPaymentCardProps {
   member: MemberWithPayment;
@@ -25,10 +25,11 @@ const MemberPaymentCard: React.FC<MemberPaymentCardProps> = ({ member, month }) 
 
   const isPaid = member.payment?.payment_status === 'paid';
   const isInactive = member.membershipStatus === 'inactive';
+  const isExempt = member.is_fee_exempt || false;
   const memberId = member.__id__?.replace('M', '') || '—';
 
   const handleQuickToggle = () => {
-    if (!isAdmin) return;
+    if (!isAdmin || isExempt) return;
 
     updatePaymentMutation.mutate({
       paymentId: member.payment?.id,
@@ -41,22 +42,36 @@ const MemberPaymentCard: React.FC<MemberPaymentCardProps> = ({ member, month }) 
 
   return (
     <>
-      <Card className={`transition-all ${isInactive ? 'opacity-60 grayscale' : ''} ${isPaid ? 'border-green-500/30 bg-green-50/5' : 'border-red-500/30 bg-red-50/5'}`}>
+      <Card className={`transition-all ${isInactive ? 'opacity-60 grayscale' : ''} ${isExempt ? 'border-amber-600/50' : isPaid ? 'border-green-500/30 bg-green-50/5' : 'border-red-500/30 bg-red-50/5'}`}>
         <CardContent className="p-4">
           <div className="flex items-start gap-3">
             <Avatar className={`h-12 w-12 ${isInactive ? 'opacity-70' : ''}`}>
-              <AvatarImage src={member.ProfileURL} alt={member.name} />
-              <AvatarFallback>{member.name.substring(0, 2)}</AvatarFallback>
+              <AvatarImage src={member.ProfileURL} alt={member.real_name || member.name} />
+              <AvatarFallback>{(member.real_name || member.name).substring(0, 2)}</AvatarFallback>
             </Avatar>
 
             <div className="flex-1 min-w-0 space-y-2">
               <div>
                 <div className="flex items-center gap-2 mb-1">
-                  <h3 className="font-semibold truncate">{member.nickname || member.name}</h3>
-                  {member.membershipStatus && (
-                    <MembershipStatusBadge status={member.membershipStatus} size="sm" />
+                  {/* Real Name as PRIMARY */}
+                  <h3 className="font-semibold truncate">{member.real_name || member.name}</h3>
+                  {/* Status Badges */}
+                  {isExempt ? (
+                    <FeeExemptBadge size="sm" />
+                  ) : (
+                    member.membershipStatus && (
+                      <MembershipStatusBadge status={member.membershipStatus} size="sm" />
+                    )
                   )}
                 </div>
+                
+                {/* Nickname as SECONDARY */}
+                {member.nickname && (
+                  <p className="text-sm text-muted-foreground truncate mb-1">
+                    ({member.nickname})
+                  </p>
+                )}
+                
                 <div className="flex items-center gap-1 text-sm text-muted-foreground mb-1">
                   <Hash className="w-3 h-3" />
                   <span>{t('membership.memberId')}: {memberId}</span>
@@ -71,7 +86,8 @@ const MemberPaymentCard: React.FC<MemberPaymentCardProps> = ({ member, month }) 
                 </div>
               </div>
 
-              {member.paymentHistory?.months && (
+              {/* Only show payment history for non-exempt members */}
+              {!isExempt && member.paymentHistory?.months && (
                 <div className="space-y-1">
                   <p className="text-xs text-muted-foreground">{t('membership.paymentHistory')}</p>
                   <PaymentHistoryTimeline history={member.paymentHistory.months} />
@@ -80,31 +96,35 @@ const MemberPaymentCard: React.FC<MemberPaymentCardProps> = ({ member, month }) 
             </div>
 
             <div className="flex flex-col items-end gap-2">
-              <Badge
-                variant={isPaid ? "default" : "destructive"}
-                className={isPaid ? "bg-green-600" : ""}
-              >
-                {isPaid ? (
-                  <CheckCircle className="h-3 w-3 mr-1" />
-                ) : (
-                  <XCircle className="h-3 w-3 mr-1" />
-                )}
-                {t(isPaid ? 'membership.statusPaid' : 'membership.statusUnpaid')}
-              </Badge>
+              {!isExempt && (
+                <>
+                  <Badge
+                    variant={isPaid ? "default" : "destructive"}
+                    className={isPaid ? "bg-green-600" : ""}
+                  >
+                    {isPaid ? (
+                      <CheckCircle className="h-3 w-3 mr-1" />
+                    ) : (
+                      <XCircle className="h-3 w-3 mr-1" />
+                    )}
+                    {t(isPaid ? 'membership.statusPaid' : 'membership.statusUnpaid')}
+                  </Badge>
 
-              {member.payment?.amount && (
-                <p className="text-sm text-muted-foreground">
-                  ฿{member.payment.amount.toFixed(2)}
-                </p>
+                  {member.payment?.amount && (
+                    <p className="text-sm text-muted-foreground">
+                      ฿{member.payment.amount.toFixed(2)}
+                    </p>
+                  )}
+
+                  {member.payment?.payment_date && (
+                    <p className="text-xs text-muted-foreground">
+                      {new Date(member.payment.payment_date).toLocaleDateString()}
+                    </p>
+                  )}
+                </>
               )}
 
-              {member.payment?.payment_date && (
-                <p className="text-xs text-muted-foreground">
-                  {new Date(member.payment.payment_date).toLocaleDateString()}
-                </p>
-              )}
-
-              {isAdmin && (
+              {isAdmin && !isExempt && (
                 <Button
                   variant="outline"
                   size="icon"
@@ -118,7 +138,7 @@ const MemberPaymentCard: React.FC<MemberPaymentCardProps> = ({ member, month }) 
         </CardContent>
       </Card>
 
-      {isAdmin && (
+      {isAdmin && !isExempt && (
         <EditPaymentDialog
           open={isEditOpen}
           onOpenChange={setIsEditOpen}

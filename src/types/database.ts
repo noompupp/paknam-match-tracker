@@ -25,10 +25,12 @@ export interface Member {
   id: number;
   __id__?: string; // Text ID like "M001", "M002"
   name: string;
+  real_name?: string; // Real name (ชื่อจริง)
   nickname?: string;
   number: string; // Keep as string to match database
   position: string;
   role: string;
+  is_fee_exempt?: boolean; // Fee exemption flag
   goals: number;
   assists: number;
   yellow_cards: number;

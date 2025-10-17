@@ -1,10 +1,9 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Loader2 } from "lucide-react";
+import { Plus, Loader2, Star, AlertCircle } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useUserRole } from "@/hooks/useUserRole";
 import {
@@ -16,6 +15,7 @@ import UnifiedPageHeader from "@/components/shared/UnifiedPageHeader";
 import MembershipHeader from "@/components/membership/MembershipHeader";
 import MonthSelector from "@/components/membership/MonthSelector";
 import MemberPaymentCard from "@/components/membership/MemberPaymentCard";
+import BulkPaymentImport from "@/components/membership/BulkPaymentImport";
 
 const Membership: React.FC = () => {
   const { t } = useTranslation();
@@ -39,15 +39,25 @@ const Membership: React.FC = () => {
     });
   };
 
-  // Categorize and sort members
+  // Categorize and sort members with exempt check
+  const exemptMembers = sortByMemberId(
+    members?.filter(m => m.is_fee_exempt) || []
+  );
+  
+  const activeNonExempt = members?.filter(
+    m => !m.is_fee_exempt && m.membershipStatus !== 'inactive'
+  ) || [];
+  
   const inactiveMembers = sortByMemberId(
-    members?.filter(m => m.membershipStatus === 'inactive') || []
+    members?.filter(m => !m.is_fee_exempt && m.membershipStatus === 'inactive') || []
   );
+  
   const paidMembers = sortByMemberId(
-    members?.filter(m => m.membershipStatus !== 'inactive' && m.payment?.payment_status === 'paid') || []
+    activeNonExempt.filter(m => m.payment?.payment_status === 'paid') || []
   );
+  
   const unpaidMembers = sortByMemberId(
-    members?.filter(m => m.membershipStatus !== 'inactive' && (m.payment?.payment_status === 'unpaid' || !m.payment)) || []
+    activeNonExempt.filter(m => m.payment?.payment_status === 'unpaid' || !m.payment) || []
   );
 
   const handleInitializeMonth = () => {
@@ -72,6 +82,13 @@ const Membership: React.FC = () => {
           </div>
         ) : (
           <MembershipHeader summary={summary} />
+        )}
+
+        {/* Bulk Import Tool - Admin Only */}
+        {isAdmin && (
+          <div className="mb-6">
+            <BulkPaymentImport />
+          </div>
         )}
 
         {hasNoData && isAdmin && (
@@ -104,13 +121,31 @@ const Membership: React.FC = () => {
           </div>
         ) : (
           <>
+            {/* Fee Exempt Members Section - Always First */}
+            {exemptMembers.length > 0 && (
+              <div className="mb-6">
+                <h2 className="text-lg font-semibold mb-3 flex items-center gap-2 text-amber-600 dark:text-amber-400">
+                  <Star className="w-5 h-5" fill="currentColor" />
+                  {t('membership.exemptMembers')}
+                  <Badge className="bg-amber-600">{exemptMembers.length}</Badge>
+                </h2>
+                <div className="space-y-3 border-l-4 border-amber-600 pl-4">
+                  {exemptMembers.map((member) => (
+                    <MemberPaymentCard key={member.id} member={member} month={selectedMonth} />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Inactive Members Section */}
             {inactiveMembers.length > 0 && (
               <div className="mb-6">
                 <h2 className="text-lg font-semibold mb-3 flex items-center gap-2 text-red-600 dark:text-red-400">
+                  <AlertCircle className="w-5 h-5" />
                   {t('membership.inactiveMembers')}
                   <Badge variant="destructive">{inactiveMembers.length}</Badge>
                 </h2>
-                <div className="space-y-3">
+                <div className="space-y-3 border-l-4 border-destructive pl-4">
                   {inactiveMembers.map((member) => (
                     <MemberPaymentCard key={member.id} member={member} month={selectedMonth} />
                   ))}
@@ -118,6 +153,7 @@ const Membership: React.FC = () => {
               </div>
             )}
 
+            {/* Active Members - Paid/Unpaid Tabs */}
             <Tabs defaultValue="unpaid" className="w-full">
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="unpaid" className="relative">

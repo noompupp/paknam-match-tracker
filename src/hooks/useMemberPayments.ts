@@ -21,7 +21,9 @@ export interface MemberWithPayment {
   id: number;
   __id__?: string; // Text ID like "M001"
   name: string;
+  real_name?: string; // Real name field
   nickname?: string;
+  is_fee_exempt?: boolean; // Fee exemption flag
   ProfileURL?: string;
   line_id?: string;
   line_name?: string;
@@ -51,7 +53,7 @@ export function useMonthlyPayments(month: Date) {
       // First get all members with __id__
       const { data: members, error: membersError } = await supabase
         .from("members")
-        .select("id, __id__, name, nickname, ProfileURL, line_id, line_name, team_id")
+        .select("id, __id__, name, real_name, nickname, is_fee_exempt, ProfileURL, line_id, line_name, team_id")
         .order("name");
 
       if (membersError) throw membersError;

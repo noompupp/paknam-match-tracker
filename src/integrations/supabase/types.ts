@@ -523,6 +523,7 @@ export type Database = {
           created_at: string | null
           goals: number | null
           id: number
+          is_fee_exempt: boolean
           last_time_sync: string | null
           last_updated_by: string | null
           line_id: string | null
@@ -534,6 +535,7 @@ export type Database = {
           optimized_avatar_url: string | null
           position: string | null
           ProfileURL: string | null
+          real_name: string | null
           red_cards: number | null
           role: string | null
           sync_status: string | null
@@ -552,6 +554,7 @@ export type Database = {
           created_at?: string | null
           goals?: number | null
           id?: number
+          is_fee_exempt?: boolean
           last_time_sync?: string | null
           last_updated_by?: string | null
           line_id?: string | null
@@ -563,6 +566,7 @@ export type Database = {
           optimized_avatar_url?: string | null
           position?: string | null
           ProfileURL?: string | null
+          real_name?: string | null
           red_cards?: number | null
           role?: string | null
           sync_status?: string | null
@@ -581,6 +585,7 @@ export type Database = {
           created_at?: string | null
           goals?: number | null
           id?: number
+          is_fee_exempt?: boolean
           last_time_sync?: string | null
           last_updated_by?: string | null
           line_id?: string | null
@@ -592,6 +597,7 @@ export type Database = {
           optimized_avatar_url?: string | null
           position?: string | null
           ProfileURL?: string | null
+          real_name?: string | null
           red_cards?: number | null
           role?: string | null
           sync_status?: string | null
@@ -1071,6 +1077,10 @@ export type Database = {
       }
       update_match_participation: {
         Args: { p_fixture_id: number }
+        Returns: Json
+      }
+      validate_bulk_payment_import: {
+        Args: { p_records: Json }
         Returns: Json
       }
       validate_fixture_score: {
