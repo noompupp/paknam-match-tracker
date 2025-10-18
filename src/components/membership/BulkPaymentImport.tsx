@@ -10,7 +10,11 @@ import Papa from 'papaparse';
 
 interface ImportResult {
   success: boolean;
+  mode?: 'import' | 'dry_run';
   imported_count?: number;
+  total_records?: number;
+  mismatch_count?: number;
+  mismatches?: any[];
   errors?: any[];
   error_count?: number;
   error?: string;
@@ -29,7 +33,7 @@ const BulkPaymentImport: React.FC = () => {
     }
   };
 
-  const handleImport = async () => {
+  const processFile = async (mode: 'import' | 'dry_run') => {
     if (!file) return;
 
     setIsUploading(true);
@@ -55,12 +59,12 @@ const BulkPaymentImport: React.FC = () => {
               throw new Error('No valid records found in CSV file');
             }
 
-            console.log(`Importing ${records.length} payment records`);
+            console.log(`Processing ${records.length} payment records in ${mode} mode`);
 
             // Call edge function
             const { data, error } = await supabase.functions.invoke(
               'bulk-import-payments',
-              { body: { records } }
+              { body: { records, mode } }
             );
 
             if (error) throw error;
@@ -68,21 +72,29 @@ const BulkPaymentImport: React.FC = () => {
             setResult(data);
 
             if (data.success) {
-              toast({
-                title: "Import Successful",
-                description: `Successfully imported ${data.imported_count} payment records`,
-              });
+              if (mode === 'dry_run') {
+                toast({
+                  title: "Dry Run Complete",
+                  description: `Found ${data.mismatch_count || 0} mismatches out of ${data.total_records} records`,
+                  variant: data.mismatch_count > 0 ? "destructive" : "default"
+                });
+              } else {
+                toast({
+                  title: "Import Successful",
+                  description: `Successfully imported ${data.imported_count} payment records`,
+                });
+              }
             } else {
               toast({
-                title: "Import Failed",
+                title: mode === 'dry_run' ? "Dry Run Failed" : "Import Failed",
                 description: `${data.error_count || data.errors?.length || 0} validation errors found`,
                 variant: "destructive",
               });
             }
           } catch (error: any) {
-            console.error('Import error:', error);
+            console.error('Processing error:', error);
             toast({
-              title: "Import Error",
+              title: mode === 'dry_run' ? "Dry Run Error" : "Import Error",
               description: error.message,
               variant: "destructive",
             });
@@ -110,6 +122,22 @@ const BulkPaymentImport: React.FC = () => {
       });
       setIsUploading(false);
     }
+  };
+
+  const handleImport = () => processFile('import');
+  const handleDryRun = () => processFile('dry_run');
+
+  const downloadDiff = () => {
+    if (!result?.mismatches) return;
+
+    const csv = Papa.unparse(result.mismatches);
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'payment-diff-report.csv';
+    a.click();
+    window.URL.revokeObjectURL(url);
   };
 
   return (
@@ -144,7 +172,15 @@ const BulkPaymentImport: React.FC = () => {
             accept=".csv" 
             onChange={handleFileChange}
             disabled={isUploading}
+            className="flex-1"
           />
+          <Button 
+            variant="outline"
+            onClick={handleDryRun}
+            disabled={!file || isUploading}
+          >
+            {isUploading ? "Checking..." : "Dry Run"}
+          </Button>
           <Button 
             onClick={handleImport}
             disabled={!file || isUploading}
@@ -154,8 +190,46 @@ const BulkPaymentImport: React.FC = () => {
         </div>
 
         {result && (
-          <Alert variant={result.success ? "default" : "destructive"}>
-            {result.success ? (
+          <Alert variant={result.success && result.mode !== 'dry_run' ? "default" : result.success && result.mismatch_count === 0 ? "default" : "destructive"}>
+            {result.success && result.mode === 'dry_run' ? (
+              <>
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  <div className="font-semibold mb-2">
+                    Dry Run Complete: {result.mismatch_count || 0} mismatches found out of {result.total_records} records
+                  </div>
+                  {result.mismatch_count === 0 ? (
+                    <div className="text-sm">All records match! Safe to import.</div>
+                  ) : (
+                    <>
+                      <div className="text-sm mb-2">Review mismatches below before importing:</div>
+                      {result.mismatches && result.mismatches.length > 0 && (
+                        <div className="space-y-2">
+                          <ul className="mt-2 ml-4 list-disc max-h-40 overflow-y-auto text-xs">
+                            {result.mismatches.slice(0, 5).map((mismatch: any, idx: number) => (
+                              <li key={idx}>
+                                <strong>Member {mismatch.member_id}</strong> ({mismatch.payment_month}): {mismatch.mismatch_fields.join(', ')}
+                                {mismatch.mismatch_fields.includes('payment_status') && (
+                                  <span> - DB: {mismatch.db_status || 'missing'} → CSV: {mismatch.csv_status}</span>
+                                )}
+                              </li>
+                            ))}
+                            {result.mismatches.length > 5 && (
+                              <li className="font-semibold">
+                                ... and {result.mismatches.length - 5} more mismatches
+                              </li>
+                            )}
+                          </ul>
+                          <Button size="sm" variant="outline" onClick={downloadDiff}>
+                            Download Full Diff Report (CSV)
+                          </Button>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </AlertDescription>
+              </>
+            ) : result.success ? (
               <>
                 <CheckCircle className="h-4 w-4" />
                 <AlertDescription>

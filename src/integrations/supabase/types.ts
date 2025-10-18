@@ -997,7 +997,13 @@ export type Database = {
         }[]
       }
       get_payment_history: {
-        Args: { p_member_id: number; p_months_back?: number }
+        Args:
+          | { p_member_id: number; p_months_back?: number }
+          | {
+              p_member_id: number
+              p_months_back?: number
+              p_reference_month?: string
+            }
         Returns: Json
       }
       get_player_stats_sync_status: {
