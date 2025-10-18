@@ -42,7 +42,7 @@ const MemberPaymentCard: React.FC<MemberPaymentCardProps> = ({ member, month }) 
 
   return (
     <>
-      <Card className={`transition-all ${isInactive ? 'opacity-60 grayscale' : ''} ${isExempt ? 'border-amber-600/50' : isPaid ? 'border-green-500/30 bg-green-50/5' : 'border-red-500/30 bg-red-50/5'}`}>
+      <Card className={`transition-all ${isInactive && !isPaid ? 'border-red-600 border-2 bg-red-50/10' : ''} ${isExempt ? 'border-amber-600/50' : isPaid ? 'border-green-500/30 bg-green-50/5' : 'border-red-500/30 bg-red-50/5'}`}>
         <CardContent className="p-4">
           <div className="flex items-start gap-3">
             <Avatar className={`h-12 w-12 ${isInactive ? 'opacity-70' : ''}`}>
@@ -52,18 +52,39 @@ const MemberPaymentCard: React.FC<MemberPaymentCardProps> = ({ member, month }) 
 
             <div className="flex-1 min-w-0 space-y-2">
               <div>
-                <div className="flex items-center gap-2 mb-1">
+                <div className="flex items-start gap-2 mb-1 flex-wrap">
                   {/* Real Name as PRIMARY */}
                   <h3 className="font-semibold truncate">{member.real_name || member.name}</h3>
-                  {/* Status Badges */}
-                  {isExempt ? (
-                    <FeeExemptBadge size="sm" />
-                  ) : (
-                    member.membershipStatus && (
-                      <MembershipStatusBadge status={member.membershipStatus} size="sm" />
-                    )
-                  )}
+                  
+                  {/* Dual Status Badges - Show both M-1 and M statuses */}
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    {isExempt ? (
+                      <FeeExemptBadge size="sm" />
+                    ) : (
+                      <>
+                        {/* Membership Status (M-1) */}
+                        {member.membershipStatus && (
+                          <MembershipStatusBadge status={member.membershipStatus} size="sm" />
+                        )}
+                        {/* Current Month Payment Status (M) */}
+                        <Badge
+                          variant={isPaid ? "default" : "outline"}
+                          className={`text-xs ${isPaid ? 'bg-green-600' : 'border-red-500 text-red-600 dark:text-red-400'}`}
+                        >
+                          {isPaid ? t('membership.paidThisMonth') : t('membership.unpaidThisMonth')}
+                        </Badge>
+                      </>
+                    )}
+                  </div>
                 </div>
+                
+                {/* Warning for inactive + unpaid members */}
+                {isInactive && !isPaid && !isExempt && (
+                  <div className="flex items-center gap-1 text-xs text-red-600 dark:text-red-400 mb-1">
+                    <XCircle className="w-3 h-3" />
+                    <span>{t('membership.inactiveWarning')}</span>
+                  </div>
+                )}
                 
                 {/* Nickname as SECONDARY */}
                 {member.nickname && (
@@ -98,20 +119,8 @@ const MemberPaymentCard: React.FC<MemberPaymentCardProps> = ({ member, month }) 
             <div className="flex flex-col items-end gap-2">
               {!isExempt && (
                 <>
-                  <Badge
-                    variant={isPaid ? "default" : "destructive"}
-                    className={isPaid ? "bg-green-600" : ""}
-                  >
-                    {isPaid ? (
-                      <CheckCircle className="h-3 w-3 mr-1" />
-                    ) : (
-                      <XCircle className="h-3 w-3 mr-1" />
-                    )}
-                    {t(isPaid ? 'membership.statusPaid' : 'membership.statusUnpaid')}
-                  </Badge>
-
                   {member.payment?.amount && (
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm font-semibold">
                       ฿{member.payment.amount.toFixed(2)}
                     </p>
                   )}

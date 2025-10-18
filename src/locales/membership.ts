@@ -54,6 +54,10 @@ const membership: LocaleModule = {
     'membership.csvFormat': 'CSV Format Required',
     'membership.fixedAmount': 'Monthly Fee',
     'membership.fixedAmountValue': '฿500.00',
+    'membership.paidThisMonth': 'Paid',
+    'membership.unpaidThisMonth': 'Unpaid',
+    'membership.inactiveWarning': "Didn't pay last month",
+    'membership.willActivateNext': 'Will activate next month',
   },
   th: {
     'membership.title': 'สมาชิกภาพ',
@@ -107,6 +111,10 @@ const membership: LocaleModule = {
     'membership.csvFormat': 'ต้องการรูปแบบ CSV',
     'membership.fixedAmount': 'ค่าสมาชิกรายเดือน',
     'membership.fixedAmountValue': '฿500.00',
+    'membership.paidThisMonth': 'ชำระแล้ว',
+    'membership.unpaidThisMonth': 'ยังไม่ชำระ',
+    'membership.inactiveWarning': 'ไม่ได้ชำระเดือนที่แล้ว',
+    'membership.willActivateNext': 'จะเปิดใช้งานเดือนหน้า',
   }
 };
 

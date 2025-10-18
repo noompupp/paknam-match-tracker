@@ -44,20 +44,22 @@ const Membership: React.FC = () => {
     members?.filter(m => m.is_fee_exempt) || []
   );
   
-  const activeNonExempt = members?.filter(
-    m => !m.is_fee_exempt && m.membershipStatus !== 'inactive'
-  ) || [];
+  // ALL non-exempt members (regardless of M-1 status)
+  const nonExemptMembers = members?.filter(m => !m.is_fee_exempt) || [];
   
+  // Inactive members (didn't pay M-1) - for visual section
   const inactiveMembers = sortByMemberId(
-    members?.filter(m => !m.is_fee_exempt && m.membershipStatus === 'inactive') || []
+    nonExemptMembers.filter(m => m.membershipStatus === 'inactive') || []
   );
   
+  // Paid for CURRENT month (M) - includes both active and inactive members
   const paidMembers = sortByMemberId(
-    activeNonExempt.filter(m => m.payment?.payment_status === 'paid') || []
+    nonExemptMembers.filter(m => m.payment?.payment_status === 'paid') || []
   );
   
+  // Unpaid for CURRENT month (M) - includes both active and inactive members
   const unpaidMembers = sortByMemberId(
-    activeNonExempt.filter(m => m.payment?.payment_status === 'unpaid' || !m.payment) || []
+    nonExemptMembers.filter(m => m.payment?.payment_status === 'unpaid' || !m.payment) || []
   );
 
   const handleInitializeMonth = () => {
