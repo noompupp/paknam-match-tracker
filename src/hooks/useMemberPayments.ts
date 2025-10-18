@@ -2,6 +2,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { getMonthKeyUTC } from "@/utils/dateUtils";
 
 export interface MemberPayment {
   id: string;
@@ -45,7 +46,7 @@ export interface PaymentSummary {
  * Fetch monthly payments for a specific month
  */
 export function useMonthlyPayments(month: Date) {
-  const monthStr = month.toISOString().split('T')[0];
+  const monthStr = getMonthKeyUTC(month);
   
   return useQuery<MemberWithPayment[]>({
     queryKey: ["member_payments", monthStr],
@@ -74,11 +75,12 @@ export function useMonthlyPayments(month: Date) {
       // Get payment history and status for each member
       const membersWithPayments = await Promise.all(
         (members || []).map(async (member) => {
-          // Get payment history
+          // Get payment history relative to selected month
           const { data: historyData } = await supabase
             .rpc('get_payment_history', {
               p_member_id: member.id,
-              p_months_back: 6
+              p_months_back: 6,
+              p_reference_month: monthStr
             });
 
           // Get membership status
@@ -106,7 +108,7 @@ export function useMonthlyPayments(month: Date) {
  * Get payment summary for a specific month
  */
 export function usePaymentSummary(month: Date) {
-  const monthStr = month.toISOString().split('T')[0];
+  const monthStr = getMonthKeyUTC(month);
 
   return useQuery<PaymentSummary>({
     queryKey: ["payment_summary", monthStr],
@@ -132,7 +134,7 @@ export function useInitializeMonthlyPayments() {
 
   return useMutation({
     mutationFn: async (month: Date) => {
-      const monthStr = month.toISOString().split('T')[0];
+      const monthStr = getMonthKeyUTC(month);
       const { data, error } = await supabase
         .rpc("initialize_monthly_payments", {
           target_month: monthStr
@@ -142,7 +144,7 @@ export function useInitializeMonthlyPayments() {
       return data;
     },
     onSuccess: (data, month) => {
-      const monthStr = month.toISOString().split('T')[0];
+      const monthStr = getMonthKeyUTC(month);
       queryClient.invalidateQueries({ queryKey: ["member_payments", monthStr] });
       queryClient.invalidateQueries({ queryKey: ["payment_summary", monthStr] });
       
@@ -189,7 +191,7 @@ export function useUpdatePaymentStatus() {
       paymentMethod?: string;
       notes?: string;
     }) => {
-      const monthStr = month.toISOString().split('T')[0];
+      const monthStr = getMonthKeyUTC(month);
 
       if (paymentId) {
         // Update existing payment
@@ -229,7 +231,7 @@ export function useUpdatePaymentStatus() {
       }
     },
     onSuccess: (data, variables) => {
-      const monthStr = variables.month.toISOString().split('T')[0];
+      const monthStr = getMonthKeyUTC(variables.month);
       queryClient.invalidateQueries({ queryKey: ["member_payments", monthStr] });
       queryClient.invalidateQueries({ queryKey: ["payment_summary", monthStr] });
       
@@ -278,7 +280,7 @@ export function useMemberStatus(memberId: number, referenceMonth?: Date) {
       const { data, error } = await supabase
         .rpc('get_member_status', {
           p_member_id: memberId,
-          p_reference_month: referenceMonth?.toISOString().split('T')[0]
+          p_reference_month: referenceMonth ? getMonthKeyUTC(referenceMonth) : undefined
         });
       
       if (error) throw error;
