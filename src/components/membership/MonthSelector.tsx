@@ -11,14 +11,12 @@ interface MonthSelectorProps {
 
 const MonthSelector: React.FC<MonthSelectorProps> = ({ selectedMonth, onMonthChange }) => {
   const handlePreviousMonth = () => {
-    const newMonth = new Date(selectedMonth);
-    newMonth.setMonth(newMonth.getMonth() - 1);
+    const newMonth = new Date(selectedMonth.getFullYear(), selectedMonth.getMonth() - 1, 1);
     onMonthChange(newMonth);
   };
 
   const handleNextMonth = () => {
-    const newMonth = new Date(selectedMonth);
-    newMonth.setMonth(newMonth.getMonth() + 1);
+    const newMonth = new Date(selectedMonth.getFullYear(), selectedMonth.getMonth() + 1, 1);
     onMonthChange(newMonth);
   };
 

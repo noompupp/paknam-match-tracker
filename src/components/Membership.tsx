@@ -39,27 +39,27 @@ const Membership: React.FC = () => {
     });
   };
 
-  // Categorize and sort members with exempt check
-  const exemptMembers = sortByMemberId(
-    members?.filter(m => m.is_fee_exempt) || []
-  );
-  
-  // ALL non-exempt members (regardless of M-1 status)
+  // Categorize and sort members for 4 tabs
   const nonExemptMembers = members?.filter(m => !m.is_fee_exempt) || [];
   
-  // Inactive members (didn't pay M-1) - for visual section
-  const inactiveMembers = sortByMemberId(
-    nonExemptMembers.filter(m => m.membershipStatus === 'inactive') || []
+  // Tab 1: Unpaid - Non-exempt members unpaid for current month
+  const unpaidMembers = sortByMemberId(
+    nonExemptMembers.filter(m => m.payment?.payment_status === 'unpaid' || !m.payment) || []
   );
   
-  // Paid for CURRENT month (M) - includes both active and inactive members
+  // Tab 2: Paid - Non-exempt members paid for current month
   const paidMembers = sortByMemberId(
     nonExemptMembers.filter(m => m.payment?.payment_status === 'paid') || []
   );
   
-  // Unpaid for CURRENT month (M) - includes both active and inactive members
-  const unpaidMembers = sortByMemberId(
-    nonExemptMembers.filter(m => m.payment?.payment_status === 'unpaid' || !m.payment) || []
+  // Tab 3: Fee Exempt - Members permanently exempt from payment
+  const exemptMembers = sortByMemberId(
+    members?.filter(m => m.is_fee_exempt) || []
+  );
+  
+  // Tab 4: Inactive - Non-exempt members with inactive status (didn't pay M-1)
+  const inactiveMembers = sortByMemberId(
+    nonExemptMembers.filter(m => m.membershipStatus === 'inactive') || []
   );
 
   const handleInitializeMonth = () => {
@@ -122,97 +122,106 @@ const Membership: React.FC = () => {
             <Loader2 className="h-8 w-8 animate-spin" />
           </div>
         ) : (
-          <>
-            {/* Fee Exempt Members Section - Always First */}
-            {exemptMembers.length > 0 && (
-              <div className="mb-6">
-                <h2 className="text-lg font-semibold mb-3 flex items-center gap-2 text-amber-600 dark:text-amber-400">
-                  <Star className="w-5 h-5" fill="currentColor" />
-                  {t('membership.exemptMembers')}
-                  <Badge className="bg-amber-600">{exemptMembers.length}</Badge>
-                </h2>
-                <div className="space-y-3 border-l-4 border-amber-600 pl-4">
-                  {exemptMembers.map((member) => (
-                    <MemberPaymentCard key={member.id} member={member} month={selectedMonth} />
-                  ))}
-                </div>
-              </div>
-            )}
+          <Tabs defaultValue="unpaid" className="w-full">
+            <TabsList className="grid w-full grid-cols-4">
+              <TabsTrigger value="unpaid" className="relative">
+                {t('membership.unpaid')}
+                <Badge className="ml-2 bg-destructive text-destructive-foreground">
+                  {unpaidMembers.length}
+                </Badge>
+              </TabsTrigger>
+              <TabsTrigger value="paid" className="relative">
+                {t('membership.paid')}
+                <Badge className="ml-2 bg-green-600 text-white">
+                  {paidMembers.length}
+                </Badge>
+              </TabsTrigger>
+              <TabsTrigger value="exempt" className="relative">
+                {t('membership.exemptMembers')}
+                <Badge className="ml-2 bg-amber-600 text-white">
+                  {exemptMembers.length}
+                </Badge>
+              </TabsTrigger>
+              <TabsTrigger value="inactive" className="relative">
+                {t('membership.inactiveMembers')}
+                <Badge className="ml-2 bg-muted text-muted-foreground">
+                  {inactiveMembers.length}
+                </Badge>
+              </TabsTrigger>
+            </TabsList>
 
-            {/* Inactive Members Section */}
-            {inactiveMembers.length > 0 && (
-              <div className="mb-6">
-                <h2 className="text-lg font-semibold mb-3 flex items-center gap-2 text-red-600 dark:text-red-400">
-                  <AlertCircle className="w-5 h-5" />
-                  {t('membership.inactiveMembers')}
-                  <Badge variant="destructive">{inactiveMembers.length}</Badge>
-                </h2>
-                <div className="space-y-3 border-l-4 border-destructive pl-4">
-                  {inactiveMembers.map((member) => (
-                    <MemberPaymentCard key={member.id} member={member} month={selectedMonth} />
-                  ))}
-                </div>
-              </div>
-            )}
+            <TabsContent value="unpaid" className="space-y-3 mt-4">
+              {unpaidMembers.length === 0 ? (
+                <Card>
+                  <CardContent className="py-8 text-center text-muted-foreground">
+                    All members have paid for this month! 🎉
+                  </CardContent>
+                </Card>
+              ) : (
+                unpaidMembers.map((member) => (
+                  <MemberPaymentCard
+                    key={member.id}
+                    member={member}
+                    month={selectedMonth}
+                  />
+                ))
+              )}
+            </TabsContent>
 
-            {/* Active Members - Paid/Unpaid Tabs */}
-            <Tabs defaultValue="unpaid" className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="unpaid" className="relative">
-                  {t('membership.unpaid')}
-                  {unpaidMembers.length > 0 && (
-                    <span className="ml-2 bg-red-600 text-white text-xs px-2 py-0.5 rounded-full">
-                      {unpaidMembers.length}
-                    </span>
-                  )}
-                </TabsTrigger>
-                <TabsTrigger value="paid" className="relative">
-                  {t('membership.paid')}
-                  {paidMembers.length > 0 && (
-                    <span className="ml-2 bg-green-600 text-white text-xs px-2 py-0.5 rounded-full">
-                      {paidMembers.length}
-                    </span>
-                  )}
-                </TabsTrigger>
-              </TabsList>
+            <TabsContent value="paid" className="space-y-3 mt-4">
+              {paidMembers.length === 0 ? (
+                <Card>
+                  <CardContent className="py-8 text-center text-muted-foreground">
+                    No members have paid yet for this month.
+                  </CardContent>
+                </Card>
+              ) : (
+                paidMembers.map((member) => (
+                  <MemberPaymentCard
+                    key={member.id}
+                    member={member}
+                    month={selectedMonth}
+                  />
+                ))
+              )}
+            </TabsContent>
 
-              <TabsContent value="unpaid" className="space-y-3 mt-4">
-                {unpaidMembers.length === 0 ? (
-                  <Card>
-                    <CardContent className="py-8 text-center text-muted-foreground">
-                      All members have paid for this month! 🎉
-                    </CardContent>
-                  </Card>
-                ) : (
-                  unpaidMembers.map((member) => (
-                    <MemberPaymentCard
-                      key={member.id}
-                      member={member}
-                      month={selectedMonth}
-                    />
-                  ))
-                )}
-              </TabsContent>
+            <TabsContent value="exempt" className="space-y-3 mt-4">
+              {exemptMembers.length === 0 ? (
+                <Card>
+                  <CardContent className="py-8 text-center text-muted-foreground">
+                    No fee exempt members.
+                  </CardContent>
+                </Card>
+              ) : (
+                exemptMembers.map((member) => (
+                  <MemberPaymentCard
+                    key={member.id}
+                    member={member}
+                    month={selectedMonth}
+                  />
+                ))
+              )}
+            </TabsContent>
 
-              <TabsContent value="paid" className="space-y-3 mt-4">
-                {paidMembers.length === 0 ? (
-                  <Card>
-                    <CardContent className="py-8 text-center text-muted-foreground">
-                      No members have paid yet for this month.
-                    </CardContent>
-                  </Card>
-                ) : (
-                  paidMembers.map((member) => (
-                    <MemberPaymentCard
-                      key={member.id}
-                      member={member}
-                      month={selectedMonth}
-                    />
-                  ))
-                )}
-              </TabsContent>
-            </Tabs>
-          </>
+            <TabsContent value="inactive" className="space-y-3 mt-4">
+              {inactiveMembers.length === 0 ? (
+                <Card>
+                  <CardContent className="py-8 text-center text-muted-foreground">
+                    No inactive members.
+                  </CardContent>
+                </Card>
+              ) : (
+                inactiveMembers.map((member) => (
+                  <MemberPaymentCard
+                    key={member.id}
+                    member={member}
+                    month={selectedMonth}
+                  />
+                ))
+              )}
+            </TabsContent>
+          </Tabs>
         )}
       </div>
     </div>

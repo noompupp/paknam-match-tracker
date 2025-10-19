@@ -25,8 +25,12 @@ const PaymentHistoryTimeline: React.FC<PaymentHistoryTimelineProps> = ({ history
   return (
     <TooltipProvider>
       <div className="flex gap-1 items-center">
-        {history.map((month, index) => {
-          const monthDate = new Date(month.month);
+      {history.map((month, index) => {
+          const monthDate = new Date(Date.UTC(
+            Number(month.month.slice(0, 4)),
+            Number(month.month.slice(5, 7)) - 1,
+            1
+          ));
           const monthLabel = format(monthDate, 'MMM');
           const isPaid = month.status === 'paid';
 
