@@ -44,7 +44,10 @@ const Membership: React.FC = () => {
   
   // Tab 1: Unpaid - Non-exempt members unpaid for current month
   const unpaidMembers = sortByMemberId(
-    nonExemptMembers.filter(m => m.payment?.payment_status === 'unpaid' || !m.payment) || []
+    nonExemptMembers.filter(m => 
+      (m.payment?.payment_status === 'unpaid' || !m.payment) && 
+      m.membershipStatus === 'active'
+    ) || []
   );
   
   // Tab 2: Paid - Non-exempt members paid for current month
