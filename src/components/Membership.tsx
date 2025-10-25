@@ -75,7 +75,7 @@ const Membership: React.FC = () => {
     <div className="min-h-screen bg-background pb-20">
       <UnifiedPageHeader title={t('membership.title')} />
 
-      <div className="container mx-auto px-4 py-6 space-y-6">
+      <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-6 space-y-4 sm:space-y-6">
         <MonthSelector
           selectedMonth={selectedMonth}
           onMonthChange={setSelectedMonth}
@@ -126,34 +126,34 @@ const Membership: React.FC = () => {
           </div>
         ) : (
           <Tabs defaultValue="unpaid" className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="unpaid" className="relative">
-                {t('membership.unpaid')}
-                <Badge className="ml-2 bg-destructive text-destructive-foreground">
+            <TabsList className="grid w-full grid-cols-4 h-auto">
+              <TabsTrigger value="unpaid" className="relative flex-col sm:flex-row gap-1 py-2 sm:py-3 text-xs sm:text-sm">
+                <span className="truncate">{t('membership.unpaid')}</span>
+                <Badge className="text-[10px] sm:text-xs px-1 sm:px-2 bg-destructive text-destructive-foreground">
                   {unpaidMembers.length}
                 </Badge>
               </TabsTrigger>
-              <TabsTrigger value="paid" className="relative">
-                {t('membership.paid')}
-                <Badge className="ml-2 bg-green-600 text-white">
+              <TabsTrigger value="paid" className="relative flex-col sm:flex-row gap-1 py-2 sm:py-3 text-xs sm:text-sm">
+                <span className="truncate">{t('membership.paid')}</span>
+                <Badge className="text-[10px] sm:text-xs px-1 sm:px-2 bg-green-600 text-white">
                   {paidMembers.length}
                 </Badge>
               </TabsTrigger>
-              <TabsTrigger value="exempt" className="relative">
-                {t('membership.exemptMembers')}
-                <Badge className="ml-2 bg-amber-600 text-white">
+              <TabsTrigger value="exempt" className="relative flex-col sm:flex-row gap-1 py-2 sm:py-3 text-xs sm:text-sm">
+                <span className="truncate">{t('membership.exemptMembers')}</span>
+                <Badge className="text-[10px] sm:text-xs px-1 sm:px-2 bg-amber-600 text-white">
                   {exemptMembers.length}
                 </Badge>
               </TabsTrigger>
-              <TabsTrigger value="inactive" className="relative">
-                {t('membership.inactiveMembers')}
-                <Badge className="ml-2 bg-muted text-muted-foreground">
+              <TabsTrigger value="inactive" className="relative flex-col sm:flex-row gap-1 py-2 sm:py-3 text-xs sm:text-sm">
+                <span className="truncate">{t('membership.inactiveMembers')}</span>
+                <Badge className="text-[10px] sm:text-xs px-1 sm:px-2 bg-muted text-muted-foreground">
                   {inactiveMembers.length}
                 </Badge>
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="unpaid" className="space-y-3 mt-4">
+            <TabsContent value="unpaid" className="space-y-2 sm:space-y-3 mt-3 sm:mt-4">
               {unpaidMembers.length === 0 ? (
                 <Card>
                   <CardContent className="py-8 text-center text-muted-foreground">
@@ -171,7 +171,7 @@ const Membership: React.FC = () => {
               )}
             </TabsContent>
 
-            <TabsContent value="paid" className="space-y-3 mt-4">
+            <TabsContent value="paid" className="space-y-2 sm:space-y-3 mt-3 sm:mt-4">
               {paidMembers.length === 0 ? (
                 <Card>
                   <CardContent className="py-8 text-center text-muted-foreground">
@@ -189,7 +189,7 @@ const Membership: React.FC = () => {
               )}
             </TabsContent>
 
-            <TabsContent value="exempt" className="space-y-3 mt-4">
+            <TabsContent value="exempt" className="space-y-2 sm:space-y-3 mt-3 sm:mt-4">
               {exemptMembers.length === 0 ? (
                 <Card>
                   <CardContent className="py-8 text-center text-muted-foreground">
@@ -207,7 +207,7 @@ const Membership: React.FC = () => {
               )}
             </TabsContent>
 
-            <TabsContent value="inactive" className="space-y-3 mt-4">
+            <TabsContent value="inactive" className="space-y-2 sm:space-y-3 mt-3 sm:mt-4">
               {inactiveMembers.length === 0 ? (
                 <Card>
                   <CardContent className="py-8 text-center text-muted-foreground">

@@ -7,6 +7,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface PaymentHistoryMonth {
   month: string;
@@ -20,11 +21,13 @@ interface PaymentHistoryTimelineProps {
 }
 
 const PaymentHistoryTimeline: React.FC<PaymentHistoryTimelineProps> = ({ history }) => {
+  const isMobile = useIsMobile();
+  
   if (!history?.length) return null;
 
   return (
     <TooltipProvider>
-      <div className="flex gap-1 items-center">
+      <div className="flex gap-0.5 sm:gap-1 items-center">
       {history.map((month, index) => {
           const monthDate = new Date(Date.UTC(
             Number(month.month.slice(0, 4)),
@@ -38,20 +41,24 @@ const PaymentHistoryTimeline: React.FC<PaymentHistoryTimelineProps> = ({ history
             <Tooltip key={index}>
               <TooltipTrigger asChild>
                 <div
-                  className={`flex items-center justify-center w-8 h-8 rounded-full transition-all ${
+                  className={`flex items-center justify-center transition-all ${
+                    isMobile 
+                      ? 'w-6 h-6 rounded-full' 
+                      : 'w-8 h-8 rounded-full'
+                  } ${
                     isPaid
                       ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
                       : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
                   }`}
                 >
                   {isPaid ? (
-                    <Check className="w-4 h-4" />
+                    <Check className={isMobile ? "w-3 h-3" : "w-4 h-4"} />
                   ) : (
-                    <X className="w-4 h-4" />
+                    <X className={isMobile ? "w-3 h-3" : "w-4 h-4"} />
                   )}
                 </div>
               </TooltipTrigger>
-              <TooltipContent>
+              <TooltipContent side={isMobile ? "top" : "bottom"}>
                 <div className="text-xs space-y-1">
                   <p className="font-semibold">{monthLabel} {format(monthDate, 'yyyy')}</p>
                   <p>Status: <span className={isPaid ? 'text-green-600' : 'text-red-600'}>

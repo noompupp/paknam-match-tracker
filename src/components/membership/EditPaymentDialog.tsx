@@ -74,29 +74,30 @@ const EditPaymentDialog: React.FC<EditPaymentDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>{t('membership.editPayment')}</DialogTitle>
+      <DialogContent className="sm:max-w-[425px] w-[calc(100vw-2rem)] sm:w-full max-h-[90vh] overflow-y-auto">
+        <DialogHeader className="pb-3 sm:pb-4">
+          <DialogTitle className="text-base sm:text-lg">{t('membership.editPayment')}</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4 py-4">
-          <div className="space-y-2">
-            <Label>Member</Label>
+        <div className="space-y-3 sm:space-y-4 py-3 sm:py-4">
+          <div className="space-y-1.5 sm:space-y-2">
+            <Label className="text-xs sm:text-sm">Member</Label>
             <p className="text-sm font-medium">{member.nickname || member.name}</p>
           </div>
 
-          <div className="space-y-2">
-            <Label>{t('membership.status')}</Label>
+          <div className="space-y-1.5 sm:space-y-2">
+            <Label className="text-xs sm:text-sm">{t('membership.status')}</Label>
             <div className="flex gap-2">
               <Button
                 variant={status === "paid" ? "default" : "outline"}
-                className={status === "paid" ? "bg-green-600" : ""}
+                className={`flex-1 h-10 sm:h-11 text-sm ${status === "paid" ? "bg-green-600" : ""}`}
                 onClick={() => setStatus("paid")}
               >
                 {t('membership.markPaid')}
               </Button>
               <Button
                 variant={status === "unpaid" ? "destructive" : "outline"}
+                className="flex-1 h-10 sm:h-11 text-sm"
                 onClick={() => setStatus("unpaid")}
               >
                 {t('membership.markUnpaid')}
@@ -106,52 +107,63 @@ const EditPaymentDialog: React.FC<EditPaymentDialogProps> = ({
 
           {status === "paid" && (
             <>
-              <div className="space-y-2">
-                <Label>{t('membership.fixedAmount')}</Label>
-                <div className="p-3 bg-muted rounded-md">
-                  <p className="text-lg font-semibold">{t('membership.fixedAmountValue')}</p>
+              <div className="space-y-1.5 sm:space-y-2">
+                <Label className="text-xs sm:text-sm">{t('membership.fixedAmount')}</Label>
+                <div className="p-2.5 sm:p-3 bg-muted rounded-md">
+                  <p className="text-base sm:text-lg font-semibold">{t('membership.fixedAmountValue')}</p>
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="paymentDate">{t('membership.paymentDate')}</Label>
+              <div className="space-y-1.5 sm:space-y-2">
+                <Label htmlFor="paymentDate" className="text-xs sm:text-sm">{t('membership.paymentDate')}</Label>
                 <Input
                   id="paymentDate"
                   type="date"
                   value={paymentDate}
                   onChange={(e) => setPaymentDate(e.target.value)}
+                  className="h-10 sm:h-11 text-sm"
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="paymentMethod">{t('membership.paymentMethod')}</Label>
+              <div className="space-y-1.5 sm:space-y-2">
+                <Label htmlFor="paymentMethod" className="text-xs sm:text-sm">{t('membership.paymentMethod')}</Label>
                 <Input
                   id="paymentMethod"
                   value={paymentMethod}
                   onChange={(e) => setPaymentMethod(e.target.value)}
                   placeholder="Cash, Bank Transfer, etc."
+                  className="h-10 sm:h-11 text-sm"
                 />
               </div>
             </>
           )}
 
-          <div className="space-y-2">
-            <Label htmlFor="notes">{t('membership.notes')}</Label>
+          <div className="space-y-1.5 sm:space-y-2">
+            <Label htmlFor="notes" className="text-xs sm:text-sm">{t('membership.notes')}</Label>
             <Textarea
               id="notes"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Optional notes..."
               rows={3}
+              className="text-sm"
             />
           </div>
         </div>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+        <DialogFooter className="gap-2 sm:gap-0">
+          <Button 
+            variant="outline" 
+            onClick={() => onOpenChange(false)}
+            className="flex-1 sm:flex-none h-10 sm:h-11"
+          >
             {t('membership.cancel')}
           </Button>
-          <Button onClick={handleSave} disabled={updatePaymentMutation.isPending}>
+          <Button 
+            onClick={handleSave} 
+            disabled={updatePaymentMutation.isPending}
+            className="flex-1 sm:flex-none h-10 sm:h-11"
+          >
             {t('membership.save')}
           </Button>
         </DialogFooter>

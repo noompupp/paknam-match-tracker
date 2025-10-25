@@ -7,6 +7,7 @@ import { Upload, FileText, AlertCircle, CheckCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import Papa from 'papaparse';
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface ImportResult {
   success: boolean;
@@ -21,10 +22,16 @@ interface ImportResult {
 }
 
 const BulkPaymentImport: React.FC = () => {
+  const isMobile = useIsMobile();
   const [file, setFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [result, setResult] = useState<ImportResult | null>(null);
   const { toast } = useToast();
+
+  // Hide bulk import on mobile devices
+  if (isMobile) {
+    return null;
+  }
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
