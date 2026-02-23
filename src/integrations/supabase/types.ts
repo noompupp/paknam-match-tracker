@@ -888,22 +888,13 @@ export type Database = {
         }
         Returns: Json
       }
-      calculate_cumulative_player_stats: {
-        Args: Record<PropertyKey, never>
-        Returns: Json
-      }
-      cleanup_orphaned_images: {
-        Args: Record<PropertyKey, never>
-        Returns: number
-      }
+      calculate_cumulative_player_stats: { Args: never; Returns: Json }
+      cleanup_orphaned_images: { Args: never; Returns: number }
       complete_referee_assignment: {
         Args: { p_assignment_id: string; p_completion_notes?: string }
         Returns: Json
       }
-      detect_sync_discrepancies: {
-        Args: Record<PropertyKey, never>
-        Returns: Json
-      }
+      detect_sync_discrepancies: { Args: never; Returns: Json }
       finalize_match_coordination: {
         Args: { p_coordination_id: string; p_final_review_data?: Json }
         Returns: Json
@@ -996,24 +987,21 @@ export type Database = {
           unpaid_count: number
         }[]
       }
-      get_payment_history: {
-        Args:
-          | { p_member_id: number; p_months_back?: number }
-          | {
+      get_payment_history:
+        | {
+            Args: { p_member_id: number; p_months_back?: number }
+            Returns: Json
+          }
+        | {
+            Args: {
               p_member_id: number
               p_months_back?: number
               p_reference_month?: string
             }
-        Returns: Json
-      }
-      get_player_stats_sync_status: {
-        Args: Record<PropertyKey, never>
-        Returns: Json
-      }
-      get_sync_health_status: {
-        Args: Record<PropertyKey, never>
-        Returns: Json
-      }
+            Returns: Json
+          }
+      get_player_stats_sync_status: { Args: never; Returns: Json }
+      get_sync_health_status: { Args: never; Returns: Json }
       get_user_fixture_assignments: {
         Args: { p_fixture_id: number }
         Returns: {
@@ -1025,10 +1013,7 @@ export type Database = {
           workflow_mode: string
         }[]
       }
-      get_user_role: {
-        Args: { user_uuid: string }
-        Returns: string
-      }
+      get_user_role: { Args: { user_uuid: string }; Returns: string }
       initialize_monthly_payments: {
         Args: { target_month: string }
         Returns: Json
@@ -1037,10 +1022,7 @@ export type Database = {
         Args: { p_fixture_id: number; p_workflow_mode: string }
         Returns: Json
       }
-      is_authenticated_referee: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
+      is_authenticated_referee: { Args: never; Returns: boolean }
       log_match_event_team_mapping: {
         Args: {
           p_event_type: string
@@ -1061,10 +1043,7 @@ export type Database = {
         }
         Returns: string
       }
-      manual_sync_player_stats: {
-        Args: Record<PropertyKey, never>
-        Returns: Json
-      }
+      manual_sync_player_stats: { Args: never; Returns: Json }
       safe_update_member_stats: {
         Args: {
           p_assists?: number
@@ -1077,30 +1056,18 @@ export type Database = {
         }
         Returns: Json
       }
-      sync_all_match_participation: {
-        Args: Record<PropertyKey, never>
-        Returns: Json
-      }
+      sync_all_match_participation: { Args: never; Returns: Json }
       update_match_participation: {
         Args: { p_fixture_id: number }
         Returns: Json
       }
-      validate_bulk_payment_import: {
-        Args: { p_records: Json }
-        Returns: Json
-      }
+      validate_bulk_payment_import: { Args: { p_records: Json }; Returns: Json }
       validate_fixture_score: {
         Args: { away_score: number; home_score: number }
         Returns: boolean
       }
-      validate_player_name: {
-        Args: { player_name: string }
-        Returns: boolean
-      }
-      validate_player_stats_with_participation: {
-        Args: Record<PropertyKey, never>
-        Returns: Json
-      }
+      validate_player_name: { Args: { player_name: string }; Returns: boolean }
+      validate_player_stats_with_participation: { Args: never; Returns: Json }
     }
     Enums: {
       [_ in never]: never

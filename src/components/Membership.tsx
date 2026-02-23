@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Loader2, Star, AlertCircle } from "lucide-react";
+import { Plus, Loader2, Star, AlertCircle, Download } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useUserRole } from "@/hooks/useUserRole";
 import {
@@ -16,10 +16,14 @@ import MembershipHeader from "@/components/membership/MembershipHeader";
 import MonthSelector from "@/components/membership/MonthSelector";
 import MemberPaymentCard from "@/components/membership/MemberPaymentCard";
 import BulkPaymentImport from "@/components/membership/BulkPaymentImport";
+import { exportPaymentHistoryToExcel } from "@/utils/export/paymentExcelExport";
+import { useToast } from "@/hooks/use-toast";
 
 const Membership: React.FC = () => {
   const { t } = useTranslation();
   const { isAdmin } = useUserRole();
+  const { toast } = useToast();
+  const [isExporting, setIsExporting] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState(() => {
     const now = new Date();
     return new Date(now.getFullYear(), now.getMonth(), 1);
@@ -69,6 +73,18 @@ const Membership: React.FC = () => {
     initializeMonthMutation.mutate(selectedMonth);
   };
 
+  const handleExportExcel = async () => {
+    setIsExporting(true);
+    try {
+      await exportPaymentHistoryToExcel();
+      toast({ title: "Success", description: "Payment history exported successfully" });
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message || "Failed to export", variant: "destructive" });
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   const hasNoData = !membersLoading && members && members.length > 0 && !members.some(m => m.payment);
 
   return (
@@ -89,10 +105,23 @@ const Membership: React.FC = () => {
           <MembershipHeader summary={summary} />
         )}
 
-        {/* Bulk Import Tool - Admin Only */}
+        {/* Admin Tools - Bulk Import & Export */}
         {isAdmin && (
-          <div className="mb-6">
+          <div className="flex flex-col sm:flex-row gap-3 mb-6">
             <BulkPaymentImport />
+            <Button
+              variant="outline"
+              onClick={handleExportExcel}
+              disabled={isExporting}
+              className="gap-2"
+            >
+              {isExporting ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Download className="h-4 w-4" />
+              )}
+              Export to Excel
+            </Button>
           </div>
         )}
 
