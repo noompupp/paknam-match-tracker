@@ -2,6 +2,7 @@ import * as XLSX from "xlsx";
 import { supabase } from "@/integrations/supabase/client";
 
 interface PaymentExportRow {
+  "Member ID": string;
   "Member Name": string;
   "Payment Month": string;
   "Payment Year": string;
@@ -14,7 +15,7 @@ export async function exportPaymentHistoryToExcel() {
   // Fetch all members
   const { data: members, error: membersError } = await supabase
     .from("members")
-    .select("id, name, real_name, nickname")
+    .select("id, __id__, name, real_name, nickname")
     .order("name");
 
   if (membersError) throw membersError;
@@ -40,13 +41,15 @@ export async function exportPaymentHistoryToExcel() {
   const payments = allPayments;
 
   const membersMap = new Map(
-    (members || []).map((m) => [m.id, m.real_name || m.name || m.nickname || `Member #${m.id}`])
+    (members || []).map((m) => [m.id, { name: m.real_name || m.name || m.nickname || `Member #${m.id}`, __id__: m.__id__ || String(m.id) }])
   );
 
   const rows: PaymentExportRow[] = (payments || []).map((p) => {
     const monthDate = new Date(p.payment_month);
+    const member = membersMap.get(p.member_id);
     return {
-      "Member Name": membersMap.get(p.member_id) || `Unknown (${p.member_id})`,
+      "Member ID": member?.__id__ || String(p.member_id),
+      "Member Name": member?.name || `Unknown (${p.member_id})`,
       "Payment Month": monthDate.toLocaleString("default", { month: "long" }),
       "Payment Year": String(monthDate.getFullYear()),
       "Amount": p.amount ?? "",
@@ -54,6 +57,9 @@ export async function exportPaymentHistoryToExcel() {
       "Payment Date": p.payment_date || "",
     };
   });
+
+  // Sort by Member ID ascending
+  rows.sort((a, b) => a["Member ID"].localeCompare(b["Member ID"], undefined, { numeric: true }));
 
   if (rows.length === 0) {
     throw new Error("No payment data to export");
