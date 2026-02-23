@@ -19,13 +19,25 @@ export async function exportPaymentHistoryToExcel() {
 
   if (membersError) throw membersError;
 
-  // Fetch all payment records
-  const { data: payments, error: paymentsError } = await supabase
-    .from("member_payments")
-    .select("*")
-    .order("payment_month", { ascending: false });
+  // Fetch all payment records with pagination to avoid 1000-row limit
+  let allPayments: any[] = [];
+  let from = 0;
+  const pageSize = 1000;
+  while (true) {
+    const { data: page, error } = await supabase
+      .from("member_payments")
+      .select("*")
+      .order("payment_month", { ascending: false })
+      .range(from, from + pageSize - 1);
 
-  if (paymentsError) throw paymentsError;
+    if (error) throw error;
+    if (!page || page.length === 0) break;
+    allPayments = allPayments.concat(page);
+    if (page.length < pageSize) break;
+    from += pageSize;
+  }
+
+  const payments = allPayments;
 
   const membersMap = new Map(
     (members || []).map((m) => [m.id, m.real_name || m.name || m.nickname || `Member #${m.id}`])
