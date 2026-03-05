@@ -54,8 +54,12 @@ const RoleBasedNavigation = ({ activeTab, onTabChange }: RoleBasedNavigationProp
     { id: "teams", label: t('nav.teams'), icon: Users },
     { id: "results", label: t('nav.results'), icon: Trophy },
     { id: "fixtures", label: t('nav.fixtures'), icon: Calendar },
-    { id: "membership", label: t('nav.membership'), icon: Wallet },
   ];
+
+  // Membership requires authentication
+  if (user) {
+    baseNavItems.push({ id: "membership", label: t('nav.membership'), icon: Wallet });
+  }
 
   // Protected navigation items for authenticated users with specific roles
   const protectedNavItems = [
