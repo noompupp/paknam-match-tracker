@@ -88,6 +88,10 @@ const AppContent = () => {
           </RoleGuard>
         );
       case "membership":
+        if (!user) {
+          setActiveTab('auth');
+          return null;
+        }
         return <Membership />;
       default:
         return <Dashboard onNavigateToResults={handleNavigateToResults} />;
