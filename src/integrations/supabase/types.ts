@@ -82,6 +82,7 @@ export type Database = {
           id: number
           match_date: string
           matchNo: number | null
+          season_id: string
           status: string
           team1: string | null
           team2: string | null
@@ -100,6 +101,7 @@ export type Database = {
           id?: number
           match_date: string
           matchNo?: number | null
+          season_id?: string
           status?: string
           team1?: string | null
           team2?: string | null
@@ -118,6 +120,7 @@ export type Database = {
           id?: number
           match_date?: string
           matchNo?: number | null
+          season_id?: string
           status?: string
           team1?: string | null
           team2?: string | null
@@ -139,6 +142,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "teams"
             referencedColumns: ["__id__"]
+          },
+          {
+            foreignKeyName: "fixtures_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "seasons"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "fk_fixtures_away_team"
@@ -212,6 +222,7 @@ export type Database = {
           id: string
           operation_hash: string
           operation_type: string
+          season_id: string
         }
         Insert: {
           away_score: number
@@ -223,6 +234,7 @@ export type Database = {
           id?: string
           operation_hash: string
           operation_type: string
+          season_id?: string
         }
         Update: {
           away_score?: number
@@ -234,6 +246,7 @@ export type Database = {
           id?: string
           operation_hash?: string
           operation_type?: string
+          season_id?: string
         }
         Relationships: [
           {
@@ -241,6 +254,13 @@ export type Database = {
             columns: ["fixture_id"]
             isOneToOne: false
             referencedRelation: "fixtures"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "league_table_operations_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "seasons"
             referencedColumns: ["id"]
           },
         ]
@@ -299,6 +319,7 @@ export type Database = {
           is_own_goal: boolean
           player_name: string
           scoring_team_id: string | null
+          season_id: string
           team_id: string
         }
         Insert: {
@@ -313,6 +334,7 @@ export type Database = {
           is_own_goal?: boolean
           player_name: string
           scoring_team_id?: string | null
+          season_id?: string
           team_id: string
         }
         Update: {
@@ -327,6 +349,7 @@ export type Database = {
           is_own_goal?: boolean
           player_name?: string
           scoring_team_id?: string | null
+          season_id?: string
           team_id?: string
         }
         Relationships: [
@@ -357,6 +380,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "teams"
             referencedColumns: ["__id__"]
+          },
+          {
+            foreignKeyName: "match_events_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "seasons"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "match_events_team_id_fkey"
@@ -475,6 +505,7 @@ export type Database = {
           payment_method: string | null
           payment_month: string
           payment_status: string
+          season_id: string
           updated_at: string | null
           updated_by: string | null
         }
@@ -488,6 +519,7 @@ export type Database = {
           payment_method?: string | null
           payment_month: string
           payment_status: string
+          season_id?: string
           updated_at?: string | null
           updated_by?: string | null
         }
@@ -501,6 +533,7 @@ export type Database = {
           payment_method?: string | null
           payment_month?: string
           payment_status?: string
+          season_id?: string
           updated_at?: string | null
           updated_by?: string | null
         }
@@ -510,6 +543,13 @@ export type Database = {
             columns: ["member_id"]
             isOneToOne: false
             referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "member_payments_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "seasons"
             referencedColumns: ["id"]
           },
         ]
@@ -538,6 +578,7 @@ export type Database = {
           real_name: string | null
           red_cards: number | null
           role: string | null
+          season_id: string
           sync_status: string | null
           team_id: string | null
           total_minutes_played: number | null
@@ -569,6 +610,7 @@ export type Database = {
           real_name?: string | null
           red_cards?: number | null
           role?: string | null
+          season_id?: string
           sync_status?: string | null
           team_id?: string | null
           total_minutes_played?: number | null
@@ -600,6 +642,7 @@ export type Database = {
           real_name?: string | null
           red_cards?: number | null
           role?: string | null
+          season_id?: string
           sync_status?: string | null
           team_id?: string | null
           total_minutes_played?: number | null
@@ -621,6 +664,13 @@ export type Database = {
             columns: ["avatar_metadata_id"]
             isOneToOne: false
             referencedRelation: "image_metadata"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "members_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "seasons"
             referencedColumns: ["id"]
           },
           {
@@ -718,6 +768,7 @@ export type Database = {
           periods: Json | null
           player_id: number
           player_name: string
+          season_id: string
           team_id: number
           total_minutes: number
           updated_at: string | null
@@ -729,6 +780,7 @@ export type Database = {
           periods?: Json | null
           player_id: number
           player_name: string
+          season_id?: string
           team_id: number
           total_minutes?: number
           updated_at?: string | null
@@ -740,11 +792,20 @@ export type Database = {
           periods?: Json | null
           player_id?: number
           player_name?: string
+          season_id?: string
           team_id?: number
           total_minutes?: number
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "player_time_tracking_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "seasons"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       referee_assignments: {
         Row: {
@@ -793,6 +854,42 @@ export type Database = {
           },
         ]
       }
+      seasons: {
+        Row: {
+          created_at: string
+          ended_at: string | null
+          id: string
+          is_active: boolean
+          is_current_default: boolean
+          name: string
+          season_number: number
+          started_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          ended_at?: string | null
+          id?: string
+          is_active?: boolean
+          is_current_default?: boolean
+          name: string
+          season_number: number
+          started_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          ended_at?: string | null
+          id?: string
+          is_active?: boolean
+          is_current_default?: boolean
+          name?: string
+          season_number?: number
+          started_at?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       teams: {
         Row: {
           __id__: string
@@ -815,6 +912,7 @@ export type Database = {
           points: number | null
           position: number | null
           previous_position: number | null
+          season_id: string
           won: number | null
         }
         Insert: {
@@ -838,6 +936,7 @@ export type Database = {
           points?: number | null
           position?: number | null
           previous_position?: number | null
+          season_id?: string
           won?: number | null
         }
         Update: {
@@ -861,6 +960,7 @@ export type Database = {
           points?: number | null
           position?: number | null
           previous_position?: number | null
+          season_id?: string
           won?: number | null
         }
         Relationships: [
@@ -869,6 +969,13 @@ export type Database = {
             columns: ["logo_metadata_id"]
             isOneToOne: false
             referencedRelation: "image_metadata"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "teams_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "seasons"
             referencedColumns: ["id"]
           },
         ]
@@ -890,6 +997,14 @@ export type Database = {
       }
       calculate_cumulative_player_stats: { Args: never; Returns: Json }
       cleanup_orphaned_images: { Args: never; Returns: number }
+      clone_season: {
+        Args: {
+          p_source_season_id: string
+          p_target_season_name: string
+          p_target_season_number: number
+        }
+        Returns: Json
+      }
       complete_referee_assignment: {
         Args: { p_assignment_id: string; p_completion_notes?: string }
         Returns: Json
@@ -908,6 +1023,7 @@ export type Database = {
         }
         Returns: string
       }
+      get_active_season_id: { Args: never; Returns: string }
       get_coordination_with_assignments: {
         Args: { p_fixture_id: number }
         Returns: {
@@ -918,6 +1034,7 @@ export type Database = {
           workflow_mode: string
         }[]
       }
+      get_current_season_id: { Args: never; Returns: string }
       get_enhanced_match_summary: {
         Args: { p_fixture_id: number }
         Returns: {
@@ -1056,6 +1173,7 @@ export type Database = {
         }
         Returns: Json
       }
+      set_current_season: { Args: { p_season_id: string }; Returns: Json }
       sync_all_match_participation: { Args: never; Returns: Json }
       update_match_participation: {
         Args: { p_fixture_id: number }

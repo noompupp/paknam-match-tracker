@@ -1,11 +1,12 @@
 
 import { supabase } from '@/integrations/supabase/client';
+import { getCurrentSeasonId } from '@/lib/seasonStore';
 
 export const fetchAllMembers = async () => {
   console.log('🔍 BaseMemberQueries: Starting getAll request...');
-  
-  // First try with the inner join
-  const { data: members, error: membersError } = await supabase
+
+  const seasonId = getCurrentSeasonId();
+  let q = supabase
     .from('members')
     .select(`
       id,
@@ -32,6 +33,8 @@ export const fetchAllMembers = async () => {
       )
     `)
     .order('name', { ascending: true });
+  if (seasonId) q = q.eq('season_id', seasonId);
+  const { data: members, error: membersError } = await q;
   
   if (membersError) {
     console.error('❌ BaseMemberQueries: Error fetching members:', membersError);
@@ -47,7 +50,8 @@ export const fetchAllMembers = async () => {
 };
 
 export const fetchMembersByTeamFilter = async (normalizedTeamId: string) => {
-  const { data: allMembers, error: membersError } = await supabase
+  const seasonId = getCurrentSeasonId();
+  let q = supabase
     .from('members')
     .select(`
       id,
@@ -74,6 +78,8 @@ export const fetchMembersByTeamFilter = async (normalizedTeamId: string) => {
       )
     `)
     .order('name', { ascending: true });
+  if (seasonId) q = q.eq('season_id', seasonId);
+  const { data: allMembers, error: membersError } = await q;
   
   if (membersError) {
     console.error('❌ BaseMemberQueries: Error fetching all members:', membersError);

@@ -1,6 +1,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { Team } from '@/types/database';
+import { getCurrentSeasonId } from '@/lib/seasonStore';
 
 // Helper function to normalize IDs for consistent matching
 const normalizeId = (id: any): string => {
@@ -11,11 +12,14 @@ const normalizeId = (id: any): string => {
 export const teamsApi = {
   getAll: async () => {
     console.log('🔍 TeamsAPI: Starting getAll request...');
-    
-    const { data, error } = await supabase
+
+    const seasonId = getCurrentSeasonId();
+    let q = supabase
       .from('teams')
       .select('*')
       .order('position', { ascending: true });
+    if (seasonId) q = q.eq('season_id', seasonId);
+    const { data, error } = await q;
     
     if (error) {
       console.error('❌ TeamsAPI: Error fetching teams:', error);

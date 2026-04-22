@@ -8,6 +8,7 @@ import { AutoLogoutProvider } from "@/contexts/AutoLogoutContext";
 import { AuthProvider } from "@/contexts/AuthContext"; // Keep for backward compatibility
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
 import { LanguageProvider } from "@/contexts/LanguageContext";
+import { SeasonProvider } from "@/contexts/SeasonContext";
 import SecureLogin from "@/components/auth/SecureLogin";
 import RoleBasedNavigation from "@/components/auth/RoleBasedNavigation";
 import RoleGuard from "@/components/auth/RoleGuard";
@@ -17,6 +18,8 @@ import Fixtures from "@/components/Fixtures";
 import Results from "@/components/Results";
 import RefereeToolsContainer from "@/components/referee/RefereeToolsContainer";
 import Membership from "@/components/Membership";
+import SeasonManagement from "@/components/admin/SeasonManagement";
+import HistoricalSeasonBanner from "@/components/shared/HistoricalSeasonBanner";
 
 // Create a client
 const queryClient = new QueryClient({
@@ -93,6 +96,12 @@ const AppContent = () => {
           return null;
         }
         return <Membership />;
+      case "seasons":
+        if (!user) {
+          setActiveTab('auth');
+          return null;
+        }
+        return <SeasonManagement />;
       default:
         return <Dashboard onNavigateToResults={handleNavigateToResults} />;
     }
@@ -101,6 +110,7 @@ const AppContent = () => {
   return (
     <AutoLogoutProvider inactivityTimeout={30 * 60 * 1000} checkInterval={60 * 1000}>
       <div className="min-h-screen bg-background">
+        <HistoricalSeasonBanner />
         <main className="pb-20">
           {renderContent()}
         </main>
@@ -123,8 +133,10 @@ function App() {
         <LanguageProvider>
           <SecureAuthProvider>
             <AuthProvider>
-              <AppContent />
-              <Toaster />
+              <SeasonProvider>
+                <AppContent />
+                <Toaster />
+              </SeasonProvider>
             </AuthProvider>
           </SecureAuthProvider>
         </LanguageProvider>

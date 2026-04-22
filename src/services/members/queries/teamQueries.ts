@@ -1,10 +1,14 @@
 
 import { supabase } from '@/integrations/supabase/client';
+import { getCurrentSeasonId } from '@/lib/seasonStore';
 
 export const fetchAllTeams = async () => {
-  const { data: teams, error: teamsError } = await supabase
+  const seasonId = getCurrentSeasonId();
+  let q = supabase
     .from('teams')
     .select('*');
+  if (seasonId) q = q.eq('season_id', seasonId);
+  const { data: teams, error: teamsError } = await q;
   
   if (teamsError) {
     console.error('❌ TeamQueries: Error fetching teams for members:', teamsError);

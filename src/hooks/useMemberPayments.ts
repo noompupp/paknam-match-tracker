@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { getMonthKeyUTC } from "@/utils/dateUtils";
+import { getCurrentSeasonId } from "@/lib/seasonStore";
 
 export interface MemberPayment {
   id: string;
@@ -47,23 +48,27 @@ export interface PaymentSummary {
  */
 export function useMonthlyPayments(month: Date) {
   const monthStr = getMonthKeyUTC(month);
-  
+  const seasonId = getCurrentSeasonId();
+
   return useQuery<MemberWithPayment[]>({
-    queryKey: ["member_payments", monthStr],
+    queryKey: ["member_payments", monthStr, seasonId],
     queryFn: async () => {
-      // First get all members with __id__
-      const { data: members, error: membersError } = await supabase
+      const sId = getCurrentSeasonId();
+      let mq = supabase
         .from("members")
         .select("id, __id__, name, real_name, nickname, is_fee_exempt, ProfileURL, line_id, line_name, team_id")
         .order("name");
+      if (sId) mq = mq.eq("season_id", sId);
+      const { data: members, error: membersError } = await mq;
 
       if (membersError) throw membersError;
 
-      // Then get payments for this month
-      const { data: payments, error: paymentsError } = await supabase
+      let pq = supabase
         .from("member_payments")
         .select("*")
         .eq("payment_month", monthStr);
+      if (sId) pq = pq.eq("season_id", sId);
+      const { data: payments, error: paymentsError } = await pq;
 
       if (paymentsError) throw paymentsError;
 
