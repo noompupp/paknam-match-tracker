@@ -1,17 +1,20 @@
 import { supabase } from '@/integrations/supabase/client';
 import { transformFixture } from './utils';
 import { joinFixturesWithTeams } from './teamUtils';
+import { getCurrentSeasonId } from '@/lib/seasonStore';
 
 export const getAllFixtures = async () => {
   console.log('🔍 FixturesQueries: Starting getAll request with standardized team IDs...');
-  
-  // Get all fixtures with better sorting (completed matches by date desc, scheduled by date asc)
-  const { data: fixtures, error: fixturesError } = await supabase
+
+  const seasonId = getCurrentSeasonId();
+  let fxQ = supabase
     .from('fixtures')
     .select('*')
     .order('status', { ascending: false }) // completed first
     .order('match_date', { ascending: false }) // then by date
     .order('time', { ascending: true }); // then by time
+  if (seasonId) fxQ = fxQ.eq('season_id', seasonId);
+  const { data: fixtures, error: fixturesError } = await fxQ;
   
   if (fixturesError) {
     console.error('❌ FixturesQueries: Error fetching fixtures:', fixturesError);
@@ -39,9 +42,11 @@ export const getAllFixtures = async () => {
   }
 
   // Get all teams for manual joining
-  const { data: teams, error: teamsError } = await supabase
+  let teamsQ = supabase
     .from('teams')
     .select('*');
+  if (seasonId) teamsQ = teamsQ.eq('season_id', seasonId);
+  const { data: teams, error: teamsError } = await teamsQ;
   
   if (teamsError) {
     console.error('❌ FixturesQueries: Error fetching teams for fixtures:', teamsError);
@@ -81,9 +86,9 @@ export const getUpcomingFixtures = async () => {
   console.log('🔍 FixturesQueries: Getting upcoming fixtures...');
   
   const currentDate = new Date().toISOString().split('T')[0];
-  
-  // Get upcoming fixtures by date and time, sorted chronologically
-  const { data: fixtures, error: fixturesError } = await supabase
+
+  const seasonId = getCurrentSeasonId();
+  let fxQ = supabase
     .from('fixtures')
     .select('*')
     .eq('status', 'scheduled')
@@ -91,6 +96,8 @@ export const getUpcomingFixtures = async () => {
     .order('match_date', { ascending: true })
     .order('time', { ascending: true }) // Sort by time within each date
     .limit(3); // Only get the next 3 fixtures
+  if (seasonId) fxQ = fxQ.eq('season_id', seasonId);
+  const { data: fixtures, error: fixturesError } = await fxQ;
   
   if (fixturesError) {
     console.error('❌ FixturesQueries: Error fetching upcoming fixtures:', fixturesError);
@@ -115,9 +122,11 @@ export const getUpcomingFixtures = async () => {
   }
 
   // Get all teams for manual joining
-  const { data: teams, error: teamsError } = await supabase
+  let teamsQ = supabase
     .from('teams')
     .select('*');
+  if (seasonId) teamsQ = teamsQ.eq('season_id', seasonId);
+  const { data: teams, error: teamsError } = await teamsQ;
   
   if (teamsError) {
     console.error('❌ FixturesQueries: Error fetching teams for upcoming fixtures:', teamsError);
@@ -138,14 +147,17 @@ export const getUpcomingFixtures = async () => {
 
 export const getRecentFixtures = async () => {
   console.log('🔍 FixturesQueries: Getting recent fixtures...');
-  
-  const { data: fixtures, error: fixturesError } = await supabase
+
+  const seasonId = getCurrentSeasonId();
+  let fxQ = supabase
     .from('fixtures')
     .select('*')
     .eq('status', 'completed')
     .order('match_date', { ascending: false })
     .order('time', { ascending: false })
     .limit(5);
+  if (seasonId) fxQ = fxQ.eq('season_id', seasonId);
+  const { data: fixtures, error: fixturesError } = await fxQ;
   
   if (fixturesError) {
     console.error('❌ FixturesQueries: Error fetching recent fixtures:', fixturesError);
@@ -171,9 +183,11 @@ export const getRecentFixtures = async () => {
   }
 
   // Get all teams for manual joining
-  const { data: teams, error: teamsError } = await supabase
+  let teamsQ = supabase
     .from('teams')
     .select('*');
+  if (seasonId) teamsQ = teamsQ.eq('season_id', seasonId);
+  const { data: teams, error: teamsError } = await teamsQ;
   
   if (teamsError) {
     console.error('❌ FixturesQueries: Error fetching teams for recent fixtures:', teamsError);

@@ -1,5 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
+import { getCurrentSeasonId } from '@/lib/seasonStore';
 
 export interface LeagueTableEntry {
   id: number;
@@ -26,11 +27,13 @@ export const leagueTableService = {
     console.log('🏆 Getting deduplicated league table...');
     
     try {
-      // Get all teams with their current stats and logo information
-      const { data: teams, error: teamsError } = await supabase
+      const seasonId = getCurrentSeasonId();
+      let teamsQ = supabase
         .from('teams')
         .select('*')
         .order('position', { ascending: true });
+      if (seasonId) teamsQ = teamsQ.eq('season_id', seasonId);
+      const { data: teams, error: teamsError } = await teamsQ;
 
       if (teamsError) throw teamsError;
 
@@ -43,13 +46,15 @@ export const leagueTableService = {
 
       for (const team of teams) {
         // Get deduplicated fixtures for this team - only the most recent version of each fixture
-        const { data: fixtures, error: fixturesError } = await supabase
+        let fxQ = supabase
           .from('fixtures')
           .select('*')
           .or(`home_team_id.eq.${team.__id__},away_team_id.eq.${team.__id__}`)
           .not('home_score', 'is', null)
           .not('away_score', 'is', null)
           .order('updated_at', { ascending: false }); // Most recent first
+        if (seasonId) fxQ = fxQ.eq('season_id', seasonId);
+        const { data: fixtures, error: fixturesError } = await fxQ;
 
         if (fixturesError) {
           console.error('Error fetching fixtures for team:', team.name, fixturesError);
