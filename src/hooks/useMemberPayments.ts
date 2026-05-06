@@ -114,9 +114,10 @@ export function useMonthlyPayments(month: Date) {
  */
 export function usePaymentSummary(month: Date) {
   const monthStr = getMonthKeyUTC(month);
+  const seasonId = getCurrentSeasonId();
 
   return useQuery<PaymentSummary>({
-    queryKey: ["payment_summary", monthStr],
+    queryKey: ["payment_summary", monthStr, seasonId],
     queryFn: async () => {
       const { data, error } = await supabase
         .rpc("get_monthly_payment_summary", {
@@ -150,8 +151,8 @@ export function useInitializeMonthlyPayments() {
     },
     onSuccess: (data, month) => {
       const monthStr = getMonthKeyUTC(month);
-      queryClient.invalidateQueries({ queryKey: ["member_payments", monthStr] });
-      queryClient.invalidateQueries({ queryKey: ["payment_summary", monthStr] });
+      queryClient.invalidateQueries({ queryKey: ["member_payments", monthStr], exact: false });
+      queryClient.invalidateQueries({ queryKey: ["payment_summary", monthStr], exact: false });
       
       const result = data as any;
       toast({
@@ -237,8 +238,8 @@ export function useUpdatePaymentStatus() {
     },
     onSuccess: (data, variables) => {
       const monthStr = getMonthKeyUTC(variables.month);
-      queryClient.invalidateQueries({ queryKey: ["member_payments", monthStr] });
-      queryClient.invalidateQueries({ queryKey: ["payment_summary", monthStr] });
+      queryClient.invalidateQueries({ queryKey: ["member_payments", monthStr], exact: false });
+      queryClient.invalidateQueries({ queryKey: ["payment_summary", monthStr], exact: false });
       
       toast({
         title: "Success",
