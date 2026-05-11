@@ -1,50 +1,32 @@
-## Problem
+## Goal
 
-After splitting data by season, the Membership tab now shows **Total members: 280** (it should be 140). Root cause is in three SQL functions that were never updated to scope by `season_id`:
+Restore the display of historical monthly payment data (months before May 2026 / พ.ค. 2569) inside the Membership tab.
 
-1. `initialize_monthly_payments(target_month)` — inserts a payment row for every member in the `members` table, ignoring season. With 140 members per season × 2 seasons, April 2026 ended up with 280 rows.
-2. `get_monthly_payment_summary(target_month)` — counts all rows for the month with no season filter, so the header card shows 280.
-3. `get_payment_history(...)` and `get_member_status(...)` — also not season-aware. They look up by `member_id`, but since cloned members got NEW ids in Season 10, they happen to return correct rows by accident; still risky and inconsistent. We will add an optional `p_season_id` filter for correctness.
+## Why data is missing
 
-DB confirmation:
-- `member_payments` April 2026: 280 rows under Season 10's `season_id`. All other months (historical) are under Season 9 with 140 each.
+When Season 10 was created, members were cloned with new IDs (e.g. `M023` → `M023_s10`) and new internal numeric ids. The `member_payments` rows for previous months are still attached to the **Season 9** member ids, so the current `get_payment_history` and `get_member_status` RPCs — which look up by the Season 10 member id — return no historical rows.
 
 ## Fix
 
-### 1) Database migration
+Apply the already-prepared migration `supabase/migrations/20260506090000_payment_canonical_member_lookup.sql`, which:
 
-- Update `public.initialize_monthly_payments(target_month)` to:
-  - Resolve target season via `public.get_current_season_id()`.
-  - Insert payment rows only for members where `members.season_id = <current season>`.
-  - Stamp `member_payments.season_id` explicitly with the current season (already defaulted, but make it explicit).
-- Update `public.get_monthly_payment_summary(target_month)` to:
-  - Filter `member_payments` by `season_id = public.get_current_season_id()`.
-- Update `public.get_payment_history(p_member_id, p_months_back, p_reference_month)` to:
-  - Add optional `p_season_id uuid DEFAULT public.get_current_season_id()` and filter `mp.season_id = p_season_id`.
-- Update `public.get_member_status(p_member_id, p_reference_month)` to:
-  - Filter member_payments lookups by `season_id = public.get_current_season_id()`.
+1. Adds a helper `public.canonical_member_key(text)` that strips the `_sN` season suffix from `members.__id__` (e.g. `M023_s10` → `M023`).
+2. Rewrites `public.get_payment_history(...)` to:
+   - Resolve the canonical key for the requested member.
+   - Collect every `members.id` that shares that canonical key (across seasons).
+   - Query `member_payments` with `member_id = ANY(<all matching ids>)`, so Season 10 members inherit the timeline of their Season 9 counterpart.
+3. Rewrites `public.get_member_status(...)` with the same cross-season lookup, so Active/Inactive status correctly considers prior-season payments.
 
-### 2) Data cleanup (one-time)
-
-Delete the 140 stray April 2026 rows in Season 10 that belong to Season 9 member ids, then let the UI re-initialize cleanly. Specifically:
-```
-DELETE FROM member_payments mp
-USING members m
-WHERE mp.payment_month = '2026-04-01'
-  AND mp.season_id = '<season10 id>'
-  AND mp.member_id = m.id
-  AND m.season_id <> '<season10 id>';
-```
-(Done via the data tool, not migration.)
-
-### 3) Frontend
-
-- `useMonthlyPayments` / `usePaymentSummary`: include `seasonId` in the React Query key so switching season refetches and caches per-season correctly.
-- `usePaymentHistory` / `useMemberStatus`: include `seasonId` in the query key. (RPCs themselves will resolve current season server-side; no extra args needed unless we want explicit override.)
-- `useInitializeMonthlyPayments` invalidations: also include `seasonId` in the invalidated keys.
-- No UI/copy changes — the header card will then correctly show 140.
+No frontend changes are needed — the UI already calls these RPCs through `usePaymentHistory` / `useMemberStatus` in `src/hooks/useMemberPayments.ts`.
 
 ## Out of scope
 
-- Cross-season member history (will only show payments for the currently selected season).
-- Editing historical Season 9 payments while viewing Season 10 (already prevented by season filtering).
+- Editing or merging historical Season 9 `member_payments` rows.
+- Changing the current-month summary card (already fixed in the previous migration).
+- Any UI/copy changes.
+
+## Verification after migration
+
+- Open Membership tab → a Season 10 member who paid in earlier months should show the paid dots in the 6-month timeline.
+- The "Total members" header should still read 140 (unchanged).
+- Membership status badges (Active/Inactive) should reflect last month's payment again.
