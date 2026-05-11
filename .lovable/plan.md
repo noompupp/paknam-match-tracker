@@ -1,32 +1,47 @@
-## Goal
+## ผลการตรวจสอบ
 
-Restore the display of historical monthly payment data (months before May 2026 / พ.ค. 2569) inside the Membership tab.
+ฟังก์ชัน RPC ใหม่ทำงานถูกต้อง — ผู้เล่น Season 10 ที่มีคู่ขนานใน Season 9 และเคยจ่ายต่อเนื่อง (เช่น `M025_s10`, `M001_s10`) แสดงประวัติ Dec 2025 → Apr 2026 ครบทุกเดือนแล้ว
 
-## Why data is missing
+แต่ที่ผู้ใช้บอกว่า "ยังไม่ครบ 6 เดือนสำหรับเกือบทุกคน" เกิดจาก **ข้อมูลในตาราง `member_payments` เองมีช่องโหว่** ไม่ใช่บั๊กของฟังก์ชัน
 
-When Season 10 was created, members were cloned with new IDs (e.g. `M023` → `M023_s10`) and new internal numeric ids. The `member_payments` rows for previous months are still attached to the **Season 9** member ids, so the current `get_payment_history` and `get_member_status` RPCs — which look up by the Season 10 member id — return no historical rows.
+### หลักฐานจากฐานข้อมูล
 
-## Fix
+จำนวนแถวต่อเดือน (ทั้งระบบ):
 
-Apply the already-prepared migration `supabase/migrations/20260506090000_payment_canonical_member_lookup.sql`, which:
+| เดือน | จำนวนแถว |
+|---|---|
+| ม.ค.–ต.ค. 2025 | 140 (ครบทุกคน) |
+| พ.ย. 2025 | **96** |
+| ธ.ค. 2025 | **91** |
+| ม.ค. 2026 | **91** |
+| ก.พ. 2026 | **93** |
+| มี.ค. 2026 | **92** |
+| เม.ย. 2026 | 140 (เพิ่งเติมจาก initialize) |
+| พ.ค. 2026 | 0 |
 
-1. Adds a helper `public.canonical_member_key(text)` that strips the `_sN` season suffix from `members.__id__` (e.g. `M023_s10` → `M023`).
-2. Rewrites `public.get_payment_history(...)` to:
-   - Resolve the canonical key for the requested member.
-   - Collect every `members.id` that shares that canonical key (across seasons).
-   - Query `member_payments` with `member_id = ANY(<all matching ids>)`, so Season 10 members inherit the timeline of their Season 9 counterpart.
-3. Rewrites `public.get_member_status(...)` with the same cross-season lookup, so Active/Inactive status correctly considers prior-season payments.
+ในกรอบ 6 เดือนล่าสุด (ธ.ค. 2025 – พ.ค. 2026) เมื่อรวมข้อมูลข้ามฤดูกาลแล้ว:
+- 41/140 คน **ไม่มีแถว paid เลย**
+- 99/140 คน มี paid อย่างน้อย 1 เดือน
+- 0/140 คน มี paid ครบทั้ง 6 เดือน
 
-No frontend changes are needed — the UI already calls these RPCs through `usePaymentHistory` / `useMemberStatus` in `src/hooks/useMemberPayments.ts`.
+ตัวอย่าง: `M069` มีเฉพาะ ม.ค.–ต.ค. 2025 ที่เป็น `unpaid` ทั้งหมด — ไม่มีแถวใดๆ ตั้งแต่ พ.ย. 2025 เป็นต้นมา ทำให้ timeline 6 เดือนที่อ้างอิง พ.ค. 2026 ขึ้น unpaid ทั้งแถบ
 
-## Out of scope
+### สาเหตุที่เป็นไปได้
 
-- Editing or merging historical Season 9 `member_payments` rows.
-- Changing the current-month summary card (already fixed in the previous migration).
-- Any UI/copy changes.
+ก่อนการแยก season, `initialize_monthly_payments` ถูกเรียกเฉพาะบางเดือน (พ.ย. 2025 – มี.ค. 2026) และเฉพาะกับสมาชิกบางคนที่อยู่ในระบบขณะนั้น — สมาชิกที่ถูกเพิ่ม/แก้ไขทีหลังจึงไม่มีแถว placeholder สำหรับช่วงนั้น เหลือเป็นช่องว่างจริงในฐานข้อมูล
 
-## Verification after migration
+## ทางเลือกที่ต้องตัดสินใจก่อนแก้
 
-- Open Membership tab → a Season 10 member who paid in earlier months should show the paid dots in the 6-month timeline.
-- The "Total members" header should still read 140 (unchanged).
-- Membership status badges (Active/Inactive) should reflect last month's payment again.
+ผมต้องถามก่อนเพราะแต่ละทางเลือกมีผลต่อข้อมูลต่างกัน:
+
+1. **Backfill แถวที่ขาด** — รัน `initialize_monthly_payments` ย้อนหลังสำหรับเดือน พ.ย. 2025, ธ.ค. 2025, ม.ค.–มี.ค. 2026 ให้ครบ 140 แถว/เดือน โดยตั้งสถานะเริ่มต้นเป็น `unpaid` (ไม่แตะแถว `paid` ที่มีอยู่). หลังจากนี้ timeline จะแสดงครบ 6 จุดทุกคน แต่จุดที่ไม่เคยจ่ายจะเป็น unpaid ตามจริง
+
+2. **Backfill เป็น `paid` สำหรับสมาชิกที่ "น่าจะจ่าย"** — ต้องมีกฎ เช่น "ถ้าจ่าย ต.ค. 2025 และ เม.ย. 2026 ให้สันนิษฐานว่าจ่ายระหว่างนั้นด้วย" ความเสี่ยง: อาจสร้างประวัติการจ่ายปลอม
+
+3. **ขยาย lookback จาก 6 → 12 เดือน** ในหน้า Membership เพื่อให้เห็นข้อมูล ม.ค.–ต.ค. 2025 ที่ครบถ้วน (เป็น UI change ล้วน ไม่แตะข้อมูล)
+
+4. **รวม 1 + 3** — backfill placeholder rows และขยาย timeline ให้ยาวขึ้น
+
+ผมแนะนำ **ทางเลือก 1** (backfill เป็น unpaid) เพราะปลอดภัยที่สุด: ทำให้ timeline แสดงผลครบทุกช่อง, ไม่สร้างประวัติปลอม, และ UI จะแสดง "unpaid" ตรงตามความจริง — ผู้ดูแลค่อยมาแก้ทีละรายการที่ทราบว่าจ่ายแล้วได้ทีหลัง
+
+กรุณาเลือกแนวทางที่ต้องการก่อน แล้วผมจะรันให้ตามนั้น
