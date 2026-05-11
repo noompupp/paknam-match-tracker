@@ -996,6 +996,7 @@ export type Database = {
         Returns: Json
       }
       calculate_cumulative_player_stats: { Args: never; Returns: Json }
+      canonical_member_key: { Args: { p_id: string }; Returns: string }
       cleanup_orphaned_images: { Args: never; Returns: number }
       clone_season: {
         Args: {
