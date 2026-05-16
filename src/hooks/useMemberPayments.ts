@@ -183,14 +183,18 @@ export function usePaymentSummary(month: Date) {
   return useQuery<PaymentSummary>({
     queryKey: ["payment_summary", monthStr, seasonId],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .rpc("get_monthly_payment_summary", {
-          target_month: monthStr
-        })
-        .single();
+      const members = await fetchMembersForCurrentSeason();
+      const paymentsMap = await fetchCanonicalPaymentsForMonth(members, monthStr);
+      const payments = members.map((member) => paymentsMap.get(member.id));
+      const paidPayments = payments.filter((payment) => payment?.payment_status === "paid");
 
-      if (error) throw error;
-      return data;
+      return {
+        total_members: members.length,
+        paid_count: paidPayments.length,
+        unpaid_count: members.length - paidPayments.length,
+        total_amount: paidPayments.reduce((sum, payment) => sum + Number(payment?.amount || 0), 0),
+        payment_month: monthStr,
+      };
     },
   });
 }
