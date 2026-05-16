@@ -3,13 +3,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Loader2, Star, AlertCircle, Download } from "lucide-react";
+import { Loader2, Star, AlertCircle, Download } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useUserRole } from "@/hooks/useUserRole";
 import {
   useMonthlyPayments,
   usePaymentSummary,
-  useInitializeMonthlyPayments,
 } from "@/hooks/useMemberPayments";
 import UnifiedPageHeader from "@/components/shared/UnifiedPageHeader";
 import MembershipHeader from "@/components/membership/MembershipHeader";
@@ -31,7 +30,6 @@ const Membership: React.FC = () => {
 
   const { data: members, isLoading: membersLoading } = useMonthlyPayments(selectedMonth);
   const { data: summary, isLoading: summaryLoading } = usePaymentSummary(selectedMonth);
-  const initializeMonthMutation = useInitializeMonthlyPayments();
 
   // Helper function to sort members by ID
   const sortByMemberId = (memberList: typeof members) => {
@@ -69,10 +67,6 @@ const Membership: React.FC = () => {
     nonExemptMembers.filter(m => m.membershipStatus === 'inactive') || []
   );
 
-  const handleInitializeMonth = () => {
-    initializeMonthMutation.mutate(selectedMonth);
-  };
-
   const handleExportExcel = async () => {
     setIsExporting(true);
     try {
@@ -84,8 +78,6 @@ const Membership: React.FC = () => {
       setIsExporting(false);
     }
   };
-
-  const hasNoData = !membersLoading && members && members.length > 0 && !members.some(m => m.payment);
 
   return (
     <div className="min-h-screen bg-background pb-20">
@@ -123,30 +115,6 @@ const Membership: React.FC = () => {
               Export to Excel
             </Button>
           </div>
-        )}
-
-        {hasNoData && isAdmin && (
-          <Card>
-            <CardContent className="py-8 text-center">
-              <p className="text-muted-foreground mb-4">{t('membership.noData')}</p>
-              <Button
-                onClick={handleInitializeMonth}
-                disabled={initializeMonthMutation.isPending}
-              >
-                {initializeMonthMutation.isPending ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Initializing...
-                  </>
-                ) : (
-                  <>
-                    <Plus className="h-4 w-4 mr-2" />
-                    {t('membership.initializeMonth')}
-                  </>
-                )}
-              </Button>
-            </CardContent>
-          </Card>
         )}
 
         {membersLoading ? (
