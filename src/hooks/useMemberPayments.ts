@@ -286,17 +286,24 @@ export function useUpdatePaymentStatus() {
         return data;
       } else {
         // Insert new payment record
+        const seasonId = getCurrentSeasonId();
+        const paymentRecord: any = {
+          member_id: memberId,
+          payment_month: monthStr,
+          payment_status: status,
+          payment_date: paymentDate,
+          amount: amount,
+          payment_method: paymentMethod,
+          notes: notes,
+        };
+
+        if (seasonId) {
+          paymentRecord.season_id = seasonId;
+        }
+
         const { data, error } = await supabase
           .from("member_payments")
-          .insert({
-            member_id: memberId,
-            payment_month: monthStr,
-            payment_status: status,
-            payment_date: paymentDate,
-            amount: amount,
-            payment_method: paymentMethod,
-            notes: notes,
-          })
+          .insert(paymentRecord)
           .select()
           .single();
 
