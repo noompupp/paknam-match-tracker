@@ -8,6 +8,7 @@ import { getCurrentSeasonId } from "@/lib/seasonStore";
 export interface MemberPayment {
   id: string;
   member_id: number;
+  season_id?: string | null;
   payment_month: string;
   payment_status: "paid" | "unpaid";
   payment_date?: string | null;
@@ -43,6 +44,90 @@ export interface PaymentSummary {
   payment_month: string;
 }
 
+type MemberIdentity = {
+  id: number;
+  __id__?: string | null;
+  season_id?: string | null;
+};
+
+const canonicalMemberKey = (memberId?: string | null) =>
+  (memberId || "").replace(/_s\d+$/i, "");
+
+const selectBestPayment = (payments: MemberPayment[] = []) => {
+  if (payments.length === 0) return undefined;
+  return [...payments].sort((a, b) => {
+    if (a.payment_status !== b.payment_status) {
+      return a.payment_status === "paid" ? -1 : 1;
+    }
+    const aDate = a.payment_date ? new Date(a.payment_date).getTime() : 0;
+    const bDate = b.payment_date ? new Date(b.payment_date).getTime() : 0;
+    if (aDate !== bDate) return bDate - aDate;
+    return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
+  })[0];
+};
+
+const fetchMembersForCurrentSeason = async () => {
+  const seasonId = getCurrentSeasonId();
+  let mq = supabase
+    .from("members")
+    .select("id, __id__, name, real_name, nickname, is_fee_exempt, ProfileURL, line_id, line_name, team_id")
+    .order("name");
+  if (seasonId) mq = mq.eq("season_id", seasonId);
+
+  const { data, error } = await mq;
+  if (error) throw error;
+  return data || [];
+};
+
+const fetchCanonicalPaymentsForMonth = async (
+  members: MemberIdentity[],
+  monthStr: string
+) => {
+  if (members.length === 0) return new Map<number, MemberPayment | undefined>();
+
+  const canonicalKeys = new Set(members.map((member) => canonicalMemberKey(member.__id__)));
+  const { data: identities, error: identitiesError } = await supabase
+    .from("members")
+    .select("id, __id__, season_id");
+
+  if (identitiesError) throw identitiesError;
+
+  const idsByCanonicalKey = new Map<string, number[]>();
+  (identities as MemberIdentity[] | null)?.forEach((identity) => {
+    const key = canonicalMemberKey(identity.__id__);
+    if (!canonicalKeys.has(key)) return;
+    const ids = idsByCanonicalKey.get(key) || [];
+    ids.push(identity.id);
+    idsByCanonicalKey.set(key, ids);
+  });
+
+  const allMemberIds = Array.from(new Set(Array.from(idsByCanonicalKey.values()).flat()));
+  if (allMemberIds.length === 0) return new Map<number, MemberPayment | undefined>();
+
+  const { data: payments, error: paymentsError } = await supabase
+    .from("member_payments")
+    .select("*")
+    .eq("payment_month", monthStr)
+    .in("member_id", allMemberIds);
+
+  if (paymentsError) throw paymentsError;
+
+  const paymentsByMemberId = new Map<number, MemberPayment[]>();
+  (payments || []).forEach((payment) => {
+    const memberPayments = paymentsByMemberId.get(payment.member_id) || [];
+    memberPayments.push(payment as MemberPayment);
+    paymentsByMemberId.set(payment.member_id, memberPayments);
+  });
+
+  return new Map(
+    members.map((member) => {
+      const relatedIds = idsByCanonicalKey.get(canonicalMemberKey(member.__id__)) || [member.id];
+      const relatedPayments = relatedIds.flatMap((id) => paymentsByMemberId.get(id) || []);
+      return [member.id, selectBestPayment(relatedPayments)];
+    })
+  );
+};
+
 /**
  * Fetch monthly payments for a specific month
  */
@@ -53,29 +138,8 @@ export function useMonthlyPayments(month: Date) {
   return useQuery<MemberWithPayment[]>({
     queryKey: ["member_payments", monthStr, seasonId],
     queryFn: async () => {
-      const sId = getCurrentSeasonId();
-      let mq = supabase
-        .from("members")
-        .select("id, __id__, name, real_name, nickname, is_fee_exempt, ProfileURL, line_id, line_name, team_id")
-        .order("name");
-      if (sId) mq = mq.eq("season_id", sId);
-      const { data: members, error: membersError } = await mq;
-
-      if (membersError) throw membersError;
-
-      let pq = supabase
-        .from("member_payments")
-        .select("*")
-        .eq("payment_month", monthStr);
-      if (sId) pq = pq.eq("season_id", sId);
-      const { data: payments, error: paymentsError } = await pq;
-
-      if (paymentsError) throw paymentsError;
-
-      // Combine members with their payment status
-      const paymentsMap = new Map(
-        payments?.map(p => [p.member_id, p as MemberPayment]) || []
-      );
+      const members = await fetchMembersForCurrentSeason();
+      const paymentsMap = await fetchCanonicalPaymentsForMonth(members, monthStr);
 
       // Get payment history and status for each member
       const membersWithPayments = await Promise.all(
@@ -119,14 +183,18 @@ export function usePaymentSummary(month: Date) {
   return useQuery<PaymentSummary>({
     queryKey: ["payment_summary", monthStr, seasonId],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .rpc("get_monthly_payment_summary", {
-          target_month: monthStr
-        })
-        .single();
+      const members = await fetchMembersForCurrentSeason();
+      const paymentsMap = await fetchCanonicalPaymentsForMonth(members, monthStr);
+      const payments = members.map((member) => paymentsMap.get(member.id));
+      const paidPayments = payments.filter((payment) => payment?.payment_status === "paid");
 
-      if (error) throw error;
-      return data;
+      return {
+        total_members: members.length,
+        paid_count: paidPayments.length,
+        unpaid_count: members.length - paidPayments.length,
+        total_amount: paidPayments.reduce((sum, payment) => sum + Number(payment?.amount || 0), 0),
+        payment_month: monthStr,
+      };
     },
   });
 }
@@ -218,17 +286,24 @@ export function useUpdatePaymentStatus() {
         return data;
       } else {
         // Insert new payment record
+        const seasonId = getCurrentSeasonId();
+        const paymentRecord: any = {
+          member_id: memberId,
+          payment_month: monthStr,
+          payment_status: status,
+          payment_date: paymentDate,
+          amount: amount,
+          payment_method: paymentMethod,
+          notes: notes,
+        };
+
+        if (seasonId) {
+          paymentRecord.season_id = seasonId;
+        }
+
         const { data, error } = await supabase
           .from("member_payments")
-          .insert({
-            member_id: memberId,
-            payment_month: monthStr,
-            payment_status: status,
-            payment_date: paymentDate,
-            amount: amount,
-            payment_method: paymentMethod,
-            notes: notes,
-          })
+          .insert(paymentRecord)
           .select()
           .single();
 
