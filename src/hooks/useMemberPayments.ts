@@ -138,29 +138,8 @@ export function useMonthlyPayments(month: Date) {
   return useQuery<MemberWithPayment[]>({
     queryKey: ["member_payments", monthStr, seasonId],
     queryFn: async () => {
-      const sId = getCurrentSeasonId();
-      let mq = supabase
-        .from("members")
-        .select("id, __id__, name, real_name, nickname, is_fee_exempt, ProfileURL, line_id, line_name, team_id")
-        .order("name");
-      if (sId) mq = mq.eq("season_id", sId);
-      const { data: members, error: membersError } = await mq;
-
-      if (membersError) throw membersError;
-
-      let pq = supabase
-        .from("member_payments")
-        .select("*")
-        .eq("payment_month", monthStr);
-      if (sId) pq = pq.eq("season_id", sId);
-      const { data: payments, error: paymentsError } = await pq;
-
-      if (paymentsError) throw paymentsError;
-
-      // Combine members with their payment status
-      const paymentsMap = new Map(
-        payments?.map(p => [p.member_id, p as MemberPayment]) || []
-      );
+      const members = await fetchMembersForCurrentSeason();
+      const paymentsMap = await fetchCanonicalPaymentsForMonth(members, monthStr);
 
       // Get payment history and status for each member
       const membersWithPayments = await Promise.all(
