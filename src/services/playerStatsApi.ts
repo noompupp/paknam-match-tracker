@@ -2,6 +2,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { enhancedMemberStatsService } from './enhancedMemberStatsService';
 import { operationLoggingService } from './operationLoggingService';
+import { getCurrentSeasonId } from '@/lib/seasonStore';
 
 interface PlayerStatsData {
   id: number;
@@ -24,8 +25,9 @@ async function fallbackPlayerQuery(): Promise<PlayerStatsData[]> {
   console.log('🔄 PlayerStatsAPI: Using fallback query strategy...');
   
   try {
+    const seasonId = getCurrentSeasonId();
     // Get members without relationship
-    const { data: members, error: membersError } = await supabase
+    let membersQ = supabase
       .from('members')
       .select(`
         id,
@@ -42,16 +44,18 @@ async function fallbackPlayerQuery(): Promise<PlayerStatsData[]> {
         ProfileURL
       `)
       .order('name', { ascending: true });
+    if (seasonId) membersQ = membersQ.eq('season_id', seasonId);
+    const { data: members, error: membersError } = await membersQ;
 
     if (membersError) {
       console.error('❌ PlayerStatsAPI: Fallback members query failed:', membersError);
       throw membersError;
     }
 
-    // Get teams separately
-    const { data: teams, error: teamsError } = await supabase
-      .from('teams')
-      .select('id, __id__, name');
+    // Get teams separately (scoped to season when available)
+    let teamsQ = supabase.from('teams').select('id, __id__, name');
+    if (seasonId) teamsQ = teamsQ.eq('season_id', seasonId);
+    const { data: teams, error: teamsError } = await teamsQ;
 
     if (teamsError) {
       console.error('❌ PlayerStatsAPI: Fallback teams query failed:', teamsError);
