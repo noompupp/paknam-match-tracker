@@ -97,8 +97,9 @@ export const playerStatsApi = {
     console.log('🏆 PlayerStatsAPI: Fetching all players with enhanced error handling...');
     
     try {
+      const seasonId = getCurrentSeasonId();
       // Primary query with explicit relationship syntax
-      const { data, error } = await supabase
+      let q = supabase
         .from('members')
         .select(`
           id,
@@ -120,6 +121,8 @@ export const playerStatsApi = {
           )
         `)
         .order('name', { ascending: true });
+      if (seasonId) q = q.eq('season_id', seasonId);
+      const { data, error } = await q;
 
       if (error) {
         console.warn('⚠️ PlayerStatsAPI: Primary query failed, trying fallback:', error.message);
@@ -181,8 +184,9 @@ export const playerStatsApi = {
     console.log('🏆 PlayerStatsAPI: Fetching top scorers with fallback strategy...');
     
     try {
+      const seasonId = getCurrentSeasonId();
       // Try primary query first
-      const { data, error } = await supabase
+      let q = supabase
         .from('members')
         .select(`
           id,
@@ -204,6 +208,8 @@ export const playerStatsApi = {
         .order('assists', { ascending: false })
         .order('name', { ascending: true })
         .limit(limit);
+      if (seasonId) q = q.eq('season_id', seasonId);
+      const { data, error } = await q;
 
       if (error) {
         console.warn('⚠️ PlayerStatsAPI: Top scorers primary query failed, using fallback');
@@ -250,8 +256,9 @@ export const playerStatsApi = {
     console.log('🎯 PlayerStatsAPI: Fetching top assists with fallback strategy...');
     
     try {
+      const seasonId = getCurrentSeasonId();
       // Try primary query first
-      const { data, error } = await supabase
+      let q = supabase
         .from('members')
         .select(`
           id,
@@ -273,6 +280,8 @@ export const playerStatsApi = {
         .order('goals', { ascending: false })
         .order('name', { ascending: true })
         .limit(limit);
+      if (seasonId) q = q.eq('season_id', seasonId);
+      const { data, error } = await q;
 
       if (error) {
         console.warn('⚠️ PlayerStatsAPI: Top assists primary query failed, using fallback');
