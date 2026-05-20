@@ -70,10 +70,9 @@ export const groupFixturesByDate = (fixtures: any[]): GroupedFixtures[] => {
     return [];
   }
 
-  // Initialize gameweek mappings if not already done
-  if (!gameweekMappingsCache) {
-    initializeGameweekMappings(fixtures);
-  }
+  // Always recompute gameweek mappings from the current fixture set so labels
+  // (MD1..MDn) reflect the active season's dates, not a stale cache.
+  initializeGameweekMappings(fixtures);
 
   // Create a map to group fixtures by date
   const groupedMap = new Map<string, any[]>();
