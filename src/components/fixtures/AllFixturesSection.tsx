@@ -1,11 +1,13 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { Calendar } from "lucide-react";
+import { Calendar, LayoutList } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import CompactFixtureCard from "../shared/CompactFixtureCard";
 import LoadingCard from "./LoadingCard";
 import DateGroupHeader from "../shared/DateGroupHeader";
 import { useDeviceOrientation } from "@/hooks/useDeviceOrientation";
 import { groupFixturesByDate, initializeGameweekMappings } from "@/utils/dateGroupingUtils";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import SeasonOverviewDialog from "./SeasonOverviewDialog";
 
 interface AllFixturesSectionProps {
   sortedAllFixtures: any[];
@@ -22,6 +24,7 @@ const AllFixturesSection = ({
 }: AllFixturesSectionProps) => {
   const { isMobile, isPortrait } = useDeviceOrientation();
   const isMobilePortrait = isMobile && isPortrait;
+  const [showOverview, setShowOverview] = useState(false);
 
   // Initialize gameweek mappings when fixtures are available
   useEffect(() => {
@@ -35,9 +38,21 @@ const AllFixturesSection = ({
 
   return (
     <div id="all-fixtures" className="scroll-mt-20">
-      <div className="flex items-center gap-2 mb-6">
-        <Calendar className="h-6 w-6 text-white" />
-        <h2 className="text-2xl font-bold text-white">All Fixtures</h2>
+      <div className="flex items-center justify-between gap-2 mb-6 flex-wrap">
+        <div className="flex items-center gap-2">
+          <Calendar className="h-6 w-6 text-white" />
+          <h2 className="text-2xl font-bold text-white">All Fixtures</h2>
+        </div>
+        <Button
+          variant="secondary"
+          size="sm"
+          onClick={() => setShowOverview(true)}
+          disabled={isLoading || !sortedAllFixtures?.length}
+          className="gap-2"
+        >
+          <LayoutList className="h-4 w-4" />
+          Season Overview
+        </Button>
       </div>
       
       <div className="space-y-4">
@@ -82,6 +97,13 @@ const AllFixturesSection = ({
           </Card>
         )}
       </div>
+
+      <SeasonOverviewDialog
+        fixtures={sortedAllFixtures}
+        isOpen={showOverview}
+        onClose={() => setShowOverview(false)}
+        onFixtureClick={onFixtureClick}
+      />
     </div>
   );
 };
