@@ -20,6 +20,7 @@ import RefereeToolsContainer from "@/components/referee/RefereeToolsContainer";
 import Membership from "@/components/Membership";
 import SeasonManagement from "@/components/admin/SeasonManagement";
 import HistoricalSeasonBanner from "@/components/shared/HistoricalSeasonBanner";
+import GuessMemberGame from "@/components/game/GuessMemberGame";
 
 // Create a client
 const queryClient = new QueryClient({
@@ -84,6 +85,8 @@ const AppContent = () => {
         return <Results />;
       case "fixtures":
         return <Fixtures />;
+      case "game":
+        return <GuessMemberGame />;
       case "referee":
         return (
           <RoleGuard requiredRole="referee">

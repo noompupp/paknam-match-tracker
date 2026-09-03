@@ -13,7 +13,8 @@ const navigation: LocaleModule = {
     'nav.referee': 'Referee',
     'nav.login': 'Login',
     'nav.signOut': 'Sign out',
-    'nav.membership': 'Membership'
+    'nav.membership': 'Membership',
+    'nav.game': 'Game'
   },
   th: {
     'nav.dashboard': 'แดชบอร์ด',
@@ -24,7 +25,8 @@ const navigation: LocaleModule = {
     'nav.referee': 'ผู้ตัดสิน',
     'nav.login': 'เข้าสู่ระบบ',
     'nav.signOut': 'ออกจากระบบ',
-    'nav.membership': 'สมาชิกภาพ'
+    'nav.membership': 'สมาชิกภาพ',
+    'nav.game': 'เกม'
   }
 };
 

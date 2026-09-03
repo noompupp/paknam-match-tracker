@@ -2,7 +2,7 @@
 import React, { useEffect, useRef } from 'react';
 import { useSecureAuth } from "@/contexts/SecureAuthContext";
 import { Button } from "@/components/ui/button";
-import { Home, Calendar, Trophy, Flag, Users, Wallet } from "lucide-react";
+import { Home, Calendar, Trophy, Flag, Users, Wallet, Gamepad2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { usePlatformDetection } from "@/hooks/usePlatformDetection";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -54,6 +54,7 @@ const RoleBasedNavigation = ({ activeTab, onTabChange }: RoleBasedNavigationProp
     { id: "teams", label: t('nav.teams'), icon: Users },
     { id: "results", label: t('nav.results'), icon: Trophy },
     { id: "fixtures", label: t('nav.fixtures'), icon: Calendar },
+    { id: "game", label: t('nav.game'), icon: Gamepad2 },
   ];
 
   // Membership requires authentication
